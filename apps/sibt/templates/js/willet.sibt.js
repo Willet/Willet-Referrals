@@ -43,7 +43,7 @@ _willet.sibt = (function (me) {
         },
         cart_items = cart_items || window._willet_cart_items || [],
         PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
-        SHAKE_DURATION = 600, // ms
+        SHAKE_DURATION = 300, // ms
         SHAKE_WAIT = 1000, // ms
 
         padding_elem = null,
@@ -284,8 +284,8 @@ _willet.sibt = (function (me) {
                         .html ("<div class='button' " +
                                     "title='Ask your friends if you should buy this!'>" +
                                     "<img src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' alt='logo' />" +
-                                    "<div id='_willet_button' class='title'>Share with Friends</div>" +
-                                    "</div>")
+                                    "<div id='_willet_button' class='title'>Shop with Friends</div>" +
+                               "</div>")
                         .css({'clear': 'both', 'height': '40px', 'background':'none'});
                     jqElem.append(button);
                 } else {
@@ -387,7 +387,7 @@ _willet.sibt = (function (me) {
                          <div id='_willet_button' class='button' \
                              title='Ask your friends if you should buy this!'>\
                              <img alt='logo' src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' />\
-                             <div class='title'>Share with Friends</div>\
+                             <div class='title'>Shop with Friends</div>\
                          </div>")
             .css({
                 'clear': 'both',
@@ -436,8 +436,8 @@ _willet.sibt = (function (me) {
     me.isScrolledIntoView = me.isScrolledIntoView || function (elem) {
         // http://stackoverflow.com/questions/487073
         // returns true if elem has dimensions within the viewport.
-        var docViewTop = $(w).scrollTop();
-        var docViewBottom = docViewTop + $(w).height();
+        var docViewTop = $(window).scrollTop();
+        var docViewBottom = docViewTop + $(window).height();
         var elemTop = $(elem).offset().top;
         var elemBottom = elemTop + $(elem).height();
         return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
@@ -459,15 +459,18 @@ _willet.sibt = (function (me) {
     me.getLargestImage = me.getLargestImage || function (within) {
         // Returns <img>.src for the largest <img> in <elem>within
         // source: http://stackoverflow.com/questions/3724738
-        within = within || d; // defaults to document
+        within = within || document; // defaults to document
         var nMaxDim = 0;
         var largest_image = '';
         $(within).find('img').each(function () {
-            var $this = $(this);
-            var nDim = parseFloat($this.width()) * parseFloat($this.height());
-            if (nDim > nMaxDim) {
-                largest_image = $this.prop('src');
-                nMaxDim = nDim;
+            var $this = $(this),
+                $prop = $this.prop || $this.attr;  // low-level jQuery fallback
+            if (this && $this) {
+                var nDim = parseFloat($this.width()) * parseFloat($this.height());
+                if (nDim > nMaxDim) {
+                    largest_image = $prop('src');
+                    nMaxDim = nDim;
+                }
             }
         });
         return largest_image;
@@ -585,7 +588,7 @@ _willet.sibt = (function (me) {
                 'description': fill.description || '',
                 'sibtversion': fill.sibtversion || app.version,
                 'title': fill.title || me.getPageTitle(),
-                'image': fill.image || me.getLargestImage(d),
+                'image': fill.image || me.getLargestImage(document),
                 'images': fill.images || '',
                 'price': fill.price || 0,
                 'tags': fill.tags || '',
@@ -601,7 +604,7 @@ _willet.sibt = (function (me) {
                 $('<img />', {
                     src: '{{URL}}{% url CreateProduct %}?' + $.param(data),
                     css: {'display':'none'}
-                }).appendTo(d);
+                }).appendTo(document);
                 wm.fire('log', 'sent product request');
             }
         } catch (e) {
@@ -729,7 +732,7 @@ _willet.sibt = (function (me) {
                     var pageHeight, scrollPos, threshold, windowHeight;
 
                     pageHeight = $(document).height();
-                    scrollPos = $(window).scrollTop() + $(w).height();
+                    scrollPos = $(window).scrollTop() + $(window).height();
                     threshold = pageHeight * app.bottom_popup_trigger;
                     windowHeight = $(window).height();
 

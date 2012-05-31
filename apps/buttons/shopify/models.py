@@ -89,8 +89,8 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
         version = os.environ['CURRENT_VERSION_ID']
-        
-        # Define our script tag 
+
+        # Define our script tag
         tags = [{
                 "script_tag": {
                     "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
@@ -112,7 +112,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=False)
-        
+
         self.queue_script_tags(script_tags=tags)
 
         self.queue_assets(assets=[{
@@ -139,20 +139,22 @@ class ButtonsShopify(Buttons, AppShopify):
 
         self.install_queued()
 
-        email = self.client.email
+        email = self.client.email or u''  # what sane function returns None?
         name  = self.client.merchant.get_full_name()
         store = self.client.name
         use_full_name = False
 
         if REROUTE_EMAIL:
-            name += " (%s) [%s]" % (email, self.store_url)
-            email = REROUTE_EMAIL
-            use_full_name = True
+            Email.welcomeFraser(app_name="ShopConnection",
+                                to_addr=email,
+                                name=name, 
+                                store_name=store,
+                                store_url=self.store_url)
+        else:
+            # Fire off "personal" email from Fraser
+            Email.welcomeClient("ShopConnection", email, name, store,
+                                use_full_name=use_full_name)
 
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", email, name, store,
-                            use_full_name=use_full_name)
-        
         # Email DevTeam
         Email.emailDevTeam(
             'ButtonsShopify Install: %s %s %s' % (
@@ -168,7 +170,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 list_name=app_name,
                 list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
             )
-        
+
         return
 
     def do_upgrade(self):
@@ -186,7 +188,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 "event": "onload"
             }
         }])
-        
+
         self.install_queued()
 
         # Email DevTeam
@@ -312,7 +314,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
         return prefs
 
-    # Constructors ------------------------------------------------------------------------------
+    # Constructors ------------------------------------------------------------
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
@@ -324,16 +326,16 @@ class ButtonsShopify(Buttons, AppShopify):
                   store_url=client.url,  # Store url
                   store_id=client.id,   # Store id
                   store_token=app_token,
-                  button_selector="_willet_buttons_app") 
+                  button_selector="_willet_buttons_app")
         app.put()
 
         app.do_install()
-            
+
         return app
 
-    # 'Retreive or Construct'ers -----------------------------------------------------------------
+    # 'Retreive or Construct'ers ----------------------------------------------
     @classmethod
-    def get_or_create_app(cls, client, token):
+    def get_or_create(cls, client, token):
         """Try to retrieve the app.  If no app, create one.
 
         Returns:
@@ -342,11 +344,11 @@ class ButtonsShopify(Buttons, AppShopify):
         """
         created = False
         app = cls.get_by_url(client.url)
-        
+
         if app is None:
             app = cls.create_app(client, token)
             created = True
-        
+
         elif token != None and token != '':
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
@@ -356,14 +358,14 @@ class ButtonsShopify(Buttons, AppShopify):
                         app.store_token,
                         token
                     )
-                ) 
+                )
                 try:
                     app.store_token = token
                     app.client = client
                     app.old_client = None
                     app.created = datetime.utcnow()
                     app.put()
-                    
+
                     app.do_install()
                     created = True
                 except:
@@ -476,17 +478,3 @@ class SharePeriod(Model):
                                       reverse=True)
             items_by_name.append(item)
         return items_by_name
-
-
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-def create_shopify_buttons_app(client, app_token):
-    raise DeprecationWarning('Replaced by ButtonShopify.create_app')
-
-def get_or_create_buttons_shopify_app(client, token):
-    raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
-    ButtonShopify.get_or_create_app(client, token)[0]
-
-def get_shopify_buttons_by_url(store_url):
-    raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
-    ButtonShopify.get_by_url(store_url)
-
