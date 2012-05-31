@@ -242,7 +242,20 @@ class ButtonsShopifyPaidInstallThanks(URIHandler):
     @catch_error
     def get(self):
         logging.debug('success!')
-        self.response.out.write('YAY')
+
+        # Use .get in case properties don't exist yet
+        template_values = {
+            'URL': URL,
+
+            # passed from ButtonsShopifyOneTimeBillingCallback
+            # hope it's right
+            'store_url': self.request.get('shop')
+        }
+
+        # prepopulate values
+        self.response.out.write(self.render_page('install4u-instructions.html',
+                                                 template_values))
+
 
 
 class ButtonsShopifyOneTimeBillingCallback(URIHandler):

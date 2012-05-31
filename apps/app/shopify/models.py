@@ -274,15 +274,19 @@ class AppShopify(Model):
                 }
 
         Returns:
-            None
+            Boolean (succeeds)
         """
 
         result = self._retrieve_application_charge()
 
         charge_data = result['application_charge']
         logging.debug('charge_data = %r' % charge_data)
+        charge_status = charge_data['status']
 
-        if charge_data == 'pending':
+        if charge_status == 'accepted':
+            logging.debug('charge_data is accepted - win!')
+            return True # I believe this is a good thing and should be praised
+        elif charge_status == 'pending':
             logging.debug('we can now activate the charge')
 
             # Update status
@@ -300,6 +304,7 @@ class AppShopify(Model):
                     if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
                         break
+                return True
             else:
                 logging.debug('activation denied')
                 raise ShopifyBillingError('Charge activation denied', data)
@@ -307,7 +312,7 @@ class AppShopify(Model):
             logging.debug('Charge cancelled before activation request')
             raise ShopifyBillingError('Charge cancelled before activation request', charge_data)
 
-        return
+        return False  # won't be here
 
     def setup_one_time_billing(self, settings):
         """ returns a url where the user can pay for a one-time charge.
