@@ -12,7 +12,7 @@ import logging
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from time import time
-from urllib import urlencode
+from urllib import urlencode, quote
 from urlparse import urlparse
 from cgi import parse_qsl
 
@@ -331,7 +331,6 @@ class ButtonsShopify(Buttons, AppShopify):
         """Update preferences for the application."""
         if not self.billing_enabled:
             return
-        logging.info('here')
 
         try:
             # Get the previous tag...
@@ -344,7 +343,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 logging.warning("No script tags, can't update social accounts")
                 # No installed script tags?
                 return
-            logging.info('here2')
+            
             # Find confirmation.js script
             tag = None
             for script_tag in results.get("script_tags"):
@@ -354,12 +353,11 @@ class ButtonsShopify(Buttons, AppShopify):
                     break
 
             # Build query string
-            query_params = dict( (key, value) for key, value in social_accounts.items() if value )
+            query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )
             query_params.update({ 'app_uuid': self.uuid })
             qs = urlencode(query_params)
 
             if tag:
-                logging.info('here3')
                 tag["src"] = "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
                 try:
                     self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],

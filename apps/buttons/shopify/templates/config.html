@@ -629,8 +629,24 @@
                            value='{{ button_order|join:"," }}' />
                     <button class="blue">Save</button>
                 </div>
-                <hr class="widget-break">
+                <hr class="widget-break"/>
                 <div id="config-free">
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="confirmation-message">
+                                Confirmation message:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="A short message on your Confirmation page,
+                                        at the end of the checkout process.<br/><br/>
+
+                                 <i>Default: blank</i>"
+                                 class="help">
+                        </span>
+                        <input id="confirmation-message" name="conf_message"
+                               type="text" value="{{ confirmation_message }}"
+                               class="textbox"/>
+                    </div>
                     <div class="config-option">
                         <span class="left-column">
                             <label for="facebook-username">

@@ -572,13 +572,13 @@ _willet = (function (me) {
             if (qs) {
                 // A little hack - convert the query string into JSON format and parse it
                 // '&' -> ',' and '=' -> ':'
-                var raw_obj = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
                 params = {
                     "shop":  raw_obj.shop || '',
-                    "message": raw_obj.message || '',
+                    "message": raw_obj.conf_message || '',
                     "facebookUsername": raw_obj.facebook_username || '',
                     "twitterUsername":  raw_obj.twitter_username || '',
-                    "pinterestUsername": raw_obj.pinteret_username || ''
+                    "pinterestUsername": raw_obj.pinterest_username || ''
                 };
             }
 
