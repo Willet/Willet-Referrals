@@ -134,7 +134,7 @@
         var st      = encodeURIComponent(message);
         var params  = "error=" + error + "&script=" + script + "&st=" + st;
         var err_img = d.createElement("img");
-        err_img.src = "{{URL}}{% url ClientSideMessage %}?" + params;
+        err_img.src = window.location.protocol + "//{{ DOMAIN }}{% url ClientSideMessage %}?" + params;
         err_img.style.display = "none";
         d.body.appendChild(err_img);
 
