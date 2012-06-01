@@ -111,7 +111,7 @@ _willet.util = {
             + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.src = window.location.protocol + "//social-referral.appspot.com/admin/ithinkiateacookie?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage);
@@ -168,13 +168,13 @@ _willet.util = {
         //    template - a string representing an HTML template, with variables
         //               of the form: {{ var_name }} and condtionals of the form
         //               {% if var_name %} ... {% endif %}
-        //               Note: does not support nested if's, and must be exactly 
+        //               Note: does not support nested if's, and must be exactly
         //                     the form above (no extra whitespace)
         //    values - a object literal, with keys corresponding to template variables,
         //             and values appropriate for the template
         // Return:
         //    rendered template <string>
-        
+
         var ifStatementRe = /\{% if [\w\-]+ %\}/g,
             ifPrefixLen = '{% if '.length,
             endifLen = '{% endif %}'.length,
@@ -187,7 +187,7 @@ _willet.util = {
         while (conditionalIndex >= 0) {
             // get variable name from conditional
             varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
-            
+
             if (values[varName]) {
                 // if variable name exists, strip conditional statements & leave code
                 template = template.replace('{% if '+varName+' %}', '');
@@ -584,7 +584,7 @@ _willet = (function (me) {
 
             if (content) {
                 var container = document.createElement('div');
-                
+
                 // Retrieve configuration from script query string
                 var config = me.getConfigurationFromURL();
 
