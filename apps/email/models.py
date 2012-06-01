@@ -203,10 +203,11 @@ class Email():
             user_name = user.name
             user_email = getattr(user, 'email', '?')
 
-        msg = '''Client %s (%s) has request a custom Buttons installation.<br>
-                 Please go to %s/admin to install the app.<br>
-                 <br>
-                 Name: %s<br>
+        msg = '''Client %s (%s) has requested a custom Buttons installation.
+                 <br />
+                 Please go to %s/admin to install the app.<br />
+                 <br />
+                 Name: %s<br />
                  Extra email: %s
               ''' % (client_name,
                      client_addr,
