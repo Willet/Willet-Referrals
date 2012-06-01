@@ -3,14 +3,14 @@
 <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://ogp.me/ns#">
 <head>
     <title>Example Product</title>
-    <link href="http://dev.willet-nterwoord.appspot.com/reengage/product" rel="canonical" />
+    <link href="{{ DOMAIN }}{% url ReEngageProduct %}" rel="canonical" />
     <meta property="fb:app_id" content="211970025590862">
     <meta property="og:type" content="product">
     <meta property="og:site_name" content="ShopCo"/>
     <meta property="og:title" content="Eye Shadow" />
     <meta property="og:description" content="precious colors and radiance in the limited-edition refillable custom case. colors are inspired by the breath of fresh air and the embrace of warm light found in the spring season." />
-    <meta property="og:url" content="http://dev.willet-nterwoord.appspot.com/reengage/product">
-    <meta property="og:image" content="http://dev.willet-nterwoord.appspot.com/reengage/static/imgs/demo/product.png">
+    <meta property="og:url" content="{{ DOMAIN }}{% url ReEngageProduct %}">
+    <meta property="og:image" content="{{ DOMAIN }}/static/imgs/demo/product.png">
 
     <style type="text/css">
         body {
@@ -48,6 +48,7 @@
     }(document, 'script', 'facebook-jssdk'));
 </script>
 <div id="product">Eye Shadow</div>
-<div class="fb-like" data-href="http://dev.willet-nterwoord.appspot.com/reengage/product" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false"></div>
+<div class="fb-like" data-href="{{ DOMAIN }}{% url ReEngageProduct %}"
+     data-send="false" data-layout="button_count" data-width="450" data-show-faces="false"></div>
 </body>
 </html>

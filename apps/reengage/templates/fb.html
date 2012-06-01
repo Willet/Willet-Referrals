@@ -57,7 +57,7 @@
         <button id="back">&lt; Back to Control Panel</button>
         <form method="POST" action="/reengage/post">
             <input type="hidden" name="url"
-                   value="http://dev.willet-nterwoord.appspot.com/reengage/product"/>
+                   value="{{ DOMAIN }}{% url ReEngageProduct %}"/>
 
             <textarea rows="6" cols="20" id="message"
                       name="message"></textarea>
