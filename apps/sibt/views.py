@@ -929,13 +929,13 @@ class SIBTServeScript(URIHandler):
             if not app_css:
                 raise AttributeError('Empty CSS is illegal!')
         except AttributeError:
-            # app is not a SIBTShopify! borrow default CSS from one.
             app_css = SIBTShopify.get_default_css()
 
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'DOMAIN': DOMAIN,
             'URL': URL,
 
             # store info
