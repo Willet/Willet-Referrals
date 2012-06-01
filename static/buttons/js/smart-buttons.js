@@ -848,7 +848,7 @@ _willet.networks = (function (willet) {
                         return false;
                     };
                     var style = util.createStyle("a.willet-pinterest-button { "
-                                                +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
+                                                +"   background-image: url('//assets.pinterest.com/images/pinit6.png'); "
                                                 +"   background-position: 0 -7px; "
                                                 +"} "
                                                 +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } "
