@@ -1,85 +1,67 @@
-{% extends "base.html" %}
+<html>
+    <head>
+        <title>Re-Engage: New Post</title>
+        <style type="text/css">
+            body {
+                background: url('/static/imgs/demo/reengage-new-post.png') no-repeat;
+                height: 550px;
+                width: 937px;
+            }
 
-{% block head %}
-<style>
-.shopconnection-header {
-    height: 62px;
-    margin: 10px 0;
-}
-.shopconnection-header img {
-    border: 1px solid #93BC8B;
-    border-radius: 10px;
-    width: 60px;
-    height: 60px;
-    float: left;
-}
-.shopconnection-header h3 {
-    color: #0496AC;
-    text-shadow: 1px 1px 1px #FFF;
-    line-height: 2em;
-    padding-left: 90px;
-    margin: 0;
-}
-.box-design {
-    background-color: #fff;
-}
-.box-design form, .box-design .preview {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    font-size: 1.5em;
-}
+            textarea {
+                position: absolute;
+                top: 283px;
+                left: 331px;
+                border: 0px transparent;
+                background: transparent;
+                width: 336px;
+                height: 69px;
+                resize: none;
+            }
 
-label {
-    width: 100px;
-    float: left;
-    margin-left: 20px;
-}
-</style>
-{% endblock head %}
+            button#queue {
+                position: absolute;
+                top: 434px;
+                left: 570px;
+                height: 33px;
+                display: block;
+                width: 109px;
+            }
 
-{% block header-class %}tall{% endblock %}
+            button#back {
+                position: absolute;
+                top: 62px;
+                left: 19px;
+                height: 40px;
+                display: block;
+                width: 265px;
+            }
+        </style>
+        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                // Back button
+                $('#back').click(function() {
+                    window.location = window.location.origin + "/reengage/"
+                });
 
-{% block content %}
-<div class="span-24 last shopconnection-header">
-    <img src="/static/imgs/ShopConnection_icon_60x60.png" />
-    <h3>{{ message }}</h3>
-</div>
+                // Form submit
+                $('#post').click(function() {
+                    $("form").submit()
+                });
+            });
+        </script>
+    </head>
 
-<div class="span-24 last box-design content-container">
-    <h1>ReEngage: Facebook</h1>
+    <body>
+        <button id="back">&lt; Back to Control Panel</button>
+        <form method="POST" action="/reengage/post">
+            <input type="hidden" name="url"
+                   value="http://dev.willet-nterwoord.appspot.com/reengage/product"/>
 
-    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
-        <div class="box-design">
-            <form method="POST" action="/reengage/fb">
-                <label for="url">URL</label>
-                <input type="text" id="url" name="url"
-                       value="http://dl.dropbox.com/u/3618086/product.html"
-                       readonly="readonly" style="background: #eee;"/><br/>
-
-                <label for="message">Message:</label>
-                <textarea rows="6" cols="20" id="message"
-                          name="message"></textarea>
-                <br/>
-
-                <div style="text-align: center">
-                    <input type="submit" value="Send Message"/>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-    <h3 class="center">Have other questions? Visit <a href="http://support.willetinc.com">our support website</a>, or Email: support@getwillet.com</h3>
-    <br />
-
-    <div class="center">
-        <button class='blue' id='go_to_shopify'>
-            <img src="/static/imgs/shopify-bag-36.png" />
-                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                    Return to your Store
-                </span>
-        </button>
-    </div>
-</div>
-{% endblock content %}
+            <textarea rows="6" cols="20" id="message"
+                      name="message"></textarea>
+            <button id="queue">Queue Post</button>
+        </form>
+    </body>
+</html>

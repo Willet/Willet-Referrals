@@ -96,6 +96,14 @@ def _FB_post(message, page_id, token):
 
     return success
 
+class ReEngageControlPanel(URIHandler):
+    def get(self):
+        self.response.out.write(self.render_page('control_panel.html', {}))
+
+class ReEngageProduct(URIHandler):
+    def get(self):
+        self.response.out.write(self.render_page('product.html', {}))
+
 class ReEngageFacebook(URIHandler):
     def get(self):
         message = self.request.get("message", "")
@@ -115,7 +123,7 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "Your application seems to be misconfigured."
             }
-            self.redirect(build_url("ReEngageFacebook", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", qs=message))
             return
 
         # get the id of the page
@@ -125,7 +133,7 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "We couldn't message the page you requested."
             }
-            self.redirect(build_url("ReEngageFacebook", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", qs=message))
             return
 
         # post the message
@@ -135,13 +143,13 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "There was a problem posting the message."
             }
-            self.redirect(build_url("ReEngageFacebook", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", qs=message))
             return
 
         message = {
             "message": "Message sent successfully!"
         }
-        self.redirect(build_url("ReEngageFacebook", qs=message))
+        self.redirect(build_url("ReEngageControlPanel", qs=message))
 
 
 

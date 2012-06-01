@@ -4,5 +4,7 @@ from apps.reengage.views import *
 
 urlpatterns = [
     # Views
-    (r'/reengage/fb', ReEngageFacebook),
+    (r'/reengage/?',        ReEngageControlPanel),
+    (r'/reengage/post',    ReEngageFacebook),
+    (r'/reengage/product', ReEngageProduct),
 ]

@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>Re-Engage: Control Panel</title>
+        <style type="text/css">
+            body {
+                background: url('/static/imgs/demo/reengage-control-panel.png') no-repeat;
+                height: 550px;
+                width: 937px;
+            }
+
+            button {
+                position: absolute;
+                top: 30px;
+                left: 778px;
+                height: 45px;
+                display: block;
+                width: 137px;
+            }
+        </style>
+        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('#new').click(function() {
+                    window.location = window.location.href + "post"
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <button id="new">+ New Post</button>
+    </body>
+</html>
