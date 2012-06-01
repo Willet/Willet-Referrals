@@ -304,7 +304,8 @@ class SIBTShopify(SIBT, AppShopify):
                 self.uuid,
                 self.client.name,
                 self.store_url
-            )
+            ),
+            subject='SIBT installed'
         )
 
         # Fire off "personal" email from Fraser
