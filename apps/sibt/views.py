@@ -935,6 +935,7 @@ class SIBTServeScript(URIHandler):
         template_values = {
             # general things
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'DOMAIN': DOMAIN,
             'URL': URL,
 
             # store info
