@@ -205,7 +205,8 @@ class AppShopify(Model):
                     resp.reason,
                     self.store_url,
                     data if data else content
-                )
+                ),
+                subject='Application API request failed'
             )
             raise ShopifyAPIError(resp.status, resp.reason, "URL: %s, PAYLOAD: %s, CONTENT: %s" % (url, payload, content))
 
@@ -481,7 +482,8 @@ class AppShopify(Model):
                     result.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
                 return
 
             # Dequeue whats already installed so we don't reinstall it
@@ -556,7 +558,8 @@ class AppShopify(Model):
                 result.content
             )
             logging.error(error_msg)
-            Email.emailDevTeam(error_msg)
+            Email.emailDevTeam(error_msg,
+                               subject='Application API request failed')
             raise ShopifyAPIError(result.status_code, result.content, "Error getting theme, can not queue assets to install.")
 
         self._assets_url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
@@ -582,7 +585,8 @@ class AppShopify(Model):
                         resp.content
                     )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Callback function for script tags
         def handle_script_tag_result(rpc, script_tag):
@@ -600,7 +604,8 @@ class AppShopify(Model):
                     resp.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Callback function for assets
         def handle_asset_result(rpc, asset):
@@ -618,7 +623,8 @@ class AppShopify(Model):
                     resp.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
@@ -630,7 +636,8 @@ class AppShopify(Model):
                     params_str = '\n'.join([ "%s= %r" % (key, value) for key, value in kwargs.items()])
                     error_msg = 'Installation failed, deadline exceeded:\n%s' % (params_str,)
                     logging.error(error_msg)
-                    Email.emailDevTeam(error_msg)
+                    Email.emailDevTeam(error_msg,
+                                       subject='Application installation failed')
 
             return lambda: deadline_exceeded_catch()
 

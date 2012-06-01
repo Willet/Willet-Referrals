@@ -43,7 +43,8 @@ def catch_error(fn):
             Email.emailDevTeam(
                 'Smart-buttons install error, may require reinstall: '\
                 '%s, %s, %s, %s' %
-                (client_email, shop_owner, shop_url, shop_name)
+                (client_email, shop_owner, shop_url, shop_name),
+                subject='Application installation failed'
             )
             self.redirect ("%s?reason=%s" %
                            (build_url ('ButtonsShopifyInstallError'), e))
