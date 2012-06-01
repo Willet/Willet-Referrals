@@ -622,7 +622,8 @@ class SendFriendAsks(URIHandler):
                                    '<p>Instance: %s</p>' % (email_share_counter,
                                                             asker,
                                                             msg,
-                                                            instance.uuid))
+                                                            instance.uuid),
+                                   subject='Spy around here')
 
             # Format the product's desc for sharing
             try:
@@ -763,15 +764,16 @@ class SendFriendAsks(URIHandler):
                                            email_share_counter, msg, iuid))
 
             Email.emailDevTeam('<p>SIBT Share!\n</p>'
-                '<p>Asker: %s\n</p>'
-                '<p>Friends: %s</p>'
-                '<p>Successful shares on FB: %d</p>'
-                '<p>Successful shares via email: %d</p>'
-                '<p>Message: %s</p>'
-                '<p>Instance: %s</p>'
-                '<p>Link: %s</p>' % (asker, friends, fb_share_counter,
-                                     email_share_counter, msg, iuid,
-                                     link.get_willt_url()))
+                               '<p>Asker: %s\n</p>'
+                               '<p>Friends: %s</p>'
+                               '<p>Successful shares on FB: %d</p>'
+                               '<p>Successful shares via email: %d</p>'
+                               '<p>Message: %s</p>'
+                               '<p>Instance: %s</p>'
+                               '<p>Link: %s</p>' % (asker, friends, fb_share_counter,
+                                                    email_share_counter, msg, iuid,
+                                                    link.get_willt_url()),
+                               subject='SIBT share detected')
 
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

@@ -152,7 +152,7 @@ class ButtonsShopify(Buttons, AppShopify):
         if REROUTE_EMAIL:
             Email.welcomeFraser(app_name="ShopConnection",
                                 to_addr=email,
-                                name=name, 
+                                name=name,
                                 store_name=store,
                                 store_url=self.store_url)
         else:
@@ -166,7 +166,8 @@ class ButtonsShopify(Buttons, AppShopify):
                 self.uuid,
                 self.client.name,
                 self.client.url
-            )
+            ),
+            subject='App installed'
         )
 
         # Start sending email updates
