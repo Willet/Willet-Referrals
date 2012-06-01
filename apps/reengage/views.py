@@ -103,7 +103,7 @@ class ReEngageControlPanel(URIHandler):
 class ReEngageProduct(URIHandler):
     def get(self):
         self.response.out.write(self.render_page('product.html', {
-            "DOMAIN": self.request.host_url
+            "host": self.request.host_url
         }))
 
 class ReEngageFacebook(URIHandler):
@@ -111,7 +111,7 @@ class ReEngageFacebook(URIHandler):
         message = self.request.get("message", "")
         template_values = {
             "message": message,
-            "DOMAIN": self.request.host_url
+            "host": self.request.host_url
         }
         self.response.out.write(self.render_page('fb.html', template_values))
 
