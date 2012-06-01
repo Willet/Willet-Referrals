@@ -18,6 +18,7 @@ from google.appengine.ext import db
 from google.appengine.runtime import DeadlineExceededError
 
 from apps.app.models import App
+from apps.charge.models import Charge
 from apps.email.models import Email
 
 from util import httplib2
@@ -204,46 +205,52 @@ class AppShopify(Model):
                     resp.reason,
                     self.store_url,
                     data if data else content
-                )
+                ),
+                subject='Application API request failed'
             )
             raise ShopifyAPIError(resp.status, resp.reason, "URL: %s, PAYLOAD: %s, CONTENT: %s" % (url, payload, content))
 
     def setup_application_charge(self, settings):
-        """ Setup one-time charge for store
+        """ returns a url where the user can pay for a one-time charge.
 
         Inputs:
             settings = {
-                    "price": <Number>,
-                    "name": <String> app name / name on invoice,
-                    "return_url": <String> redirect after store owner has confirmed/denied charges
-                    ["test": <Boolean> true or false ]
-                }
-            Example: settings = {
-                    "name": "Super Duper Expensive action",
-                    "price": 100.0,
-                    "return_url": "http://super-duper.shopifyapps.com",
-                    "test": true
-                }
+                "price": <Number>,
+                "name": <String> app name / name on invoice,
+                "return_url": <String> redirect after store owner has
+                              confirmed/denied charges
+                ["test": <Boolean> true or false]
+            }
 
         Returns:
-            url where store owner should be redirected to confirm / deny charges
+            return_url
+
+        Redirect user to return_url to confirm the charge.
         """
 
         result = self._call_Shopify_API('POST', 'application_charges.json',
                                 { "application_charge": settings })
 
         data = result["application_charge"]
+        logging.debug('data = %r' % data)
 
         if data['status'] != 'pending':
             raise ShopifyBillingError("Setup of application charge was denied", data)
 
-        self.charge_ids.append( data['id'] )
-        self.charge_names.append( data['name'] )
-        self.charge_prices.append( data['price'] )
-        self.charge_createds.append( self._Shopify_str_to_datetime(data['created_at']) )
+        self.charge_ids.append(data['id'])
+        self.charge_names.append(data['name'])
+        self.charge_prices.append(data['price'])
+        self.charge_createds.append(self._Shopify_str_to_datetime(data['created_at']))
         self.charge_statuses.append('pending')
 
-        return data['confirmation_url']
+        # now that you have charged the client, make the Charge object.
+        Charge.create(app=self,
+                      client=getattr(self, 'client'),
+                      value=float(data['price']),
+                      shopify_charge_id=data['id'])
+
+        confirmation_url = data['confirmation_url']
+        return confirmation_url
 
     def _retrieve_application_charge(self):
         """ Retrieve billing info for customer
@@ -274,14 +281,21 @@ class AppShopify(Model):
                 }
 
         Returns:
-            None
+            Boolean (succeeds)
         """
 
-        data = self._retrieve_application_charge()
+        result = self._retrieve_application_charge()
 
         charge_data = result['application_charge']
+        logging.debug('charge_data = %r' % charge_data)
+        charge_status = charge_data['status']
 
-        if charge_data == 'pending':
+        if charge_status == 'accepted':
+            logging.debug('charge_data is accepted - win!')
+            return True # I believe this is a good thing and should be praised
+        elif charge_status == 'pending':
+            logging.debug('we can now activate the charge')
+
             # Update status
             charge_data.update({
                 "status":"accepted"
@@ -297,12 +311,16 @@ class AppShopify(Model):
                     if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
                         break
+
+                return True
             else:
+                logging.debug('activation denied')
                 raise ShopifyBillingError('Charge activation denied', data)
         else:
-            raise ShopifyBillingError('Charge cancelled before activation request', recurring_billing_data)
+            logging.debug('Charge cancelled before activation request')
+            raise ShopifyBillingError('Charge cancelled before activation request', charge_data)
 
-        return
+        return False  # won't be here
 
     # TODO: Refactor billing common functionality
     def setup_recurring_billing(self, settings):
@@ -464,7 +482,8 @@ class AppShopify(Model):
                     result.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
                 return
 
             # Dequeue whats already installed so we don't reinstall it
@@ -539,7 +558,8 @@ class AppShopify(Model):
                 result.content
             )
             logging.error(error_msg)
-            Email.emailDevTeam(error_msg)
+            Email.emailDevTeam(error_msg,
+                               subject='Application API request failed')
             raise ShopifyAPIError(result.status_code, result.content, "Error getting theme, can not queue assets to install.")
 
         self._assets_url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
@@ -565,7 +585,8 @@ class AppShopify(Model):
                         resp.content
                     )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Callback function for script tags
         def handle_script_tag_result(rpc, script_tag):
@@ -583,7 +604,8 @@ class AppShopify(Model):
                     resp.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Callback function for assets
         def handle_asset_result(rpc, asset):
@@ -601,7 +623,8 @@ class AppShopify(Model):
                     resp.content
                 )
                 logging.error(error_msg)
-                Email.emailDevTeam(error_msg)
+                Email.emailDevTeam(error_msg,
+                                   subject='Application API request failed')
 
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
@@ -613,7 +636,8 @@ class AppShopify(Model):
                     params_str = '\n'.join([ "%s= %r" % (key, value) for key, value in kwargs.items()])
                     error_msg = 'Installation failed, deadline exceeded:\n%s' % (params_str,)
                     logging.error(error_msg)
-                    Email.emailDevTeam(error_msg)
+                    Email.emailDevTeam(error_msg,
+                                       subject='Application installation failed')
 
             return lambda: deadline_exceeded_catch()
 

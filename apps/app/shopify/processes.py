@@ -75,10 +75,10 @@ class DoUninstalledApp(URIHandler):
                 Email.emailDevTeam("""<p>%s Uninstall</p>
                                       <p>Store: %s</p>
                                       <p>Installed for %s days</p>
-                                      <p>Paying: %s</p>""" % ( app_class_name,
-                                                               store_url,
-                                                               duration,
-                                                               price ) )
+                                      <p>Paying: %s</p>
+                                   """ % (app_class_name, store_url, duration,
+                                          price),
+                                   subject='App uninstalled')
 
                 # Say goodbye from Fraser
                 Email.goodbyeFromFraser(client.merchant.get_attr('email'),

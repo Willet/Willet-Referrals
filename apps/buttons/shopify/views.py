@@ -18,7 +18,7 @@ from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
-#TODO: move these functions elsewhere.  More appropriate places would be...
+#TODO: move these functions elsewhere. More appropriate places would be...
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
@@ -43,7 +43,8 @@ def catch_error(fn):
             Email.emailDevTeam(
                 'Smart-buttons install error, may require reinstall: '\
                 '%s, %s, %s, %s' %
-                (client_email, shop_owner, shop_url, shop_name)
+                (client_email, shop_owner, shop_url, shop_name),
+                subject='Application installation failed'
             )
             self.redirect ("%s?reason=%s" %
                            (build_url ('ButtonsShopifyInstallError'), e))
@@ -171,17 +172,20 @@ class ButtonsShopifyUpgrade(URIHandler):
             logging.error("error calling billing callback: "
                           "'existing_app' not found. Install first?")
 
+        # charge the app the same price as we promised back then, even
+        # if it is cheaper now?
         if existing_app.recurring_billing_price:
             price = existing_app.recurring_billing_price
         else:
             price = existing_app.get_price()
 
         # Start the billing process
+        callback_url = build_url('ButtonsShopifyBillingCallback')
         confirm_url = existing_app.setup_recurring_billing({
             "price":        price,
             "name":         "ShopConnection",
             "return_url":   "%s%s?app_uuid=%s" % (URL,
-                                                  build_url('ButtonsShopifyBillingCallback'),
+                                                  callback_url,
                                                   existing_app.uuid),
             "test":         USING_DEV_SERVER,
             "trial_days":   15
@@ -196,6 +200,137 @@ class ButtonsShopifyUpgrade(URIHandler):
             # Can this even occur?
             raise ShopifyBillingError('No confirmation URL provided by '
                                       'Shopify API', {})
+
+
+class ButtonsShopifyTailoredInstall(URIHandler):
+    """View where the user goes to pay us 8 sweet dollars (2 to Shopify)."""
+    @catch_error
+    def get(self):
+        """Begin the upgrade process."""
+        price = 10.0  # "we're charging people ten bucks to install it for em"
+
+        app = ButtonsShopify.get_by_url(self.request.get('store_url', ''))
+        if not app:
+            logging.error("ButtonsShopifyTailoredInstall: "
+                          "I don't think you're calling it right")
+        logging.debug('app = %r' % app)
+
+        # Start the billing process
+        callback_url = build_url('ButtonsShopifyOneTimeBillingCallback')
+        logging.debug('setting up billing at %s%s?app_uuid=%s' % (URL,
+                                                                  callback_url,
+                                                                  app.uuid))
+        return_url = app.setup_application_charge({
+            "price": price,
+            "name": "ShopConnection",
+            "return_url": "%s%s?app_uuid=%s" % (URL, callback_url, app.uuid),
+            "test": USING_DEV_SERVER
+        })
+
+        if return_url:
+            logging.debug('going to return_url!')
+            self.redirect(return_url)  # client then goes to confirm the charge
+            return
+        else:
+            raise ShopifyBillingError('No confirmation URL provided by '
+                                      'Shopify API', {})
+
+
+class ButtonsShopifyPaidInstallThanks(URIHandler):
+    """The client has paid (a one-time charge).
+
+    Shows the client the steps necessary to let us go into their store and
+    approve charges.
+
+    """
+    @catch_error
+    def get(self):
+        logging.debug('success!')
+        app_uuid = self.request.get('app_uuid')
+        store_url = self.request.get('shop')
+        app = ButtonsShopify.get(app_uuid) or \
+              ButtonsShopify.get_by_url(store_url)
+        logging.debug('app = %r' % app)
+
+        Email.buttons_custom_install_request(app)
+
+        # Use .get in case properties don't exist yet
+        template_values = {
+            'URL': URL,
+
+            # passed from ButtonsShopifyOneTimeBillingCallback
+            # hope it's right
+            'store_url': self.request.get('shop')
+        }
+
+        # prepopulate values
+        self.response.out.write(self.render_page('install4u-instructions.html',
+                                                 template_values))
+
+
+
+class ButtonsShopifyOneTimeBillingCallback(URIHandler):
+    """When a customer confirms / denies billing, they are redirected here.
+
+    Activates billing with Shopify, then redirects customer to installation
+    instructions.
+    """
+    @catch_error
+    def get(self):
+        """Activate the billing charges after Shopify has setup the charge."""
+        logging.debug('redirected to ButtonsShopifyOneTimeBillingCallback')
+        app_uuid = self.request.get('app_uuid')
+        store_url = self.request.get('store_url')
+        app = ButtonsShopify.get(app_uuid) or \
+              ButtonsShopify.get_by_url(store_url)
+        logging.debug('app = %r' % app)
+
+        if not app:
+            logging.error("error calling billing callback: 'app' not found")
+
+        client  = app.client
+        logging.debug('client = %r' % client)
+
+        charge_id = int(self.request.get('charge_id'))
+        logging.debug('charge_id = %r' % charge_id)
+
+        # an AppShopify can only be one-time-charged once.
+        # to be exact, you can charge it multiple times, but it only saves the
+        # shopify charge ID of the latest charge.
+        app.charge_id = charge_id  # polymodel prop; saved if success (below)
+
+        logging.debug('activating application charge at %s' % self.request.url)
+        success = app.activate_application_charge({
+            'charge_id': charge_id,
+            'return_url': self.request.url,
+            'test': 'true'
+        })
+
+        if success:
+            logging.debug('activate application charge success!')
+            # app.billing_enabled = True
+            app.put()
+            # app.do_upgrade()
+
+            # Render the page
+            logging.debug('redirecting to thanks page')
+            page = build_url("ButtonsShopifyPaidInstallThanks", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+            self.redirect(page)
+
+        else:
+            #The user declined to pay, redirect to upsell page
+            logging.debug('redirecting to welcome page')
+            page = build_url("ButtonsShopifyWelcome", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+
+            self.redirect(page)
 
 
 class ButtonsShopifyBillingCallback(URIHandler):
@@ -310,7 +445,8 @@ class ButtonsShopifyConfig(URIHandler):
         button_order    = preferences.get("button_order",
             ["Pinterest","Tumblr","Fancy"])
 
-        # That's right! TAKE THAT MATH-HATERS!
+        button_order = [] if not button_order else button_order
+
         unused_buttons  = buttons.difference(button_order)
 
         return (button_order, unused_buttons)
@@ -429,8 +565,11 @@ class ButtonsShopifyConfig(URIHandler):
         else:
             prefs["max_buttons"] = 3 #Default
 
-        # What validation should be done here?
-        prefs["button_order"]    = r.get("button_order").split(",")
+        button_order = r.get("button_order")
+        if not button_order:
+            prefs["button_order"] = None
+        else:
+            prefs["button_order"] = button_order.split(",")
 
         app.update_prefs(prefs)
         self.redirect(config_url)
@@ -455,7 +594,7 @@ class ButtonsShopifyInstallError(URIHandler):
 
 
 class ButtonsShopifyItemShared(URIHandler):
-    """Handles whenever a share takes place"""
+    """Handles whenever a share takes place."""
     def get(self):
         """Handles a single share event.
 
@@ -487,7 +626,7 @@ class ButtonsShopifyItemShared(URIHandler):
                               product_page,
                               img_url=details.get("img"))
 
-            share_period = SharePeriod.get_or_create(app);
+            share_period = SharePeriod.get_or_create(app)
             share_period.shares.append(item)
             share_period.put()
 
