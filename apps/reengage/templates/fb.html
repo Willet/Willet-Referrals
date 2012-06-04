@@ -42,7 +42,8 @@
             $(document).ready(function() {
                 // Back button
                 $('#back').click(function() {
-                    window.location = window.location.origin + "/reengage/"
+                    window.location = window.location.origin +
+                            "/reengage/{% if network %}{{ network }}{% endif %}"
                 });
 
                 // Form submit
@@ -55,7 +56,8 @@
 
     <body>
         <button id="back">&lt; Back to Control Panel</button>
-        <form method="POST" action="/reengage/post">
+        <form method="POST"
+              action="/reengage/post/{% if network %}{{ network }}{% endif %}">
             <input type="hidden" name="url"
                    value="{{ host }}{% url ReEngageProduct %}"/>
 

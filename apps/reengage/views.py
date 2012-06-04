@@ -96,9 +96,19 @@ def _FB_post(message, page_id, token):
 
     return success
 
+
+
+def _Twitter_ReEngage(request):
+    pass
+
 class ReEngageControlPanel(URIHandler):
-    def get(self):
-        self.response.out.write(self.render_page('control_panel.html', {}))
+    def get(self, network=None):
+        if not network:
+            network = "fb"
+
+        self.response.out.write(self.render_page('control_panel.html', {
+            "network": network
+        }))
 
 class ReEngageProduct(URIHandler):
     def get(self):
@@ -106,16 +116,32 @@ class ReEngageProduct(URIHandler):
             "host": self.request.host_url
         }))
 
-class ReEngageFacebook(URIHandler):
-    def get(self):
+class ReEngage(URIHandler):
+    def get(self, network=None):
+        if not network:
+            network = "fb"
+
         message = self.request.get("message", "")
         template_values = {
             "message": message,
-            "host": self.request.host_url
+            "host": self.request.host_url,
+            "network": network
         }
-        self.response.out.write(self.render_page('fb.html', template_values))
+        self.response.out.write(self.render_page('%s.html' % network,
+                                                 template_values))
 
-    def post(self):
+    def post(self, network=None):
+        networks = {
+            "fb": self._FB_ReEngage,
+            "t" : self._Twitter_ReEngage,
+        }
+
+        networks.get(network, "fb")(network)
+
+    def _Twitter_ReEngage(self, network=None):
+        pass
+
+    def _FB_ReEngage(self, network=None):
         url     = self.request.get("url")
         message = self.request.get("message", "Remember me?")
 
@@ -126,7 +152,8 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "Your application seems to be misconfigured."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", network,
+                                    qs=message))
             return
 
         # get the id of the page
@@ -136,7 +163,8 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "We couldn't message the page you requested."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", network,
+                                    qs=message))
             return
 
         # post the message
@@ -146,13 +174,19 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "There was a problem posting the message."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", network,
+                                    qs=message))
             return
 
         message = {
             "message": "Message sent successfully!"
         }
-        self.redirect(build_url("ReEngageControlPanel", qs=message))
+
+        self.redirect(build_url("ReEngageControlPanel", network,
+                                qs=message))
+        return
+
+
 
 
 
