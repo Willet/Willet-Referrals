@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://ogp.me/ns#">
+<head>
+    <title>Example Product</title>
+    <link href="{{ host }}{% url ReEngageProduct %}" rel="canonical" />
+    <meta property="fb:app_id" content="211970025590862">
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="ShopCo"/>
+    <meta property="og:title" content="Eye Shadow" />
+    <meta property="og:description" content="precious colors and radiance in the limited-edition refillable custom case. colors are inspired by the breath of fresh air and the embrace of warm light found in the spring season." />
+    <meta property="og:url" content="{{ host }}{% url ReEngageProduct %}">
+    <meta property="og:image" content="{{ host }}/static/imgs/demo/product.png">
+
+    <style type="text/css">
+        body {
+            background:url('/static/imgs/demo/product.png') no-repeat;
+            height: 588px;
+            width: 784px;
+        }
+
+        #product {
+            position: absolute;
+            height: 50px;
+            width: 250px;
+            top: 165px;
+            left: 385px;
+            background: #fff;
+            font-size: 26pt;
+        }
+
+        .fb-like {
+            position: absolute !important;
+            top: 225px !important;
+            left: 385px !important;
+        }
+    </style>
+</head>
+<body>
+<div id="fb-root"></div>
+<script>
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+<div id="product">Eye Shadow</div>
+<div class="fb-like" data-href="{{ host }}{% url ReEngageProduct %}"
+     data-send="false" data-layout="button_count" data-width="450" data-show-faces="false"></div>
+</body>
+</html>
