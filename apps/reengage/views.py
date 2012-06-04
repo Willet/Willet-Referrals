@@ -1,12 +1,14 @@
 import logging
 from urllib import urlencode
+from google.appengine.api.taskqueue import taskqueue
+from apps.reengage.models import TwitterAssociation
 from util import httplib2
 from util.urihandler import URIHandler
 from util.local_consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 from util.helpers import url as build_url
 
-def _FB_request(url, verb="GET", payload=None):
+def _ReEngage_request(url, verb="GET", payload=None):
     """ Returns a the result of a request.
 
     Returns the following:
@@ -49,7 +51,7 @@ def _FB_get_access_token():
         "client_secret": SHOPIFY_APPS["ReEngage"]["facebook"]["app_secret"]
     }
 
-    success, content = _FB_request(access_token_url, "POST", data)
+    success, content = _ReEngage_request(access_token_url, "POST", data)
 
     token = None
     if success:
@@ -66,7 +68,7 @@ def _FB_get_page_id(url):
     }
     final_url = "%s?%s" % (graph_url, urlencode(data))
 
-    success, content = _FB_request(final_url, payload=data)
+    success, content = _ReEngage_request(final_url, payload=data)
 
     id = None
     if success:
@@ -89,16 +91,58 @@ def _FB_post(message, page_id, token):
         "access_token": token
     }
 
-    success, content = _FB_request(destination_url, "POST", data)
+    success, content = _ReEngage_request(destination_url, "POST", data)
 
     if not success:
         logging.error("FB Post Error: %s" % content)
 
     return success
 
+def _Twitter_find_user_by_query(query):
+    # This is actually TOO fast
+    # We need to wait a little bit...
+    # Task queue?
 
+    users    = []
 
-def _Twitter_ReEngage(request):
+    base_url = "http://search.twitter.com/search.json"
+    params   = {
+        "q"          : "%s source:tweet_button" % query,
+        "result_type": "recent",
+        "show_user"  : "true"
+    }
+
+    search_url = "%s?%s" %(base_url, urlencode(params))
+    logging.info("Search URL: %s" % search_url)
+
+    success, content = _ReEngage_request(search_url)
+    logging.info("Success? %s\nContent: %s" % (success, content))
+
+    if not success:
+        return users
+
+    results = json.loads(content)
+
+    results = results.get("results")
+    if not results:
+        return users
+
+    for result in results:
+        user = result.get("from_user")
+        if user:
+            users.append(user)
+
+    return list(set(users))
+
+def _Twitter_associate_user(url, users):
+    associations, _ = TwitterAssociation.get_or_create(url)
+    for user in users:
+        if user not in associations.handles:
+            associations.handles.append(user)
+
+    associations.put()
+
+def _Twitter_post(message, url):
     pass
 
 class ReEngageControlPanel(URIHandler):
@@ -115,6 +159,32 @@ class ReEngageProduct(URIHandler):
         self.response.out.write(self.render_page('product.html', {
             "host": self.request.host_url
         }))
+
+class ReEngageFindTweet(URIHandler):
+    def get(self):
+        self.post()
+
+    def post(self):
+        url   = self.request.get("url")
+        now   = (self.request.get("now", "false") == "true")
+
+        if now:
+            logging.info("URL: %s" % url)
+
+            users = _Twitter_find_user_by_query(url)
+            logging.info("Users: %s" % users)
+
+            _Twitter_associate_user(url, users)
+        else:
+            logging.info("Putting on task queue...")
+            params = {
+                "url": url,
+                "now": "true"
+            }
+            taskqueue.add(url=build_url('ReEngageFindTweet'),
+                          countdown=30, params=params)
+
+        self.response.out.write ("200 OK")
 
 class ReEngage(URIHandler):
     def get(self, network=None):
@@ -136,12 +206,12 @@ class ReEngage(URIHandler):
             "t" : self._Twitter_ReEngage,
         }
 
-        networks.get(network, "fb")(network)
+        networks.get(network, "fb")()
 
-    def _Twitter_ReEngage(self, network=None):
+    def _Twitter_ReEngage(self):
         pass
 
-    def _FB_ReEngage(self, network=None):
+    def _FB_ReEngage(self):
         url     = self.request.get("url")
         message = self.request.get("message", "Remember me?")
 
@@ -152,7 +222,7 @@ class ReEngage(URIHandler):
             message = {
                 "message": "Your application seems to be misconfigured."
             }
-            self.redirect(build_url("ReEngageControlPanel", network,
+            self.redirect(build_url("ReEngageControlPanel", "fb",
                                     qs=message))
             return
 
@@ -163,7 +233,7 @@ class ReEngage(URIHandler):
             message = {
                 "message": "We couldn't message the page you requested."
             }
-            self.redirect(build_url("ReEngageControlPanel", network,
+            self.redirect(build_url("ReEngageControlPanel", "fb",
                                     qs=message))
             return
 
@@ -174,7 +244,7 @@ class ReEngage(URIHandler):
             message = {
                 "message": "There was a problem posting the message."
             }
-            self.redirect(build_url("ReEngageControlPanel", network,
+            self.redirect(build_url("ReEngageControlPanel", "fb",
                                     qs=message))
             return
 
@@ -182,7 +252,7 @@ class ReEngage(URIHandler):
             "message": "Message sent successfully!"
         }
 
-        self.redirect(build_url("ReEngageControlPanel", network,
+        self.redirect(build_url("ReEngageControlPanel", "fb",
                                 qs=message))
         return
 
