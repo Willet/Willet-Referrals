@@ -9,7 +9,7 @@
         var iframe = document.createElement( 'iframe' );
 
         iframe.style.display = 'none';
-        iframe.src = "{{SECURE_URL}}/o/shopify/orderNotification?" + 
+        iframe.src = "{{SECURE_URL}}/o/shopify/orderNotification?" +
                      "&user_uuid={{user.uuid}}" +
                      "&client_uuid={{client.uuid}}" +
                      "&url=" + window.location.href;
@@ -36,7 +36,7 @@
 
             var el = document.createElement('img');
             var _body = document.getElementsByTagName('body')[0];
-            el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?script=' + script + '&error=' + error + '&st=' + message);
+            el.setAttribute('src', window.location.protocol + '//rf.rs/admin/ithinkiateacookie?script=' + script + '&error=' + error + '&st=' + message);
             _body.appendChild(el);
         }
     };

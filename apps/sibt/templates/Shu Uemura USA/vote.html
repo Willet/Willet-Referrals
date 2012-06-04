@@ -25,10 +25,10 @@
 
 {% block right_screens %}
     <div id="product_screen">
-        <h2><a href="{{ product_url }}">{{ product.title|escape }}</a></h2>
+        <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
         <img id="product_img" class="product-image" src="{{ product_img }}" />
         <div id="right-div" class="description">
-            {{ product.description|escape }}
+            {{ product.description|striptags|escape }}
         </div>
     </div>
 {% endblock right_screens %}

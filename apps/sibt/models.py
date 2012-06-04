@@ -218,11 +218,13 @@ class SIBT(App):
                         user.get_attr('fb_access_token'),
                         user.get_attr('fb_identity'),
                         user.get_attr('fb_access_token')
-                    )
+                    ),
+                    subject='SIBT instance created'
                 )
             except Exception, err:
                Email.emailDevTeam('SIBT INSTANCE: error printing data: '
-                                  '%s' % unicode(err))
+                                  '%s' % unicode(err),
+                                  subject='SIBT instance create failed')
         return instance
 
 

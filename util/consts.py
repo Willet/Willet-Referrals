@@ -86,6 +86,11 @@ SHOPIFY_APPS = {
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586',
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
+    }, 'ReEngage': {
+        'facebook': {
+            'app_id': '211970025590862',
+            'app_secret': '0df9044286825cea416a31ebe44a7c41'
+        }
     }
 }
 
@@ -139,6 +144,7 @@ INSTALLED_APPS = [
     'analytics_backend',
     'buttons',
     'buttons.shopify',
+    'charge',
     'client',
     'client.shopify',
     'code',
@@ -150,12 +156,12 @@ INSTALLED_APPS = [
     'order.shopify',
     'product',
     'product.shopify',
+    'reengage',
     'sibt',
     'sibt.shopify',
     'sibt.shuuemura',
     'user',
     'wosib',
-    'wosib.shopify',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]

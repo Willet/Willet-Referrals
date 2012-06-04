@@ -393,7 +393,7 @@ class ClientSideMessage(URIHandler):
         name       = self.request.get('error')
         script     = self.request.get('script')
         cs_message = self.request.get('st')
-        subject    = self.request.get('subject') or None
+        subject    = self.request.get('subject', 'ClientSideMessage')
 
         msg_list = list()
         msg_list.append("Name      : %s")

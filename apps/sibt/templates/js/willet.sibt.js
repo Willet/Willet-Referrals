@@ -469,7 +469,7 @@ _willet.sibt = (function (me) {
             if (this && $this) {
                 var nDim = parseFloat($this.width()) * parseFloat($this.height());
                 if (nDim > nMaxDim) {
-                    largest_image = $this.prop('src');
+                    largest_image = $prop('src');
                     nMaxDim = nDim;
                 }
             }

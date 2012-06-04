@@ -103,7 +103,8 @@ class SIBTShopifyWelcome(URIHandler):
                           exc_info=True)
             # Email DevTeam
             Email.emailDevTeam('SIBT install error, may require reinstall: %s, %s, %s, %s' %
-                               (client_email, shop_owner, client_url, shop_name))
+                               (client_email, shop_owner, client_url, shop_name),
+                               subject='Application installation failed')
             template_values = {'URL': URL,
                               'reason': err}
             path = 'install_error.html'
