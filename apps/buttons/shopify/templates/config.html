@@ -20,9 +20,6 @@
         padding-left: 90px;
         margin: 0;
     }
-    .box-design {
-        background-color: #fff;
-    }
     .box-design form, .box-design .preview {
         padding-top: 20px;
         padding-bottom: 20px;
@@ -179,10 +176,15 @@
 
     .tab-bar {
         margin-top: 125px;
+        list-style-type: none;
+    }
+    .tab-bar ul {
+        margin: 0;
+        padding: 0;
     }
 
     .tab-header {
-        font-family: Merriweather, Georgia, 'times new roman', times, serif;
+        font-family: Merriweather, 'times new roman', times, serif;
         font-weight: bold;
         color: #1F454D;
         -webkit-font-smoothing: antialiased;
@@ -192,18 +194,16 @@
         background-color: #c6c6c6;
         padding: 10px;
         text-align: center;
-        margin-right: 5px;
+        margin: 0 5px 0 0;
         font-size: 2em;
         display: inline-block;
-        -webkit-box-shadow: -5px -5px 10px 0px rgba(0,0,0,0.02), 5px -5px 10px 0px rgba(0,0,0,0.02), 0px 0px 0px rgba(0,0,0,0);
-        -moz-box-shadow: -5px -5px 10px 0px rgba(0,0,0,0.02), 5px -5px 10px 0px rgba(0,0,0,0.02), 0px 0px 0px rgba(0,0,0,0);
-        box-shadow: -5px -5px 10px 0px rgba(0,0,0,0.02), 5px -5px 10px 0px rgba(0,0,0,0.02), 0px 0px 0px rgba(0,0,0,0);
-        behavior: ("../js/PIE.htc");
+        -webkit-box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
+        -moz-box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
+        box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
         cursor: pointer;
     }
-
     .tab-header.selected {
-        cursor: default;
+        cursor: pointer;
         position: relative;
         z-index: 1000;
         background-color: #F6F6F6;
@@ -277,8 +277,21 @@
         padding: 20px;
     }
     .loadmask-msg>div>div {
+        position: relative;
         height: 38px;
         line-height: 38px;
+    }
+    .loadmask-msg>div>div>div {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .loadmask-msg button {
+        line-height: 15px;
+    }
+    .loadmask-msg button span {
+        line-height: 15px;
+        display: block;
     }
     .loadmask-msg h3 {
         color: #333;
@@ -375,11 +388,13 @@
 
         maskMessage = ""
             + "<h3>Sorry, only paid users can access this feature</h3>"
-            + "<div>"
+            + "<div style='position:relative'>"
             + "    <a href='{{ learn_more_url }}'>Learn more</a>"
-            + "    <button class='red' style='float: right;'>"
-            + "        <span style='float: right;display: block;'>Upgrade Now</span>"
-            + "    </button>"
+            + "    <div>"
+            + "        <button class='red'>"
+            + "            <span>Upgrade Now</span>"
+            + "        </button>"
+            + "    </div>"
             + "</div>";
 
         var redirectToUpgrade = function () {
@@ -535,24 +550,26 @@
 </div>
 
 <div class="prepend-top tab-bar">
-    <span class="tab-header selected">
-        <a href="#configuration">Control Panel</a>
-        {% if not config_enabled %}
-        <br/><span class="small">(Unavailable in free version)</span>
-        {% endif %}
-    </span>
-    <span class="tab-header">
-        <a href="#analytics">Sharing Report</a>
-        {% if not config_enabled %}
-        <br/><span class="small">(Unavailable in free version)</span>
-        {% endif %}
-    </span>
-    <span class="tab-header tab-ignore">
-        <a href="{{ instructions_url }}">Installation</a>
-        {% if not config_enabled %}
-        <br/><span class="small">&nbsp;</span>
-        {% endif %}
-    </span>
+    <ul>
+        <li class="tab-header selected">
+            <a href="#configuration">Control Panel</a>
+            {% if not config_enabled %}
+            <br/><span class="small">(Unavailable in free version)</span>
+            {% endif %}
+        </li>
+        <li class="tab-header">
+            <a href="#analytics">Sharing Report</a>
+            {% if not config_enabled %}
+            <br/><span class="small">(Unavailable in free version)</span>
+            {% endif %}
+        </li>
+        <li class="tab-header tab-ignore">
+            <a href="{{ instructions_url }}">Installation</a>
+            {% if not config_enabled %}
+            <br/><span class="small">&nbsp;</span>
+            {% endif %}
+        </li>
+    </ul>
 </div>
 
 <div class="span-24 last box-design content-container"

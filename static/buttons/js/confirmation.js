@@ -489,7 +489,7 @@ _willet = (function (me) {
         + "        background-image: -ms-linear-gradient(top,#fff,#dedede);"
         + "        background-image: linear-gradient(top,#fff,#dedede);"
         + "        border: rgb(175,169,169) solid 1px;"
-        + "       -moz-border-radius: 3px;"
+        + "        -moz-border-radius: 3px;"
         + "        -webkit-border-radius: 3px;"
         + "        border-radius: 3px;"
         + "        color: rgb(208,28,43);"

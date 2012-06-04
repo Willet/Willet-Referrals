@@ -40,10 +40,9 @@
                 font-size: 20px;
                 color: #FFF;
                 border-radius: 18px;
-                -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                behavior: ("../js/PIE.htc");
+                -webkit-box-shadow: -3px -3px 20px rgb(150,150,150);
+                -moz-box-shadow: -3px -3px 20px rgb(150,150,150);
+                box-shadow: -3px -3px 20px rgb(150,150,150);
             }
             .step-num {
                 background-color: #0496AC;
@@ -82,6 +81,15 @@
                 margin: 0 auto;
             }
         </style>
+        <!--[if lt IE 9]>
+        <style>
+        .step-num, .step-warn, .step-info {
+                box-shadow: none !important;
+                behavior: url("../../static/js/PIE.htc");
+            }
+        </style>
+        <![endif]-->
+
 {% endblock head %}
 
 {% block header-class %}tall{% endblock %}
