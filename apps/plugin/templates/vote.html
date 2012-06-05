@@ -63,7 +63,7 @@
                 */
 
                 $('.open_email').click(function () {
-                    resizeCloud(320);
+                    resizeCloud(270);
                 });
 
                 $('#window_location').val(window.location.href);
@@ -107,32 +107,32 @@
         {% block body_start %}{% endblock %}
         <div id='header'>
             <div id="white">
-                <!-- if is_asker -->
-                <div id="friends_selector">
-                    <div class="span-8" style="text-align:left;">
-                        <p><b>You have created a vote!</b>
-                           <br />
-                           Invite friends to shop with you ⇝
-                        </p>
-                        <p style="display:none;">
-                            <span class="tab"><a href="#email" class="open_email button">By email</a></span>
-                            &nbsp;&nbsp;&nbsp;
-                            <span class="tab"><a href="#link" class="open_link">By link</a></span>
-                        </p>
-                    </div>
-                    <div class="span-16" style="text-align:left;">
-                        <div class="page" id="link">
-                            <p><b>Send this link to your friends to let them participate!</b></p>
-                            <input id="window_location" type="text" style="width:540px;font-size:100%;" />
+                {% if is_asker %}
+                    <div id="friends_selector">
+                        <div class="span-8" style="text-align:left;">
+                            <p><b>You have created a vote!</b>
+                            <br />
+                            Invite friends to shop with you ⇝
+                            </p>
+                            <p style="display:none;">
+                                <span class="tab"><a href="#email" class="open_email button">By email</a></span>
+                                &nbsp;&nbsp;&nbsp;
+                                <span class="tab"><a href="#link" class="open_link">By link</a></span>
+                            </p>
                         </div>
-                        <div class="page" id="email">
-                            <p><b>Send your invitation by email</b></p>
-                            <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
-                                    style="width:600px;height:265px;"></iframe>
+                        <div class="span-16" style="text-align:left;">
+                            <div class="page" id="link">
+                                <p><b>Send this link to your friends to let them participate!</b></p>
+                                <input id="window_location" type="text" style="width:540px;font-size:100%;" />
+                            </div>
+                            <div class="page" id="email">
+                                <!-- p><b>Send your invitation by email</b></p -->
+                                <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
+                                        style="width:600px;height:265px;"></iframe>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- endif -->
+                {% endif %}
             </div>
             <div id="cloud_top">
                 <div id="cloud_bottom"></div>

@@ -382,6 +382,7 @@ class VoteDynamicLoader(URIHandler):
             'user': user,
             'asker_name': name if name else "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
+            'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
             'fb_comments_url': '%s' % (link.get_willt_url()),
             'percentage': percentage,
@@ -396,7 +397,7 @@ class VoteDynamicLoader(URIHandler):
             'yesses': instance.get_yesses_count(),
             'noes': instance.get_nos_count(),
             'ask_qs': urlencode({'app_uuid': app.uuid,
-                                 'instance_uuid': '',
+                                 'instance_uuid': instance.uuid,  # golden line
                                  'user_uuid': instance.asker.uuid,
                                  'products': ','.join(instance.products),
                                  'product_uuid': product.uuid,

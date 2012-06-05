@@ -492,7 +492,8 @@ class StartSIBTAnalytics(URIHandler):
             'b_counts': things['b']['counts'],
         }
 
-        self.response.out.write(self.render_page('action_stats.html', template_values))
+        self.response.out.write(self.render_page('action_stats.html',
+                                template_values))
 
 
 class SendFriendAsks(URIHandler):
@@ -542,10 +543,15 @@ class SendFriendAsks(URIHandler):
         fb_share_counter = 0
         fb_token = rget('fb_access_token')
         friends = json.loads(rget('friends'))
-        instance = SIBTInstance.get(rget('instance_uuid')) or None
-        link = Link.get_by_code(rget('willt_code'))
         msg = rget('msg', '')[:1000]  # sharing message is limited to 1k chars
         user = User.get(rget('user_uuid'))
+
+        # re-use instance link if there already is one
+        instance = SIBTInstance.get(rget('instance_uuid')) or None
+        if not instance:
+            link = Link.get_by_code(rget('willt_code'))
+        else:
+            link = instance.link
 
         product = Product.get(rget('product_uuid'))
         logging.debug('got uuid %s, product %r' % (rget('product_uuid'),

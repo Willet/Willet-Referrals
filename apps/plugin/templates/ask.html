@@ -29,6 +29,24 @@
                 .center_col {
                     margin-top: 20px;
                 }
+
+                /* reduce size of button */
+                .button {
+                    height: 32px;
+                }
+                .button > img {
+                    width: 32px;
+                    height: 32px;
+                    margin: 2.5px !important; /* override id > img selector */
+                }
+                .button .title {
+                    min-width: 150px !important; /* override id selector */
+                    margin-right: 8px;
+                    margin-left: 45px;
+                }
+                .button .subtitle {
+                    display: none;
+                }
             </style>
         {% endif %}
     </head>
