@@ -295,10 +295,9 @@
         padding: 0;
         line-height: 38px;
     }
-    .loadmask-msg>div>p>div {
-        position: absolute;
-        right: 0;
-        top: 0;
+    .loadmask-msg>div>p>span {
+        display: inline-block;
+        float: right;
     }
     .loadmask-msg button {
         line-height: 15px;
@@ -311,7 +310,7 @@
         color: #333;
     }
     .loadmask-msg a {
-        font-size: 1.8em;
+        font-size: 1.3em;
     }
     .masked {
         overflow: hidden !important;
@@ -404,11 +403,11 @@
             + "<h3>Sorry, only paid users can access this feature</h3>"
             + "<p>"
             + "    <a href='{{ learn_more_url }}'>Learn more</a>"
-            + "    <div>"
+            + "    <span>"
             + "        <button class='red'>"
             + "            <span>Upgrade Now</span>"
             + "        </button>"
-            + "    </div>"
+            + "    </span>"
             + "</p>";
 
         var redirectToUpgrade = function () {
