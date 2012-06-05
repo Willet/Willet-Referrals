@@ -278,12 +278,24 @@
         padding: 20px;
         min-width: 340px;
     }
+    /*
     .loadmask-msg>div>div {
         position: relative;
         height: 38px;
         line-height: 38px;
     }
     .loadmask-msg>div>div>div {
+        position: absolute;
+        right: 0;
+        top: 0;
+    } */
+    .loadmask-msg>div>p {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        line-height: 38px;
+    }
+    .loadmask-msg>div>p>div {
         position: absolute;
         right: 0;
         top: 0;
@@ -390,14 +402,14 @@
 
         maskMessage = ""
             + "<h3>Sorry, only paid users can access this feature</h3>"
-            + "<div style='position:relative'>"
+            + "<p>"
             + "    <a href='{{ learn_more_url }}'>Learn more</a>"
             + "    <div>"
             + "        <button class='red'>"
             + "            <span>Upgrade Now</span>"
             + "        </button>"
             + "    </div>"
-            + "</div>";
+            + "</p>";
 
         var redirectToUpgrade = function () {
             window.location = "{{ upgrade_url }}";
