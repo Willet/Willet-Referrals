@@ -1269,17 +1269,17 @@ _willet = (function (me, config) {
             var buttonCount    = (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true'),
                 buttonSpacing  = (util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING) + 'px'),
                 buttonPadding  = (util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING) + 'px'),
-                sharingMessage = 3;("I found this on " + DOMAIN),
+                sharingMessage = ("I found this on " + DOMAIN),
                 u = undefined, //shorthand
                 c;
 
             // Override with config
             if (config !== u) {
                 c = config;
-                buttonCount    = ((c.button_count    !== u) && ""+c.button_count   ) || buttonCount;
-                buttonSpacing  = ((c.button_spacing  !== u) && ""+c.button_spacing ) || buttonSpacing;
-                buttonPadding  = ((c.button_padding  !== u) && ""+c.button_padding ) || buttonPadding;
-                sharingMessage = ((c.sharing_message !== u) && ""+c.sharing_message) || sharingMessage;
+                buttonCount    = ((c.button_count    !== u) ? c.button_count : buttonCount);
+                buttonSpacing  = ((c.button_spacing  !== u) && ""+c.button_spacing+"px" ) || buttonSpacing;
+                buttonPadding  = ((c.button_padding  !== u) && ""+c.button_padding+"px" ) || buttonPadding;
+                sharingMessage = ((c.sharing_message !== u) ? c.sharing_message : sharingMessage);
             }
 
             var params = {
