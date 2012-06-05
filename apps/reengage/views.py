@@ -1,19 +1,13 @@
-import hmac
 import logging
-from urllib import urlencode, quote_plus
-from urllib2 import quote
-import base64
+from urllib import urlencode
 from google.appengine.api.taskqueue import taskqueue
-import time
-import hashlib
-import re
-import os
 from apps.reengage.models import TwitterAssociation
 from util import httplib2
 from util.urihandler import URIHandler
 from util.local_consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 from util.helpers import url as build_url
+from util import tweepy
 
 def _ReEngage_request(url, verb="GET", payload=None, headers=None):
     """ Returns a the result of a request.
@@ -151,83 +145,26 @@ def _Twitter_associate_user(url, users):
     associations.put()
 
 def _Twitter_post(message, url):
-    def gen_nonce():
-        # base64 encoding 32 bytes of random data, and stripping out all non-word characters
-        rand_bytes = os.urandom(32)
-        b64_str    = base64.encodestring(rand_bytes)
-        nonce = re.sub("\W", "", b64_str)
-        return nonce
+    #Oauth is hard: let's go shopping!
+    consumer_key    = "xGzwuxKSs1Lc6EFd0MA"
+    consumer_secret = "5kKGsEAG23SAFlWy4e8UB02LmDSV9BoDXqyL6NUtxNg"
 
-    def get_param_string(params):
-        encoded_list = []
+    # In the long run, we probably want to have the user authenticate with
+    # their twitter handle. For now, this is a proof of concept. Use the app
+    # account.
+    key    = "600239400-Re2J1Q6ZpINrzpjHFOwH9G67IDOPiysDfrKHTZbP"
+    secret = "gFxBtgjn4TH18frYiNySolCUo5SGV49UIMbLwKmQGY"
 
-        for key, val in params.iteritems():
-            e_key = quote_plus(key)
-            e_val = quote_plus(val)
-            encoded_list.append("%s=%s" % (e_key, e_val))
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(key, secret)
 
-        return "&".join(sorted(encoded_list))
-
-    def get_sig_string(url, params, verb="POST"):
-        p_string = get_param_string(params)
-
-        return "%s&%s&%s" % (verb.upper(), quote(url), quote(p_string))
-
-    def get_signing_key():
-        consumer_secret = "o6YJiEhXmlMeAFy8NpHQpYYQfv58k5JwoPb5uPk4o"
-        token = "" # How do we obtain this?
-        return "%s&%s" % (consumer_secret, token)
-
-    def get_signature(url, params, verb="POST"):
-        key = get_signing_key()
-        msg = get_sig_string(url, params, verb)
-        return base64.encodestring(hmac.new(key, msg, hashlib.sha1).digest())
-
-    def get_oauth_string(params):
-        result = "OAuth "
-        encoded_list = []
-        for key, val in params.iteritems():
-            e_key = quote_plus(key)
-            e_val = quote_plus(val)
-            encoded_list.append('%s="%s"' % (e_key, e_val))
-        result += ", ".join(encoded_list)
-        return result
-
-    # Usernames restricted to 15 characters, 20 previously
-    # Assume that messages are 120 characters or less
-    post_url = "https://api.twitter.com/1/statuses/update.json"
+    api = tweepy.API(auth)
 
     associations, _ = TwitterAssociation.get_or_create(url)
     for handle in associations.handles:
-
-        oauth = {
-            "oauth_consumer_key": "FQBOvjNe8NvCR6lGQq6A",
-            "oauth_nonce": gen_nonce(),
-            "oauth_signature_method": "HMAC-SHA1",
-            "oauth_timestamp": time.time(),
-            "oauth_token": "210869304-Kz5iKCg4UwuJNrtb9lkaG16lg1oR5yM0NyFkhYRr",
-            "oauth_version": "1.0",
-        }
-
-        payload = {
-            "status": "@%s %s" % (handle, message)
-        }
-
-        complete_dict = dict(oauth.items() + payload.items())
-
-        sig = get_signature(post_url, complete_dict, "POST")
-
-        oauth.update({
-            "oauth_signature": sig
-        })
-
-        headers = {
-            "Authorization": get_oauth_string(oauth)
-        }
-
-
-        success, content = _ReEngage_request(post_url, "POST", payload,
-                                             headers)
+        # Assume messages are 120 characters or less
+        # because usernames can be up to 20 characters
+        api.update_status("@%s %s" % (handle, message))
 
 class ReEngageControlPanel(URIHandler):
     def get(self, network=None):
@@ -293,7 +230,13 @@ class ReEngage(URIHandler):
         networks.get(network, "fb")()
 
     def _Twitter_ReEngage(self):
-        pass
+        url     = self.request.get("url")
+        message = self.request.get("message", url)
+
+        _Twitter_post(message, url)
+
+        self.redirect(build_url("ReEngageControlPanel", "t"))
+        return
 
     def _FB_ReEngage(self):
         url     = self.request.get("url")
