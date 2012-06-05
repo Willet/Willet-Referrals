@@ -514,6 +514,8 @@ class SendFriendAsks(URIHandler):
         user_uuid: <string> a <User> uuid
         fb_access_token: <string> a Facebook API access token for this user
         fb_id: <string> a Facebook user id for this user
+        instance_uuid (optional): if not empty, will ask friends about
+                                  this FULL instance.
 
     Expected output (JSON-encoded):
         success: <Boolean> at least some friends were successfully contacted
@@ -540,7 +542,7 @@ class SendFriendAsks(URIHandler):
         fb_share_counter = 0
         fb_token = rget('fb_access_token')
         friends = json.loads(rget('friends'))
-        instance = None
+        instance = SIBTInstance.get(rget('instance_uuid')) or None
         link = Link.get_by_code(rget('willt_code'))
         msg = rget('msg', '')[:1000]  # sharing message is limited to 1k chars
         user = User.get(rget('user_uuid'))
@@ -718,6 +720,7 @@ class SendFriendAsks(URIHandler):
 
             if friend_share_counter > 0:
                 # create the instance!
+                if not instance:
                 instance = app.create_instance(user=user,
                                                end=None,
                                                link=link,

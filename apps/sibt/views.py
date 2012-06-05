@@ -65,6 +65,9 @@ class AskDynamicLoader(URIHandler):
             store_url (optional): helps pinpoint the store
             user_uuid (optional)
             embed (optional): reduces size of window and removes some elements.
+            instance_uuid (optional): if supplied, ask.html will not create
+                                      a new instance. asks will be sent with
+                                      this instance.
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
@@ -219,7 +222,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
-            'instance_uuid': self.request.get('instance_uuid'),
+            'instance_uuid': self.request.get('instance_uuid', ''),
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),

@@ -32,7 +32,8 @@
                 // "show invitation dialog"
 
                 var resizeCloud = function (px) {
-                    $('#white').delay(500).animate({'height': (px + 'px')});
+                    // $('#white').delay(500).animate({'height': (px + 'px')});
+                    $('#white').animate({'height': (px + 'px')});
                 };
 
                 // genius "tabs" functionality
@@ -60,7 +61,7 @@
                 });
 
                 $('.open_email').click(function () {
-                    resizeCloud(500);
+                    resizeCloud(400);
                 });
 
                 $('#window_location').val(window.location.href);

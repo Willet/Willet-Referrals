@@ -67,18 +67,18 @@
         // Note: Only used for non-Facebook Connect (ie: using FB dialog)
         storeAnalytics('SIBTStartPartialInstanceOnAskSingle');
         var payload = {
-            app_uuid    : "{{ app_uuid }}",
-            user_uuid   : "{{ user_uuid }}",
+            app_uuid: "{{ app_uuid }}",
+            user_uuid: "{{ user_uuid }}",
             product_uuid: "{{ product_uuid }}",
-          //products  : get_selected_objects(), // multi-product mode only
-            willt_code  : "{{ willt_code }}"
+          //products: get_selected_objects(), // multi-product mode only
+            willt_code: "{{ willt_code }}"
         };
         $.ajax({
-            url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
-            type     : 'post',
-            dataType : 'json',
-            data     : payload,
-            success  : function (tr) {
+            url: "{{ URL }}{% url StartPartialSIBTInstance %}",
+            type: 'post',
+            dataType: 'json',
+            data: payload,
+            success: function (tr) {
                 return;
             }
         });
@@ -104,26 +104,27 @@
 
             // No errors with friends, submit!
             var payload = {
-                user_name       : "{{user_name}}",
-                user_uuid       : "{{user_uuid}}",
-                app_uuid        : "{{app_uuid}}",
-                product_uuid    : "{{product_uuid}}",
-                products        : ["{{ product_uuid }}"],
-                fb_access_token : fbAccessToken,
-                fb_id           : fbIdentity,
-                friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
-                asker           : JSON.stringify(asker_info),
-                msg             : msg,
-                default_msg     : "{{AB_share_text|escape}}",
-                willt_code      : "{{willt_code}}"
+                user_name: "{{user_name}}",
+                user_uuid: "{{user_uuid}}",
+                app_uuid: "{{app_uuid}}",
+                product_uuid: "{{product_uuid}}",
+                products: ["{{ product_uuid }}"],
+                fb_access_token: fbAccessToken,
+                fb_id: fbIdentity,
+                friends: JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                asker: JSON.stringify(asker_info),
+                msg: msg,
+                default_msg: "{{AB_share_text|escape}}",
+                instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
+                willt_code: "{{willt_code}}"
             };
 
             $.ajax({
-                url      : "{{ URL }}{% url SendFriendAsks %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                statusCode : {
+                url: "{{ URL }}{% url SendFriendAsks %}",
+                type: 'post',
+                dataType: 'json',
+                data: payload,
+                statusCode: {
                     200: function () {
                         // Success
                         updateEmailAddress();
