@@ -18,6 +18,19 @@
             {% include "../../sibt/templates/js/willet.loader.js" %}
             {% include "../../sibt/templates/js/willet.analytics.js" %}
         </script>
+        {% if not embed %}{# intentionally left blank #}{% else %}
+            <style>
+                ul.friends, ul.askers {
+                    max-height: 175px;
+                }
+                ul.askers {
+                    margin-top: 0;
+                }
+                .center_col {
+                    margin-top: 20px;
+                }
+            </style>
+        {% endif %}
     </head>
     <body>
         <div class="wrapper" id="wrapper">
@@ -44,7 +57,7 @@
                             Add Another Friend
                         </div>
                     </div>
-                    <div id="chosenButton" class="button inactive corner">
+                    <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
                         <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                         <div class="title">Ask Chosen Friends</div>
                         <div class="subtitle">Giving advice is fun</div>
@@ -117,9 +130,11 @@
                             <p>You will receive an email when one of your trusted friends gives advice!</p>
                         {% endif %}
                     </div>
-                    <div id="cancelButton" class="button close">
-                        <div class="simpletitle">Close</div>
-                    </div>
+                    {% if not embed %}
+                        <div id="cancelButton" class="button close">
+                            <div class="simpletitle">Close</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -138,9 +153,11 @@
                         <p class='error_message'>An error happened.</p>
                         <p>You were so excited to get advice and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
                     </div>
-                    <div id="cancelButton" class="button close">
-                        <div class="simpletitle">Close</div>
-                    </div>
+                    {% if not embed %}
+                        <div id="cancelButton" class="button close">
+                            <div class="simpletitle">Close</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 

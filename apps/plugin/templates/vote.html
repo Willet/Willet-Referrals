@@ -56,16 +56,18 @@
                     event.preventDefault();
                 });
 
+                /*
                 $('.open_link').click(function () {
-                    resizeCloud(135);
+                    resizeCloud(130);
                 });
+                */
 
                 $('.open_email').click(function () {
-                    resizeCloud(400);
+                    resizeCloud(320);
                 });
 
                 $('#window_location').val(window.location.href);
-                resizeCloud(135);
+                $('.open_email').click();
             });
         </script>
 
@@ -110,9 +112,9 @@
                     <div class="span-8" style="text-align:left;">
                         <p><b>You have created a vote!</b>
                            <br />
-                           Invite your friends to join the conversation.
+                           Invite friends to shop with you ⇝
                         </p>
-                        <p>
+                        <p style="display:none;">
                             <span class="tab"><a href="#email" class="open_email button">By email</a></span>
                             &nbsp;&nbsp;&nbsp;
                             <span class="tab"><a href="#link" class="open_link">By link</a></span>
@@ -121,12 +123,12 @@
                     <div class="span-16" style="text-align:left;">
                         <div class="page" id="link">
                             <p><b>Send this link to your friends to let them participate!</b></p>
-                            <input id="window_location" type="text" style="width:540px;font-size:14px;" />
+                            <input id="window_location" type="text" style="width:540px;font-size:100%;" />
                         </div>
                         <div class="page" id="email">
                             <p><b>Send your invitation by email</b></p>
                             <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
-                                    style="width:600px;height:350px;"></iframe>
+                                    style="width:600px;height:265px;"></iframe>
                         </div>
                     </div>
                 </div>

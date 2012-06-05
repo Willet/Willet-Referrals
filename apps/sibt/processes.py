@@ -721,14 +721,14 @@ class SendFriendAsks(URIHandler):
             if friend_share_counter > 0:
                 # create the instance!
                 if not instance:
-                instance = app.create_instance(user=user,
-                                               end=None,
-                                               link=link,
-                                               dialog="ConnectFB",
-                                               img=product_image,
-                                               motivation="",
-                                               sharing_message=msg,
-                                               products=product_uuids)
+                    instance = app.create_instance(user=user,
+                                                   end=None,
+                                                   link=link,
+                                                   dialog="ConnectFB",
+                                                   img=product_image,
+                                                   motivation="",
+                                                   sharing_message=msg,
+                                                   products=product_uuids)
 
                 # change link to reflect to the vote page.
                 link.target_url = urlparse.urlunsplit([PROTOCOL,
