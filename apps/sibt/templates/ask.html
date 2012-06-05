@@ -108,7 +108,7 @@
                 user_uuid       : "{{user_uuid}}",
                 app_uuid        : "{{app_uuid}}",
                 product_uuid    : "{{product_uuid}}",
-             // products        : get_selected_objects (),
+                products        : ["{{ product_uuid }}"],
                 fb_access_token : fbAccessToken,
                 fb_id           : fbIdentity,
                 friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
@@ -158,5 +158,11 @@
 {% block js_functions %}{% endblock js_functions %}
 
 {% block js_init %}
-    showScreen('splash');
+    {% if not embed %}
+        {# "if not embed" is intentional - helps F+R. #}
+        showScreen('splash');
+    {% else %}
+        // go to choose friends directly
+        showScreen('choose');
+    {% endif %}
 {% endblock js_init %}

@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <!-- Favicon -->
+        <title>Willet Vote</title>
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
-        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 
+        <!-- Blueprint CSS must be first -->
+        <link rel="stylesheet" href="/static/css/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="/static/css/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+
+        <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
-        {% block styles %}{% endblock %}
+        <!-- link rel="stylesheet" href="/static/css/jquery.skeleton.tabs.css" type="text/css" / -->
+
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <!-- script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.skeleton.tabs.js"></script -->
         <script type="text/javascript">
             if (typeof jQuery == 'undefined') {
                 var script= document.createElement('script');
@@ -16,17 +25,70 @@
                 script.src= '/static/js/jquery.min.js';
                 document.appendChild(script);
             }
+
             {% block head_script %}{% endblock %}
+
+            $(document).ready(function () {
+                // "show invitation dialog"
+
+                var resizeCloud = function (px) {
+                    $('#white').delay(500).animate({'height': (px + 'px')});
+                };
+
+                // genius "tabs" functionality
+                $('.tab').click(function (event) {
+                    // tabs sit on top of pages
+                    // tabs must contain a hashtag link
+                    // pages must have class "page" and unique id
+                    var target = event.currentTarget,
+                        page = $(target).find("a").attr("href");
+
+                    $(".tab").removeClass("selected");  // remove selection from all the tabs
+                    $(target).addClass("selected");  // add selection to this particular tab
+
+                    $(".page").animate({'opacity': '0'}, {'queue': false})
+                              .css('display', 'none');  // hide all tabs
+                    $(page).css('opacity', '0')
+                           .css('display', 'block')
+                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant tab
+
+                    event.preventDefault();
+                });
+
+                $('.open_link').click(function () {
+                    resizeCloud(135);
+                });
+
+                $('.open_email').click(function () {
+                    resizeCloud(500);
+                });
+
+                $('#window_location').val(window.location.href);
+                resizeCloud(135);
+            });
         </script>
+
         <style type="text/css">
+            h1 {
+                font-size: 2em;
+            }
             #wrapper, .wrapper { /* overrides ask.css defaults */
                 height: auto;
                 /* width: auto; */
                 display: auto;
+                background: #f7f7f7 url('/static/imgs/tiles/linen.png');
             }
             #error_bar {
                 display:none;
                 color: #f00;
+            }
+            #friends_selector {
+                width:960px;
+                margin: 0 auto;
+                padding: 15px 0;
+            }
+            #friends_selector .page {
+                display: none;
             }
             #cart_items_display li {
                 background-color: transparent;
@@ -36,15 +98,56 @@
         </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Willet Vote</title>
+        {% block styles %}{% endblock %}
     </head>
     <body>
         {% block body_start %}{% endblock %}
+        <div id='header'>
+            <div id="white">
+                <!-- if is_asker -->
+                <div id="friends_selector">
+                    <div class="span-8" style="text-align:left;">
+                        <p><b>You have created a vote!</b>
+                           <br />
+                           Invite your friends to join the conversation.
+                        </p>
+                        <p>
+                            <span class="tab"><a href="#email" class="open_email button">By email</a></span>
+                            &nbsp;&nbsp;&nbsp;
+                            <span class="tab"><a href="#link" class="open_link">By link</a></span>
+                        </p>
+                    </div>
+                    <div class="span-16" style="text-align:left;">
+                        <div class="page" id="link">
+                            <p><b>Send this link to your friends to let them participate!</b></p>
+                            <input id="window_location" type="text" style="width:540px;font-size:14px;" />
+                        </div>
+                        <div class="page" id="email">
+                            <p><b>Send your invitation by email</b></p>
+                            <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
+                                    style="width:600px;height:350px;"></iframe>
+                        </div>
+                    </div>
+                </div>
+                <!-- endif -->
+            </div>
+            <div id="cloud_top">
+                <div id="cloud_bottom"></div>
+            </div>
+        </div>
+
         <div id="wrapper">
             {% block screens %}{% endblock %}
         </div>
         <script type="text/javascript">
             {% block body_script %}{% endblock %}
+
+            $(document).ready(function () {
+                var tabs = $('#friends_selector_tabs');
+                if (tabs.length) {
+                    tabs.tabs();
+                }
+            });
         </script>
         <!-- Google Analytics -->
         <script type="text/javascript">

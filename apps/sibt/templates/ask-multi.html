@@ -313,5 +313,11 @@
 
         $('#postOnWall').click(postOnWall);
     });
-    showScreen('splash');
+    {% if not embed %}
+        {# "if not embed" is intentional - helps F+R. #}
+        showScreen('splash');
+    {% else %}
+        // go to choose friends directly
+        showScreen('choose');
+    {% endif %}
 {% endblock js_init %}

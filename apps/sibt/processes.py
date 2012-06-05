@@ -137,12 +137,13 @@ class StartSIBTInstance(URIHandler):
                                            dialog="ConnectFB",
                                            img=img,
                                            motivation=None,
-                                           sharing_message="")
+                                           sharing_message="",
+                                           products=[])
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
             response['data']['message'] = str(e)
-            logging.error('we had an error creating the instnace', exc_info=True)
+            logging.error('we had an error creating the instance', exc_info=True)
 
         self.response.out.write(json.dumps(response))
 

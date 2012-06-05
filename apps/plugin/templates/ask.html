@@ -28,10 +28,12 @@
             <!--                   Choose Friends Screen                    -->
 
             <div id="choose">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Choose Friends To Ask For Advice</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Choose Friends To Ask For Advice</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <ul class="friends" id="friends">
                         <!-- Friends appended when document ready -->
@@ -53,10 +55,12 @@
             <!--                   Asker Info Screen                        -->
 
             <div id="asker_info">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Let Your Friends Know Who Is Asking</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Let Your Friends Know Who Is Asking</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <ul class="askers" id="askers">
                         <!-- Asker appended when document ready -->
@@ -75,10 +79,12 @@
             <!--                        Asking Screen                       -->
 
             <div id="asking">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Choose Friends To Ask For Advice</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Choose Friends To Ask For Advice</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <div class="middled">
                         <div>Asking...</div>
@@ -90,10 +96,12 @@
             <!--                       Success Screen                       -->
 
             <div id="success">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Success! Your Question Has Been Sent</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Success! Your Question Has Been Sent</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <div class="center_col">
                         {% if incentive_enabled %}
@@ -118,10 +126,12 @@
             <!--                      Failure Screen                        -->
 
             <div class="narrow_screen" id="failure">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Sorry, But Something Went Wrong...</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Sorry, But Something Went Wrong...</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow"
                     <div class="center_col">
                         <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>

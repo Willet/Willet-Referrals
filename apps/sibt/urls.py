@@ -15,6 +15,7 @@ urlpatterns = [
     (r'/s/sibt.js',                 SIBTServeScript),
     (r'/s/beta',                    ShowBetaPage),
     (r'/s/beta/signup',             SIBTSignUp),
+    (r'/s/instances/status',        SIBTInstanceStatusChecker),
 
     # Processes
     (r'/s/doVote',                  DoVote),

@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 
 __author__      = "Sy Khader"
-__copyright__   = "Copyright 2011, The Willet Corporation"
+__copyright__   = "Copyright 2012, The Willet Corporation"
 
-import re, logging, Cookie, os, urllib, urllib2, time, datetime, simplejson
+import logging
+import urlparse
 
-from google.appengine.api import mail, taskqueue
-from google.appengine.ext import webapp, db
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext import db
 
-# models
 from apps.link.models import CodeCounter
 from apps.link.models import Link
 from apps.app.models import App
 
-# helpers
-from util.helpers import set_clicked_cookie, is_blacklisted, \
-                         set_referral_cookie, set_referrer_cookie
-from util.consts import *
+from util.helpers import set_clicked_cookie, is_blacklisted
+from util.consts import APP_DOMAIN, P3P_HEADER, URL
 from util.urihandler import URIHandler
 
 
@@ -29,7 +24,6 @@ class TrackWilltURL(URIHandler):
     incremental click-throughs are unique.
 
     """
-
     def get( self, code ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         logging.info("PATH %s" % self.request.url )
@@ -50,9 +44,7 @@ class TrackWilltURL(URIHandler):
 
             link.app_.handleLinkClick( self, link )
 
-            # TODO(Barbara): Remove this when we make Referral app use Actions
             set_clicked_cookie(self.response.headers, code)
-
         return
 
 
@@ -88,7 +80,7 @@ class CleanBadLinks(URIHandler):
                         result   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
                         l.delete()
-                except Exception,e:
+                except Exception, e:
                     l.delete()
                     logging.warn('probably unable to resolve property: %s' % e)
         except TypeError:
@@ -113,3 +105,63 @@ class IncrementCodeCounter(URIHandler):
             returned_cc = db.run_in_transaction(txn, cc)
             logging.info('incremented code counter %s' % returned_cc)
 
+
+class CreateLink(URIHandler):
+    """Creates a Link object that rediects to a given url.
+
+    URL defaults to http://rf.rs (to allow Links to be created prior
+                                  to knowledge of destination)
+    """
+    def post(self):
+        """See class docstring.
+
+        If a code is given and a Link for that code is found, the Link's
+        URL will be overwritten.
+
+        This controller also supports GET. The GET version will
+        redirect the browser to said URL.
+        """
+        url = self.request.get('url', 'http://rf.rs')
+        app = App.get(self.request.get('app_uuid', '')) or None
+        code = self.request.get('code', '')
+        link = create_link(url, app, code)
+
+        self.response.out.write("%s" % link.willt_url_code)
+
+    def get(self):
+        """Creates/Modifies the link by URL, then redirects there."""
+        link = self.post()
+        if link:
+            self.redirect(link.target_url)
+        else:
+            self.response.out.write("You're doing it wrong")
+
+
+def create_link(url, app=None, code=None):
+    """helper function for CreateLink. Used by other views and controllers."""
+    link = None
+
+    if code:
+        link = Link.get_by_code(code)
+
+    domain = urlparse.urlparse(url)
+    if not (domain.scheme and domain.netloc):  # http and google.com
+        logging.error('URL supplied (%s) is invalid' % url)
+        return None
+
+    if not link:  # create
+        try:  # fails if url is not valid
+            link = Link.create(targetURL=url,
+                               app=app,
+                               domain=domain)
+        except AttributeError:
+            logging.error('URL creation rejected (%s)' % url)
+            return None
+    else:  # update
+        link.target_url = url
+        link.origin_domain = domain
+
+        link.memcache_by_code()
+        link.put_later()  # Links aren't normally put like this
+
+    return link  # could be nothing!
