@@ -162,17 +162,23 @@ class SIBT(App):
 
         if products:
             try:
-                product_img = products[0].images[0]
+                img = products[0].images[0]
             except:
-                product_img = ''
+                pass
 
+        if not img:
+            img = "http://rf.rs/static/imgs/noimage-willet.png"
+
+        logging.debug('link = %r' % link)
+        logging.debug('link\'s url = %r' % link.target_url)
+        logging.debug('img = %r' % img)
         # Now, make the object
         instance = SIBTInstance(key_name=uuid,
                                 uuid=uuid,
                                 asker=user,
                                 app_=self,
                                 link=link,
-                                product_img=img or product_img,
+                                product_img=img,
                                 products=products,
                                 motivation=motivation,
                                 sharing_message=sharing_message,
@@ -260,7 +266,9 @@ class SIBTInstance(Model):
     url = db.LinkProperty(indexed=True)
 
     # URL of the product image (deprecated v11+)
-    product_img = db.LinkProperty(indexed=False)
+    product_img = db.LinkProperty(required=False,
+                                  default="http://rf.rs/static/imgs/noimage-willet.png",
+                                  indexed=False)
 
     # use self.get_products() to get products as objects
     products = db.StringListProperty(db.Text, indexed=True)

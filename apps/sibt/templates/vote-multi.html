@@ -54,174 +54,58 @@
 
 {% block body_start %}{% endblock %}
 
-{% block screens %}
-    <div id="splash">
-        <div id="asker_title">
-            <div id="title">
-                {% if share_url %}
-                <!-- div id="share_again">
-                    Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
-                </div -->
-                {% endif %}
-            </div>
+{% block left_screens %}
+    <div class="choice blob">
+        <div class="title">
+            Which one should {{ asker_name }} get?
         </div>
-        <div class="slight_highlight">
-            <h1 style="text-align:center;">Which one would you get?</h1>
-            <form method="POST" action="">
-                <ul id="cart_items_display">
-                    <!-- JS -->
-                </ul>
-            </form>
-            <div class="dialog_button_area">
-                <input type="hidden" name="app_uuid" value="{{app_uuid}}">
-                <input type="hidden" name="user_uuid" value="{{user_uuid}}">
-                <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
-                <input type="hidden" name="target_url" value="{{target_url}}">
+        <div class="center">
+            {% for product in products %}
+                <button class="button vote" data-uuid="{{ product.uuid }}">
+                    {{ product.title }}
+                </button>
+            {% endfor %}
+            <div id="error_bar"></div>
+        </div>
+    </div>
+    <div id="success_message" class="hidden blob">
+        <div class="title">Thanks for voting!</div>
+        {% for product in products %}
+            <h4 id="why-{{ product.uuid }}" class="hidden">
+                Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
+            </h4>
+        {% endfor %}
+        <div id="fb-root"></div>
+        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
+    </div>
+{% endblock left_screens %}
 
-                <input name="vote_btn" id="vote_btn"
-                       class="button"
-                       type="button" value="Done">
-                <div id="error_bar"></div>
-            </div>
-
-        </div>
+{% block right_screens %}
+    <div id="product_screen">
+        <table>
+            <tr>
+                {% for product in products %}
+                    <td valign="top">
+                        <h2 class="title">
+                            <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                        </h2>
+                        <img alt="product image" src="{{ product.images.0 }}" class="slight-highlight product-image" />
+                        <div class="description">
+                            {{ product.description|linebreaksbr|striptags }}
+                        </div>
+                    </td>
+                    {# cycle syntax will change in future django versions #}
+                    {% cycle </tr><tr>, %}
+                {% endfor %}
+            </tr>
+        </table>
     </div>
-    <div id="thanks_for_vote">
-        <div class="title_bar">
-            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-            <div>Thank you!</div>
-            <!-- text should not mention 'buy' -->
-        </div>
-        <div>Thank you. You're awesome! <br />
-            We'll email your friend the result in a couple of hours.
-        </div>
-        <div class="dialog_button_area">
-            <input type="button" class="button" value="Close">
-        </div>
-    </div>
-    <div id="wosib_error">
-        <div class="title_bar">
-            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-            <div>Doh!</div>
-            <!-- text should not mention 'buy' -->
-        </div>
-        <div>Something went wrong, and your vote was not counted! <br />
-            Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
-        </div>
-        <div class="dialog_button_area">
-            <input type="button" class="button" value="Close">
-        </div>
-    </div>
-{% endblock %}
+{% endblock right_screens %}
 
 {% block body_script %}
-    $(document).ready (function () {
-        // controller guarantees there to be > 0 products
-        var _willet_cart_products = [ {% for product in products %}
-            {   "id": "{{product.shopify_id}}",
-                "title": "{{product.title}}",
-                "image" : "{{product.images.0}}" || "/static/imgs/noimage-willet.png",
-                "product_uuid": "{{product.uuid}}",
-            },
-        {% endfor %} {}];
-        _willet_cart_products.pop(); // remove trailing {} to fix IE trailing comma
-
-        // Widget class
-        // Base widget, same basic functionality
-        var LiWidget = function (name) {
-            var elem = this.elem = document.createElement('li');
-            elem.id = elem.name = name || '';
-        };
-        LiWidget.prototype = {
-            getElement: function () {
-                return this.elem;
-            },
-            getName: function () {
-                return this.name;
-            },
-            setVisible: function (i) {
-                this.elem.style.display = i ? 'block' : 'none';
-            }
-        };
-
-        var Product = function (uuid, title, image_src, shopify_id) {
-            LiWidget.call(this, "item" + shopify_id);
-
-            var that = this,
-                $elem = $(this.elem);
-
-            $elem.click (function (e) {
-                // add product selection events onto checkbox.
-                $('#cart_items_display input').prop('checked', false);
-                var checkbox = $(this).find('input')[0];
-                checkbox.checked = true;
-
-                // cancel select for all other checkboxes
-                $('#cart_items_display li').each (function () {
-                    var checkbox = $(this).find('input')[0];
-                    $(this).css({
-                        'border': checkbox.checked ? '2px #9ac solid' : '2px transparent solid',
-                        'background-color': checkbox.checked ? '#dfefff' : 'transparent'
-                    });
-                });
-            });
-
-            var image = this.image = document.createElement('img');
-            image.src = image_src || "/static/imgs/noimage-willet.png";
-
-            var input = this.input = document.createElement('input');
-            input.id = "item" + shopify_id;
-            input.name = "item" + shopify_id;
-            input.className = "product_select";
-            input.type = "checkbox";
-            input.setAttribute("data-uuid", uuid);
-
-            var label = this.label = document.createElement('label');
-            label.appendChild (input);
-            label.innerHTML += title;
-
-            $elem.append ([image, label]);
-
-        };
-
-        Product.prototype = new LiWidget();
-
-        Product.prototype.getProductUuid = function () {
-            return $elem.data('uuid');
-        };
-
-        Product.prototype.attach = function () {
-            $('#cart_items_display').append(this.elem);
-        };
-
-        var x = 0;
-        for (x = 0; x < _willet_cart_products.length; x++) {
-            // add products onto page.
-            var prod = new Product (
-                _willet_cart_products[x].product_uuid,
-                _willet_cart_products[x].title,
-                _willet_cart_products[x].image,
-                _willet_cart_products[x].product_id
-            );
-            prod.attach ();
-        }
-
-        var showScreen = function (id) {
-            $('#wrapper').children().hide();
-            $('#wrapper>#'+id).show();
-        };
-
-        var closeWindow = function () {
-            window.close();
-        };
-        $('[value="Close"]').click (closeWindow);
-
-        var showError = function (msg) {
-            $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
-        };
-
+    $(document).ready(function () {
         var vote = function () {
-            var product_uuid = $('#cart_items_display input:checked').data('uuid');
+            var product_uuid = $(this).data('uuid');
             if (product_uuid) {
                 var payload = {
                     "user_uuid" : "{{ user_uuid }}",
@@ -233,19 +117,37 @@
                     type: 'post',
                     data: payload,
                     success: function () {
-                        showScreen('thanks_for_vote');
+                        $(".choice, #product_screen").hide();
+                        $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+
+                        // get the discount code.
+                        $.ajax({
+                            url: "{% url DispenseClientDiscountCode %}",
+                            data: {
+                                'client_uuid': "{{ client_uuid }}",
+                                'store_url': "{{ store_url }}"
+                            },
+                            type: 'post',
+                            dataType: 'text',
+                            success: function (data) {
+                                if (data) {
+                                    $("#discount_gettest").show();
+                                }
+                                $("#discount_code").val(data || "We're out!");
+                            }
+                        });
+                        fbinit (document, 'script', 'facebook-jssdk');
                     },
                     error: function () {
-                        showScreen('wosib_error');
+                        $(".choice").hide();
+                        $("#error_message").show();
                     }
                 });
             } else {
                 showError("Please select a product :)");
             }
         };
-        $('#vote_btn').click(vote);
-
+        $('.vote').click(vote);
         $('#cart_items_display input').prop('checked', false);
-        showScreen('splash');
     });
 {% endblock %}

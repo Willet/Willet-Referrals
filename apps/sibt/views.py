@@ -32,7 +32,7 @@ from apps.user.models import User
 from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
-from util.shopify_helpers import get_shopify_url
+from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -299,42 +299,74 @@ class VoteDynamicLoader(URIHandler):
 
     params:
         app_uuid (required): pinpoints the store
+        instance_uuid (optional): if omitted, an instance will be created
+                                  automatically.
+                                  this is new in v11.
     """
     def get(self):
         app = None
+        event = 'SIBTMakingVote'
         instance_uuid = self.request.get('instance_uuid')
         link = None
         products = [] # populate this to show products on design page.
         share_url = ''
         sharing_message = ''
-        target = get_target_url(self.request.get('url', ''))
+        store_url = get_shopify_url(self.request.get('store_url')) or \
+                    get_shopify_url(self.request.get('page_url'))
+        target = get_target_url(self.request.get('url', '')) or \
+                 get_target_url(self.request.get('target_url', '')) or \
+                 get_target_url(self.request.get('page_url', ''))
         template_values = {}
-        user = None
+        user = User.get(self.request.get('user_uuid')) or \
+               User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
 
-        instance = self.get_instance()
-        if not instance or not instance.is_live:
-            # We can't find the instance, so let's assume the vote is over
-            self.response.out.write("This vote is now over.")
-            return
+        instance = self.get_instance(app=app, user=user, target=target)
+        if instance:
+            logging.debug('instance found')
+
+            if not instance.is_live:
+                # We can't find the instance, so let's assume the vote is over
+                self.response.out.write("This vote is now over.")
+                return
+
+            app = instance.app_
+            if not app:
+                # We can't find the app?!
+                self.response.out.write("Drat! This vote was not created properly.")
+                return
+
+            # record that the vote page was once opened.
+            SIBTShowingVote.create(user=user, instance=instance)
+            event = 'SIBTShowingVote'
+
+            # In the case of a Shopify product, it will fetch from a .json URL.
+            product = Product.get_or_fetch(instance.url, app.client)
+            products = [Product.get(uuid) for uuid in instance.products]
+        else:  # v11 mode: auto-create
+            logging.debug('instance not found - creating one')
+
+            app = SIBT.get(self.request.get('app_uuid'))
+            if not app:
+                app = SIBT.get_by_store_url(store_url)
+            if not app:
+                logging.error("Could not find SIBT app for %s" % store_url)
+                self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
+                                        "to use this product.")
+                return
+
+            products = self.get_products(app=app)
+            if products:
+                product_uuids = [product.uuid for product in products]
+                logging.debug('app = %r' % app)
+                logging.debug('target = %r' % target)
+                logging.debug('product_uuids = %r' % product_uuids)
+                instance = self.create_instance(app=app,
+                                                page_url=target,
+                                                product_uuids=product_uuids,
+                                                sharing_message="")
 
         sharing_message = instance.sharing_message
-        app = instance.app_
-        if not app:
-            # We can't find the app?!
-            self.response.out.write("Drat! This vote was not created properly.")
-            return
-
-        # see which template we should we using.
-        try:
-            if app.client and app.client.is_vendor:
-                vendor = app.client.name
-        except NameError, AttributeError:
-            pass  # not a vendor
-
-
-        user = User.get(self.request.get('user_uuid')) or \
-               User.get_or_create_by_cookie(self, app)
 
         if instance.asker:
             name = instance.asker.get_full_name()
@@ -344,16 +376,16 @@ class VoteDynamicLoader(URIHandler):
         try:
             share_url = link.get_willt_url()
         except AttributeError, e:
-            logging.warn ('Faulty link')
+            logging.warn('Faulty link')
 
-        # record that the vote page was once opened.
-        SIBTShowingVote.create(user=user, instance=instance)
-        event = 'SIBTShowingVote'
+        # see which template we should we using.
+        try:
+            if app.client and app.client.is_vendor:
+                vendor = app.client.name
+        except NameError, AttributeError:
+            pass  # not a vendor
 
-        # In the case of a Shopify product, it will fetch from a .json URL.
-        product = Product.get_or_fetch(instance.url, app.client)
-        products = [Product.get(uuid) for uuid in instance.products]
-
+        # sync the variables
         if not product:
             product = products[0]
         elif not products:
@@ -366,11 +398,11 @@ class VoteDynamicLoader(URIHandler):
 
         yesses = instance.get_yesses_count()
         nos = instance.get_nos_count()
+
         try:
             percentage = yesses / float(yesses + nos)
         except ZeroDivisionError:
             percentage = 0.0 # "it's true that 0% said buy it"
-
         template_values = {
             'evnt': event,
             'product': product,
@@ -415,7 +447,7 @@ class VoteDynamicLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-    def get_instance(self):
+    def get_instance(self, app, user, target):
         """successive stages to get instance."""
         link = None
 
@@ -431,7 +463,7 @@ class VoteDynamicLoader(URIHandler):
         if willt_code:
             logging.info('trying to get instance for code: %s' % willt_code)
             link = Link.get_by_code(willt_code)
-            if not link:
+            if not link and app:
                 link = Link.all()\
                            .filter('user =', user)\
                            .filter('target_url =', target)\
@@ -449,6 +481,75 @@ class VoteDynamicLoader(URIHandler):
         if user and target:
             instance = SIBTInstance.get_by_asker_for_url(user, target)
         return instance  # could be none
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message=""):
+        """Helper to create an instance without question."""
+        user = User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+        return instance
+
+    def get_products(self, app=None):
+        """Fetch products.
+
+        Order of precedence:
+        - product UUIDs
+        - product Shopify IDs
+        - product UUID
+        - product Shopify ID
+        - page url
+        """
+        # at least one of these must be present to initiate an ask.
+        products = []
+        product_shopify_id = self.request.get('product_shopify_id', '')
+        product_uuid = self.request.get('product_uuid', '')
+        product_uuids = self.request.get('products', '').split(',')
+        product_ids = self.request.get('ids', '').split(',')
+
+        products = [Product.get(uuid) for uuid in product_uuids]
+        if products[0]:
+            logging.debug("get products by UUIDs, got %r" % products)
+            return products
+
+        products = [ProductShopify.get_by_shopify_id(id) \
+                    for id in product_ids]
+        if products[0]:
+            logging.debug("get products by Shopify IDs, got %r" % products)
+            return products
+
+        products = [Product.get(product_uuid)]
+        if products[0]:
+            logging.debug("get products by UUID, got %r" % products)
+            return products
+
+        products = [ProductShopify.get_by_shopify_id(product_uuid)]
+        if products[0]:
+            logging.debug("get products by Shopify ID, got %r" % products)
+            return products
+
+        if page_url and app:
+            products = [Product.get_or_fetch(page_url, app.client)]
+        return products
 
 
 class ShowResults(URIHandler):

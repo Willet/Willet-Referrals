@@ -8,7 +8,7 @@ import inspect
 from decimal import *
 
 from google.appengine.api import taskqueue
-from google.appengine.ext import deferred 
+from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 from google.appengine.api import memcache
@@ -44,15 +44,15 @@ def put_link(memcache_key):
 # Link Class    ----------------------------------------------------------------
 # ------------------------------------------------------------------------------
 class Link(Model):
-    """A tracking link that will be shared by our future Users. A Link keeps 
+    """A tracking link that will be shared by our future Users. A Link keeps
        track of how many unique clicks it receives"""
-       
+
     # destination of the link, supplied by our clients
     target_url = db.LinkProperty(indexed = True)
     # our unique identifier code for this Link
     willt_url_code = db.StringProperty(indexed = True)
     # our client's app that this link is associated with
-    app_ = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+    app_ = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True)
 
     creation_time = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
@@ -71,16 +71,16 @@ class Link(Model):
 
     # we sent an email!
     email_sent = db.BooleanProperty(required=False, default=False, indexed=True)
-    
+
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 
+        self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None
         super(Link, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
         if not self.user:
             logging.warn('Validation warning: link has no user')
         return True
-    
+
     def _validate_self(self):
         return True
 
@@ -109,7 +109,7 @@ class Link(Model):
             shard_name = self.willt_url_code + str(index)
             counter = LinkCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = LinkCounter(key_name=shard_name, 
+                counter = LinkCounter(key_name=shard_name,
                                       willt_url_code=self.willt_url_code)
             counter.count += num
             counter.put()
@@ -146,7 +146,7 @@ class Link(Model):
 
     def memcache_by_code(self):
         return memcache.set(
-                Link.get_memcache_key_for_code(self.willt_url_code), 
+                Link.get_memcache_key_for_code(self.willt_url_code),
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     @classmethod
@@ -185,12 +185,13 @@ class Link(Model):
                     origin_domain=domain,
                     retweets=[])
 
-        #link.put()
+        link.put()
         link.memcache_by_code()
+        '''
         deferred.defer(put_link,
                        Link.get_memcache_key_for_code(code),
                        _queue='slow-deferred')
-        
+        '''
         logging.info("Successful put of Link %s" % code)
         return link
 
@@ -224,11 +225,11 @@ class CodeCounter(Model):
 
     def _validate_self(self):
         return True
-    
+
     def _validate_self(self):
         # there is not much to check - count can be higher than total_counter_nums
         return True
-    
+
     def get_next(self):
         #c = self.count
         #self.count += self.total_counter_nums
@@ -237,11 +238,11 @@ class CodeCounter(Model):
         taskqueue.add(
             url = url('IncrementCodeCounter'),
             params = {
-                'count': self.count 
+                'count': self.count
             }
         )
         return self.count
-    
+
     @staticmethod
     def generate_counters (total=20):
         try:
@@ -257,7 +258,7 @@ class CodeCounter(Model):
             return False
 
     def __init__(self, *args, **kwargs):
-       self._memcache_key = kwargs['count'] if 'count' in kwargs else None 
+       self._memcache_key = kwargs['count'] if 'count' in kwargs else None
        super(CodeCounter, self).__init__(*args, **kwargs)
 
     @staticmethod

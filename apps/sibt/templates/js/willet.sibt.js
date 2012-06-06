@@ -43,7 +43,7 @@ _willet.sibt = (function (me) {
         },
         cart_items = cart_items || window._willet_cart_items || [],
         PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
-        SHAKE_DURATION = 300, // ms
+        SHAKE_DURATION = 0, // ms
         SHAKE_WAIT = 1000, // ms
 
         padding_elem = null,
