@@ -55,10 +55,9 @@
                 font-size: 20px;
                 color: #FFF;
                 border-radius: 18px;
-                -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-                behavior: ("../js/PIE.htc");
+                -webkit-box-shadow: -3px -3px 20px rgb(150,150,150);
+                -moz-box-shadow: -3px -3px 20px rgb(150,150,150);
+                box-shadow: -3px -3px 20px rgb(150,150,150);
             }
             .step-num {
                 background-color: #0496AC;
@@ -148,6 +147,15 @@
                 list-style-type: disc;
             }
         </style>
+        <!--[if lt IE 9]>
+        <style>
+        .step-num, .step-warn, .step-info {
+                box-shadow: none !important;
+                behavior: url("../../static/js/PIE.htc");
+            }
+        </style>
+        <![endif]-->
+
 {% endblock head %}
 
 {% block header-class %}tall{% endblock %}
@@ -279,17 +287,7 @@
                         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
                             <div class="step-num">&#x2713;</div>
-                            {% if not config_enabled %}
                             <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection">Shopify App Store</a> for other merchants.</p>
-                            <div class="center lower-15">
-                                <button class='blue' id='go_to_shopify'>
-                                    <img src="/static/imgs/shopify-bag-36.png" />
-                                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                                        Return to your Store
-                                    </span>
-                                </button>
-                            </div>
-                            {% else %}
                             <div class="center lower-15">
                                 <button class='blue' id='next_page'>
                                     <img src="/static/imgs/shopify-bag-36.png" />
@@ -298,7 +296,6 @@
                                     </span>
                                 </button>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
                     <div id="install4u-form">
