@@ -101,10 +101,11 @@ def _FB_post(message, page_id, token):
     return success
 
 def _Twitter_find_user_by_query(query):
-    # This is actually TOO fast
-    # We need to wait a little bit...
-    # Task queue?
+    """ Search for a twitter user (or users) based on some query.
 
+    Note: It takes somewhere around 30 seconds to go from the intial tweet to
+     being searchable with the twitter API
+    """
     users    = []
 
     base_url = "http://search.twitter.com/search.json"
