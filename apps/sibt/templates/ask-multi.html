@@ -232,6 +232,7 @@
     };
 
     // Connect with FB and fetch FB friends, on Choose Friends screen
+    /*
     var runFBConnect = function () {
         storeAnalytics('SIBTConnectFBDialog');
 
@@ -250,24 +251,7 @@
             }
         }, {scope: 'publish_stream,offline_access,user_about_me,email'});
     };
-
-    // Query FB api to grab logged-in user's friends
-    var fetchFBFriends = function () {
-        FB.api('/me/friends', function (response) {
-            fb_friends = response.data;
-            fb_friends.sort();
-
-            $.each( response.data, function (i) {
-                friendNames.push(fb_friends[i].name);
-            });
-
-            // Code here changes all FB Connect options into FB Friend Select options
-            var i = friends.length;
-            while (i--) {
-                friends[i].FBLoggedIn();
-            }
-       });
-    };
+    */
 {% endblock js_functions %}
 
 
