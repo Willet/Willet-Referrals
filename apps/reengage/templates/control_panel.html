@@ -21,7 +21,8 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 $('#new').click(function() {
-                    window.location = window.location.origin + "/reengage/post"
+                    window.location = window.location.origin +
+                            "/reengage/post/{% if network %}{{ network }}{% endif %}"
                 });
             });
         </script>
