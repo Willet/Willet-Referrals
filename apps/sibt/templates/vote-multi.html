@@ -33,6 +33,11 @@
             line-height: 30px;
             margin: 14px 0 0 15px;
         }
+        #products-list .description {
+            background-color: #fff;
+            border: 1px silver solid;
+            padding: 20px;
+        }
         #wrapper {
             padding: 10px;
         }
@@ -49,6 +54,41 @@
             border: 2px transparent solid;
             box-shadow: none;
         }
+        /*
+        #product_screen { overflow:hidden; }
+        #product_screen .viewport {
+            float: left;
+            width: 700px;
+            height: 1000px;
+            overflow: hidden;
+            position: relative;
+        }
+        #product_screen .buttons {
+            display: block;
+            margin: 30px 10px 0 0;
+            float: left;
+        }
+        #product_screen .next {
+            margin: 30px 0 0 10px;
+        }
+        #product_screen .disable {
+            visibility: hidden;
+        }
+        #product_screen .overview {
+            list-style: none;
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            left: 0;
+            top: 0;
+        }
+        #product_screen .overview li{
+            float: left;
+            margin: 0 20px 0 0;
+            padding: 1px;
+            height: 1000px;
+            width: 699px;
+        } */
     </style>
 {% endblock %}
 
@@ -61,9 +101,9 @@
         </div>
         <div class="center">
             {% for product in products %}
-                <button class="button vote" data-uuid="{{ product.uuid }}">
+                <!-- button class="button vote" data-uuid="{{ product.uuid }}">
                     {{ product.title }}
-                </button>
+                </button -->
             {% endfor %}
             <div id="error_bar"></div>
         </div>
@@ -82,23 +122,81 @@
 
 {% block right_screens %}
     <div id="product_screen">
-        <table>
-            <tr>
+        <!-- a class="buttons prev" href="#">left</a>
+        <div class="viewport">
+            <ul id="products-list" class="overview">
                 {% for product in products %}
-                    <td valign="top">
-                        <h2 class="title">
-                            <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
-                        </h2>
-                        <img alt="product image" src="{{ product.images.0 }}" class="slight-highlight product-image" />
+                    <li class="roundabout-moveable-item">
                         <div class="description">
+                            <img alt="product image"
+                                src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                                class="slight-highlight product-image center" />
+                            <h2 class="title">
+                                <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                            </h2>
                             {{ product.description|linebreaksbr|striptags }}
                         </div>
-                    </td>
-                    {# cycle syntax will change in future django versions #}
-                    {% cycle </tr><tr>, %}
+                        <button class="button vote" data-uuid="{{ product.uuid }}">
+                            I like this one
+                        </button>
+                    </li>
                 {% endfor %}
-            </tr>
+            </ul>
+        </div>
+        <a class="buttons next" href="#">right</a -->
+        <table id="products-list" class="overview"
+               style="border-spacing: 12px;">
+            <tbody>
+                <tr>
+                    {% for product in products %}
+                        <td style="vertical-align:top;
+                                   box-shadow:0px 2px 3px 0px #CECECE;
+                                   border: 1px #F0F0F0 solid;
+                                   padding: 12px 10px 12px 10px;
+                                   border-radius: 3px;">
+                            <div class="product"
+                                 style="">
+                                <a class="info_launch" data-uuid="{{ product.uuid }}">
+                                    <img alt="product image"
+                                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                                        class="product-image center"
+                                        style="max-width:300px; max-height:300px;" />
+                                </a>
+                                <h2 class="title">
+                                    <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                                </h2>
+                                <!-- {{ product.description|linebreaksbr|striptags }} -->
+                                <button class="button vote" data-uuid="{{ product.uuid }}"
+                                        style="display:block; margin: 0 auto;
+                                               width: 121px;">
+                                    I like this one
+                                </button>
+                            </div>
+                        </td>
+                        {% cycle <!---->,</tr><tr> %}
+                    {% endfor %}
+                </tr>
+            </tbody>
         </table>
+        {% for product in products %}
+            <div id="product_info_{{ product.uuid }}" class="product_info">
+                <a>
+                    <img alt="product image"
+                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                        class="product-image center"
+                        style="max-width:300px; max-height:300px;" />
+                </a>
+                <h2 class="title">
+                    <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                </h2>
+                <!-- {{ product.description|linebreaksbr|striptags }} -->
+                <button class="button vote" data-uuid="{{ product.uuid }}"
+                        style="display:block; margin: 0 auto;
+                                width: 121px;">
+                    I like this one
+                </button>
+            </div>
+        {% endfor %}
     </div>
 {% endblock right_screens %}
 
@@ -149,5 +247,13 @@
         };
         $('.vote').click(vote);
         $('#cart_items_display input').prop('checked', false);
+
+        $('.info_launch').click(function () {
+            var iid = 'product_info_' + $(this).data('uuid');
+            $.colorbox({
+                inline: true,
+                href: iid
+            });
+        });
     });
 {% endblock %}

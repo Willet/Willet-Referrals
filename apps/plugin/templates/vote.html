@@ -19,9 +19,13 @@
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/colorbox.css" />
         <!-- link rel="stylesheet" href="/static/css/jquery.skeleton.tabs.css" type="text/css" / -->
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.tinycarousel.min.js"></script>
+        <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
         <!-- script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.skeleton.tabs.js"></script -->
         <script type="text/javascript">
@@ -74,6 +78,13 @@
 
                 $('#window_location').val(window.location.href);
                 $('.open_email').click();
+
+                /*
+                var multiProductList = $('#products-list');
+                if (multiProductList && multiProductList.length) {
+                    $('#product_screen').tinycarousel();
+                }
+                */
             });
         </script>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -82,14 +93,24 @@
     </head>
     <body>
         {% block body_start %}{% endblock %}
+        <div id="background"></div>
+        <div id="starburst"><div><div></div></div></div>
+
         <div id='header'>
             <div id="white">
                 {% if is_asker %}
                     <div id="friends_selector">
                         <div class="span-8" style="text-align:left;">
-                            <p><b>You have created a vote!</b>
-                            <br />
-                            Invite friends to shop with you ⇝
+                            <p>
+                                {% if new_instance %}
+                                    <b>You have created a vote!</b>
+                                    <br />
+                                    Invite friends to shop with you ⇝
+                                {% else %}
+                                    <b>Your vote is still running!</b>
+                                    <br />
+                                    Invite more friends to the conversation ⇝
+                                {% endif %}
                             </p>
                             <p style="display:none;">
                                 <span class="tab"><a href="#email" class="open_email button">By email</a></span>
@@ -133,11 +154,11 @@
                 <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
                     Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
-                <div id="share_again">
+                <!-- div id="share_again">
                     Invite a friend to vote:
                     <input style="width: 245px" type="text"
                             readonly="readonly" value="{{ share_url }}" />
-                </div>
+                </div -->
             </div>
             <div id="main_content" class="slight-highlight">
                 {% block right_screens %}{% endblock right_screens %}

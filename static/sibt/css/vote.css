@@ -1,6 +1,3 @@
-.hidden {
-    display: none;
-}
 body {
     background-color: rgb(232, 247, 251);
     font: 1em/1.5em "PT Sans", "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -24,6 +21,36 @@ h2 a {
 }
 h2 a:hover {
     text-decoration: underline;
+}
+.hidden {
+    display: none;
+}
+div#background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #dcf0f4; /* Old browsers */
+    background: -moz-linear-gradient(left, #dcf0f4 0%, #e8f7fb 50%, #dcf0f4 100%); /* FF 3.6+ */
+    background: -webkit-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* Chrome 10+, Safari 5.1+ */
+    background: -o-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* IE 10+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcf0f4', endColorstr='#dcf0f4',GradientType=1 ); /* IE 6-9 */
+    background: linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* W3C */
+    z-index: -10;
+}
+div#starburst {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height:1012px;
+    margin: 0 auto;
+    margin-top: -170px;
+    overflow: hidden;
+    background: url("/static/imgs/starburst.png") no-repeat center top;
+    z-index: -5;
 }
 #wrapper {
     padding: 10px 10px 20px 10px;
@@ -236,8 +263,13 @@ div#cloud_bottom {
 }
 img.slight-highlight {
     /* image tags get slightly different treatment */
-    margin: 0px 1px 15px 1px;
+    margin: 0px auto 15px auto;
+    display: auto;
     padding: 10px;
+}
+
+.product {
+
 }
 
 .product-image {
@@ -305,7 +337,10 @@ button:hover {
     color:#fff;
 }
 button:active { }
-
+.button .vote {
+    display: block;
+    margin: 10px auto;
+}
 .button-link, .button-link:disabled {
         display: inline-block;
         white-space: nowrap;

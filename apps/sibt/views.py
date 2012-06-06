@@ -297,8 +297,16 @@ class AskDynamicLoader(URIHandler):
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on one or more products.
 
-    params:
-        app_uuid (required): pinpoints the store
+    VoteDynamicLoader handles two modes of operation:
+    - new instance
+    - existing instance
+
+    params required for new instance:
+        app_uuid: pinpoints the store
+        products: uuids ('uuid,uuid,uuid') for the products to be shown.
+                  SIBT and WOSIB modes are automatically managed.
+
+    params required for existing instance:
         instance_uuid (optional): if omitted, an instance will be created
                                   automatically.
                                   this is new in v11.
@@ -308,6 +316,7 @@ class VoteDynamicLoader(URIHandler):
         event = 'SIBTMakingVote'
         instance_uuid = self.request.get('instance_uuid')
         link = None
+        new_instance = False  # True if this function creates one
         products = [] # populate this to show products on design page.
         share_url = ''
         sharing_message = ''
@@ -331,9 +340,8 @@ class VoteDynamicLoader(URIHandler):
                 return
 
             app = instance.app_
-            if not app:
-                # We can't find the app?!
-                self.response.out.write("Drat! This vote was not created properly.")
+            if not app:  # We can't find the app?!
+                self.response.out.write("This vote was not created properly.")
                 return
 
             # record that the vote page was once opened.
@@ -365,6 +373,7 @@ class VoteDynamicLoader(URIHandler):
                                                 page_url=target,
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
+                new_instance = True
 
         sharing_message = instance.sharing_message
 
@@ -396,6 +405,7 @@ class VoteDynamicLoader(URIHandler):
         except:
             product_img = ''
 
+        '''
         yesses = instance.get_yesses_count()
         nos = instance.get_nos_count()
 
@@ -403,6 +413,8 @@ class VoteDynamicLoader(URIHandler):
             percentage = yesses / float(yesses + nos)
         except ZeroDivisionError:
             percentage = 0.0 # "it's true that 0% said buy it"
+        '''
+
         template_values = {
             'evnt': event,
             'product': product,
@@ -417,7 +429,8 @@ class VoteDynamicLoader(URIHandler):
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
             'fb_comments_url': '%s' % (link.get_willt_url()),
-            'percentage': percentage,
+            'new_instance': new_instance,
+            # 'percentage': percentage,
             'products': products,
             'share_url': share_url,
             'sharing_message': strip_html(sharing_message),
@@ -425,9 +438,9 @@ class VoteDynamicLoader(URIHandler):
             'store_url': app.store_url,
             'store_name': app.store_name,
             'instance': instance,
-            'votes': yesses + nos,
-            'yesses': instance.get_yesses_count(),
-            'noes': instance.get_nos_count(),
+            # 'votes': yesses + nos,
+            # 'yesses': instance.get_yesses_count(),
+            # 'noes': instance.get_nos_count(),
             'ask_qs': urlencode({'app_uuid': app.uuid,
                                  'instance_uuid': instance.uuid,  # golden line
                                  'user_uuid': instance.asker.uuid,
