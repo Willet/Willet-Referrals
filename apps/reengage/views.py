@@ -1,6 +1,9 @@
 import logging
 from urllib import urlencode
+from urlparse import urlparse
+from google.appengine.api import urlfetch
 from google.appengine.api.taskqueue import taskqueue
+import re
 from apps.reengage.models import TwitterAssociation
 from util import httplib2
 from util.urihandler import URIHandler
@@ -8,6 +11,7 @@ from util.local_consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 from util.helpers import url as build_url
 from util import tweepy
+from util.BeautifulSoup import BeautifulSoup
 
 def _ReEngage_request(url, verb="GET", payload=None, headers=None):
     """ Returns a the result of a request.
@@ -167,6 +171,45 @@ def _Twitter_post(message, url):
         # because usernames can be up to 20 characters
         api.update_status("@%s %s" % (handle, message))
 
+def _Pin_find_pins_for_site(site, pin_msg):
+    """ Gets pins for a given site with a given message.
+
+    `site` is expected to just be the domain name of the site (no protocol,
+    or path).
+    `pin_msg` is expected to not contain `site`
+    """
+
+    # Visit pinterest.com/source/{site}
+    url = "http://pinterest.com/source/%s" % site
+    if url[-1] != "/":
+        url = "%s/" % url
+
+    logging.info("URL: %s\nSite: %s" % (url, site))
+
+    resp = urlfetch.fetch(url)
+    soup = BeautifulSoup(resp.content)
+
+    # Find pins that contain pin_msg
+    # Regex won't work if truncated!
+    r       = re.compile(".*%s.*%s.*" % (pin_msg, site), re.DOTALL)
+    logging.info("Message: %s\nSite:%s" % (pin_msg, site))
+
+    pin_gen = (p for p in soup.findAll(True, 'pin') if r.match(p.prettify()))
+    pins    = [pin.get("data-id") for pin in pin_gen]
+
+    return list(set(filter(None, pins)))
+
+def _Pin_associate_user(url, users):
+    associations, _ = PinterestAssociation.get_or_create(url)
+    for user in users:
+        if user not in associations.handles:
+            associations.handles.append(user)
+
+    associations.put()
+
+def _Pin_comment(message, url):
+    pass
+
 class ReEngageControlPanel(URIHandler):
     def get(self, network=None):
         if not network:
@@ -176,11 +219,13 @@ class ReEngageControlPanel(URIHandler):
             "network": network
         }))
 
+
 class ReEngageProduct(URIHandler):
     def get(self):
         self.response.out.write(self.render_page('product.html', {
             "host": self.request.host_url
         }))
+
 
 class ReEngageFindTweet(URIHandler):
     def get(self):
@@ -208,6 +253,38 @@ class ReEngageFindTweet(URIHandler):
 
         self.response.out.write ("200 OK")
 
+class ReEngageFindPin(URIHandler):
+    def get(self):
+        self.post()
+
+    def post(self):
+        url     = self.request.get("url")
+        pin_msg = self.request.get("pin_msg")
+        now     = (self.request.get("now", "false") == "true")
+
+        if now:
+            logging.info("URL: %s" % url)
+
+            # Strip off protocol and path
+            site = urlparse(url).netloc
+
+            pin_ids = _Pin_find_pins_for_site(site, pin_msg)
+            logging.info("Pins: %s" % pin_ids)
+
+            #_Pin_associate_user(url, pin_ids)
+        else:
+            logging.info("Putting on task queue...")
+            params = {
+                "pin_msg": pin_msg,
+                "url"    : url,
+                "now"    : "true"
+            }
+            taskqueue.add(url=build_url('ReEngageFindPin'),
+                          countdown=30, params=params)
+
+        self.response.out.write ("200 OK")
+
+
 class ReEngage(URIHandler):
     def get(self, network=None):
         if not network:
@@ -226,9 +303,19 @@ class ReEngage(URIHandler):
         networks = {
             "fb": self._FB_ReEngage,
             "t" : self._Twitter_ReEngage,
+            "p" : self._Pin_ReEngage,
         }
 
         networks.get(network, "fb")()
+
+    def _Pin_ReEngage(self):
+        url     = self.request.get("url")
+        message = self.request.get("message", url)
+
+        _Pin_comment(message, url)
+
+        self.redirect(build_url("ReEngageControlPanel", "p"))
+        return
 
     def _Twitter_ReEngage(self):
         url     = self.request.get("url")

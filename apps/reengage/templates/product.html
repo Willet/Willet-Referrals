@@ -81,4 +81,54 @@
         fjs.parentNode.insertBefore(js, fjs);
     }
 }(document, "script", "twitter-wjs");</script>
+<script>
+    (function() {
+        var button = document.createElement("div");
+        button.id = "pinterest";
+        button.style.width = '43px';
+
+        var link = document.createElement("a");
+        link.className = 'willet-pinterest-button';
+        link.innerHTML = "Pin It";
+        link.style.position = 'absolute';
+        link.style.top = '0';
+        link.style.left = '0';
+        link.style.font = "11px Arial, sans-serif";
+        link.style.textIndent = "-9999em";
+        link.style.fontSize = ".01em";
+        link.style.color = "#CD1F1F";
+        link.style.height = "20px";
+        link.style.width = "43px";
+        link.style.zIndex = "1";
+        link.onclick = function() {
+            var pin_msg = "I found this on "
+            w_handle = window.open("//pinterest.com/pin/create/button/?" +
+                    "url=" + encodeURIComponent( "{{ host }}{% url ReEngageProduct %}" ) +
+                    "&media=" + encodeURIComponent( "{{ host }}/static/imgs/demo/product.png" ) +
+                    "&description=" + encodeURIComponent( pin_msg + window.location.host),
+                    'signin',
+                    'height=300,width=665');
+            link.className = 'willet-pinterest-button clicked';
+            w_handle.onunload = function() {
+                // Assume that the action succeeded
+                var url  = window.location.href, //Assuming no QS or hash for now
+                    dest = "{{ host }}{% url ReEngageFindPin %}?" +
+                           "url=" + url + "&pin_msg=" + pin_msg,
+                    img;
+
+                img = document.createElement("img");
+                img.src = dest;
+                img.style.display = "none";
+
+                document.body.appendChild(img);
+            }
+            return false;
+        };
+
+        button.appendChild(link);
+
+        document.body.appendChild(button);
+    }());
+</script>
+<script src="//assets.pinterest.com/js/pinit.js"></script>
 </html>

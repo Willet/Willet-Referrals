@@ -8,4 +8,5 @@ urlpatterns = [
     (r'/reengage/post/(fb|t)?', ReEngage),
     (r'/reengage/product',      ReEngageProduct),
     (r'/reengage/find_tweet',   ReEngageFindTweet),
+    (r'/reengage/find_pin',     ReEngageFindPin),
 ]
