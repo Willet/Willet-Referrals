@@ -605,9 +605,13 @@ class ButtonsShopifyItemShared(URIHandler):
             "img"     : url for time product image (optional)
         """
         product_page = self.request.headers.get('referer')
+        if not product_page:
+            logging.warn('User did not send referrer field. '
+                         'Cannot log share.')
+            return
 
         # We only want the scheme and location to build the url
-        store_url    = "%s://%s" % urlparse(product_page)[:2]
+        store_url = "%s://%s" % urlparse(product_page)[:2]
 
         message  = self.request.get('message')
 

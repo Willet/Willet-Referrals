@@ -244,7 +244,7 @@ class AppShopify(Model):
         self.charge_statuses.append('pending')
 
         # now that you have charged the client, make the Charge object.
-        Charge.create(app=self,
+        Charge.create(app_=self,
                       client=getattr(self, 'client'),
                       value=float(data['price']),
                       shopify_charge_id=data['id'])

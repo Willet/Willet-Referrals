@@ -36,7 +36,7 @@ class Charge(Model, polymodel.PolyModel):
     client = db.ReferenceProperty(db.Model, collection_name='client_charges')
 
     # For what are you charging? (not a required field if not charging an app)
-    app = db.ReferenceProperty(db.Model, collection_name='app_charges')
+    app_ = db.ReferenceProperty(db.Model, collection_name='app_charges')
 
     # The charge, in Canadian Dollars. Controllers are responsible for
     # converting the currency-value *at the time of saving*.
