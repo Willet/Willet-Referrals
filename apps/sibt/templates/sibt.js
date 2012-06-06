@@ -53,7 +53,7 @@
         var holder = d.createElement('div');
         var storageIframeLoaded = false;
         var storageIFrame = d.createElement('iframe');
-        storageIFrame.setAttribute('src', "{{URL}}{% url UserCookieSafariHack %}");
+        storageIFrame.setAttribute('src', window.location.protocol + "//{{ DOMAIN }}{% url UserCookieSafariHack %}");
         storageIFrame.setAttribute('id', "sessionFrame");
         storageIFrame.setAttribute('name', "sessionFrame");
         storageIFrame.setAttribute('onload', "doSafariCookieStorage();");
@@ -68,7 +68,7 @@
 
         var storageForm = d.createElement('form');
         storageForm.setAttribute('id', 'sessionform');
-        storageForm.setAttribute('action', "{{URL}}{% url UserCookieSafariHack %}");
+        storageForm.setAttribute('action', window.location.protocol + "//{{ DOMAIN }}{% url UserCookieSafariHack %}");
         storageForm.setAttribute('method', 'post');
         storageForm.setAttribute('target', 'sessionFrame');
         storageForm.setAttribute('enctype', 'application/x-www-form-urlencoded');

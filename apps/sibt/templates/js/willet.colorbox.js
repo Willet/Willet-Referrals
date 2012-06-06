@@ -28,7 +28,7 @@ _willet.colorbox = (function (me) {
         // can use jQuery as $ only if it is passed in.
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
         if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
-            $.getScript('{{URL}}/s/js/jquery.colorbox.js', function () {
+            $.getScript(window.location.protocol + '//{{ DOMAIN }}/s/js/jquery.colorbox.js', function () {
                 if (jQuery && jQuery.willet_colorbox) {
                     $.willet_colorbox = jQuery.willet_colorbox;
                 }
