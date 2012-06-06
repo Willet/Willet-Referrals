@@ -966,7 +966,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '90px' : '56px';
+                    button.style.width = params.buttonCount ? '90px' : '57px';
 
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";
@@ -1265,16 +1265,22 @@ _willet = (function (me, config) {
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv) {
+            // Initialize values
+            var buttonCount    = (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true'),
+                buttonSpacing  = (util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING) + 'px'),
+                buttonPadding  = (util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING) + 'px'),
+                sharingMessage = ("I found this on " + DOMAIN),
+                u = undefined, //shorthand
+                c;
 
-            // Generate button parameters
-            var buttonCount = (config && config.button_count) ||
-                (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true');
-            var buttonSpacing = ((config && config.button_spacing) ||
-                util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING))+'px';
-            var buttonPadding = ((config && config.button_padding) ||
-                util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING))+'px';
-            var sharingMessage = (config && config.sharing_message) ||
-                ("I found this on " + DOMAIN);
+            // Override with config
+            if (config !== u) {
+                c = config;
+                buttonCount    = ((c.button_count    !== u) ? c.button_count : buttonCount);
+                buttonSpacing  = ((c.button_spacing  !== u) && ""+c.button_spacing+"px" ) || buttonSpacing;
+                buttonPadding  = ((c.button_padding  !== u) && ""+c.button_padding+"px" ) || buttonPadding;
+                sharingMessage = ((c.sharing_message !== u) ? c.sharing_message : sharingMessage);
+            }
 
             var params = {
                 "domain":       DOMAIN,
