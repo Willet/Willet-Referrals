@@ -2,10 +2,6 @@
 
 {% block styles %}
     <style type="text/css">
-        html. body {
-            background: transparent !important;
-            background-color: rgb(232, 247, 251) !important;
-        }
         h2 a {
             color: inherit;
             text-decoration: none;
@@ -13,101 +9,12 @@
         h2 a:hover {
             text-decoration: underline;
         }
-        .title_bar {
-            width: 100%;
-            height: 55px;
-            font-size: 18px;
-            padding: 0 0 8px 0;
-            border-bottom: 1px solid #BBB;
-        }
-        .title_bar>* {
-            float: left;
-        }
-        .title_bar>img {
-            height: 60px;
-            width: 50px;
-            margin: 0px 0px 0px 15px;
-            padding: 0px;
-        }
-        .title_bar>div {
-            line-height: 30px;
-            margin: 14px 0 0 15px;
-        }
-        #products-list .description {
-            background-color: #fff;
-            border: 1px silver solid;
-            padding: 20px;
-        }
-        #wrapper {
-            padding: 10px;
-        }
-        #wrapper, .wrapper { /* overrides ask.css defaults */
-            height: auto;
-            display: auto;
-        }
-        #error_bar {
-            display:none;
-            color: #f00;
-        }
-        #cart_items_display li {
-            background-color: transparent;
-            border: 2px transparent solid;
-            box-shadow: none;
-        }
-        /*
-        #product_screen { overflow:hidden; }
-        #product_screen .viewport {
-            float: left;
-            width: 700px;
-            height: 1000px;
-            overflow: hidden;
-            position: relative;
-        }
-        #product_screen .buttons {
-            display: block;
-            margin: 30px 10px 0 0;
-            float: left;
-        }
-        #product_screen .next {
-            margin: 30px 0 0 10px;
-        }
-        #product_screen .disable {
-            visibility: hidden;
-        }
-        #product_screen .overview {
-            list-style: none;
-            position: absolute;
-            padding: 0;
-            margin: 0;
-            left: 0;
-            top: 0;
-        }
-        #product_screen .overview li{
-            float: left;
-            margin: 0 20px 0 0;
-            padding: 1px;
-            height: 1000px;
-            width: 699px;
-        } */
     </style>
 {% endblock %}
 
 {% block body_start %}{% endblock %}
 
 {% block left_screens %}
-    <div class="choice blob">
-        <div class="title">
-            Which one should {{ asker_name }} get?
-        </div>
-        <div class="center">
-            {% for product in products %}
-                <!-- button class="button vote" data-uuid="{{ product.uuid }}">
-                    {{ product.title }}
-                </button -->
-            {% endfor %}
-            <div id="error_bar"></div>
-        </div>
-    </div>
     <div id="success_message" class="hidden blob">
         <div class="title">Thanks for voting!</div>
         {% for product in products %}
@@ -116,85 +23,56 @@
             </h4>
         {% endfor %}
         <div id="fb-root"></div>
-        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
+        <div id="FOO" class="fb-comments hidden"
+             data-href="{{fb_comments_url}}"
+             data-num-posts="5" data-width="375"></div>
     </div>
 {% endblock left_screens %}
 
 {% block right_screens %}
-    <div id="product_screen">
-        <!-- a class="buttons prev" href="#">left</a>
-        <div class="viewport">
-            <ul id="products-list" class="overview">
-                {% for product in products %}
-                    <li class="roundabout-moveable-item">
-                        <div class="description">
-                            <img alt="product image"
-                                src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                                class="slight-highlight product-image center" />
-                            <h2 class="title">
-                                <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
-                            </h2>
-                            {{ product.description|linebreaksbr|striptags }}
-                        </div>
-                        <button class="button vote" data-uuid="{{ product.uuid }}">
-                            I like this one
-                        </button>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <a class="buttons next" href="#">right</a -->
-        <table id="products-list" class="overview"
-               style="border-spacing: 12px;">
-            <tbody>
-                <tr>
-                    {% for product in products %}
-                        <td style="vertical-align:top;
-                                   box-shadow:0px 2px 3px 0px #CECECE;
-                                   border: 1px #F0F0F0 solid;
-                                   padding: 12px 10px 12px 10px;
-                                   border-radius: 3px;">
-                            <div class="product"
-                                 style="">
-                                <a class="info_launch" data-uuid="{{ product.uuid }}">
-                                    <img alt="product image"
-                                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                                        class="product-image center"
-                                        style="max-width:300px; max-height:300px;" />
-                                </a>
-                                <h2 class="title">
-                                    <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
-                                </h2>
-                                <!-- {{ product.description|linebreaksbr|striptags }} -->
-                                <button class="button vote" data-uuid="{{ product.uuid }}"
-                                        style="display:block; margin: 0 auto;
-                                               width: 121px;">
-                                    I like this one
-                                </button>
-                            </div>
-                        </td>
-                        {% cycle <!---->,</tr><tr> %}
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
+    <div id="product_screen" class="wosib">
+        <h2>Which one do you like more?</h2>
         {% for product in products %}
-            <div id="product_info_{{ product.uuid }}" class="product_info">
-                <a>
+            <div class="product">
+                <!-- thumbnail -->
+                <a class="info_launch" data-uuid="{{ product.uuid }}">
                     <img alt="product image"
-                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                        class="product-image center"
-                        style="max-width:300px; max-height:300px;" />
+                         src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                         class="product-image center" />
                 </a>
-                <h2 class="title">
+                <h2 class="title"
+                    style="font-size: 1em">
                     <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
                 </h2>
-                <!-- {{ product.description|linebreaksbr|striptags }} -->
-                <button class="button vote" data-uuid="{{ product.uuid }}"
-                        style="display:block; margin: 0 auto;
-                                width: 121px;">
-                    I like this one
-                </button>
+                <p style="text-align: center;">
+                    <button class="button vote"
+                            data-uuid="{{ product.uuid }}">
+                        I like this one
+                    </button>
+                </p>
+            </div>
+            <div id="product_info_{{ product.uuid }}"
+                class="product_info group1" rel="group1">
+                <!-- details -->
+                <div style="float:left; width: 400px;">
+                    <a>
+                        <img alt="product image"
+                            src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                            class="product-image center"
+                            style="max-width:300px; max-height:300px;" />
+                    </a>
+                    <button class="button vote" data-uuid="{{ product.uuid }}"
+                            style="display:block; margin: 0 auto;
+                                    width: 121px;">
+                        I like this one
+                    </button>
+                </div>
+                <div style="float:right; width: 400px;">
+                    <h2 class="title">
+                        <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                    </h2>
+                    {{ product.description|linebreaksbr|striptags }}
+                </div>
             </div>
         {% endfor %}
     </div>
@@ -246,13 +124,23 @@
             }
         };
         $('.vote').click(vote);
-        $('#cart_items_display input').prop('checked', false);
 
+        // wosib mode view product's info
         $('.info_launch').click(function () {
-            var iid = 'product_info_' + $(this).data('uuid');
+            var iid = '#product_info_' + $(this).data('uuid'),
+                ctl = $(iid);
             $.colorbox({
                 inline: true,
-                href: iid
+                fixed: true,
+                href: ctl,
+                rel: 'product_info',
+                'transition': 'fade',
+                'onOpen': function () {
+                    ctl.show();
+                },
+                'onClosed': function () {
+                    ctl.hide();
+                }
             });
         });
     });

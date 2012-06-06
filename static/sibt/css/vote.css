@@ -208,6 +208,9 @@ div#cloud_bottom {
     line-height: 150%;
     color: #444;
 }
+
+
+/* blob: conversation bubbles */
 .blob {
     /* a 'dialog box' */
     background-color: #f5f5f5;
@@ -224,8 +227,9 @@ div#cloud_bottom {
     margin: -10px -10px 10px -10px;
 }
 .blob>.title>img {
-    margin: 5px;
+    margin: 10px;
 }
+
 
 #title {
     vertical-align: middle;
@@ -269,7 +273,21 @@ img.slight-highlight {
 }
 
 .product {
+    /* each small image in wosib mode. */
+    vertical-align:top;
+    box-shadow:0px 2px 3px 0px #CECECE;
+    border: 1px #F0F0F0 solid;
+    padding: 12px 10px 12px 10px;
+    border-radius: 3px;
+    margin: 17px;
+    width: 200px;
+    float: left;
+    height: 270px;
+}
 
+.product_info {
+    width: 810px;
+    display: none;  /* default hidden */
 }
 
 .product-image {
@@ -277,6 +295,12 @@ img.slight-highlight {
     max-height: 350px;
     display: block;
     margin: 24px auto;
+}
+.wosib .product .product-image {
+    /* wosib images are smaller, and you can click on them. */
+    max-width: 96px;
+    max-height: 96px;
+    cursor: pointer;
 }
 
 .mini {

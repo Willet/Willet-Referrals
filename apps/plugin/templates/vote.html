@@ -20,14 +20,11 @@
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/colorbox.css" />
-        <!-- link rel="stylesheet" href="/static/css/jquery.skeleton.tabs.css" type="text/css" / -->
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
         <script type="text/javascript" src="/static/js/jquery.tinycarousel.min.js"></script>
         <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
-        <!-- script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
-        <script type="text/javascript" src="/static/js/jquery.skeleton.tabs.js"></script -->
         <script type="text/javascript">
             if (typeof jQuery == 'undefined') {
                 var script= document.createElement('script');
@@ -42,8 +39,7 @@
                 // "show invitation dialog"
 
                 var resizeCloud = function (px) {
-                    // $('#white').delay(500).animate({'height': (px + 'px')});
-                    $('#white').animate({'height': (px + 'px')});
+                    $('#white').delay(500).animate({'height': (px + 'px')});
                 };
 
                 // genius "tabs" functionality
@@ -66,25 +62,12 @@
                     event.preventDefault();
                 });
 
-                /*
-                $('.open_link').click(function () {
-                    resizeCloud(130);
-                });
-                */
-
                 $('.open_email').click(function () {
                     resizeCloud(270);
                 });
 
                 $('#window_location').val(window.location.href);
-                $('.open_email').click();
-
-                /*
-                var multiProductList = $('#products-list');
-                if (multiProductList && multiProductList.length) {
-                    $('#product_screen').tinycarousel();
-                }
-                */
+                $('.open_email').click();  // init the page
             });
         </script>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -111,11 +94,6 @@
                                     <br />
                                     Invite more friends to the conversation ⇝
                                 {% endif %}
-                            </p>
-                            <p style="display:none;">
-                                <span class="tab"><a href="#email" class="open_email button">By email</a></span>
-                                &nbsp;&nbsp;&nbsp;
-                                <span class="tab"><a href="#link" class="open_link">By link</a></span>
                             </p>
                         </div>
                         <div class="span-16" style="text-align:left;">
@@ -154,11 +132,6 @@
                 <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
                     Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
-                <!-- div id="share_again">
-                    Invite a friend to vote:
-                    <input style="width: 245px" type="text"
-                            readonly="readonly" value="{{ share_url }}" />
-                </div -->
             </div>
             <div id="main_content" class="slight-highlight">
                 {% block right_screens %}{% endblock right_screens %}
@@ -168,9 +141,11 @@
                         <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
                         <input id="discount_code" type="text" />
                     </div>
-                    <p style="margin-top:24px;">
-                        <a href="http://shuuemura-usa.com">Continue Shopping</a>
-                    </p>
+                    {% if store_url %}
+                        <p style="margin-top:24px;">
+                            <a href="{{ store_url }}">Continue Shopping</a>
+                        </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
