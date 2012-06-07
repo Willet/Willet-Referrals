@@ -118,12 +118,15 @@
         link.onclick = function() {
             var pin_msg = "I found this on "
             w_handle = window.open("//pinterest.com/pin/create/button/?" +
-                    "url=" + encodeURIComponent( "{{ host }}{% url ReEngageProduct %}" ) +
-                    "&media=" + encodeURIComponent( "{{ host }}/static/imgs/demo/product.png" ) +
-                    "&description=" + encodeURIComponent( pin_msg + window.location.host),
-                    'signin',
-                    'height=300,width=665');
+                "url=" + encodeURIComponent( "{{ host }}{% url ReEngageProduct %}" ) +
+                "&media=" + encodeURIComponent( "{{ host }}/static/imgs/demo/product.png" ) +
+                "&description=" + encodeURIComponent( pin_msg + window.location.host),
+                'signin',
+                'height=300,width=665');
             link.className = 'willet-pinterest-button clicked';
+
+            // This will fire immediately after the window opens...
+            // But until we have an API, that's all we've got.
             w_handle.onunload = function() {
                 // Assume that the action succeeded
                 var url  = window.location.href, //Assuming no QS or hash for now
@@ -136,7 +139,7 @@
                 img.style.display = "none";
 
                 document.body.appendChild(img);
-            }
+            };
             return false;
         };
     }());

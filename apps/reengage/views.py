@@ -4,7 +4,7 @@ from urlparse import urlparse
 from google.appengine.api import urlfetch
 from google.appengine.api.taskqueue import taskqueue
 import re
-from apps.reengage.models import TwitterAssociation
+from apps.reengage.models import TwitterAssociation, PinterestAssociation
 from util import httplib2
 from util.urihandler import URIHandler
 from util.local_consts import SHOPIFY_APPS
@@ -202,8 +202,8 @@ def _Pin_find_pins_for_site(site, pin_msg):
 def _Pin_associate_user(url, users):
     associations, _ = PinterestAssociation.get_or_create(url)
     for user in users:
-        if user not in associations.handles:
-            associations.handles.append(user)
+        if user not in associations.pins:
+            associations.pins.append(user)
 
     associations.put()
 
@@ -271,7 +271,7 @@ class ReEngageFindPin(URIHandler):
             pin_ids = _Pin_find_pins_for_site(site, pin_msg)
             logging.info("Pins: %s" % pin_ids)
 
-            #_Pin_associate_user(url, pin_ids)
+            _Pin_associate_user(url, pin_ids)
         else:
             logging.info("Putting on task queue...")
             params = {
