@@ -208,7 +208,54 @@ def _Pin_associate_user(url, users):
     associations.put()
 
 def _Pin_comment(message, url):
-    pass
+    login_url = "https://pinterest.com/login/?next=%2F"
+
+    # Scrape login page
+    h = httplib2.Http()
+    response, content = h.request(login_url, "GET")
+
+    soup = BeautifulSoup(content)
+    csrf = soup.find("input", {"name": "csrfmiddlewaretoken"}).get("value")
+
+    if not csrf:
+        return
+
+    # Login
+    headers = {
+        'Content-type': 'application/x-www-form-urlencoded',
+        'Cookie'      : response.get("Cookie", "")
+    }
+    body    = {
+        'email'              : 'disposable@nt3r.com',
+        'password'           : 'asdfghjkl',
+        'csrfmiddlewaretoken': csrf
+    }
+
+    # 405: Method not allowed response, why?
+    response, content = h.request(url, 'POST', headers=headers, body=urlencode(body))
+
+    logging.info("Response: %s" % response)
+    logging.info("Content : %s" % content)
+
+    headers = {
+        'Cookie'      : response.get('Set-Cookie', ""),
+        'Content-type': 'application/x-www-form-urlencoded'
+    }
+    body    = {
+        "text": message
+    }
+
+    # Post comment
+    associations, _ = PinterestAssociation.get_or_create(url)
+    for pin_id in associations.pins:
+        referrer = "http://pinterest.com/pin/%s/" % pin_id # necessary?
+        comments = "%scomment/" % referrer
+
+        response, content = h.request(comments, 'POST', headers=headers,
+                                      body=urlencode(body))
+        logging.info("Response: %s" % response)
+        logging.info("Content : %s" % content)
+
 
 class ReEngageControlPanel(URIHandler):
     def get(self, network=None):
