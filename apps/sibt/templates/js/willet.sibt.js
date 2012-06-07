@@ -43,7 +43,7 @@ _willet.sibt = (function (me) {
         },
         cart_items = cart_items || window._willet_cart_items || [],
         PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
-        SHAKE_DURATION = 300, // ms
+        SHAKE_DURATION = 0, // ms
         SHAKE_WAIT = 1000, // ms
 
         padding_elem = null,
@@ -281,12 +281,13 @@ _willet.sibt = (function (me) {
                         'id': '_willet_button_v3'
                     });
                     button
-                        .html ("<div class='button' " +
+                        .html ("<p>Need help deciding?</p>" +
+                                	"<div class='button' " +
                                     "title='Ask your friends if you should buy this!'>" +
                                     "<img src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' alt='logo' />" +
-                                    "<div id='_willet_button' class='title'>Share with Friends</div>" +
+                                    "<div id='_willet_button' class='title'>Shop with Friends</div>" +
                                     "</div>")
-                        .css({'clear': 'both', 'height': '40px', 'background':'none'});
+                        .css({'clear': 'both', 'background':'none'});
                     jqElem.append(button);
                 } else {
                     var button = $('#_willet_button_v3');
@@ -387,7 +388,7 @@ _willet.sibt = (function (me) {
                          <div id='_willet_button' class='button' \
                              title='Ask your friends if you should buy this!'>\
                              <img alt='logo' src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' />\
-                             <div class='title'>Share with Friends</div>\
+                             <div class='title'>Shop with Friends</div>\
                          </div>")
             .css({
                 'clear': 'both',
@@ -468,7 +469,7 @@ _willet.sibt = (function (me) {
             if (this && $this) {
                 var nDim = parseFloat($this.width()) * parseFloat($this.height());
                 if (nDim > nMaxDim) {
-                    largest_image = $this.prop('src');
+                    largest_image = $prop('src');
                     nMaxDim = nDim;
                 }
             }

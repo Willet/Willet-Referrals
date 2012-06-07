@@ -137,7 +137,7 @@ _willet.util = {
             + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.src = window.location.protocol + "//social-referral.appspot.com/admin/ithinkiateacookie?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage);
@@ -194,13 +194,13 @@ _willet.util = {
         //    template - a string representing an HTML template, with variables
         //               of the form: {{ var_name }} and condtionals of the form
         //               {% if var_name %} ... {% endif %}
-        //               Note: does not support nested if's, and must be exactly 
+        //               Note: does not support nested if's, and must be exactly
         //                     the form above (no extra whitespace)
         //    values - a object literal, with keys corresponding to template variables,
         //             and values appropriate for the template
         // Return:
         //    rendered template <string>
-        
+
         var ifStatementRe = /\{% if [\w\-]+ %\}/g,
             ifPrefixLen = '{% if '.length,
             endifLen = '{% endif %}'.length,
@@ -213,7 +213,7 @@ _willet.util = {
         while (conditionalIndex >= 0) {
             // get variable name from conditional
             varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
-            
+
             if (values[varName]) {
                 // if variable name exists, strip conditional statements & leave code
                 template = template.replace('{% if '+varName+' %}', '');
@@ -457,9 +457,9 @@ _willet.debug = (function (willet) {
 }(_willet));
 
 _willet.messaging = (function (willet) {
-    /*  
+    /*
         .ajax - Server communication
-        .xd -   Cross-domain frame communication  
+        .xd -   Cross-domain frame communication
     */
     var debug = willet.debug,
         util = willet.util,
@@ -848,7 +848,7 @@ _willet.networks = (function (willet) {
                         return false;
                     };
                     var style = util.createStyle("a.willet-pinterest-button { "
-                                                +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
+                                                +"   background-image: url('//assets.pinterest.com/images/pinit6.png'); "
                                                 +"   background-position: 0 -7px; "
                                                 +"} "
                                                 +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } "
@@ -966,7 +966,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '90px' : '56px';
+                    button.style.width = params.buttonCount ? '90px' : '57px';
 
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";
@@ -1265,16 +1265,22 @@ _willet = (function (me, config) {
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv) {
+            // Initialize values
+            var buttonCount    = (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true'),
+                buttonSpacing  = (util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING) + 'px'),
+                buttonPadding  = (util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING) + 'px'),
+                sharingMessage = ("I found this on " + DOMAIN),
+                u = undefined, //shorthand
+                c;
 
-            // Generate button parameters
-            var buttonCount = (config && config.button_count) ||
-                (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true');
-            var buttonSpacing = ((config && config.button_spacing) ||
-                util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING))+'px';
-            var buttonPadding = ((config && config.button_padding) ||
-                util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING))+'px';
-            var sharingMessage = (config && config.sharing_message) ||
-                ("I found this on " + DOMAIN);
+            // Override with config
+            if (config !== u) {
+                c = config;
+                buttonCount    = ((c.button_count    !== u) ? c.button_count : buttonCount);
+                buttonSpacing  = ((c.button_spacing  !== u) && ""+c.button_spacing+"px" ) || buttonSpacing;
+                buttonPadding  = ((c.button_padding  !== u) && ""+c.button_padding+"px" ) || buttonPadding;
+                sharingMessage = ((c.sharing_message !== u) ? c.sharing_message : sharingMessage);
+            }
 
             var params = {
                 "domain":       DOMAIN,

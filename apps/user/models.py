@@ -79,7 +79,8 @@ class EmailModel(Model):
                 try:
                     # Check if this is a returning user who has cleared their cookies
                     if em.user.uuid != user.uuid:
-                        Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid))
+                        Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid),
+                                           subject='Duplicate user detected')
 
                         # TODO: We might need to merge Users here
                         em.user = user

@@ -56,11 +56,11 @@ Notes:
 def ensure_hourly_slices(app):
     """ENSURE we have the HOURLY APP time slices"""
     now = memcache.get('hour')
-    if not now: 
-        now = datetime.datetime.now() # gets the current date and time of now. UTC. bitches. 
+    if not now:
+        now = datetime.datetime.now() # gets the current date and time of now. UTC. bitches.
         now = now - datetime.timedelta(
-                minutes=now.minute, 
-                seconds=now.second, 
+                minutes=now.minute,
+                seconds=now.second,
                 microseconds=now.microsecond)
     else:
         now = datetime.datetime.combine(now, datetime.time())
@@ -70,17 +70,17 @@ def ensure_hourly_slices(app):
     put_list = []
     for hour in hours:
         val = now - datetime.timedelta(hours=hour)
-        ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
+        ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val,
                 put=True)
         # Commented out the yield put because we were having issues with
         # the combined put being too large
         #if created:
         #    logging.debug('created hour slice: %s' % ahs)
-        #yield op.db.Put(ahs)     
+        #yield op.db.Put(ahs)
 
 def build_hourly_stats(time_slice):
     """RUN the HOURLY APP Stats
-    This is the real 'meat' that performs a count() for all actions of a 
+    This is the real 'meat' that performs a count() for all actions of a
     specific class within this time_slice"""
     start = time_slice.start
     end = time_slice.end
@@ -93,7 +93,7 @@ def build_hourly_stats(time_slice):
             logging.debug("Averaging for action: %s = %d" % (action, value))
         else:
             value = count_action(app_, action, start, end)
-            logging.debug("Counting for action: %s = %d" % (action, value))    
+            logging.debug("Counting for action: %s = %d" % (action, value))
         setattr(time_slice, action, value)
 
     yield op.db.Put(time_slice)
@@ -117,11 +117,11 @@ def average_action(app_, action, prop, start, end):
     Returns an Integer average for this action in the time period
     Note that with limit=None in the fetch() this operation will try to fetch
     all actions, but if it fails, it will time out.
-    
+
     input: prop (str)"""
-    
+
     prop_sum = 0.0
-    
+
     try:
         actions = Action.all()\
                     .filter('app_ =', app_)\
@@ -133,12 +133,12 @@ def average_action(app_, action, prop, start, end):
         count = len(actions)
         for action in actions: # no reducing on objects, right?
             prop_sum += action.duration     # float (getattr (action, prop, 0.0))
-            
+
         try:
             average = prop_sum / count
         except ZeroDivisionError:
             average = 0
-        
+
         return average
     except Exception, e:
         # e.g. div by 0
@@ -156,12 +156,12 @@ def ensure_daily_slices(app):
     put_list = []
     for day in days:
         val = today - datetime.timedelta(days=day)
-        ahs, created = AppAnalyticsDaySlice.get_or_create(app_=app, start=val, 
+        ahs, created = AppAnalyticsDaySlice.get_or_create(app_=app, start=val,
                 put=True)
         # Again, commented out the yield put for now due to errors putting
         #if created:
         #    logging.debug('created day slice: %s' % ahs)
-        #yield op.db.Put(ahs)      
+        #yield op.db.Put(ahs)
 
 def build_daily_stats(time_slice):
     """BUILD the DAILY APP specific stats"""
@@ -211,7 +211,7 @@ def build_global_hourly_stats(global_slice):
                 global_slice.default(action)
                 action_first_run.append(action)
             logging.debug('incrementing %s from %d to %d' % (
-                action, global_slice.get_attr(action), 
+                action, global_slice.get_attr(action),
                 hour_slice.get_attr(action)))
             global_slice.increment(action, hour_slice.get_attr(action))
     yield op.db.Put(global_slice)
@@ -235,7 +235,7 @@ def build_global_daily_stats(global_slice):
     yield op.db.Put(global_slice)
 
 class TimeSlices(URIHandler):
-    """ Funnily enough, sometimes GET or POST is called. 
+    """ Funnily enough, sometimes GET or POST is called.
         Thanks for being consistent, mapreduce. """
 
     def post(self, action, scope):
@@ -247,7 +247,7 @@ class TimeSlices(URIHandler):
         We break the dict up by actions and scope.
         Actions are: ensure, run (synonymous with build)
         Scopes are: hour, day, hour_global, day_global
-        
+
         Some of the ENSURE jobs are mapreduce jobs, while the global jobs
         are just simple db.puts.
 
@@ -268,7 +268,7 @@ class TimeSlices(URIHandler):
                         'func': f_base % 'ensure_hourly_slices',
                         'entity': 'apps.sibt.shopify.models.SIBTShopify',
                         'reader': 'DatastoreKeyInputReader'
-                    } 
+                    }
                 },
                 'day': {
                     'mr': {
@@ -282,8 +282,8 @@ class TimeSlices(URIHandler):
                     'scope_range': range(24),
                     'today_get': datetime.datetime.today(),
                     'today': lambda d: d - datetime.timedelta(
-                        minutes=d.minute, 
-                        seconds=d.second, 
+                        minutes=d.minute,
+                        seconds=d.second,
                         microseconds=d.microsecond),
                     'td': lambda t: datetime.timedelta(hours=t),
                     'cls': GlobalAnalyticsHourSlice,
@@ -295,31 +295,31 @@ class TimeSlices(URIHandler):
                     'td': lambda t: datetime.timedelta(days=t),
                     'cls': GlobalAnalyticsDaySlice,
                 }
-            }, 
+            },
             'run': {
                 'hour': {
                     'name': 'Run Hourly Analytics',
                     'func': f_base % 'build_hourly_stats',
                     'entity': e_base % 'AppAnalyticsHourSlice',
-                    'done_callback': '/bea/run/day/', 
+                    'done_callback': '/bea/run/day/',
                 },
                 'day': {
                     'name': 'Run Daily Analytics',
                     'func': f_base % 'build_daily_stats',
                     'entity': e_base % 'AppAnalyticsDaySlice',
-                    'done_callback': '/bea/run/hour_global/', 
+                    'done_callback': '/bea/run/hour_global/',
                 },
                 'hour_global': {
                     'name': 'Run GLOBAL Hourly Analytics',
                     'func': f_base % 'build_global_hourly_stats',
                     'entity': e_base % 'GlobalAnalyticsHourSlice',
-                    'done_callback': '/bea/run/day_global/', 
+                    'done_callback': '/bea/run/day_global/',
                 },
                 'day_global': {
                     'name': 'Run GLOBAL Daily Analytics',
                     'func': f_base % 'build_global_daily_stats',
                     'entity': e_base % 'GlobalAnalyticsDaySlice',
-                    'done_callback': '/bea/done/', 
+                    'done_callback': '/bea/done/',
                 },
             }
         }
@@ -369,6 +369,7 @@ class TimeSlices(URIHandler):
 
 class AnalyticsDone(URIHandler):
     def get(self):
-        Email.emailDevTeam('Finished running analytics')
+        Email.emailDevTeam('Finished running analytics',
+                           subject='Analytics Done')
         self.response.out.write(json.dumps({'success': True}))
 

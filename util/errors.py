@@ -13,7 +13,7 @@ class RemoteError(Exception):
         self.status = HTTP_status_code
         self.name = HTTP_status_msg
         self.description = description
-    
+
     def __str__(self):
         return "%s %s: %s" % (self.status, self.name, self.description)
 
@@ -24,7 +24,7 @@ class ShopifyAPIError(RemoteError):
 class BillingError(Exception):
     """ Exception raised when a billing API request fails or returns an unexpected result"""
 
-    def __init__(self, message, data):
+    def __init__(self, message, data=None):
         self.message = message
         self.data = data
 

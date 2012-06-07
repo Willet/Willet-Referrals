@@ -28,7 +28,7 @@ from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 
-from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
+from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, SECURE_URL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
 from util.shopify_helpers import get_shopify_url
@@ -671,6 +671,7 @@ class ColorboxJSServer(URIHandler):
     def get(self):
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'app_uuid': self.request.get('app_uuid'),
             'user_uuid': self.request.get('user_uuid'),
             'instance_uuid': self.request.get('instance_uuid'),
@@ -929,13 +930,13 @@ class SIBTServeScript(URIHandler):
             if not app_css:
                 raise AttributeError('Empty CSS is illegal!')
         except AttributeError:
-            # app is not a SIBTShopify! borrow default CSS from one.
             app_css = SIBTShopify.get_default_css()
 
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'DOMAIN': DOMAIN,
             'URL': URL,
 
             # store info
@@ -1019,7 +1020,7 @@ class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
         """Does everything SIBTServeScript does."""
-        self.redirect("%s%s?%s" % (URL,
+        self.redirect("%s%s?%s" % (SECURE_URL,
                                    url('SIBTServeScript'),
                                    self.request.query_string),
                       permanent=True)

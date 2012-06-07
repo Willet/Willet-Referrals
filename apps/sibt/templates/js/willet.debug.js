@@ -73,10 +73,10 @@ _willet.debug = (function (me) {
         var script  = encodeURIComponent("sibt.js");
         var st      = encodeURIComponent(msg);
         var params  = "error=" + error + "&script=" + script + "&st=" + st;
-        var err_img = d.createElement("img");
-        err_img.src = "{{URL}}{% url ClientSideMessage %}?" + params;
+        var err_img = document.createElement("img");
+        err_img.src = window.location.protocol + "//{{ DOMAIN }}{% url ClientSideMessage %}?" + params;
         err_img.style.display = "none";
-        d.body.appendChild(err_img);
+        document.body.appendChild(err_img);
     };
 
     // set up a hook to let log and error be fired

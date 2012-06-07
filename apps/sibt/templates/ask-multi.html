@@ -17,14 +17,12 @@
             <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
         </div>
         <div style="margin-top:10px">
-            <!-- div class="step">Select items to ask.</div -->
             <div id="selection_box_container">
                 <div id="selection_box"><!-- JS --></div>
             </div>
         </div>
         <div class="options">
             <div class="restrictedWidth">
-                <!-- div class="step">2. Add a message:</div -->
                 <textarea id="fbComment" name="fbComment">I like both of these items. Which one do you like more?</textarea>
                 <br />
                 <div class="option left">
@@ -170,19 +168,6 @@
             });
         }
     };
-
-    /*var updateEmailAddress = function() {
-        var addr = document.getElementById( 'email-field' ).value;
-        $.ajax({
-            url: "{{ URL }}{% url UpdateEmailAddress %}",
-            type: 'post',
-            data: { email : addr },
-            success: function (tr) {
-                doPostMessage('close');
-                window.close();
-            }
-        });
-    };*/
 {% endblock ajax_methods %}
 
 
@@ -229,44 +214,6 @@
         uuids.push($('#selection_box_container>img').prop('alt'));
         uuids.push($('#selection_box>img').prop('alt'));
         return uuids.join(',');
-    };
-
-    // Connect with FB and fetch FB friends, on Choose Friends screen
-    var runFBConnect = function () {
-        storeAnalytics('SIBTConnectFBDialog');
-
-        FB.login( function(response) {
-            var authResp = response.authResponse;
-
-            if (!authResp) {
-                // We weren't given permission, do nothing
-                return;
-            } else {
-                storeAnalytics('SIBTFBConnected');
-
-                // Store FB data in the server.
-                updateServerUser(authResp.accessToken, authResp.userID);
-                fetchFBFriends();
-            }
-        }, {scope: 'publish_stream,offline_access,user_about_me,email'});
-    };
-
-    // Query FB api to grab logged-in user's friends
-    var fetchFBFriends = function () {
-        FB.api('/me/friends', function (response) {
-            fb_friends = response.data;
-            fb_friends.sort();
-
-            $.each( response.data, function (i) {
-                friendNames.push(fb_friends[i].name);
-            });
-
-            // Code here changes all FB Connect options into FB Friend Select options
-            var i = friends.length;
-            while (i--) {
-                friends[i].FBLoggedIn();
-            }
-       });
     };
 {% endblock js_functions %}
 
