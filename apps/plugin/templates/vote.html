@@ -111,35 +111,41 @@
 
         <div id="wrapper">
             {% block screens %}{% endblock %}
-            <div id="asker_bar">
-                <div class="blob">
-                    <div class="title">
-                    {% if asker_pic %}
-                        <img align="left" src="{{ asker_pic }}" />
-                    {% endif %}
-                    {{asker_name}} asks:</div>
-                    <div id="sharing_message">
-                        {{ sharing_message|escape|default:"I like this, but..." }}
+            <div id="main_content">
+                <h2>1. Vote</h2>
+                <div class="slight-highlight">
+                    {% block right_screens %}{% endblock right_screens %}
+                    <div id="discount_screen" class="hidden">
+                        <h2>Thank you for helping {{asker_name}}.</h2>
+                        <div id="discount_gettest">
+                            <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
+                            <input id="discount_code" type="text" />
+                        </div>
+                        {% if store_url %}
+                            <p style="margin-top:24px;">
+                                <a href="{{ store_url }}">Continue Shopping</a>
+                            </p>
+                        {% endif %}
                     </div>
-                </div>
-                {% block left_screens %}{% endblock left_screens %}
-                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
-                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
             </div>
-            <div id="main_content" class="slight-highlight">
-                {% block right_screens %}{% endblock right_screens %}
-                <div id="discount_screen" class="hidden">
-                    <h2>Thank you for helping {{asker_name}}.</h2>
-                    <div id="discount_gettest">
-                        <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
-                        <input id="discount_code" type="text" />
+            <div id="asker_bar" class="slight-highlight">
+                <h2>2. Discuss</h2>
+                <div class="slight-highlight">
+                    <div class="blob">
+                        <div class="title">
+                        {% if asker_pic %}
+                            <img align="left" src="{{ asker_pic }}" />
+                        {% endif %}
+                        {{asker_name}} asks:</div>
+                        <div id="sharing_message">
+                            {{ sharing_message|escape|default:"I like this, but..." }}
+                        </div>
                     </div>
-                    {% if store_url %}
-                        <p style="margin-top:24px;">
-                            <a href="{{ store_url }}">Continue Shopping</a>
-                        </p>
-                    {% endif %}
+                    {% block left_screens %}{% endblock left_screens %}
+                    <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
+                        Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
+                    </div>
                 </div>
             </div>
         </div>
