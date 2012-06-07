@@ -790,6 +790,58 @@ class SendFriendAsks(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
+class SaveProductsToInstance(URIHandler):
+    """Modifies the products in an instance.
+
+    Expected inputs:
+        instance_uuid (required)
+        products (required): a comma-separated string of product UUIDs.
+        unshift (optional, 0): if 1, handler will only affect the order of
+                               the list of products.
+            Example: products in instance: 1,2,3,4
+                     products: 4,3
+                     unshift: 1
+                     -> products in instance (updated): 4,3,1,2
+
+    Expected outputs:
+        (200/400 response headers)
+    """
+    def post(self):
+        """See class docstring for details."""
+        logging.info("Saving product selection of a given instance")
+
+        # Shorthand
+        rget = self.request.get
+
+        # fetch instance and products... run code if both are valid inputs
+        instance = SIBTInstance.get(rget('instance_uuid'))
+        product_uuids = rget('products', '').split(',')
+        products = [Product.get(uuid) for uuid in product_uuids]
+        unshift = bool(rget('unshift', '0') == '1')
+
+        logging.debug('instance = %r' % instance)
+        logging.debug('product_uuids = %r' % product_uuids)
+        logging.debug('products = %r' % products)
+
+        if instance and all(products):
+            if unshift:  # re-order mode
+                logging.debug('instance.products = %r' % instance.products)
+                remainder = frozenset(instance.products).difference(product_uuids)
+                logging.debug('remainder = %r' % remainder)
+                instance.products = product_uuids
+                instance.products.extend(list(remainder))
+                logging.debug('instance.products = %r' % instance.products)
+            else:  # replace mode
+                instance.products = product_uuids
+            instance.put()
+            # logging.info('response: %s' % response)
+            self.error(200)
+            return
+
+        # logging.info('response: %s' % response)
+        self.error(400)
+
+
 def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     """Function to create a vendor's Client, SIBT App, and User.
 

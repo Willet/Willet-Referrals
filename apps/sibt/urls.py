@@ -21,6 +21,7 @@ urlpatterns = [
     (r'/s/doVote',                  DoVote),
     (r'/s/getExpired',              GetExpiredSIBTInstances),
     (r'/s/instance/start',          StartSIBTInstance),
+    (r'/s/instance/products',       SaveProductsToInstance),
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
     (r'/s/sendFriendAsks',          SendFriendAsks),
     (r'/s/startPartialInstance',    StartPartialSIBTInstance),

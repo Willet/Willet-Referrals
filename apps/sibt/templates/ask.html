@@ -6,10 +6,12 @@
     <!--                          Splash Screen                             -->
 
     <div id="splash">
-        <div class="title_bar">
-            <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-            <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
-        </div>
+        {% if not embed %}
+            <div class="title_bar">
+                <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
+            </div>
+        {% endif %}
         <div class="content narrow">
             <!--
             // Enable when styling complete
@@ -18,7 +20,9 @@
             {% endif %}
             -->
             <div class="message" id="message">
-                <img alt="product" src="{{ product_images|first }}" />
+                {% if not embed %}
+                    <img alt="product" src="{{ product_images|first }}" />
+                {% endif %}
                 <textarea id='shareText' maxlength='1000'>I like this product, what do you think?</textarea>
             </div>
             <div class="options">
@@ -159,11 +163,5 @@
 {% block js_functions %}{% endblock js_functions %}
 
 {% block js_init %}
-    {% if not embed %}
-        {# "if not embed" is intentional - helps F+R. #}
-        showScreen('splash');
-    {% else %}
-        // go to choose friends directly
-        showScreen('choose');
-    {% endif %}
+    showScreen('splash');
 {% endblock js_init %}

@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(232, 247, 251);
+    background: #f0f0f0 url(/static/imgs/tiles/diagonal.png);
     font: 1em/1.5em "PT Sans", "Lucida Grande", Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -52,22 +52,17 @@ div#starburst {
     background: url("/static/imgs/starburst.png") no-repeat center top;
     z-index: -5;
 }
-#wrapper {
+#wrapper, .wrapper {
+    display: auto;
     padding: 10px 10px 20px 10px;
-    text-align: center;
 
     margin: 0 auto;
-    width: 1118px;
-    /*margin: 20px 0;*/
+    width: 1050px;
     margin-bottom: 40px;
     border-radius: 3px;
 
     float: none;
-}
-#wrapper, .wrapper { /* overrides ask.css defaults */
     height: auto;
-    width: 1153px;
-    display: auto;
 }
 #error_bar {
     display:none;
@@ -89,18 +84,12 @@ hr {
 
 div#white {
     width: 100%;
+    margin-bottom: 24px;
     padding: 0;
-    background: #fff;
+    background: #94b7cf url(/static/imgs/tiles/noise.png);
     height: 0; /* JS resets it */
     overflow: hidden;
-}
-div#cloud_top {
-    height: 77px;
-    background: url(/static/imgs/cloud_top.png) center top repeat-x;
-}
-div#cloud_bottom {
-    height: 86px;
-    background: url(/static/imgs/cloud_bottom.png) center top repeat-x;
+    box-shadow: 0 8px 11px 0px #DDD;
 }
 
 #left-div, #right-div {
@@ -120,6 +109,11 @@ div#cloud_bottom {
     -webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.3);
     -moz-box-shadow:0px 0px 5px 0px rgba(0,0,0,0.3);
     box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.3);
+}
+
+img.profile_pic {
+    float: left;
+    margin-right: 10px;
 }
 
 #yesBtn {
@@ -166,14 +160,17 @@ div#cloud_bottom {
 }
 #asker_bar {
     float: right;
-    width: 415px;
+    width: 440px;
     margin-left: -7px; /* shadow compensation */
 }
 #main_content {
     float: left;
-    width: 555px;
-    min-height: 550px;
+    width: 615px;
+    /*min-height: 550px;*/
     text-align: justify;
+}
+#main_content>div {
+    min-height: 440px;
 }
 #product_img {
     display: block;
@@ -198,6 +195,9 @@ div#cloud_bottom {
 }
 #discount_gettest {
     display: none;
+}
+#set_products {
+    margin-top:12px;
 }
 .description {
     margin-top: 24px;
@@ -248,10 +248,6 @@ div#cloud_bottom {
 }
 #result {
     font-size: 16pt;
-}
-
-#friends_selector {
-
 }
 
 .slight-highlight {

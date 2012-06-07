@@ -21,13 +21,13 @@
         {% if not embed %}{# intentionally left blank #}{% else %}
             <style>
                 ul.friends, ul.askers {
-                    max-height: 175px;
+                    max-height: 150px;
                 }
                 ul.askers {
                     margin-top: 0;
                 }
                 .center_col {
-                    margin-top: 20px;
+                    margin-top: 60px;
                 }
 
                 /* reduce size of button */
@@ -35,8 +35,8 @@
                     height: 32px;
                 }
                 .button > img {
-                    width: 32px;
-                    height: 32px;
+                    width: 23px;
+                    height: 23px;
                     margin: 2.5px !important; /* override id > img selector */
                 }
                 .button .title {
@@ -93,12 +93,12 @@
                     </div>
                 {% endif %}
                 <div class="content narrow">
+                    <div class="center_col" style="margin-top: 35px;">
+                        <p class="centered">We will email you when a friend provides advice.</p>
+                    </div>
                     <ul class="askers" id="askers">
                         <!-- Asker appended when document ready -->
                     </ul>
-                    <div class="center_col">
-                        <p class="centered">We will email you when a friend provides advice.</p>
-                    </div>
                     <div id="askButton" class="button inactive corner">
                         <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                         <div class="title">Ask Chosen Friends</div>

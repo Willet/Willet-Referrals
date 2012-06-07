@@ -354,7 +354,11 @@ class VoteDynamicLoader(URIHandler):
         else:  # v11 mode: auto-create
             logging.debug('instance not found - creating one')
 
-            app = SIBT.get(self.request.get('app_uuid'))
+            app_uuid = self.request.get('app_uuid')
+            if not app_uuid:
+                self.response.out.write("This vote is now over.")
+
+            app = SIBT.get(app_uuid)
             if not app:
                 app = SIBT.get_by_store_url(store_url)
             if not app:
@@ -373,7 +377,9 @@ class VoteDynamicLoader(URIHandler):
                                                 page_url=target,
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
+                # update variables to reflect "creation"
                 new_instance = True
+                instance_uuid =  instance.uuid
 
         sharing_message = instance.sharing_message
 

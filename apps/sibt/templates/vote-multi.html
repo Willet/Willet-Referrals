@@ -22,33 +22,30 @@
                 Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
             </h4>
         {% endfor %}
-        <div id="fb-root"></div>
-        <div id="FOO" class="fb-comments hidden"
-             data-href="{{fb_comments_url}}"
-             data-num-posts="5" data-width="375"></div>
     </div>
 {% endblock left_screens %}
 
 {% block right_screens %}
-    <div id="product_screen" class="wosib">
-        <h2>Which one do you like more?</h2>
+    <div id="product_screen" class="wosib center">
         {% if is_asker %}
-            <div id="selection_box_container">
+            <p>
+              <b>Select products to show in your vote</b>
+            </p>
+            <div id="selection_box_container" style="margin-top:110px;">
                 <div id="selection_box"><!-- JS --></div>
             </div>
+            <p style="text-align:center;">
+                <button id="set_products">Select products</button>
+            </p>
         {% else %}
-            {% for product in products %}
-                <div class="product">
+            <h2>Which one do you like more?</h2>
+            {% for product in products|slice:":3" %}
+                <div class="product info_launch" data-uuid="{{ product.uuid }}">
                     <!-- thumbnail -->
-                    <a class="info_launch" data-uuid="{{ product.uuid }}">
-                        <img alt="product image"
-                            src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                            class="product-image center" />
-                    </a>
-                    <h2 class="title"
-                        style="font-size: 1em">
-                        <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
-                    </h2>
+                    <img alt="product image"
+                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                        class="product-image center" />
+                    <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
                     <p style="text-align: center;">
                         <button class="button vote"
                                 data-uuid="{{ product.uuid }}">
@@ -67,15 +64,14 @@
                                 style="max-width:300px; max-height:300px;" />
                         </a>
                         <button class="button vote" data-uuid="{{ product.uuid }}"
-                                style="display:block; margin: 0 auto;
+                                style="display:block;
+                                        margin: 0 auto;
                                         width: 121px;">
                             I like this one
                         </button>
                     </div>
                     <div style="float:right; width: 400px;">
-                        <h2 class="title">
-                            <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
-                        </h2>
+                        <h2 class="title">{{ product.title }}</h2>
                         {{ product.description|linebreaksbr|striptags }}
                     </div>
                 </div>
@@ -118,20 +114,21 @@
                                 $("#discount_code").val(data || "We're out!");
                             }
                         });
-                        fbinit (document, 'script', 'facebook-jssdk');
+                        // fbinit (document, 'script', 'facebook-jssdk');
                     },
                     error: function () {
                         $(".choice").hide();
                         $("#error_message").show();
                     }
                 });
-            } else {
-                showError("Please select a product :)");
             }
         };
-        $('.vote').click(vote);
+        $('.vote').click(function (event) {
+            event.stopPropagation();
+            vote(event.target);
+        });
 
-        // wosib mode view product's info
+<!--                // wosib mode view product's info                       -->
         $('.info_launch').click(function () {
             var iid = '#product_info_' + $(this).data('uuid'),
                 ctl = $(iid);
@@ -188,6 +185,32 @@
         $selection_box
             .imageDropdown();
 
-        $('#postOnWall').click(postOnWall);
+        var getSelectedObjects = function () {
+            // returns a comma-separated string of product uuids "id,id,id"
+            var uuids = [];
+            uuids.push($('#selection_box_container>img').prop('alt'));
+            uuids.push($('#selection_box>img').prop('alt'));
+            return uuids.join(',');
+        };
+
+        $('#set_products').click(function () {
+            // after creating the instance, allow user to change that products
+            // are chosen.
+            $.ajax({
+                url: "{% url SaveProductsToInstance %}",
+                data: {
+                    'instance_uuid': "{{ instance_uuid }}",
+                    'products': getSelectedObjects(),
+                    'unshift': '1'
+                },
+                type: 'post',
+                dataType: 'text',
+                success: function () {
+                    $('#set_products').text('Saved').attr('disabled', 'disabled');
+                }
+            });
+        });
+
+        fbinit (document, 'script', 'facebook-jssdk');
     });
 {% endblock %}
