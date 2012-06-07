@@ -149,8 +149,6 @@ def obtain(*args):
                     (key, default) = (arg, None)
 
                 if key not in kwargs:  # override only if it didn't exist
-                    logging.debug('adding key %s into the original '
-                                  'function parameter.' % key)
                     kwargs[key] = req.get(key, default)
 
             return original_function(*args, **kwargs)

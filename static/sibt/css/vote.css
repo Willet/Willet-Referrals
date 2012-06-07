@@ -78,9 +78,6 @@ div#starburst {
     margin: 0 auto;
     padding: 15px 0;
 }
-#friends_selector .page {
-    display: none;
-}
 #cart_items_display li {
     background-color: transparent;
     border: 2px transparent solid;
@@ -204,6 +201,7 @@ div#cloud_bottom {
     display: none;
 }
 .description {
+    margin-top: 24px;
     font-size: 100%;
     line-height: 150%;
     color: #444;

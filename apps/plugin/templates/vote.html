@@ -24,6 +24,7 @@
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
         <script type="text/javascript" src="/static/js/jquery.tinycarousel.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.imagedropdown.js"></script>
         <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
         <script type="text/javascript">
             if (typeof jQuery == 'undefined') {
@@ -62,12 +63,11 @@
                     event.preventDefault();
                 });
 
-                $('.open_email').click(function () {
-                    resizeCloud(270);
-                });
-
                 $('#window_location').val(window.location.href);
-                $('.open_email').click();  // init the page
+
+                {% if is_asker %}
+                    resizeCloud(270);  // init the page
+                {% endif %}
             });
         </script>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -97,15 +97,9 @@
                             </p>
                         </div>
                         <div class="span-16" style="text-align:left;">
-                            <div class="page" id="link">
-                                <p><b>Send this link to your friends to let them participate!</b></p>
-                                <input id="window_location" type="text" style="width:540px;font-size:100%;" />
-                            </div>
-                            <div class="page" id="email">
                                 <!-- p><b>Send your invitation by email</b></p -->
                                 <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
                                         style="width:600px;height:265px;"></iframe>
-                            </div>
                         </div>
                     </div>
                 {% endif %}
