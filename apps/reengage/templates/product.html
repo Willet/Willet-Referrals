@@ -40,6 +40,34 @@
             top: 225px !important;
             left: 450px !important;
         }
+
+        #pinterest {
+            position: absolute;
+            top: 225px;
+            left: 515px;
+        }
+
+        a.willet-pinterest-button {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            font: 11px Arial, sans-serif;
+            text-indent: -9999em;
+            font-size: .01em;
+            color: #CD1F1F;
+            height: 20px;
+            width: 43px;
+            zIndex: 1;
+        }
+
+        a.willet-pinterest-button {
+           background-image: url('//assets.pinterest.com/images/pinit6.png'); 
+           background-position: 0 -7px; 
+        }
+
+        a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } 
+        a.willet-pinterest-button:active { background-position: 0 -49px; cursor: pointer; } 
+        a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }
     </style>
 </head>
 <body>
@@ -81,25 +109,12 @@
         fjs.parentNode.insertBefore(js, fjs);
     }
 }(document, "script", "twitter-wjs");</script>
+<div id="pinterest">
+    <a class="willet-pinterest-button">Pin It</a>
+</div>
 <script>
     (function() {
-        var button = document.createElement("div");
-        button.id = "pinterest";
-        button.style.width = '43px';
-
-        var link = document.createElement("a");
-        link.className = 'willet-pinterest-button';
-        link.innerHTML = "Pin It";
-        link.style.position = 'absolute';
-        link.style.top = '0';
-        link.style.left = '0';
-        link.style.font = "11px Arial, sans-serif";
-        link.style.textIndent = "-9999em";
-        link.style.fontSize = ".01em";
-        link.style.color = "#CD1F1F";
-        link.style.height = "20px";
-        link.style.width = "43px";
-        link.style.zIndex = "1";
+        var link = document.getElementsByClassName("willet-pinterest-button")[0];
         link.onclick = function() {
             var pin_msg = "I found this on "
             w_handle = window.open("//pinterest.com/pin/create/button/?" +
@@ -124,10 +139,6 @@
             }
             return false;
         };
-
-        button.appendChild(link);
-
-        document.body.appendChild(button);
     }());
 </script>
 <script src="//assets.pinterest.com/js/pinit.js"></script>
