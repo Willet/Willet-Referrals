@@ -90,6 +90,33 @@ class ButtonsShopify(Buttons, AppShopify):
         self.put()
         return price
 
+    def get_monthly_orders(self):
+        """returns a tuple containing client name, client url and monthly orders
+        """
+        result = self._call_Shopify_API("GET", "shop.json?fields=created_at")
+
+        now          = datetime.utcnow()
+        shop_created = self._Shopify_str_to_datetime(result["shop"]["created_at"])
+        start_date   = max(shop_created, now - timedelta(days=365))
+        months       = ((now - start_date).days) / 30.0
+
+        query_params = {
+            "created_at_min": start_date.strftime("%Y-%m-%d %H:%M"),
+            "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
+        }
+
+        urlencoded_params = "?" + urlencode(query_params)
+
+        result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
+        orders = int(result["count"])
+        monthly_orders = orders / months if months else orders
+        
+        return ( int(monthly_orders),
+                 self.client.name,
+                 self.client.url,
+                 self.client.merchant.get_full_name(),
+                 self.client.email or u'' )
+
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
