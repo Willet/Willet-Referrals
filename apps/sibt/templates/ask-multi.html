@@ -17,13 +17,16 @@
                 <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                 <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
             </div>
-            <div style="margin-top:10px">
-                <!-- div class="step">Select items to ask.</div -->
-                <div id="selection_box_container">
-                    <div id="selection_box"><!-- JS --></div>
-                </div>
-            </div>
+        <div style="margin-top:10px">
+        {% else %}
+        <div style="display: none;">
+        <!-- keep this here even if embed -->
         {% endif %}
+            <!-- div class="step">Select items to ask.</div -->
+            <div id="selection_box_container">
+                <div id="selection_box"><!-- JS --></div>
+            </div>
+        </div>
         <div class="options">
             <div class="restrictedWidth">
                 <!-- div class="step">2. Add a message:</div -->
@@ -132,7 +135,7 @@
                 fb_id: fbIdentity,
                 friends: JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                 asker: JSON.stringify(asker_info),
-                products: getSelectedObjects (),
+                products: getSelectedObjects(),  // str
                 msg: msg,
                 default_msg: "{{AB_share_text|escape}}",
                 instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created

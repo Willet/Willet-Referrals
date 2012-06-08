@@ -71,6 +71,8 @@ class AskDynamicLoader(URIHandler):
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
+        instance = SIBTInstance.get(instance_uuid)  # None
+        link = None
         new_instance = False  # True if this function creates one
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         page_url = self.request.get('url', '') or \
@@ -199,7 +201,11 @@ class AskDynamicLoader(URIHandler):
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
-        link = Link.create(page_url, app, origin_domain, user)
+        if instance:
+            link = instance.link  # re-use old link to get to this instance!
+            logging.info("Reusing the link of an existing instance.")
+        else:
+            link = Link.create(page_url, app, origin_domain, user)
 
         # log this "showage"
         if user_found:
@@ -223,7 +229,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
-            'instance_uuid': self.request.get('instance_uuid', ''),
+            'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
@@ -308,9 +314,7 @@ class VoteDynamicLoader(URIHandler):
                   SIBT and WOSIB modes are automatically managed.
 
     params required for existing instance:
-        instance_uuid (optional): if omitted, an instance will be created
-                                  automatically.
-                                  this is new in v11.
+        instance_uuid: show the vote page for this instance.
     """
     def get(self):
         app = None
@@ -508,6 +512,7 @@ class VoteDynamicLoader(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
 
         logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
         link = Link.create(targetURL=page_url,
                            app=app,
                            domain=get_shopify_url(page_url),
@@ -527,6 +532,17 @@ class VoteDynamicLoader(URIHandler):
                                        motivation=None,
                                        sharing_message="",
                                        products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
         return instance
 
     def get_products(self, app=None):

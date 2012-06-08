@@ -733,21 +733,12 @@ class SendFriendAsks(URIHandler):
                                                    sharing_message=msg,
                                                    products=product_uuids)
                 else:  # instance exists! update its details.
-                    if instance.link:
-                        logging.debug('saving link.')
-                        qs = {'instance_uuid': instance.uuid}
-                        instance_url = "%s%s" % (URL,
-                                                 url('VoteDynamicLoader', qs=qs))
-                        instance.link.target_url = instance_url
-                        instance.link.put()
-                        instance.link.memcache_by_code() # doubly memcached
                     instance.asker = user
                     instance.sharing_message = msg
                     instance.products = product_uuids
                     instance.dialog = "ConnectFB"
                     instance.img = product_image
                     logging.debug('updating existing instance')
-                    instance.put()
 
                 # change link to reflect to the vote page.
                 link.target_url = urlparse.urlunsplit([PROTOCOL,
@@ -759,6 +750,9 @@ class SendFriendAsks(URIHandler):
                 logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
                 link.put()
                 link.memcache_by_code() # doubly memcached
+
+                instance.link = link
+                instance.put()
 
                 # increment shares
                 for _ in range(friend_share_counter):
@@ -846,6 +840,8 @@ class SaveProductsToInstance(URIHandler):
                 logging.debug('instance.products = %r' % instance.products)
             else:  # replace mode
                 instance.products = product_uuids
+                logging.debug('replace mode '
+                              'instance.products = %r' % instance.products)
             instance.put()
             # logging.info('response: %s' % response)
             self.error(200)
