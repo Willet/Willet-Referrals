@@ -237,7 +237,7 @@ class BatchStoreSurvey(URIHandler):
             }
             taskqueue.add(url=url('BatchStoreSurvey'), params=p)
 
-        body = 'Monthly sales / store name / store url / contact name / contact url<br />'
+        body = u'Monthly sales / store name / store url / contact name / contact url<br />'
 
         # For each app, try to create an email & send it
         for app in apps:
@@ -250,7 +250,7 @@ class BatchStoreSurvey(URIHandler):
 
                 result = getattr(app, method)(**converted_params)
                 
-                body += '%s %s %s  %s <%s><br />' % result
+                body += u'%s %s %s  %s &lt;%s&gt;<br />' % result
 
                 logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
                                                        app.__class__.__name__,
