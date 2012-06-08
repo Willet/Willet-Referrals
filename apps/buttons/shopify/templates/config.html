@@ -27,7 +27,7 @@
     .page {
         margin-top: 30px;
     }
-    #config-free {
+    .config-free {
         display: block;
     }
 
@@ -538,8 +538,8 @@
             }
         }).disableSelection();
 
-        $("#confirmation-enabled").bind('change', function () {
-            if (this.checked) {
+        $("#confirmation-enabled").change(function (event) {
+            if (event.target.checked) {
                 $('#confirmation_options').show();
             } else {
                 $('#confirmation_options').hide();
@@ -620,7 +620,7 @@
                     <div><b>Preview:</b> How the social buttons will appear on product pages.</div>
                     <span id="buttons-preview"></span>
                 </div>
-                <div id="config-free">
+                <div class="config-free">
                     <div class="config-option buttons">
                         <span class="left-column">
                             <label for="default-buttons">
@@ -757,7 +757,7 @@
 
                 <hr class="widget-break"/>
 
-                <div id="config-free">
+                <div class="config-free">
                     <div class="config-header">
                         <label for="confirmation-message">
                             Enable Confirmation Widget:
