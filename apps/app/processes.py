@@ -235,7 +235,7 @@ class BatchStoreSurvey(URIHandler):
                 'criteria'           : json.dumps(criteria),
                 'exclude_uninstalled': exclude_val
             }
-            taskqueue.add(url=url('BatchRequest'), params=p)
+            taskqueue.add(url=url('BatchStoreSurvey'), params=p)
 
         body = 'Monthly sales / store name / store url / contact name / contact url<br />'
 
