@@ -29,7 +29,7 @@ from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 
-from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
+from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, SECURE_URL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
 from util.shopify_helpers import get_domain, get_shopify_url
@@ -829,6 +829,7 @@ class ColorboxJSServer(URIHandler):
     def get(self):
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'app_uuid': self.request.get('app_uuid'),
             'user_uuid': self.request.get('user_uuid'),
             'instance_uuid': self.request.get('instance_uuid'),
@@ -1234,7 +1235,7 @@ class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
         """Does everything SIBTServeScript does."""
-        self.redirect("%s%s?%s" % (URL,
+        self.redirect("%s%s?%s" % (SECURE_URL,
                                    url('SIBTServeScript'),
                                    self.request.query_string),
                       permanent=True)

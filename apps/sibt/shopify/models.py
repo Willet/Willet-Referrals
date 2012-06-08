@@ -187,7 +187,7 @@ class SIBTShopify(SIBT, AppShopify):
         wosib_script_src = """<!-- START Willet (http://rf.rs) Cart snippet -->
             <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
-                var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
+                var _willet_wosib_script = "//%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
                     {%% for item in cart.items %%}
                         { "image" : "{{ item.image }}", // url
@@ -224,7 +224,7 @@ class SIBTShopify(SIBT, AppShopify):
                         w._willet_product_json = product_json;
                         params += '&product_id=' + product_json.id;
                     }
-                    var src = "http://%s%s?" + params;
+                    var src = "//%s%s?" + params;
                     var script = d.createElement("script");
                     script.type = "text/javascript";
                     script.src = src;
@@ -243,7 +243,7 @@ class SIBTShopify(SIBT, AppShopify):
                     if (product_json) {
                         params += '&product_id=' + product_json.id;
                     }
-                    var src = "http://%s%s?" + params;
+                    var src = "//%s%s?" + params;
                     var script = window.document.createElement("script");
                     script.type = "text/javascript";
                     script.src = src;
