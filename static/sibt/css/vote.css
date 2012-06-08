@@ -69,7 +69,7 @@ div#starburst {
     color: #f00;
 }
 #friends_selector_page, #friends_selectee_page {
-    width:960px;
+    width: 1015px;
     margin: 0 auto;
     padding: 15px 0;
 }
@@ -173,7 +173,7 @@ img.profile_pic {
 #main_content {
     float: right;
     width: 615px;
-    /*min-height: 550px;*/
+    margin: 7px 0 0 0; /* UI prettification */
     text-align: justify;
 }
 #main_content>div {

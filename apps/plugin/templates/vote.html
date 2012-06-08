@@ -82,8 +82,10 @@
             <div id="white">
                 {% if is_asker %}
                     <div id="friends_selector_page" class="page">
-                        <div class="span-8">
-                            <p style="margin-top: 52px">
+                        <div class="span-9">
+                            <p style="margin-top: 52px;
+                                      color: #fff;
+                                      text-shadow: 0 1px 0 #666;">
                                 {% if new_instance %}
                                     <b>You have created a vote!</b>
                                     <br />
@@ -105,14 +107,15 @@
                     </div>
                 {% else %}
                     <div id="friends_selectee_page" class="page">
-                        <div class="span-8">
+                        <div class="span-9">
                             <img src="/static/sibt/imgs/happy-people-240x120.png" />
                         </div>
-                        <div class="span-16 title" style="vertical-align:top;">
+                        <div class="span-16 title">
                             Help {{ asker_name }} shop by giving advice
                             <img alt="Look under here"
                                  src="/static/sibt/imgs/arrow-42x42.png"
-                                 style="margin: 11px 0 0 5px;" />
+                                 style="float: right;
+                                        margin: 6px 63px 0px 0px;" />
                         </div>
                     </div>
                 {% endif %}

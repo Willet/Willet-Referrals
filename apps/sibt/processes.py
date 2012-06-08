@@ -206,9 +206,8 @@ class GetExpiredSIBTInstances(URIHandler):
             # Has been reported to GOOG: http://code.google.com/p/googleappengine/issues/detail?id=7341
             right_now = datetime.datetime.now()
 
-        expired_instances = SIBTInstance.all()\
-                .filter('is_live =', True)\
-                .filter('end_datetime <=', right_now)
+        expired_instances = SIBTInstance.all().filter('end_datetime <=',
+                                                      right_now)
 
         for instance in expired_instances:
             taskqueue.add(
@@ -546,10 +545,10 @@ class SendFriendAsks(URIHandler):
 
         # re-use instance link if there already is one
         instance = SIBTInstance.get(rget('instance_uuid')) or None
-        if not instance:
-            link = Link.get_by_code(rget('willt_code'))
-        else:
+        if instance:
             link = instance.link
+        else:
+            link = Link.get_by_code(rget('willt_code'))
 
         product = Product.get(rget('product_uuid'))
         logging.debug('got uuid %s, product %r' % (rget('product_uuid'),
@@ -734,6 +733,14 @@ class SendFriendAsks(URIHandler):
                                                    sharing_message=msg,
                                                    products=product_uuids)
                 else:  # instance exists! update its details.
+                    if instance.link:
+                        logging.debug('saving link.')
+                        qs = {'instance_uuid': instance.uuid}
+                        instance_url = "%s%s" % (URL,
+                                                 url('VoteDynamicLoader', qs=qs))
+                        instance.link.target_url = instance_url
+                        instance.link.put()
+                        instance.link.memcache_by_code() # doubly memcached
                     instance.asker = user
                     instance.sharing_message = msg
                     instance.products = product_uuids
