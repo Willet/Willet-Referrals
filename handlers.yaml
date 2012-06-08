@@ -28,6 +28,10 @@ handlers:
   script: urls.py
   login: admin
 
+- url: /a/storeSurvey
+  script: urls.py
+  login: admin
+
 - url: /b/shopify/load
   static_dir: static/buttons/js
 
