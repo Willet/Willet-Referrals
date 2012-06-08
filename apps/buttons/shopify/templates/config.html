@@ -518,7 +518,16 @@
         $("#configuration .mask-target").mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
         {% endif %}
 
-        $("#confirmation-enabled").lightSwitch();
+        $("#confirmation-enabled").lightSwitch({
+            "dir": "/static/imgs/jquery-lightswitch/",
+            "change": function (event) {
+                if (event.target.checked) {
+                    $('#confirmation_options').show();
+                } else {
+                    $('#confirmation_options').hide();
+                }
+            }
+        });
 
         // Set the default selected element
         // We do this in JS because it is cleaner than in the template
@@ -537,14 +546,6 @@
                 }
             }
         }).disableSelection();
-
-        $("#confirmation-enabled").change(function (event) {
-            if (event.target.checked) {
-                $('#confirmation_options').show();
-            } else {
-                $('#confirmation_options').hide();
-            }
-        });
 
         // Set up the tooltips
         $('.help[title]').qtip({
