@@ -127,6 +127,15 @@
                     'background-position-y': $(this).is(':checked') ? o.click.on.y : o.click.off.y
                 }); // setup default states
 
+                // set the css in case the animation didn't work
+                // e.g. Firefox and Opera
+                if ($.browser.mozilla || $.browser.opera) {
+                    var state = $(this).is(':checked') ? o.click.on : o.click.off;
+                    lightSwitch.css({
+                        "background-position": state.x+" "+state.y
+                    })
+                }
+
                 $('input + span').live("click", function() { return false; });
 
                 input.change(function(event){
@@ -149,6 +158,15 @@
                         'background-position-x': $(this).is(':checked') ? c.on.x : c.off.x,
                         'background-position-y': $(this).is(':checked') ? c.on.y : c.off.y
                     }, c.speed);
+
+                    // set the css in case the animation didn't work
+                    // e.g. Firefox and Opera
+                    if ($.browser.mozilla || $.browser.opera) {
+                        var state = $(this).is(':checked') ? c.on : c.off;
+                        lightSwitch.css({
+                            "background-position": state.x+" "+state.y
+                        })
+                    }
 
                     o.change(event);
                 });
