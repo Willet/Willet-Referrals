@@ -20,6 +20,7 @@
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/colorbox.css" />
+        <link rel="stylesheet" href="/static/css/facebook.css" />
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
@@ -74,28 +75,32 @@
         </script>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        {% block styles %}{% endblock %}
+        {% block styles %}
+
+        {% endblock styles %}
     </head>
     <body>
-        {% block body_start %}{% endblock %}
+        {% block body_start %}
+
+        {% endblock %}
         <div id='header'>
             <div id="white">
                 {% if is_asker %}
                     <div id="friends_selector_page" class="page">
                         <div class="span-9">
-                            <p style="margin-top: 52px;
-                                      color: #fff;
-                                      text-shadow: 0 1px 0 #666;">
+                            <h2 style="margin-top: 80px;
+                                       color: #fff;
+                                       text-shadow: 0 1px 0 #666;">
                                 {% if new_instance %}
-                                    <b>You have created a vote!</b>
+                                    You have created a vote!
                                     <br />
                                     Invite friends to get started ⇝
                                 {% else %}
-                                    <b>Your vote is still running!</b>
+                                    Your vote is still running!
                                     <br />
                                     Invite more friends to the conversation ⇝
                                 {% endif %}
-                            </p>
+                            </h2>
                         </div>
                         <div class="span-16">
                             <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
@@ -108,14 +113,13 @@
                 {% else %}
                     <div id="friends_selectee_page" class="page">
                         <div class="span-7">
-                            <img src="/static/sibt/imgs/happy-people-240x120.png" />
+                            <img src="/static/sibt/imgs/happy-people-245x120.png" />
                         </div>
                         <div class="span-18 title">
                             Help {{ asker_name }} shop by giving advice
                             <img alt="Look under here"
-                                 src="/static/sibt/imgs/arrow-42x42.png"
-                                 style="margin: 6px 31px 0px 10px;
-                                        position: absolute;" />
+                                 class="look_under_arrow"
+                                 src="/static/sibt/imgs/arrow-42x42.png" />
                         </div>
                     </div>
                 {% endif %}
@@ -125,54 +129,54 @@
         <div id="wrapper">
             {% block screens %}{% endblock %}
             <div id="asker_bar">
-                <div class="slight-highlight-disabled">
-                    <div class="blob">
-                        <p>
-                            <img class="profile_pic" src='{{ asker_pic|default:"https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png" }}' />
-                            <b>{{ asker_name }}</b>:</br />
-                            <span id="sharing_message">
-                                {{ sharing_message|escape|default:"I like this, but..." }}
-                            </span>
-                        </p>
-                        <div id="fb-root"></div>
-                        <!-- div id="FOO" class="fb-comments hidden" -->
-                        <div id="FOO" class="fb-comments"
-                            data-href="{{fb_comments_url}}"
-                            data-num-posts="5" data-width="400"></div>
-                    </div>
-                    {% block left_screens %}{% endblock left_screens %}
+                <div class="mini-highlight blob-disabled">
+                    <p>
+                        <img class="profile_pic"
+                                src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
+                        <span class="fbName">{{ asker_name }}</span>
+                        <br />
+                        <span class="fbPost">
+                            {{ sharing_message|escape|default:"I like this, but..." }}
+                        </span>
+                    </p>
+                    <div id="fb-root"></div>
+                    <div id="FOO" class="fb-comments"
+                        data-href="{{fb_comments_url}}"
+                        data-reverse="true"
+                        order_by="reverse_time"
+                        data-num-posts="5"
+                        data-width="400"></div>
                 </div>
+                {% block left_screens %}{% endblock left_screens %}
             </div>
-            <div id="main_content">
-                <div class="slight-highlight">
-                    <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
-                        Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
-                    </div>
-                    <div id="discount_screen" class="hidden">
-                        <h2>Thank you for helping {{asker_name}}.</h2>
-                        <div id="discount_gettest">
-                            <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
-                            <input id="discount_code" type="text" />
-                        </div>
-
-                        <!-- great massages -->
-                        <div id="success_message">
-                            <h4 class="yes">
-                                Tell {{ asker_name }} why you voted YES.
-                            </h4>
-                            <h4 class="no">
-                                Tell {{ asker_name }} why you voted NO.
-                            </h4>
-                        </div>
-
-                        {% if store_url %}
-                            <p style="margin-top:24px;">
-                                <a href="{{ store_url }}">Continue Shopping</a>
-                            </p>
-                        {% endif %}
-                    </div>
-                    {% block right_screens %}{% endblock right_screens %}
+            <div id="main_content" class="mini-highlight">
+                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
+                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
+                <div id="discount_screen" class="hidden">
+                    <h2>Thank you for helping {{asker_name}}.</h2>
+                    <div id="discount_gettest">
+                        <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
+                        <input id="discount_code" type="text" />
+                    </div>
+
+                    <!-- great massages -->
+                    <div id="success_message">
+                        <h4 class="yes">
+                            Tell {{ asker_name }} why you voted YES.
+                        </h4>
+                        <h4 class="no">
+                            Tell {{ asker_name }} why you voted NO.
+                        </h4>
+                    </div>
+
+                    {% if store_url %}
+                        <p style="margin-top:24px;">
+                            <a href="{{ store_url }}">Continue Shopping</a>
+                        </p>
+                    {% endif %}
+                </div>
+                {% block right_screens %}{% endblock right_screens %}
             </div>
         </div>
         <script type="text/javascript">
@@ -187,7 +191,9 @@
                     cookie: true, // enable cookies to allow the server to access the session
                     oauth: true, // enable OAuth 2.0
                     width: 400,
-                    xfbml: true  // parse XFBML
+                    xfbml: true,  // parse XFBML
+                    reverse: true,
+                    order_by: "reverse_time"
                 });
             };
             var fbinit = function(d, s, id) {
