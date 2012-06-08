@@ -355,13 +355,14 @@ class User(db.Expando):
 
     # Constructors ---------------------------------------------------------------------
     @classmethod
-    def create(cls, app):
+    def create(cls, app=None):
         """Create a new User object with the given attributes"""
         uuid = generate_uuid(16)
         user = cls(key_name=uuid, uuid=uuid)
         user.put_later()
 
-        UserCreate.create(user, app) # Store User creation action
+        if app:
+            UserCreate.create(user, app) # Store User creation action
 
         return user
 
@@ -433,18 +434,16 @@ class User(db.Expando):
                 taskqueue.add(url = '/fetchFB', params = {'fb_id': user.fb_identity})
 
         # Update the user
-        user.update(
-            fb_identity=fb_id,
-            fb_first_name=first_name,
-            fb_last_name=last_name,
-            fb_name=name,
-            email=email,
-            referrer=referrer,
-            fb_gender=gender,
-            fb_verified=verified,
-            fb_access_token=token,
-            fb_friends=friends
-        )
+        user.update(fb_identity=fb_id,
+                    fb_first_name=first_name,
+                    fb_last_name=last_name,
+                    fb_name=name,
+                    email=email,
+                    referrer=referrer,
+                    fb_gender=gender,
+                    fb_verified=verified,
+                    fb_access_token=token,
+                    fb_friends=friends)
 
         # Set a cookie to identify the user in the future
         if request_handler is not None:
@@ -475,7 +474,8 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def get_or_create_by_cookie(cls, request_handler, app):
+    def get_or_create_by_cookie(cls, request_handler, app=None):
+        """I just made app optional."""
         user = cls.get_by_cookie(request_handler)
         if user is None:
             user = cls.create(app)

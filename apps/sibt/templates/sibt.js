@@ -12,7 +12,8 @@
         '$_conflict': !(w.$ && w.$.fn && w.$.fn.jquery)
     };
 
-    var _willet = w._willet || {};
+    w._willet = w._willet || {};
+    var _willet = w._willet;
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
     {% include "js/willet.loader.js" %}

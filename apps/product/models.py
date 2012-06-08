@@ -14,7 +14,7 @@ class Product(Model, db.polymodel.PolyModel):
     """Stores information about a store's product."""
     created = db.DateTimeProperty(auto_now_add=True)
     client = db.ReferenceProperty(Client, collection_name='products')
-    description = db.TextProperty()
+    description = db.TextProperty(default="")
     images = db.StringListProperty()  # list of urls to images
     price = db.FloatProperty(default=0.0)
 
