@@ -250,7 +250,7 @@ class BatchStoreSurvey(URIHandler):
 
                 result = getattr(app, method)(**converted_params)
                 
-                body += u'%s %s %s  %s &lt;%s&gt;<br />' % result
+                body += u'%s %s %s %s &lt;%s&gt;<br />' % result
 
                 logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
                                                        app.__class__.__name__,
@@ -263,7 +263,7 @@ class BatchStoreSurvey(URIHandler):
                 continue
 
         # Email DevTeam
-        Email.emailDevTeam( body, subject='ShopConnection Survey' )
+        Email.emailDevTeam(body, subject='ShopConnection Survey')
 
 
 
