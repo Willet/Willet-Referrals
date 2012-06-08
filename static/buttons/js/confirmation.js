@@ -574,8 +574,9 @@ _willet = (function (me) {
                 // '&' -> ',' and '=' -> ':'
                 var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
                 params = {
+                    "enabled": raw_obj.enabled || '',
                     "shop":  raw_obj.shop || '',
-                    "message": raw_obj.conf_message || '',
+                    "message": raw_obj.message || '',
                     "facebookUsername": raw_obj.facebook_username || '',
                     "twitterUsername":  raw_obj.twitter_username || '',
                     "pinterestUsername": raw_obj.pinterest_username || ''
@@ -607,16 +608,22 @@ _willet = (function (me) {
                 // Retrieve configuration from script query string
                 var config = me.getConfigurationFromURL();
 
-                container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
-                container.appendChild( util.createStyle(styleRules) );
+                if (config.enabled) {
+                    container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
+                    container.appendChild( util.createStyle(styleRules) );
 
-                for (var i = scripts.length; i >= 0; i--) {
-                    HEAD.appendChild( util.createScript(scripts[i]) );
+                    for (var i = scripts.length; i >= 0; i--) {
+                        HEAD.appendChild( util.createScript(scripts[i]) );
+                    }
+
+                    // Add the div to the page
+                    content.parentNode.insertBefore(container, content);
+                } else {
+                    debug.log("Confirmation widget not loaded: disabled by configuration");
                 }
-
-                // Add the div to the page
-                content.parentNode.insertBefore(container, content);
             }
+        } else {
+            debug.log("Confirmation widget not loaded: not on confirmation page");
         }
     };
 
@@ -635,7 +642,7 @@ try {
         {
             _willet.init();
         } else {
-            _willet.debug.log("Buttons not loaded: Unsupported browser or localhost");
+            _willet.debug.log("Confirmation widget not loaded: Unsupported browser or localhost");
         }
     }
 

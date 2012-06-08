@@ -520,7 +520,8 @@ class ButtonsShopifyConfig(URIHandler):
             'config_enabled'        : app.billing_enabled,
             'item_shares'           : item_shares,
             'network_shares'        : network_shares,
-            'confirmation_message'  : social_accounts.get('conf_message',''),
+            'confirmation_enabled'  : social_accounts.get('enabled',"false"),
+            'confirmation_message'  : social_accounts.get('message',''),
             'facebook_username'     : social_accounts.get('facebook_username',''),
             'twitter_username'      : social_accounts.get('twitter_username',''),
             'pinterest_username'    : social_accounts.get('pinterest_username','')
@@ -570,7 +571,7 @@ class ButtonsShopifyConfig(URIHandler):
         else:
             prefs["max_buttons"] = 3 #Default
 
-        button_order = r.get("button_order")
+        button_order = req.get("button_order")
         if not button_order:
             prefs["button_order"] = None
         else:
@@ -581,7 +582,8 @@ class ButtonsShopifyConfig(URIHandler):
         social_accounts["facebook_username"] = req.get("facebook_username")
         social_accounts["twitter_username"]  = req.get("twitter_username")
         social_accounts["pinterest_username"] = req.get("pinterest_username")
-        social_accounts["conf_message"] = req.get("conf_message")
+        social_accounts["message"] = req.get("conf_message")
+        social_accounts["enabled"] = req.get("conf_enabled","false")
 
         app.update_prefs(prefs)
         app.update_social_accounts(social_accounts)

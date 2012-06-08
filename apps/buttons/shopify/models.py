@@ -109,7 +109,7 @@ class ButtonsShopify(Buttons, AppShopify):
             },
             {
                 "script_tag": {
-                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                    "src": "%s/b/shopify/load/confirmation.js?enabled=false&app_uuid=%s" % (
                         SECURE_URL,
                         self.uuid
                     ),
