@@ -22,6 +22,10 @@ h2 a {
 h2 a:hover {
     text-decoration: underline;
 }
+h2.title {
+    margin-top: 16px;
+}
+
 .hidden {
     display: none;
 }
@@ -76,6 +80,7 @@ div#starburst {
 #friends_selectee_page>.title {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 30px;
+    font-weight: bold;
     color: white;
     text-shadow: 1px 2px 5px #666;
     margin: 40px 0 0 0;
@@ -287,8 +292,8 @@ img.slight-highlight {
 }
 .wosib .product .product-image {
     /* wosib images are smaller, and you can click on them. */
-    max-width: 96px;
-    max-height: 96px;
+    max-width: 150px;
+    max-height: 150px;
     cursor: pointer;
 }
 

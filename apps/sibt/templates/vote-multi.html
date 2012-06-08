@@ -16,7 +16,7 @@
     <div id="product_screen" class="wosib center">
         {% if is_asker %}
             <h2>Select products to show in your vote</h2>
-            <div id="selection_box_container" style="margin-top:110px;">
+            <div id="selection_box_container" style="margin: 60px 0 30px 0;">
                 <div id="selection_box"><!-- JS --></div>
             </div>
             <p style="text-align:center;">
@@ -26,7 +26,7 @@
             {% for product in products|slice:":2" %}
                 {% if forloop.last %}
                     <img alt="or" src="/static/imgs/or-150.png"
-                         style="margin: 88px -56px;
+                         style="margin: 88px -47px;
                                 float: left;
                                 line-height: 300px;
                                 vertical-align: middle;" />
@@ -104,9 +104,13 @@
                     type: 'post',
                     data: payload,
                     success: function () {
+                        /*
+                        discount code thing is temporarily "discouraged"
                         $(".choice, #product_screen").hide();
                         $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
                         getDiscount();
+                        */
+                        ctl.text('Voted').attr('disabled', 'disabled');
                     },
                     error: function () {
                         $(".choice").hide();
