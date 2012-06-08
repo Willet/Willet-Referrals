@@ -71,6 +71,7 @@ class AskDynamicLoader(URIHandler):
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
+        new_instance = False  # True if this function creates one
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         page_url = self.request.get('url', '') or \
                    self.request.get('page_url', '') or \

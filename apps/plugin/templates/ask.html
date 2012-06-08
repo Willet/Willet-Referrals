@@ -27,7 +27,7 @@
                     margin-top: 0;
                 }
                 .center_col {
-                    margin-top: 60px;
+                    margin-top: 43px;
                 }
 
                 /* reduce size of button */
@@ -151,6 +151,10 @@
                     {% if not embed %}
                         <div id="cancelButton" class="button close">
                             <div class="simpletitle">Close</div>
+                        </div>
+                    {% else %}
+                        <div onclick="closeIframe();" class="button close">
+                            <div class="simpletitle">Save</div>
                         </div>
                     {% endif %}
                 </div>
@@ -953,13 +957,19 @@
         };
 
         // Closes iframe
-        var closeIframe = function( action ) {
-            if ( action !== "" ){
-                storeAnalytics( action );
+        var closeIframe = function (action) {
+            if (action){
+                storeAnalytics(action);
             }
 
-            doPostMessage('close');
-            window.close();
+            {% if not embed %}
+                doPostMessage('close');
+                window.close();
+            {% else %}
+                if (window.parent) {
+                    window.parent.location = "{{ share_url }}";
+                }
+            {% endif %}
         };
 
         // Post to parent page that we are hosted in

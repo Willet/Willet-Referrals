@@ -68,10 +68,17 @@ div#starburst {
     display:none;
     color: #f00;
 }
-#friends_selector {
+#friends_selector_page, #friends_selectee_page {
     width:960px;
     margin: 0 auto;
     padding: 15px 0;
+}
+#friends_selectee_page>.title {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 30px;
+    color: white;
+    text-shadow: 1px 2px 18px #777;
+    margin: 40px 0 0 0;
 }
 #cart_items_display li {
     background-color: transparent;
@@ -113,7 +120,7 @@ div#white {
 
 img.profile_pic {
     float: left;
-    margin-right: 10px;
+    margin: 5px 10px 0 5px;
 }
 
 #yesBtn {
@@ -159,12 +166,12 @@ img.profile_pic {
     border: 0;
 }
 #asker_bar {
-    float: right;
+    float: left;
     width: 440px;
     margin-left: -7px; /* shadow compensation */
 }
 #main_content {
-    float: left;
+    float: right;
     width: 615px;
     /*min-height: 550px;*/
     text-align: justify;

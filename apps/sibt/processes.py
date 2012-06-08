@@ -31,7 +31,7 @@ from util.consts import *
 from util.helpers import url
 from util.helpers import remove_html_tags
 from util.strip_html import strip_html
-from util.urihandler import URIHandler
+from util.urihandler import obtain, URIHandler
 
 
 class SIBTSignUp(URIHandler):
@@ -44,12 +44,10 @@ class SIBTSignUp(URIHandler):
 
     This is called by AJAX. Response is an empty page with appropriate code.
     """
-    def post(self):
+    @obtain('email', 'fullname', 'shopname', 'shop_url')
+    def post(self, email, fullname, shopname, shop_url):
         """POST request lets you sign up."""
-        email = self.request.get("email")
-        fullname = self.request.get("fullname")
-        shopname = self.request.get("shopname")
-        shop_url = self.request.get("shop_url")
+
         # optional stuff
         address1 = self.request.get("address1", '')
         address2 = self.request.get("address2", '')
@@ -735,6 +733,14 @@ class SendFriendAsks(URIHandler):
                                                    motivation="",
                                                    sharing_message=msg,
                                                    products=product_uuids)
+                else:  # instance exists! update its details.
+                    instance.asker = user
+                    instance.sharing_message = msg
+                    instance.products = product_uuids
+                    instance.dialog = "ConnectFB"
+                    instance.img = product_image
+                    logging.debug('updating existing instance')
+                    instance.put()
 
                 # change link to reflect to the vote page.
                 link.target_url = urlparse.urlunsplit([PROTOCOL,

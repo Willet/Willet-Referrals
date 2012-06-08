@@ -169,9 +169,6 @@ class SIBT(App):
         if not img:
             img = "http://rf.rs/static/imgs/noimage-willet.png"
 
-        logging.debug('link = %r' % link)
-        logging.debug('link\'s url = %r' % link.target_url)
-        logging.debug('img = %r' % img)
         # Now, make the object
         instance = SIBTInstance(key_name=uuid,
                                 uuid=uuid,

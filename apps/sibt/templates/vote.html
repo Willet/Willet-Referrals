@@ -2,30 +2,29 @@
 
 {% block styles %}{% endblock %}
 
+
+
+
+
+
+
+
+
+
+
+
+
 {% block body_start %}{% endblock %}
 
-{% block left_screens %}
-    <div id="success_message" class="hidden blob">
-        <div class="title">Thanks for voting!</div>
-        <h4 class="yes">
-            Tell {{ asker_name }} why you voted YES.
-        </h4>
-        <h4 class="no">
-            Tell {{ asker_name }} why you voted NO.
-        </h4>
-    </div>
-    <div id="facebook_box" class="blob">
-        <div class="title">Discussion box</div>
-        <div id="fb-root"></div>
-        <!-- div id="FOO" class="fb-comments hidden" -->
-        <div id="FOO" class="fb-comments"
-             data-href="{{fb_comments_url}}"
-             data-num-posts="5" data-width="400"></div>
-    </div>
-{% endblock left_screens %}
+{% block left_screens %}{% endblock left_screens %}
 
 {% block right_screens %}
     <div id="product_screen">
+        <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
+        <img id="product_img" class="slight-highlight product-image" src="{{ product_img }}" />
+        <div class="description">
+            {{ product.description|striptags }}
+        </div>
         <div class="choice blob"
              style="text-align:center; margin: 18px;">
             <div class="title">
@@ -35,11 +34,6 @@
                 <button class="button" id="yes">Yes</button>
                 <button class="button" id="no">No</button>
             </div>
-        </div>
-        <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
-        <img id="product_img" class="slight-highlight product-image" src="{{ product_img }}" />
-        <div class="description">
-            {{ product.description|striptags }}
         </div>
     </div>
 {% endblock right_screens %}

@@ -14,16 +14,7 @@
 
 {% block body_start %}{% endblock %}
 
-{% block left_screens %}
-    <div id="success_message" class="hidden blob">
-        <div class="title">Thanks for voting!</div>
-        {% for product in products %}
-            <h4 id="why-{{ product.uuid }}" class="hidden">
-                Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
-            </h4>
-        {% endfor %}
-    </div>
-{% endblock left_screens %}
+{% block left_screens %}{% endblock left_screens %}
 
 {% block right_screens %}
     <div id="product_screen" class="wosib center">
@@ -39,7 +30,7 @@
             </p>
         {% else %}
             <h2>Which one do you like more?</h2>
-            {% for product in products|slice:":3" %}
+            {% for product in products|slice:":2" %}
                 <div class="product info_launch" data-uuid="{{ product.uuid }}">
                     <!-- thumbnail -->
                     <img alt="product image"
@@ -82,8 +73,8 @@
 
 {% block body_script %}
     $(document).ready(function () {
-        var vote = function () {
-            var product_uuid = $(this).data('uuid');
+        var vote = function (ctl) {
+            var product_uuid = $(ctl).data('uuid');
             if (product_uuid) {
                 var payload = {
                     "user_uuid" : "{{ user_uuid }}",
@@ -125,7 +116,7 @@
         };
         $('.vote').click(function (event) {
             event.stopPropagation();
-            vote(event.target);
+            vote(event.target || event.currentTarget);
         });
 
 <!--                // wosib mode view product's info                       -->

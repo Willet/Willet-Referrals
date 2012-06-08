@@ -39,34 +39,36 @@
             $(document).ready(function () {
                 // "show invitation dialog"
 
-                var resizeCloud = function (px) {
-                    $('#white').delay(500).animate({'height': (px + 'px')});
+                var resizeCloud = function (px, instant) {
+                    if (instant) {
+                        $('#white').css({'height': (px + 'px')});
+                    } else {
+                        $('#white').delay(500).animate({'height': (px + 'px')});
+                    }
                 };
 
                 // genius "tabs" functionality
-                $('.tab').click(function (event) {
+                var showPage = function (page) {
                     // tabs sit on top of pages
                     // tabs must contain a hashtag link
                     // pages must have class "page" and unique id
-                    var target = event.currentTarget,
-                        page = $(target).find("a").attr("href");
-
-                    $(".tab").removeClass("selected");  // remove selection from all the tabs
-                    $(target).addClass("selected");  // add selection to this particular tab
-
                     $(".page").animate({'opacity': '0'}, {'queue': false})
                               .css('display', 'none');  // hide all tabs
-                    $(page).css('opacity', '0')
+                    $('#' + page + '_page').css('opacity', '0')
                            .css('display', 'block')
-                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant tab
+                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
 
                     event.preventDefault();
-                });
+                };
 
                 $('#window_location').val(window.location.href);
 
                 {% if is_asker %}
+                    showPage('friends_selector');
                     resizeCloud(255);  // init the page
+                {% else %}
+                    showPage('friends_selectee');
+                    resizeCloud(150);  // init the page
                 {% endif %}
             });
         </script>
@@ -79,7 +81,7 @@
         <div id='header'>
             <div id="white">
                 {% if is_asker %}
-                    <div id="friends_selector">
+                    <div id="friends_selector_page" class="page">
                         <div class="span-8">
                             <p style="margin-top: 52px">
                                 {% if new_instance %}
@@ -101,34 +103,26 @@
                                            border-radius: 15px;"></iframe>
                         </div>
                     </div>
+                {% else %}
+                    <div id="friends_selectee_page" class="page">
+                        <div class="span-8">
+                            <img src="/static/sibt/imgs/happy-people-240x120.png" />
+                        </div>
+                        <div class="span-16 title" style="vertical-align:top;">
+                            Help {{ asker_name }} shop by giving advice
+                            <img alt="Look under here"
+                                 src="/static/sibt/imgs/arrow-42x42.png"
+                                 style="margin: 11px 0 0 5px;" />
+                        </div>
+                    </div>
                 {% endif %}
             </div>
         </div>
 
         <div id="wrapper">
             {% block screens %}{% endblock %}
-            <div id="main_content">
-                <h2>1. Vote</h2>
-                <div class="slight-highlight">
-                    {% block right_screens %}{% endblock right_screens %}
-                    <div id="discount_screen" class="hidden">
-                        <h2>Thank you for helping {{asker_name}}.</h2>
-                        <div id="discount_gettest">
-                            <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
-                            <input id="discount_code" type="text" />
-                        </div>
-                        {% if store_url %}
-                            <p style="margin-top:24px;">
-                                <a href="{{ store_url }}">Continue Shopping</a>
-                            </p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
             <div id="asker_bar">
-                <h2>2. Discuss</h2>
-                <!-- <div class="slight-highlight"> -->
-                <div>
+                <div class="slight-highlight-disabled">
                     <div class="blob">
                         <p>
                             <img class="profile_pic" src='{{ asker_pic|default:"https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png" }}' />
@@ -144,9 +138,37 @@
                             data-num-posts="5" data-width="400"></div>
                     </div>
                     {% block left_screens %}{% endblock left_screens %}
+                </div>
+            </div>
+            <div id="main_content">
+                <div class="slight-highlight">
                     <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
                         Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                     </div>
+                    <div id="discount_screen" class="hidden">
+                        <h2>Thank you for helping {{asker_name}}.</h2>
+                        <div id="discount_gettest">
+                            <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
+                            <input id="discount_code" type="text" />
+                        </div>
+
+                        <!-- great massages -->
+                        <div id="success_message">
+                            <h4 class="yes">
+                                Tell {{ asker_name }} why you voted YES.
+                            </h4>
+                            <h4 class="no">
+                                Tell {{ asker_name }} why you voted NO.
+                            </h4>
+                        </div>
+
+                        {% if store_url %}
+                            <p style="margin-top:24px;">
+                                <a href="{{ store_url }}">Continue Shopping</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                    {% block right_screens %}{% endblock right_screens %}
                 </div>
             </div>
         </div>
