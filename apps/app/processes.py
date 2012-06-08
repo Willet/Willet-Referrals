@@ -145,8 +145,6 @@ class BatchStoreSurvey(URIHandler):
 
     def post(self):
         """ Expected inputs:
-            - app_cls    : App class
-            - method     : method to call on app_cls
             - batch_size*: 0 - 1000, 100 is good in general
             - offset    *: database offset
             - params    *: JSON-encoded parameters to send to method
@@ -239,7 +237,7 @@ class BatchStoreSurvey(URIHandler):
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
-        body = ''
+        body = 'Monthly sales / store name / store url / contact name / contact url<br />'
 
         # For each app, try to create an email & send it
         for app in apps:
@@ -265,8 +263,7 @@ class BatchStoreSurvey(URIHandler):
                 continue
 
         # Email DevTeam
-        Email.emailDevTeam( body, subject='ButtonsShopify Survey' )
-        return "<p>%s</p>" % (body,)
+        Email.emailDevTeam( body, subject='ShopConnection Survey' )
 
 
 
