@@ -22,7 +22,7 @@ from apps.user.actions import UserCreate
 
 from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
                         MEMCACHE_TIMEOUT
-from util.helpers import generate_uuid, read_user_cookie, set_user_cookie, url
+from util.helpers import generate_uuid, set_user_cookie, url
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -51,29 +51,38 @@ class EmailModel(Model):
         return db.Query(cls).filter('created =', created).get()
 
     @classmethod
-    def create(cls, user, email=''):
-        if email:
-            # Check to see if we have one already
-            em = cls.all().filter('address = ', email).get()
+    def get_or_create(cls, user, email):
+        if not email:
+            raise ValueError('Supply an email to create an EmailModel.')
 
-            # If we don't have this email, make it!
-            if not em:
-                em = cls(key_name=email, address=email, user=user)
-            else:
-                try:
-                    # Check if this is a returning user who has cleared their cookies
-                    if em.user.uuid != user.uuid:
-                        Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid),
-                                           subject='Duplicate user detected')
+        # Check to see if we have one already
+        existing_model = cls.get_by_email(email)
 
-                        # TODO: We might need to merge Users here
-                        em.user = user
-                except Exception, e:
-                    logging.error('%s.%s.create() error: %s' % (
-                                   cls.__module__, cls.__name__, e),
-                                  exc_info=True)
+        # get...
+        if existing_model:
+            try:
+                # Check if this is a returning user who has cleared their cookies
+                if existing_model.user.uuid != user.uuid:
+                    Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (
+                                        existing_model.address,
+                                        existing_model.user.uuid, user.uuid),
+                                       subject='Duplicate user detected')
 
-            em.put()
+                    # TODO: We might need to merge Users here
+                    existing_model.user = user
+            except AttributeError, err:
+                logging.error('%s.%s.create() error: %s' % (cls.__module__,
+                                                            cls.__name__, err),
+                              exc_info=True)
+
+            existing_model.put()
+        else:  # ... or create
+            existing_model = cls(key_name=email, address=email, user=user)
+
+    @classmethod
+    def get_by_email(cls, email):
+        """Returns the first EmailModel with this address."""
+        return cls.all().filter('address =', email).get()
 
     @classmethod
     def get_by_user(cls, user):
@@ -178,27 +187,30 @@ class User(db.Expando):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
     @classmethod
-    def get(cls, memcache_key):
-        """ Generic class retriever.  If possible, use this b/c it checks memcache
-        for model before hitting database.
+    def get(cls, memcache_key=None):
+        """Class retriever.
 
-        Each subclass must have a classmethod _get_from_datastore
+        cls.get() => None
+        cls.get(None) => None
+        ...
+        cls.get({invalid key}) => None
+
+        Each subclass must have a classmethod _get_from_datastore.
         """
-
         # so now you can do Model.get(urihandler.request.get(id))) without
         # worrying about the resulting None.
-        if memcache_key is None:
-            return None  # None is definitely not a key, bro
+        if not memcache_key:
+            return None  # None, 0, False, ... are definitely not keys, bro
 
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        # logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
             logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
-                memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
+                memcache.set(key, db.model_to_protobuf(entity).Encode(),
+                             time=MEMCACHE_TIMEOUT)
             return entity
         else:
             logging.debug('User::get(): %s found in memcache!' % key)
@@ -211,31 +223,20 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def get_by_email(cls, email):
-        # TODO: Reduce exception handler to expected error
+    def get_by_email(cls, email=None):
+        """Get a User by its email. Default: None"""
+        logging.info("Getting %s by email: %s" % (cls, email))
+
         if not email:
             return None
 
-        logging.info("Getting %s by email: %s" % (cls, email))
-        email_model = EmailModel.all().filter('address = ', email).get()
-        try:
-            return email_model.user
-        except:
-            return None
+        email_model = EmailModel.all().filter('address =', email).get() or None
+        return getattr(email_model, 'user', None)
 
     @classmethod
     def get_by_cookie(cls, request_handler):
-        """Read a user by cookie. Update IP address if present"""
-        if request_handler:
-            user_cookie = read_user_cookie(request_handler)
-            if user_cookie:
-                user = cls.get(user_cookie)
-                if user:
-                    ip = request_handler.request.remote_addr
-                    user.add_ip(ip)
-                    return user
-        # If anything went wrong, return None
-        return None
+        """Read a user by cookie. Update IP address if present."""
+        return request_handler.get_user()
 
     @classmethod
     def create(cls, app=None):
@@ -266,7 +267,7 @@ class User(db.Expando):
         user.put_later()
 
         # Store email
-        EmailModel.create(user, email)
+        EmailModel.get_or_create(user, email)
 
         # Store User creation action
         UserCreate.create(user, app)
@@ -285,7 +286,7 @@ class User(db.Expando):
         user = cls(key_name=email, uuid=generate_uuid(16))
         user.put() # cannot put_later() here; app creation relies on merchant
 
-        EmailModel.create(user, email) # Store email
+        EmailModel.get_or_create(user, email) # Store email
 
         if app:  # optional, really
             UserCreate.create(user, app) # Store User creation action
@@ -360,32 +361,13 @@ class User(db.Expando):
     def get_or_create_by_cookie(cls, request_handler, app=None):
         """I just made app optional."""
         user = cls.get_by_cookie(request_handler)
-        if user is None:
+        if not user:
             user = cls.create(app)
-            ip = request_handler.request.remote_addr
-            user.add_ip(ip)
 
         # Set a cookie to identify the user in the future
         set_user_cookie(request_handler, user.uuid)
 
         return user
-
-    # Accessors -----------------------------------------------------------
-    def has_ip(self, ip):
-        user_ips = self.user_ips.get()
-        if not user_ips:
-            user_ips = UserIPs.get_or_create(self)
-
-        if user_ips: # fix "argument of type 'NoneType' is not iterable" memlag
-            return ip in user_ips.ips
-        else:
-            return []
-
-    def get_name_or_handle(self):
-        name = self.get_handle()
-        if name == None:
-            name = self.get_full_name()
-        return name
 
     def get_first_name(self):
         fname = None
@@ -403,35 +385,44 @@ class User(db.Expando):
 
     def get_full_name(self, service=None):
         """attempts to get the users full name, with preference to the
-            service supplied"""
-        fname = None
-        if hasattr(self, 'fb_first_name') and service == 'facebook':
-            fname = '%s %s' % (
-                self.fb_first_name,
-                str(self.get_attr('fb_last_name'))
-            )
-        elif hasattr(self, 'fb_name') and service == 'facebook':
-            fname = self.fb_name
-        elif hasattr(self, 'full_name'):
-            fname = self.full_name
-        elif hasattr(self, 'first_name'):
-            fname = self.first_name
-        elif hasattr(self, 'fb_first_name'):
-            fname = '%s %s' % (
-                self.fb_first_name,
-                str(self.get_attr('fb_last_name'))
-            )
-        elif hasattr(self, 'fb_name'):
-            fname = self.fb_name
-        elif hasattr(self, 't_handle'):
-            fname = self.t_handle
-        else:
-            fname = self.get_attr('email')
+            service supplied.
 
-        if fname == None or fname == '':
-            return None
-        else:
-            return fname
+        hasattr() of a None is True.
+        2012-06-11: take advantage of getattr(,,'') being falsy
+
+        default: u''
+        """
+        if service == 'facebook':
+            if getattr(self, 'fb_first_name', u''):
+                return = u'%s %s' % (getattr(self, 'fb_first_name', ''),
+                                     getattr(self, 'fb_last_name', ''))
+            if hasattr(self, 'fb_name'):
+                return self.fb_name
+
+        if getattr(self, 'full_name', u''):
+            return getattr(self, 'full_name', u'')
+
+        if getattr(self, 'first_name', ''):
+            return u'%s %s' % (getattr(self, 'first_name', ''),
+                               getattr(self, 'last_name', ''))
+
+        if getattr(self, 'fb_first_name', ''):
+            return u'%s %s' % (getattr(self, 'fb_first_name', ''),
+                               getattr(self, 'fb_last_name', ''))
+
+        if getattr(self, 'fb_name', u''):
+            return getattr(self, 'fb_name', u'')
+
+        # Twitter username
+        if getattr(self, 't_handle', u''):
+            return getattr(self, 't_handle', u'')
+
+        if getattr(self, 'email', u''):
+            return getattr(self, 'email', u'')
+
+        return u''
+
+    # read-only property
     name = property(get_full_name)
 
     def get_handle(self, service=None):
@@ -500,55 +491,51 @@ class User(db.Expando):
                         getattr(self, 'fb_identity')
                     )
             else:
-                return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
+                return 'https://rf.rs/static/imgs/happy_face.png'
 
         if hasattr(self, attr_name):
             return getattr(self, attr_name)
         else:
             return None
 
-    def is_admin(self):
-        # logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
+    def is_admin(self, default=False, urihandler=None):
+        """Returns True if current user is an admin.
+
+        Checks used (in this order):
+        - "user_is_admin" property in the user object
+        - email, against a list of admin emails
+        - ip, against a list of admin IPs; this is done only if a urihandler
+          is supplied.
+        """
+        is_admin = default
+
         if hasattr(self, 'user_is_admin'):
-            logging.info("%s (%s) might be ADMIN (via cached check) %s" % (self.uuid, self.get_full_name(), self.user_is_admin))
+            logging.info("%s (%s) might be ADMIN (via cached check) %s" % (
+                          self.uuid, self.get_full_name(), self.user_is_admin))
             return self.user_is_admin
-        is_admin = False
 
         emails = EmailModel.get_by_user(self)
-        # Filter by user email
-        for e in emails:
-            if e.address in ADMIN_EMAILS:
-                logging.info("%s (%s) is an ADMIN (via email check)" % (self.uuid, self.get_full_name()))
-                is_admin = True
-                break
+        # intersection > 0 means user is an admin!
+        if len(frozenset(emails) & frozenset(ADMIN_EMAILS)):
+            logging.info("%s (%s) is an ADMIN (via email check)" % (
+                            self.uuid, self.get_full_name()))
+            self.user_is_admin = True
+            return True
 
         # Filter by IP
-        if not is_admin:
-            user_ips = self.user_ips.get()
-            if user_ips:
-                for i in user_ips.ips:
-                    if i in ADMIN_IPS:
-                        logging.info("%s (%s) is an ADMIN (via IP check)" % (self.uuid, self.get_full_name()))
-                        is_admin = True
-                        break
+        if urihandler:
+            user_ip = urihandler.request.remote_addr
+            if user_ip in ADMIN_IPS:
+                logging.info("%s (%s) is an ADMIN (via IP check)" % (
+                                self.uuid, self.get_full_name()))
+                self.user_is_admin = True
+                return True
 
         self.user_is_admin = is_admin
         return is_admin
 
-    # Mutators ----------------------------------------------------------------------
-    def add_ip(self, ip):
-        """gets the ips for this user and put_later's it to the datastore"""
-        user_ips = self.user_ips.get()
-        if not user_ips:
-            user_ips = UserIPs.get_or_create(self)
-        if not self.has_ip(ip):
-            user_ips.add(ip)
-            user_ips.put_later()
-            return True
-        return False
-
     def merge_data(self, u):
-        """ Merge u into self. """
+        """ Merge u into self."""
         if self.key() == u.key():
             return
 
@@ -563,7 +550,7 @@ class User(db.Expando):
     def update(self, **kwargs):
         for k in kwargs:
             if k == 'email':
-                EmailModel.create(self, kwargs['email'])
+                EmailModel.get_or_create(self, kwargs['email'])
             elif k == 'client':
                 self.client = kwargs['client']
             elif k == 'ip':
@@ -577,124 +564,9 @@ class User(db.Expando):
                 setattr(self, k, kwargs[k])
         self.put_later()
 
-    # Facebook helpers -------------------------------------------------------------
-    def facebook_share(self, msg, img='', name='', desc='', link=None):
-        """Share 'message' on behalf of this user. returns share_id, html_response
-           example: fb_share_id, res = self.facebook_share(msg)...
-                        ... self.response.out.write(res) """
-
-        logging.info("LINK %s" % link)
-        facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
-        if img != "":
-            try:
-                """ We try to build the params, utf8 encode them"""
-                caption = link.app_.client.domain
-                if not caption:
-                    caption = ''
-                params = {
-                    'access_token': self.fb_access_token,
-                    'message': msg.encode('utf8'),
-                    'picture' : img,
-                    'link' : link.get_willt_url(),
-                    'description' : desc.encode('utf8'),
-                    'name' : name.encode('utf8'),
-                    'caption' : caption.encode('utf8')
-                }
-                #for param in params:
-                #    params[param] = params[param].encode('utf8')
-                #params = dict([(key, value.encode('utf8')) for key,value in params.iteritems()])
-                params = urllib.urlencode(params)
-            except Exception, e:
-                logging.warn('there was an error encoding, do it the old way %s' % e, exc_info = True)
-
-                msg = msg.encode('ascii', 'ignore')
-                if isinstance(msg, str):
-                    logging.info("CONVERTING MSG")
-                    msg = unicode(msg, 'utf-8', errors='ignore')
-
-
-                try:
-                    caption = link.app_.client.domain
-                except:
-                    caption = link.app_.client.url
-                caption = caption.encode('ascii', 'ignore')
-                if isinstance(caption, str):
-                    logging.info("CONVERTING")
-                    caption = unicode(caption, 'utf-8', errors='ignore')
-
-                name = name.encode('ascii', 'ignore')
-                if isinstance(name, str):
-                    logging.info("CONVERTING name")
-                    name = unicode(name, 'utf-8', errors='ignore')
-
-                if desc == '':
-                    desc = name
-                desc = desc.encode('ascii', 'ignore')
-                if isinstance(desc, str):
-                    desc = unicode(desc, 'utf-8', errors='ignore')
-
-                """
-                logging.info("%s" % msg)
-                logging.info("%s" % img)
-                logging.info("%s" % link.get_willt_url())
-                logging.info("%s" % desc)
-                logging.info("%s" % name)
-                logging.info("%s" % caption)
-                """
-
-                params = urllib.urlencode({
-                    'access_token': self.fb_access_token,
-                    'message': msg,
-                    'picture' : img,
-                    'link' : link.get_willt_url(),
-                    'description' : desc,
-                    'name' : name,
-                    'caption' : caption
-                })
-        else:
-            if isinstance(msg, str):
-                logging.info("CONVERTING MSG")
-                msg = unicode(msg, 'utf-8', errors='ignore')
-
-            params = urllib.urlencode({
-                'access_token': self.fb_access_token,
-                'message'     : msg   })
-
-        fb_response, plugin_response, fb_share_id = None, None, None
-        try:
-            logging.info(facebook_share_url + params)
-            fb_response = urlfetch.fetch(facebook_share_url,
-                                         params,
-                                         method=urlfetch.POST,
-                                         deadline=7)
-        except urlfetch.DownloadError, e:
-            logging.error('Error sending fb request: %s' % e)
-            return None, 'fail'
-            # No response from facebook
-
-        if fb_response is not None:
-
-            fb_results = simplejson.loads(fb_response.content)
-            if fb_results.has_key('id'):
-                fb_share_id, plugin_response = fb_results['id'], 'ok'
-                taskqueue.add(
-                    url = url('FetchFacebookData'),
-                    params = {
-                        'user_uuid': self.uuid,
-                        'fb_id': self.fb_identity
-                    }
-                )
-            else:
-                fb_share_id, plugin_response = None, 'fail'
-                logging.info(fb_results)
-        else:
-            # we are assuming a nil response means timeout and success
-            fb_share_id, plugin_response = None, 'ok'
-
-
-        return fb_share_id, plugin_response
-
-    def fb_post_to_friends(self, ids, names, msg, img, name, desc, store_domain, link):
+    def fb_post_to_friends(self, ids, names, msg, img, name, desc,
+                           store_domain, link):
+        """Post something on your selected facebook friends' wall."""
 
         # First, fetch the user's data.
         taskqueue.add(url = url('FetchFacebookData'),
@@ -795,157 +667,3 @@ class User(db.Expando):
                 pass
 
         return fb_share_ids
-
-    def fb_post_multiple_products_to_friends (self, ids, names, msg, img, store_domain, link):
-
-        # First, fetch the user's data.
-        taskqueue.add(url = url('FetchFacebookData'),
-                       params = { 'user_uuid' : self.uuid,
-                                  'fb_id'     : self.fb_identity })
-
-        # Then, first off messages to friends.
-        try:
-            """ We try to build the params, utf8 encode them"""
-            params = {
-                'access_token' : self.fb_access_token,
-                'picture'      : img,
-                'link'         : link.get_willt_url(),
-                'caption'      : store_domain.encode('utf8')
-            }
-
-        except Exception, e:
-            params = {
-                'access_token' : self.fb_access_token,
-                'picture'      : img,
-                'link'         : link.get_willt_url(),
-                'caption'      : ''
-            }
-            pass
-
-        # For each person, share the message
-        fb_share_ids = []
-        for i in range(0, len(ids)):
-            id = ids[i]
-            name = names[i]
-
-            # Update the params - personalize the msg
-            params.update({ 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) })
-            payload = urllib.urlencode(params)
-
-            facebook_share_url = "https://graph.facebook.com/%s/feed" % id
-
-            fb_response, plugin_response, fb_share_id = None, None, None
-            try:
-                #logging.info(facebook_share_url + params)
-                fb_response = urlfetch.fetch(facebook_share_url,
-                                              payload,
-                                              method = urlfetch.POST,
-                                              deadline = 7)
-            except urlfetch.DownloadError, e:
-                logging.error('Error sending fb request: %s' % e)
-                return [], 'fail'
-                # No response from facebook
-
-            if fb_response is not None:
-                fb_results = simplejson.loads(fb_response.content)
-
-                if fb_results.has_key('id'):
-
-                    fb_share_ids.append(fb_results['id'])
-
-                    """
-                    taskqueue.add(
-                        url = url('FetchFriendFacebookData'),
-                        params = { 'fb_id' : id }
-                    )
-                    """
-                else:
-                    fb_share_ids.append('fail')
-                    logging.info(fb_results)
-
-            else:
-                # we are assuming a nil response means timeout and success
-                pass
-
-        return fb_share_ids
-
-
-    def facebook_action(self, action, obj, obj_link):
-        """Does an ACTION on OBJECT on users timeline"""
-        logging.info("FB Action %s %s %s" % (action, obj, obj_link))
-
-        url = "https://graph.facebook.com/me/shopify_buttons:%s?" % action
-        params = urllib.urlencode({
-            'access_token' : self.fb_access_token,
-            obj            : obj_link
-        })
-
-        fb_response, plugin_response, fb_share_id = None, False, None
-        try:
-            logging.info(url + params)
-            fb_response = urlfetch.fetch(
-                url,
-                params,
-                method=urlfetch.POST,
-                deadline=7
-            )
-        except urlfetch.DownloadError, e:
-            logging.error('Error sending fb request: %s' % e)
-            plugin_response = False
-        else:
-            try:
-                results_json = simplejson.loads(fb_response.content)
-                fb_share_id = results_json['id']
-                plugin_response = True
-
-                # let's pull this users info
-                taskqueue.add(
-                    url = '/fetchFB',
-                    params = {
-                        'fb_id': self.fb_identity
-                    }
-                )
-            except Exception, e:
-                fb_share_id = None
-                plugin_response = False
-                logging.error('Error posting action: %r' % fb_response)
-
-        return fb_share_id, plugin_response
-
-
-class UserIPs(Model):
-    user = MemcacheReferenceProperty(User, collection_name="user_ips")
-    ips = db.StringListProperty(default=None)
-    _memcache_bucket_name = '_willet_user_ips_bucket'
-
-    def __init__(self, *args, **kwargs):
-        if 'user_uuid' in kwargs:
-            self._memcache_key = kwargs['user_uuid']
-        else:
-            self._memcache_key = None
-        super(UserIPs, self).__init__(*args, **kwargs)
-
-    def add(self, ip):
-        if not ip in self.ips:
-            self.ips.append(ip)
-            return True
-        return False
-
-    def put_later(self):
-        """Calls the mbc put later"""
-        mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
-        mbc.put_later(self)
-        #MemcacheBucketConfig.put_later(self._memcache_bucket_name, self)
-
-    @classmethod
-    def get_or_create(cls, user):
-        uips = cls.get(user.uuid)
-        if not uips:
-            uips = cls(user=user, user_uuid=user.uuid)
-
-        return uips
-
-    @classmethod
-    def _get_from_datastore(cls, user_uuid):
-        return cls.all().filter('user =', user_uuid).get()
-# end class

@@ -57,13 +57,12 @@ class URIHandler(webapp.RequestHandler):
 
     def get_user(self):
         """ Reads a cookie, returns user. Does not auto-create. """
+        user = None
         user_cookie = read_user_cookie(self)
         if user_cookie:
             user = User.get(user_cookie)
-            if user:
-                ip = self.request.remote_addr
-                user.add_ip(ip)
-                return user
+
+        return user
 
     def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""

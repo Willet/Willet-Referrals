@@ -906,17 +906,17 @@
         };
 
         var updateEmailAddress = function() {
-            var addr = asker.email;
+            var addr = asker.email,
+                name = asker.name || '';
 
             if (asker.email !== '') {
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
-                    data: { email : addr }/*,
-                    success: function (tr) {
-                        doPostMessage('close');
-                        window.close();
-                    }*/
+                    data: {
+                        'email': addr,
+                        'name': name
+                    }
                 });
             }
         };

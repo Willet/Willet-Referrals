@@ -77,7 +77,7 @@ class FetchFacebookData(URIHandler):
         if hasattr(result_user, 'fb_email'):
             logging.info("DOING EMAIL STUFF: %s" % result_user.get_attr('fb_email'))
             email = result_user.fb_email
-            EmailModel.create(result_user, email)
+            EmailModel.get_or_create(result_user, email)
 
             delattr(result_user, 'fb_email')
             result_user.put_later()
@@ -222,9 +222,20 @@ def unpacker(obj, user):
 
 
 class UpdateEmailAddress(URIHandler):
+    """Allows updates to the current user.
+
+    New: allows update of the name attribute as well.
+    """
     def post(self):
         user = User.get_by_cookie(self)
-        user.update(email=self.request.get('email'))
+        if not user:  # null-cookie'd
+            return
+        email = self.request.get('email')
+        if email:
+            user.update(email=email)
+        name = self.request.get('name')
+        if name:
+            user.update(name=name)
 
 
 class UpdateFBAccessToken(URIHandler):
