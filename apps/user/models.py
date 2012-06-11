@@ -1,50 +1,39 @@
 #!/usr/bin/env python
 
-# Data models for our Users
-# our Users are our client's clients
+"""Data models for our Users our Users are our client's clients."""
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
+import urllib
 
 from django.utils import simplejson
-
-from decimal import *
-from time import time
-from hmac import new as hmac
-from hashlib import sha1
-from traceback import print_tb
 
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import deferred
-from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 from apps.email.models import Email
 from apps.user.actions import UserCreate
 
-from util.consts import ADMIN_EMAILS
-from util.consts import ADMIN_IPS
-from util.consts import FACEBOOK_QUERY_URL
-from util.consts import MEMCACHE_TIMEOUT
-from util.consts import USING_DEV_SERVER
-from util.helpers import *
+from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
+                        MEMCACHE_TIMEOUT
+from util.helpers import generate_uuid, read_user_cookie, set_user_cookie, url
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put
 from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
 
-# ------------------------------------------------------------------------------
-# EmailModel Class Definition --------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class EmailModel(Model):
+    """One-to-many email storage for the User class."""
     created = db.DateTimeProperty(auto_now_add=True)
     address = db.EmailProperty(indexed=True)
-    user = MemcacheReferenceProperty(db.Model, collection_name = 'emails')
+    user = MemcacheReferenceProperty(db.Model, collection_name='emails')
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
@@ -56,25 +45,20 @@ class EmailModel(Model):
     def __str__(self):
         return self.address
 
-    @staticmethod
-    def _get_from_datastore(created):
-        """Datastore retrieval using memcache_key"""
-        return db.Query(EmailModel).filter('created =', created).get()
-
-    def _validate_self(self):
-        return True
-
-    # Constructor ------------------------------------------------------------------
     @classmethod
-    def create(cls, user, email):
-        if email != '' and email != None:
+    def _get_from_datastore(cls, created):
+        """Datastore retrieval using memcache_key"""
+        return db.Query(cls).filter('created =', created).get()
+
+    @classmethod
+    def create(cls, user, email=''):
+        if email:
             # Check to see if we have one already
             em = cls.all().filter('address = ', email).get()
 
             # If we don't have this email, make it!
-            if em == None:
+            if not em:
                 em = cls(key_name=email, address=email, user=user)
-
             else:
                 try:
                     # Check if this is a returning user who has cleared their cookies
@@ -85,86 +69,29 @@ class EmailModel(Model):
                         # TODO: We might need to merge Users here
                         em.user = user
                 except Exception, e:
-                    logging.error('%s.%s.create() error: %s' % (cls.__module__, cls.__name__, e), exc_info=True)
+                    logging.error('%s.%s.create() error: %s' % (
+                                   cls.__module__, cls.__name__, e),
+                                  exc_info=True)
 
             em.put()
 
-    # Retriever --------------------------------------------------------------------
     @classmethod
     def get_by_user(cls, user):
         return cls.all().filter('user =', user)
-# end class
 
 
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-def create_email_model(user, email):
-    raise DeprecationWarning('Replaced by EmailModel.create')
-    EmailModel.create(user, email)
-
-def get_emails_by_user(user):
-    raise DeprecationWarning('Replaced by EmailModel.get_by_user')
-    EmailModel.get_by_user(user)
-
-# This method is not used anywhere, delete after April 18, 2012 (1 month warning)
-def deferred_user_put(bucket_key, list_keys, decrementing=False):
-    logging.info("Batch putting a list of users to memcache: %s" % list_keys)
-    mbc = MemcacheBucketConfig.get_or_create('_willet_user_put_bucket')
-    users_to_put = []
-    had_error = False
-    user_dict = memcache.get_multi(list_keys)
-    for key in list_keys:
-        data = user_dict.get(key)
-        try:
-            user = db.model_from_protobuf(entity_pb.EntityProto(data))
-        except AssertionError, e:
-            old_key = mbc.get_bucket(mbc.count)
-            if bucket_key != old_key and not decrementing and not had_error:
-                # we dont want to do this for the last bucket because it will
-                # duplicate the entries we are about to create
-                old_count = mbc.count
-                mbc.decrement_count()
-                logging.warn(
-                    'encounted error, going to decrement buckets from %s to %s'
-                    % (old_count, mbc.count), exc_info=True)
-
-                last_keys = memcache.get(old_key) or []
-                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
-                deferred.defer(deferred_user_put, old_key, last_keys, decrementing=True, _queue='slow-deferred')
-                had_error = True
-        except Exception, e:
-            logging.error('Error getting action: %s' % e, exc_info=True)
-
-    try:
-        def txn():
-            db.put_async(users_to_put)
-        db.run_in_transaction(txn)
-        for user in users_to_put:
-            if user.key():
-                memcache_key = user.get_key()
-                memcache.set(memcache_key, db.model_to_protobuf(user).Encode(), time=MEMCACHE_TIMEOUT)
-    except Exception,e:
-        logging.error('Error putting %s: %s' % (users_to_put, e), exc_info=True)
-
-    if decrementing:
-        logging.warn('decremented mbc `%s` to %d and removed %s' % (
-            mbc.name, mbc.count, bucket_key))
-
-
-# ------------------------------------------------------------------------------
-# User Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
 class User(db.Expando):
-    # General Junk
-    uuid = db.StringProperty(indexed = True)
-    creation_time = db.DateTimeProperty(auto_now_add = True)
-    client = db.ReferenceProperty(db.Model, collection_name='client_user')
-    memcache_bucket = db.StringProperty(indexed = False, default = "")
-    twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
-    linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
-  # user -> User.get_full_name()
+    """User class definition."""
+    uuid = db.StringProperty(indexed=True)
+    creation_time = db.DateTimeProperty(auto_now_add=True)
 
-    # referrer is deprecated
-    referrer = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
+    # Presumably, the user object you can already get by doing
+    # Client.get_by_user or User.get_by_client.
+    client = db.ReferenceProperty(db.Model, collection_name='client_user')
+
+    # ???
+    memcache_bucket = db.StringProperty(indexed=False, default="")
+    # user -> User.get_full_name()
 
     # Memcache Bucket Config name
     _memcache_bucket_name = '_willet_user_put_bucket'
@@ -173,11 +100,11 @@ class User(db.Expando):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(User, self).__init__(*args, **kwargs)
 
-    @staticmethod
-    def _get_from_datastore(uuid):
+    @classmethod
+    def _get_from_datastore(cls, uuid):
         """Datastore retrieval using memcache_key"""
         logging.info("GETTING USER FROM DB")
-        db_user = User.all().filter('uuid =', uuid).get()
+        db_user = cls.all().filter('uuid =', uuid).get()
         if not db_user:
             logging.warn("User does not exist in DB. Not authenticated...")
         return db_user
@@ -189,22 +116,15 @@ class User(db.Expando):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
-        timeout_ms = 100
-        while True:
-            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
-            try:
-                self.hardPut() # Will validate the instance.
-                logging.debug("user has been hardput().")
-            except datastore_errors.Timeout:
-                thread.sleep(timeout_ms)
-                timeout_ms *= 2
-            else:
-                break
+
+        self.hardPut() # Will validate the instance.
+        logging.debug("user has been hardput().")
+
         # Memcache *after* model is given datastore key
         if self.key():
             logging.debug("user exists in DB, and is stored in memcache.")
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            memcache.set(key, db.model_to_protobuf(self).Encode(),
+                         time=MEMCACHE_TIMEOUT)
             memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
 
         return True
@@ -225,7 +145,8 @@ class User(db.Expando):
         logging.info('bucket: %s' % bucket)
 
         # Save to memcache AFTER setting memcache_bucket
-        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        memcache.set(key, db.model_to_protobuf(self).Encode(),
+                     time=MEMCACHE_TIMEOUT)
         memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
 
         list_identities = memcache.get(bucket) or []
@@ -238,34 +159,12 @@ class User(db.Expando):
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
-            deferred.defer(batch_put, self._memcache_bucket_name, bucket, list_identities, _queue='slow-deferred')
+            deferred.defer(batch_put, self._memcache_bucket_name, bucket,
+                           list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
         logging.info('put_later: %s' % self.uuid)
-
-    def put(self):
-        """Stores model instance in memcache and database"""
-        key = self.get_key()
-        # logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
-        timeout_ms = 100
-        while True:
-            logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
-            try:
-                self.hardPut() # Will validate the instance.
-                logging.debug("user has been hardput().")
-            except datastore_errors.Timeout:
-                thread.sleep(timeout_ms)
-                timeout_ms *= 2
-            else:
-                break
-        # Memcache *after* model is given datastore key
-        if self.key():
-            logging.debug("user exists in DB, and is stored in memcache.")
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-            memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
-
-        return True
 
     def hardPut(self):
         logging.debug("PUTTING %s" % self.__class__.__name__)
@@ -278,16 +177,12 @@ class User(db.Expando):
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
-    def _validate_self(self):
-        return True
-
-    # Retrievers ------------------------------------------------------------------
     @classmethod
     def get(cls, memcache_key):
         """ Generic class retriever.  If possible, use this b/c it checks memcache
         for model before hitting database.
 
-        Each subclass must have a staticmethod _get_from_datastore
+        Each subclass must have a classmethod _get_from_datastore
         """
 
         # so now you can do Model.get(urihandler.request.get(id))) without
@@ -316,17 +211,6 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def get_by_facebook_for_taskqueue(cls, fb_id):
-        """Returns a user that is safe for taskqueue writing"""
-        logging.info("Getting %s by FB for taskqueue: %s" % (cls, fb_id))
-        user = cls.all().filter('fb_identity =', fb_id).get()
-        props = dict((k, v.__get(e, cls)) for k, v in cls.properties().iteritems())
-        props.update(clone=True)
-        newUser = cls(**props)
-        newUser.save()
-        return newUser
-
-    @classmethod
     def get_by_email(cls, email):
         # TODO: Reduce exception handler to expected error
         if not email:
@@ -353,7 +237,6 @@ class User(db.Expando):
         # If anything went wrong, return None
         return None
 
-    # Constructors ---------------------------------------------------------------------
     @classmethod
     def create(cls, app=None):
         """Create a new User object with the given attributes"""
@@ -367,7 +250,8 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def create_by_facebook(cls, fb_id, first_name, last_name, name, email, token, would_be, friends, app):
+    def create_by_facebook(cls, fb_id, first_name, last_name, name, email,
+                           token, would_be, friends, app):
         """Create a new User object with the given attributes"""
         user = cls(key_name=fb_id,
                    uuid=generate_uuid(16),
@@ -408,10 +292,10 @@ class User(db.Expando):
 
         return user
 
-    # 'Retrieve or Construct'ers ------------------------------------------------------------
     @classmethod
-    def get_or_create_by_facebook(fb_id, first_name='', last_name='', name='', email='',
-                                  verified=None, gender='', token='', would_be=False, friends=[],
+    def get_or_create_by_facebook(cls, fb_id, first_name='', last_name='',
+                                  name='', email='', verified=None, gender='',
+                                  token='', would_be=False, friends=[],
                                   request_handler=None, app=None):
         """Retrieve a user object if it is in the datastore, otherwise create
           a new object"""
@@ -439,7 +323,6 @@ class User(db.Expando):
                     fb_last_name=last_name,
                     fb_name=name,
                     email=email,
-                    referrer=referrer,
                     fb_gender=gender,
                     fb_verified=verified,
                     fb_access_token=token,
@@ -683,8 +566,6 @@ class User(db.Expando):
                 EmailModel.create(self, kwargs['email'])
             elif k == 'client':
                 self.client = kwargs['client']
-            elif k == 'referrer':
-                self.referrer = kwargs['referrer']
             elif k == 'ip':
                 if hasattr(self, 'ips') and kwargs['ip'] not in self.ips:
                     self.ips.append(kwargs['ip'])
