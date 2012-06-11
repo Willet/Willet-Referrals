@@ -236,8 +236,10 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
-            Email.SIBTVoteCompletion(instance=instance,
-                                     product=instance.products[0])
+            products = instance.products
+            if products and len(products):
+                Email.SIBTVoteCompletion(instance=instance,
+                                         product=products[0])
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')

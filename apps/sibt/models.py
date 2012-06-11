@@ -7,7 +7,6 @@ __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 import random
-import urlparse
 
 from datetime import timedelta
 
@@ -17,15 +16,18 @@ from google.appengine.datastore import entity_pb
 
 from apps.action.models import Action
 from apps.app.models import App
+from apps.client.models import Client
 from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import bingo
+from apps.link.models import Link
 from apps.product.models import Product
+from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
 from apps.user.models import User
 from apps.vote.models import VoteCounter
 
-from util.consts import *
-from util.helpers import generate_uuid
+from util.consts import USING_DEV_SERVER
+from util.helpers import generate_uuid, get_target_url
 from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -337,7 +339,15 @@ class SIBTInstance(Model):
     # Accessor ----------------------------------------------------------------
     @staticmethod
     def get_by_asker_for_url(user, url, only_live=True):
-        """Retrieve an instance by its user object and link URL (not model)."""
+        """Retrieve an instance by its user object and link URL (not model).
+
+        User cannot be None.
+        url cannot be ''.
+        """
+        if not (user and url):
+            logging.error('Must supply user and url to get_by_asker_for_url!')
+            return None
+
         data = memcache.get('%s-%s' % (user.uuid, url))
         if data:
             instance = db.model_from_protobuf(entity_pb.EntityProto(data))
@@ -423,9 +433,6 @@ class SIBTInstance(Model):
         memcache.incr(self.uuid+"VoteCounter_nos")
 
 
-# -----------------------------------------------------------------------------
-# PartialSIBTInstance Class Definition ----------------------------------------
-# -----------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
     """http://goo.gl/SWi1P
 
@@ -503,3 +510,236 @@ class PartialSIBTInstance(Model):
     @classmethod
     def get_by_user(cls, user):
         return cls.all().filter('user =', user).get()
+
+
+# retrieval helpers
+def get_app(**kwargs):
+    """Helper function for "getting apps."
+
+    It uses the following methods, IN THIS ORDER:
+    - if urihandler is supplied, then urihandler.request.get() will be used in
+      addition to what you supply as kwargs manually.
+    - if app_uuid is supplied, return App.
+    - if store_url is supplied, return App.get_by_url(...).
+    - if page_url is supplied, try to return App.get_by_url(...).
+    - if client_uuid is supplied, return Client.apps[0].
+      Warning! This app may or may not be the one you want.
+
+    default: None
+
+    """
+    app = None
+
+    urihandler = kwargs.get('urihandler', None)
+    # picks either urihandler.request.get() or kwargs.get().
+    # take that, circularreferenciophobes!
+    req = getattr(urihandler, 'request', None) or kwargs
+
+    app_uuid = req.get('app_uuid', '')
+    if app_uuid:
+        app = App.get(app_uuid)
+        if app:
+            return app
+
+    store_url = req.get('store_url', '')
+    logging.debug('get_app: store_url = %r' % store_url)
+    if store_url:
+        app = App.get_by_url(store_url)
+        if app:
+            return app
+
+    page_url = req.get('page_url', '')
+    if page_url:
+        app = App.get_by_url(page_url)
+        if app:
+            return app
+
+    client_uuid = req.get('client_uuid', '')
+    client = Client.get(client_uuid)
+    if client:
+        app = App.get_by_client(client)
+        if app:
+            return app
+
+    return app
+
+
+def get_products(**kwargs):
+    """Helper function for "getting products."
+
+    It uses the following methods, IN THIS ORDER:
+    - if urihandler is supplied, then urihandler.request.get() will be used in
+      addition to what you supply as kwargs manually.
+    - if product_uuids OR products is supplied, return a list of Products.
+    - if shopify_ids is supplied, return a list of ProductShopifys.
+    - if product_uuid is supplied, return [Product].
+    - if shopify_id is supplied, return [ProductShopify].
+    - if client_uuid and page_url are supplied, return [Product.get_or_fetch].
+    - if app_uuid and page_url are supplied, return [Product.get_or_fetch].
+
+    default: []
+
+    These operations are NOT additive, i.e. it is not possible to use this
+    type of query: product_uuid=123, shopify_id=456 -> [Product1, Product2]
+
+    """
+    products = []
+
+    urihandler = kwargs.get('urihandler', None)
+    # picks either urihandler.request.get() or kwargs.get().
+    # take that, circularreferenciophobes!
+    req = getattr(urihandler, 'request', None) or kwargs
+
+    product_uuids = (req.get('products', '') or \
+                     req.get('product_uuids', '')).split(',')
+    if product_uuids and len(product_uuids):
+        products = [Product.get(uuid) for uuid in product_uuids]
+        if products[0]:
+            logging.debug("get products by product_uuids, got %r" % products)
+            return products
+
+    shopify_ids = req.get('shopify_ids', '').split(',')
+    if shopify_ids and len(shopify_ids):
+        products = [ProductShopify.get_by_shopify_id(id) for id in shopify_ids]
+        if products[0]:
+            logging.debug("get products by shopify_ids, got %r" % products)
+            return products
+
+    product_uuid = req.get('product_uuid', '')
+    if product_uuid:
+        products = [Product.get(product_uuid)]
+        if products[0]:
+            logging.debug("get products by product_uuid, got %r" % products)
+            return products
+
+    shopify_id = req.get('shopify_id', '')
+    products = [ProductShopify.get_by_shopify_id(shopify_id)]
+    if products[0]:
+        logging.debug("get products by shopify_id, got %r" % products)
+        return products
+
+    page_url = req.get('page_url', '')
+    if page_url:
+        client_uuid = req.get('client_uuid', '')
+        client = Client.get(client_uuid)
+        products = [Product.get_or_fetch(page_url, client)]
+        if products[0]:
+            return products
+
+        app_uuid = req.get('app_uuid', '')
+        app = App.get(app_uuid)
+        products = [Product.get_or_fetch(page_url, app.client)]
+        if products[0]:
+            return products
+
+    return products
+
+
+def get_instance_event(**kwargs):
+    """Returns an (instance, event) tuple for this pageload.
+
+    It uses the following methods, IN THIS ORDER:
+    - if urihandler is supplied, then urihandler.request.get() will be used in
+      addition to what you supply as kwargs manually.
+    - if instance_uuid is supplied, get it immediately.
+    - if page_url is supplied, it will find an instance for the current user
+      on this page.
+    - if willt_code is supplied, the instance with the link of this code
+      will be returned.
+    - if nothing else is supplied, Actions will be scanned to see if the user
+      started any instances on this page.
+    - if user and app are supplied
+
+    default: (None, '')
+
+    """
+    urihandler = kwargs.get('urihandler', None)
+    # picks either urihandler.request.get() or kwargs.get().
+    # take that, circularreferenciophobes!
+    req = getattr(urihandler, 'request', None) or kwargs
+
+    link = None
+    target = get_target_url(req.get('url', ''))
+
+    instance_uuid = req.get('instance_uuid')
+    instance = SIBTInstance.get(instance_uuid)
+    if instance:
+        return (instance, 'SIBTShowingVote')
+
+    page_url = req.get('page_url', '')
+    user = get_user(urihandler=urihandler)
+    instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+    if instance:
+        return (instance, 'SIBTShowingResults')
+
+    willet_code = req.get('willt_code')
+    if willet_code:
+        link = Link.get_by_code(willet_code)
+        if link:
+            instance = link.sibt_instance.get()
+        if instance:
+            return (instance, 'SIBTShowingResults')
+
+    app = get_app(urihandler=urihandler)
+    if user and app:
+        instances = SIBTInstance.all(keys_only=True)\
+                                .filter('url =', page_url)\
+                                .fetch(100)
+        key_list = [key.id_or_name() for key in instances]
+        action = SIBTClickAction.get_for_instance(app, user, page_url,
+                                                  key_list)
+        if action:
+            instance = action.sibt_instance
+
+        if instance:
+            return (instance, 'SIBTShowingVote')
+
+        if not link:
+            link = Link.all()\
+                       .filter('user =', user)\
+                       .filter('target_url =', target)\
+                       .filter('app_ =', app)\
+                       .get()
+        if link:
+            instance = link.sibt_instance.get()
+        if instance:
+            return (instance, 'SIBTShowingVote')
+
+    if user and target:
+        instance = SIBTInstance.get_by_asker_for_url(user, target)
+        return (instance, 'SIBTShowingVote') # could be none
+
+    return (None, '')
+
+
+def get_user(urihandler, **kwargs):
+    """Returns a User object by detecting the visitor's cookie.
+
+    It uses the following methods, IN THIS ORDER:
+    - if user_uuid is supplied, use it.
+    - if cookie contains a willet_user_uuid field, we will get a user with it.
+    - if cookie contains an email field, we will get a user with it.
+
+    default: User (created by cookie)
+
+    """
+    user = None
+
+    # picks either urihandler.request.get() or kwargs.get().
+    # take that, circularreferenciophobes!
+    req = getattr(urihandler, 'request', None) or kwargs
+
+    user = User.get(req.get('user_uuid'))
+    if user:
+        return user
+
+    user = User.get_by_cookie(urihandler)
+    if user:
+        return user
+
+    user = User.get_by_email(req.get('email'))
+    if user:
+        return user
+
+    app = get_app(urihandler=urihandler)  # None
+    return User.get_or_create_by_cookie(urihandler, app)
