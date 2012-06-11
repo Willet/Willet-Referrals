@@ -107,7 +107,7 @@
                             <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
                                     style="width: 600px;
                                            height: 224px;
-                                           box-shadow: 0px 3px 10px 0px #777 inset;
+                                           box-shadow: 0px 1px 5px 0px #777 inset;
                                            border-radius: 15px;"></iframe>
                         </div>
                     </div>
@@ -128,7 +128,12 @@
         </div>
 
         <div id="wrapper">
-            {% block screens %}{% endblock %}
+            {% if is_asker %}
+                <p class="text-center"
+                   style="font-style: italic;color: #666;margin-top: 21px;">
+                    This is a preview of what your friends will see
+                </p>
+            {% endif %}
             <div id="asker_bar">
                 <div class="mini-highlight blob-disabled">
                     <p>
@@ -179,6 +184,11 @@
                 </div>
                 {% block right_screens %}{% endblock right_screens %}
             </div>
+            <p class="text-center">
+                <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
+                on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
+            </p>
+            {% block screens %}{% endblock %}
         </div>
         <script type="text/javascript">
             {% block body_script %}{% endblock %}

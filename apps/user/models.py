@@ -1030,55 +1030,8 @@ class User(db.Expando):
                 logging.error('Error posting action: %r' % fb_response)
 
         return fb_share_id, plugin_response
-# end class
 
 
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-# DEPRECEATED - Gets by X
-def get_user_by_facebook(fb_id):
-    raise DeprecationWarning('Replaced by User.get_by_facebook')
-    User.get_by_facebook(fb_id)
-
-def get_user_by_facebook_for_taskqueue(fb_id):
-    raise DeprecationWarning('Replaced by User.get_by_facebook_for_taskqueue')
-    User.get_by_facebook_for_taskqueue(fb_id)
-
-def get_user_by_email(email):
-    raise DeprecationWarning('Replaced by User.get_by_email')
-    User.get_by_email(email)
-
-def get_user_by_cookie(request_handler):
-    raise DeprecationWarning('Replaced by User.get_by_cookie')
-    User.get_by_cookie(request_handler)
-
-def create_user_by_facebook(*args, **kwargs):
-    raise DeprecationWarning('Replaced by User.create_by_facebook')
-    User.create_by_facebook(*args, **kwargs)
-
-def create_user_by_email(email, app):
-    raise DeprecationWarning('Replaced by User.create_by_email')
-    User.create_by_email(email, app)
-
-def create_user(app):
-    raise DeprecationWarning('Replaced by User.create')
-    User.create(app)
-
-def get_or_create_user_by_facebook(*args, **kwargs):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_facebook')
-    User.get_or_create_by_facebook(*args, **kwargs)
-
-def get_or_create_user_by_email(email, request_handler, app):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_email')
-    User.get_or_create_by_email(email, request_handler, app)
-
-def get_or_create_user_by_cookie(request_handler, app):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
-    User.get_or_create_by_cookie(request_handler, app)
-
-
-# -----
-# UserIPs Class Definition
-# -----
 class UserIPs(Model):
     user = MemcacheReferenceProperty(User, collection_name="user_ips")
     ips = db.StringListProperty(default=None)
