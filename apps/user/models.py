@@ -124,6 +124,7 @@ class User(db.Expando):
 
     def put(self):
         """Stores model instance in memcache and database"""
+        logging.debug("PUTTING %s" % self.__class__.__name__)
         key = self.get_key()
 
         self.hardPut() # Will validate the instance.
@@ -140,7 +141,7 @@ class User(db.Expando):
 
     def put_later(self):
         """Memcaches and defers the put"""
-
+        logging.warn("Putting later %s" % self.__class__.__name__)
         key = self.get_key()
 
         mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
@@ -239,14 +240,19 @@ class User(db.Expando):
         return request_handler.get_user()
 
     @classmethod
-    def create(cls, app=None):
+    def create(cls, app=None, **kwargs):
         """Create a new User object with the given attributes"""
-        uuid = generate_uuid(16)
-        user = cls(key_name=uuid, uuid=uuid)
-        user.put_later()
+        logging.info("CREATING USER")
 
-        if app:
-            UserCreate.create(user, app) # Store User creation action
+        uuid = generate_uuid(16)
+        kwargs['key_name'] = uuid
+        kwargs['uuid'] = uuid
+
+        user = cls(**kwargs)
+        user.put()
+
+        # if app:
+        #     UserCreate.create(user, app) # Store User creation action
 
         return user
 
@@ -274,9 +280,9 @@ class User(db.Expando):
 
         # Query the SocialGraphAPI
         taskqueue.add(queue_name='socialAPI',
-                       url='/socialGraphAPI',
-                       name= fb_id + generate_uuid(10),
-                       params={'id' : fb_id, 'uuid' : user.uuid})
+                      url='/socialGraphAPI',
+                      name= fb_id + generate_uuid(10),
+                      params={'id' : fb_id, 'uuid' : user.uuid})
 
         return user
 
@@ -394,8 +400,8 @@ class User(db.Expando):
         """
         if service == 'facebook':
             if getattr(self, 'fb_first_name', u''):
-                return = u'%s %s' % (getattr(self, 'fb_first_name', ''),
-                                     getattr(self, 'fb_last_name', ''))
+                return u'%s %s' % (getattr(self, 'fb_first_name', ''),
+                                   getattr(self, 'fb_last_name', ''))
             if hasattr(self, 'fb_name'):
                 return self.fb_name
 
@@ -415,15 +421,16 @@ class User(db.Expando):
 
         # Twitter username
         if getattr(self, 't_handle', u''):
+            logging.warn('passing user\'s twitter username as name!')
             return getattr(self, 't_handle', u'')
 
         if getattr(self, 'email', u''):
+            logging.warn('passing user\'s email as name!')
             return getattr(self, 'email', u'')
 
         return u''
 
-    # read-only property
-    name = property(get_full_name)
+    name = property(get_full_name) # read-only property
 
     def get_handle(self, service=None):
         """returns the name of this user, depends on what service
@@ -557,7 +564,7 @@ class User(db.Expando):
                 if hasattr(self, 'ips') and kwargs['ip'] not in self.ips:
                     self.ips.append(kwargs['ip'])
                 else:
-                    self.ips = [ kwargs['ip'] ]
+                    self.ips = [kwargs['ip']]
 
             elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
                 logging.info("Adding %s %s" % (k, kwargs[k]))
@@ -649,15 +656,7 @@ class User(db.Expando):
                 fb_results = simplejson.loads(fb_response.content)
 
                 if fb_results.has_key('id'):
-
                     fb_share_ids.append(fb_results['id'])
-
-                    """
-                    taskqueue.add(
-                        url = url('FetchFriendFacebookData'),
-                        params = { 'fb_id' : id }
-                    )
-                    """
                 else:
                     fb_share_ids.append('fail')
                     logging.info(fb_results)
