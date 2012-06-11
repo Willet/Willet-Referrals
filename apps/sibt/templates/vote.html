@@ -21,12 +21,20 @@
         </div>
         <div class="choice blob"
              style="text-align:center; margin: 18px;">
-            <div class="title">
-                Should <b>{{asker_name}}</b> get this?
-            </div>
-            <div class="center">
+            <div id="success_pending" class="center">
+                <div class="title">
+                    Should <b>{{asker_name}}</b> get this?
+                </div>
                 <button class="button" id="yes">Yes</button>
                 <button class="button" id="no">No</button>
+            </div>
+            <div id="success_screen">
+                <h2>Thank you for helping {{asker_name}}!</h2>
+                {% if store_url %}
+                    <p style="margin-top:24px;">
+                        <a href="{{ store_url }}">Continue Shopping</a>
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -43,10 +51,9 @@
                     which : which
                 },
                 success: function (tr) {
-                    $(".choice, #product_screen").hide();
-                    $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-
                     {% if discount_enabled %}
+                        $(".choice, #product_screen").hide();
+                        $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
                         {# discount_enabled is undefined on purpose #}
                         // get the discount code.
                         $.ajax({
@@ -64,6 +71,9 @@
                                 $("#discount_code").val(data || "We're out!");
                             }
                         });
+                    {% else %}
+                        $("#success_pending").hide();
+                        $("#success_screen").show();
                     {% endif %}
                 },
                 error: function () {

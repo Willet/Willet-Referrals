@@ -43,6 +43,14 @@
                             Vote
                         </button>
                     </p>
+                    <div id="success_screen">
+                        <h2>Thank you for helping {{asker_name}}!</h2>
+                        {% if store_url %}
+                            <p style="margin-top:24px;">
+                                <a href="{{ store_url }}">Continue Shopping</a>
+                            </p>
+                        {% endif %}
+                    </div>
                 </div>
                 <div id="product_info_{{ product.uuid }}"
                     class="product_info group1" rel="group1">
@@ -110,11 +118,13 @@
                             $(".choice, #product_screen").hide();
                             $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
                             getDiscount();
+                        {% else %}
+                            $("#success_pending").hide();
+                            $("#success_screen").show();
                         {% endif %}
                         ctl.text('Voted').attr('disabled', 'disabled');
                     },
                     error: function () {
-                        $(".choice").hide();
                         $("#error_message").show();
                     }
                 });

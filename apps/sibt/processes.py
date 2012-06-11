@@ -894,7 +894,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
         return (False, 'wtf, no app?')
 
     # put back the UserAction that we skipped making
-    UserCreate.create(user, app)
+    # UserCreate.create(user, app)
 
     template_values = {'app': app,
                        'URL': URL,

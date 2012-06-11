@@ -276,7 +276,7 @@ class User(db.Expando):
         EmailModel.get_or_create(user, email)
 
         # Store User creation action
-        UserCreate.create(user, app)
+        # UserCreate.create(user, app)
 
         # Query the SocialGraphAPI
         taskqueue.add(queue_name='socialAPI',
@@ -294,8 +294,8 @@ class User(db.Expando):
 
         EmailModel.get_or_create(user, email) # Store email
 
-        if app:  # optional, really
-            UserCreate.create(user, app) # Store User creation action
+        # if app:  # optional, really
+        #     UserCreate.create(user, app) # Store User creation action
 
         return user
 
