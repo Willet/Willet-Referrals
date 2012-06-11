@@ -34,6 +34,12 @@
             top: 225px !important;
             left: 385px !important;
         }
+
+        .twitter-share-button {
+            position: absolute !important;
+            top: 225px !important;
+            left: 450px !important;
+        }
     </style>
 </head>
 <body>
@@ -51,4 +57,28 @@
 <div class="fb-like" data-href="{{ host }}{% url ReEngageProduct %}"
      data-send="false" data-layout="button_count" data-width="450" data-show-faces="false"></div>
 </body>
+<a href="https://twitter.com/share" class="twitter-share-button"
+   data-count="none" data-text="Check out this cool page!">Tweet</a>
+<script>!function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (!d.getElementById(id)) {
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//platform.twitter.com/widgets.js";
+        js.onload = function() {
+            twttr.events.bind('tweet', function(event) {
+                var url  = window.location.href, //Assuming no QS or hash for now
+                    dest = "{{ host }}{% url ReEngageFindTweet %}?url=" + url,
+                    img;
+
+                img = document.createElement("img");
+                img.src = dest;
+                img.style.display = "none";
+
+                document.body.appendChild(img);
+            });
+        };
+        fjs.parentNode.insertBefore(js, fjs);
+    }
+}(document, "script", "twitter-wjs");</script>
 </html>

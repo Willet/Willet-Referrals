@@ -21,6 +21,19 @@ def get_shopify_url(shopify_url):
 
     return shopify_url
 
+def get_domain(url):
+    """Extract the domain from a URL. Will not come with trailing slash.
+
+    Example output: http://google.com
+
+    Commonly, AttributeErrors are raised if the url itself is invalid.
+    """
+    parts = urlparse.urlparse(url)
+    if not (parts.scheme and parts.netloc):
+        raise AttributeError('Invalid URL')
+    return '%s://%s' % (parts.scheme, parts.netloc)
+
+
 def get_url_variants(domain, keep_path=True):
     """Given a url, return it, as well as its similar domain with
     or without www.

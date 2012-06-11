@@ -1,12 +1,15 @@
 import logging
 from urllib import urlencode
+from google.appengine.api.taskqueue import taskqueue
+from apps.reengage.models import TwitterAssociation
 from util import httplib2
 from util.urihandler import URIHandler
 from util.local_consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 from util.helpers import url as build_url
+from util import tweepy
 
-def _FB_request(url, verb="GET", payload=None):
+def _ReEngage_request(url, verb="GET", payload=None, headers=None):
     """ Returns a the result of a request.
 
     Returns the following:
@@ -21,9 +24,10 @@ def _FB_request(url, verb="GET", payload=None):
     http = httplib2.Http()
     try:
         if payload:
-            response, content = http.request(url, verb, urlencode(payload))
+            response, content = http.request(url, verb, urlencode(payload),
+                                             headers)
         else:
-            response, content = http.request(url, verb)
+            response, content = http.request(url, verb, headers=headers)
     except:
         return False, "Problem making request. Invalid URL / Verb?"
 
@@ -49,7 +53,7 @@ def _FB_get_access_token():
         "client_secret": SHOPIFY_APPS["ReEngage"]["facebook"]["app_secret"]
     }
 
-    success, content = _FB_request(access_token_url, "POST", data)
+    success, content = _ReEngage_request(access_token_url, "POST", data)
 
     token = None
     if success:
@@ -66,7 +70,7 @@ def _FB_get_page_id(url):
     }
     final_url = "%s?%s" % (graph_url, urlencode(data))
 
-    success, content = _FB_request(final_url, payload=data)
+    success, content = _ReEngage_request(final_url, payload=data)
 
     id = None
     if success:
@@ -89,16 +93,88 @@ def _FB_post(message, page_id, token):
         "access_token": token
     }
 
-    success, content = _FB_request(destination_url, "POST", data)
+    success, content = _ReEngage_request(destination_url, "POST", data)
 
     if not success:
         logging.error("FB Post Error: %s" % content)
 
     return success
 
+def _Twitter_find_user_by_query(query):
+    """ Search for a twitter user (or users) based on some query.
+
+    Note: It takes somewhere around 30 seconds to go from the intial tweet to
+     being searchable with the twitter API
+    """
+    users    = []
+
+    base_url = "http://search.twitter.com/search.json"
+    params   = {
+        "q"          : "%s source:tweet_button" % query,
+        "result_type": "recent",
+        "show_user"  : "true"
+    }
+
+    search_url = "%s?%s" %(base_url, urlencode(params))
+    logging.info("Search URL: %s" % search_url)
+
+    success, content = _ReEngage_request(search_url)
+    logging.info("Success? %s\nContent: %s" % (success, content))
+
+    if not success:
+        return users
+
+    results = json.loads(content)
+
+    results = results.get("results")
+    if not results:
+        return users
+
+    for result in results:
+        user = result.get("from_user")
+        if user:
+            users.append(user)
+
+    return list(set(users))
+
+def _Twitter_associate_user(url, users):
+    associations, _ = TwitterAssociation.get_or_create(url)
+    for user in users:
+        if user not in associations.handles:
+            associations.handles.append(user)
+
+    associations.put()
+
+def _Twitter_post(message, url):
+    #Oauth is hard: let's go shopping!
+    consumer_key    = "xGzwuxKSs1Lc6EFd0MA"
+    consumer_secret = "5kKGsEAG23SAFlWy4e8UB02LmDSV9BoDXqyL6NUtxNg"
+
+    # In the long run, we probably want to have the user authenticate with
+    # their twitter handle. For now, this is a proof of concept. Use the app
+    # account.
+    key    = "600239400-Re2J1Q6ZpINrzpjHFOwH9G67IDOPiysDfrKHTZbP"
+    secret = "gFxBtgjn4TH18frYiNySolCUo5SGV49UIMbLwKmQGY"
+
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(key, secret)
+
+    api = tweepy.API(auth)
+
+    associations, _ = TwitterAssociation.get_or_create(url)
+    for handle in associations.handles:
+        # Assume messages are 120 characters or less
+        # because usernames can be up to 20 characters
+        api.update_status("@%s %s" % (handle, message))
+
 class ReEngageControlPanel(URIHandler):
-    def get(self):
-        self.response.out.write(self.render_page('control_panel.html', {}))
+    def get(self, network=None):
+        if not network:
+            network = "fb"
+
+        self.response.out.write(self.render_page('control_panel.html', {
+            "network": network
+        }))
 
 class ReEngageProduct(URIHandler):
     def get(self):
@@ -106,16 +182,64 @@ class ReEngageProduct(URIHandler):
             "host": self.request.host_url
         }))
 
-class ReEngageFacebook(URIHandler):
+class ReEngageFindTweet(URIHandler):
     def get(self):
+        self.post()
+
+    def post(self):
+        url   = self.request.get("url")
+        now   = (self.request.get("now", "false") == "true")
+
+        if now:
+            logging.info("URL: %s" % url)
+
+            users = _Twitter_find_user_by_query(url)
+            logging.info("Users: %s" % users)
+
+            _Twitter_associate_user(url, users)
+        else:
+            logging.info("Putting on task queue...")
+            params = {
+                "url": url,
+                "now": "true"
+            }
+            taskqueue.add(url=build_url('ReEngageFindTweet'),
+                          countdown=30, params=params)
+
+        self.response.out.write ("200 OK")
+
+class ReEngage(URIHandler):
+    def get(self, network=None):
+        if not network:
+            network = "fb"
+
         message = self.request.get("message", "")
         template_values = {
             "message": message,
-            "host": self.request.host_url
+            "host": self.request.host_url,
+            "network": network
         }
-        self.response.out.write(self.render_page('fb.html', template_values))
+        self.response.out.write(self.render_page('%s.html' % network,
+                                                 template_values))
 
-    def post(self):
+    def post(self, network=None):
+        networks = {
+            "fb": self._FB_ReEngage,
+            "t" : self._Twitter_ReEngage,
+        }
+
+        networks.get(network, "fb")()
+
+    def _Twitter_ReEngage(self):
+        url     = self.request.get("url")
+        message = self.request.get("message", url)
+
+        _Twitter_post(message, url)
+
+        self.redirect(build_url("ReEngageControlPanel", "t"))
+        return
+
+    def _FB_ReEngage(self):
         url     = self.request.get("url")
         message = self.request.get("message", "Remember me?")
 
@@ -126,7 +250,8 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "Your application seems to be misconfigured."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", "fb",
+                                    qs=message))
             return
 
         # get the id of the page
@@ -136,7 +261,8 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "We couldn't message the page you requested."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", "fb",
+                                    qs=message))
             return
 
         # post the message
@@ -146,13 +272,19 @@ class ReEngageFacebook(URIHandler):
             message = {
                 "message": "There was a problem posting the message."
             }
-            self.redirect(build_url("ReEngageControlPanel", qs=message))
+            self.redirect(build_url("ReEngageControlPanel", "fb",
+                                    qs=message))
             return
 
         message = {
             "message": "Message sent successfully!"
         }
-        self.redirect(build_url("ReEngageControlPanel", qs=message))
+
+        self.redirect(build_url("ReEngageControlPanel", "fb",
+                                qs=message))
+        return
+
+
 
 
 

@@ -42,8 +42,11 @@ class Email():
     def emailDevTeam(msg, subject=None, monospaced=False):
         ''' If on a dev site, this function will only email its site owner (see DEV_APPS). '''
         to_addrs = []
-        if subject is None:
+        if not subject:
             subject = '[Willet]'
+
+        if USING_DEV_SERVER:
+            subject = '[debug] %s' % subject
 
         if monospaced is True:
             body = '<pre>%s</pre>' % msg
