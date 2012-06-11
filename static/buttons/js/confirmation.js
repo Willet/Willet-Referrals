@@ -439,7 +439,7 @@ _willet = (function (me) {
 
     var sharePurchaseTemplate = ""
         + "<div class='sharing'>"
-        + "  {% if message %}<p>{{ message }}:</p>{% endif %}"
+        + "  <p>Thanks! Check us out on these networks:</p>"
         + "  <ul>"
         + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
@@ -576,7 +576,6 @@ _willet = (function (me) {
                 params = {
                     "enabled": raw_obj.enabled || '',
                     "shop":  raw_obj.shop || '',
-                    "message": raw_obj.message || '',
                     "facebookUsername": raw_obj.facebook_username || '',
                     "twitterUsername":  raw_obj.twitter_username || '',
                     "pinterestUsername": raw_obj.pinterest_username || ''
