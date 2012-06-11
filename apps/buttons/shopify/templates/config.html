@@ -338,6 +338,32 @@
     .masked-hidden {
         visibility: hidden !important;
     }
+
+    /* Confirm preview */
+    div.sharing {
+        padding: 0 15px;
+        margin: 10px 0 0 0;
+        background-color:#FFF;
+    }
+    div.sharing ul {
+        list-style-type:none;
+        padding: 0 40px;
+        line-height:40px;
+        margin-bottom: 0;
+    }
+    div.sharing li {
+        display: inline-table;
+        width: 140px;
+    }
+
+    #confirmation-preview {
+        background-color: #fff;
+    }
+
+    #confirmation-preview p {
+        font-size: 1em;
+    }
+
 </style>
 <!--[if IE 7]>
 <style>
@@ -409,6 +435,7 @@
     $(document).ready(function () {
         var redirectToUpgrade,
             changeTabs,
+            confirmUpdate,
             maxButtons,
             update,
             updateNetworks,
@@ -511,6 +538,17 @@
             event.preventDefault();
         };
 
+        confirmUpdate = function(network) {
+            var $input  = $("[name="+network+"_username]"),
+                $target = $("#confirmation-preview .item-" + network);
+
+            if($input.val()) {
+                $target.show();
+            } else {
+                $target.hide();
+            }
+        };
+
         //--------------- UI SETUP ---------------//
 
         {% if not config_enabled %}
@@ -563,6 +601,16 @@
         $("[name=button_count]").change(update);
         $("#max-buttons").change(update);
 
+        $("[name=twitter_username]").keyup(function(event) {
+            confirmUpdate('twitter', event)
+        })
+        $("[name=facebook_username]").keyup(function(event) {
+            confirmUpdate('facebook', event)
+        })
+        $("[name=pinterest_username]").keyup(function(event) {
+            confirmUpdate('pinterest', event)
+        })
+
         // Enable tabbing
         $(".tab-header").not(".tab-ignore").click(changeTabs);
 
@@ -572,6 +620,10 @@
 
         // Refresh the preview since the page is ready
         updatePreview();
+        var networks = ['twitter','pinterest','facebook'];
+        for(var i = 0; i < networks.length; i++) {
+            confirmUpdate(networks[i]);
+        }
     });
 </script>
 {% endblock head %}
@@ -760,7 +812,7 @@
 
                 <div class="config-free">
                     <div class="config-header">
-                        <label for="confirmation-message">
+                        <label for="confirmation-enabled">
                             Enable Confirmation Widget:
                         </label>
                         <img src="/static/imgs/info.png" alt="Help Icon"
@@ -773,8 +825,24 @@
                     </div>
                     <div id="confirmation_options" style="display:{% ifequal confirmation_enabled 'true' %}block{% else %}none{% endifequal %}">
                         <div class="preview">
-                            <div><b>Preview:</b> How the follow buttons will appear the purchase confirmation page.</div>
+                            <div><b>Preview:</b> How the 'follow' buttons
+                                will appear on the purchase confirmation
+                                page.</div>
                             <span id="confirmation-preview">
+                                <div class='sharing'>
+                                    <p>Thanks! Check us out on these networks:</p>
+                                    <ul>
+                                        <li class="item-facebook" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-facebook.png"/>
+                                        </li>
+                                        <li class="item-pinterest" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-pinterest.png"/>
+                                        </li>
+                                        <li class="item-twitter" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-twitter.png"/>
+                                        </li>
+                                      </ul>
+                                    </div>
                             </span>
                         </div>
                         <div class="config-option">
