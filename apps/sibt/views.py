@@ -363,11 +363,13 @@ class VoteDynamicLoader(URIHandler):
             product_img = ''
 
         template_values = {
+            'URL': URL,
+
             'evnt': event,
             'product': product,
             'product_img': product_img,
+            'client': app.client,
             'app': app,
-            'URL': URL,
             'instance_uuid': instance_uuid,
 
             'user': user,
