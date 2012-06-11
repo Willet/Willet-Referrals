@@ -20,11 +20,11 @@ from apps.app.models import App
 from apps.client.models import Client
 from apps.link.models import Link
 from apps.product.models import Product
-from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
+from apps.sibt.actions import SIBTNoConnectFBCancelled, \
                               SIBTShowingButton, SIBTShowingAskIframe, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.models import get_app, get_instance_event, get_products
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
@@ -69,20 +69,17 @@ class AskDynamicLoader(URIHandler):
                                       a new instance. asks will be sent with
                                       this instance.
         """
-        fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
         instance = SIBTInstance.get(instance_uuid)  # None
         link = None
-        new_instance = False  # True if this function creates one
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         page_url = self.request.get('url', '') or \
                    self.request.get('page_url', '') or \
                    self.request.get('target_url', '') or \
                    self.request.get('refer_url', '') or \
                    self.request.headers.get('referer', '')  # NOT page url!
-        product = product_shopify = None
+        product = None
         product_images = []
-        product_desc = []
         store_url = ''
         template_products = []
         vendor = self.request.get('vendor', '')  # changes template used
@@ -90,7 +87,6 @@ class AskDynamicLoader(URIHandler):
         # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(user_uuid)
         user_found = hasattr(user, 'fb_access_token')
-        user_is_admin = user.is_admin() if isinstance(user , User) else False
 
         # Store registration url (with backup options if it's missing)
         store_url = self.request.get('store_url', '') or page_url
@@ -102,13 +98,7 @@ class AskDynamicLoader(URIHandler):
             return
 
         # have page_url, store_url
-        app = SIBT.get_by_store_url(store_url)
-        if not app and store_url:
-            url_parts = urlparse(store_url)
-            # all db entries are currently http; makes sure https browsers
-            # can also get app.
-            store_url = "http://%s" % url_parts.netloc
-            app = SIBT.get_by_store_url(store_url)  # re-get
+        app = get_app(urihandler=self)
 
         if not app:
             logging.error("Could not find SIBT app for %s" % store_url)
@@ -146,7 +136,7 @@ class AskDynamicLoader(URIHandler):
                 pass  # failure is, in fact, an option.
 
         incentive_enabled = getattr(app, 'incentive_enabled', False)
-        product_shopify_id = getattr(product, 'shopify_id', '')
+        shopify_id = getattr(product, 'shopify_id', '')
 
         # see which template we should we using.
         try:
@@ -156,7 +146,7 @@ class AskDynamicLoader(URIHandler):
             pass  # not a vendor
 
         # successive steps to obtain the product(s) using any way possible
-        products = self.get_products(app=app)
+        products = get_products(urihandler=self)
         if not products[0]:  # we failed to find a single product!
             logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
@@ -171,11 +161,11 @@ class AskDynamicLoader(URIHandler):
                     image = '/static/imgs/noimage-willet.png'
 
                 template_products.append({
-                    'id': product_shopify_id,
+                    'id': shopify_id,
                     'uuid': product.uuid,
                     'image': image,
                     'title': product.title,
-                    'shopify_id': product_shopify_id,
+                    'shopify_id': shopify_id,
                     'product_uuid': product.uuid,
                     'product_desc': strip_html(product.description),
                 })
@@ -258,48 +248,6 @@ class AskDynamicLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-    def get_products(self, app=None):
-        """Fetch products.
-
-        Order of precedence:
-        - product UUIDs
-        - product Shopify IDs
-        - product UUID
-        - product Shopify ID
-        - page url
-        """
-        # at least one of these must be present to initiate an ask.
-        products = []
-        product_shopify_id = self.request.get('product_shopify_id', '')
-        product_uuid = self.request.get('product_uuid', '')
-        product_uuids = self.request.get('products', '').split(',')
-        product_ids = self.request.get('ids', '').split(',')
-
-        products = [Product.get(uuid) for uuid in product_uuids]
-        if products[0]:
-            logging.debug("get products by UUIDs, got %r" % products)
-            return products
-
-        products = [ProductShopify.get_by_shopify_id(id) \
-                    for id in product_ids]
-        if products[0]:
-            logging.debug("get products by Shopify IDs, got %r" % products)
-            return products
-
-        products = [Product.get(product_uuid)]
-        if products[0]:
-            logging.debug("get products by UUID, got %r" % products)
-            return products
-
-        products = [ProductShopify.get_by_shopify_id(product_uuid)]
-        if products[0]:
-            logging.debug("get products by Shopify ID, got %r" % products)
-            return products
-
-        if page_url and app:
-            products = [Product.get_or_fetch(page_url, app.client)]
-        return products
-
 
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on one or more products.
@@ -335,7 +283,7 @@ class VoteDynamicLoader(URIHandler):
                User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
 
-        instance = self.get_instance(app=app, user=user, target=target)
+        (instance, _) = get_instance_event(urihandler=self)
         if instance:
             logging.debug('instance found')
 
@@ -363,16 +311,14 @@ class VoteDynamicLoader(URIHandler):
             if not app_uuid:
                 self.response.out.write("This vote is now over.")
 
-            app = SIBT.get(app_uuid)
-            if not app:
-                app = SIBT.get_by_store_url(store_url)
+            app = get_app(urihandler=self)
             if not app:
                 logging.error("Could not find SIBT app for %s" % store_url)
                 self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
                                         "to use this product.")
                 return
 
-            products = self.get_products(app=app)
+            products = get_products(urihandler=self)
             if products:
                 product_uuids = [product.uuid for product in products]
                 logging.debug('app = %r' % app)
@@ -415,16 +361,6 @@ class VoteDynamicLoader(URIHandler):
             product_img = product.images[0]
         except:
             product_img = ''
-
-        '''
-        yesses = instance.get_yesses_count()
-        nos = instance.get_nos_count()
-
-        try:
-            percentage = yesses / float(yesses + nos)
-        except ZeroDivisionError:
-            percentage = 0.0 # "it's true that 0% said buy it"
-        '''
 
         template_values = {
             'evnt': event,
@@ -471,41 +407,6 @@ class VoteDynamicLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-    def get_instance(self, app, user, target):
-        """successive stages to get instance."""
-        link = None
-
-        # stage 1: get instance by instance_uuid
-        instance_uuid = self.request.get('instance_uuid')
-        instance = SIBTInstance.get(instance_uuid)
-        if instance:
-            return instance
-
-        # stage 2: get instance by willet code in URL
-        # using willet code (fast) or raw DB lookup (slower)
-        willt_code = self.request.get('willt_code')
-        if willt_code:
-            logging.info('trying to get instance for code: %s' % willt_code)
-            link = Link.get_by_code(willt_code)
-            if not link and app:
-                link = Link.all()\
-                           .filter('user =', user)\
-                           .filter('target_url =', target)\
-                           .filter('app_ =', app)\
-                           .get()
-        if link:
-            instance = link.sibt_instance.get()
-        if instance:
-            return instance
-
-        # stage 3: get instance by user and URL
-        user = User.get(self.request.get('user_uuid')) or \
-               User.get_or_create_by_cookie(self, app)
-        target = get_target_url(self.request.get('url', ''))
-        if user and target:
-            instance = SIBTInstance.get_by_asker_for_url(user, target)
-        return instance  # could be none
-
     def create_instance(self, app, page_url, product_uuids=None,
                         sharing_message=""):
         """Helper to create an instance without question."""
@@ -544,48 +445,6 @@ class VoteDynamicLoader(URIHandler):
         link.put()
 
         return instance
-
-    def get_products(self, app=None):
-        """Fetch products.
-
-        Order of precedence:
-        - product UUIDs
-        - product Shopify IDs
-        - product UUID
-        - product Shopify ID
-        - page url
-        """
-        # at least one of these must be present to initiate an ask.
-        products = []
-        product_shopify_id = self.request.get('product_shopify_id', '')
-        product_uuid = self.request.get('product_uuid', '')
-        product_uuids = self.request.get('products', '').split(',')
-        product_ids = self.request.get('ids', '').split(',')
-
-        products = [Product.get(uuid) for uuid in product_uuids]
-        if products[0]:
-            logging.debug("get products by UUIDs, got %r" % products)
-            return products
-
-        products = [ProductShopify.get_by_shopify_id(id) \
-                    for id in product_ids]
-        if products[0]:
-            logging.debug("get products by Shopify IDs, got %r" % products)
-            return products
-
-        products = [Product.get(product_uuid)]
-        if products[0]:
-            logging.debug("get products by UUID, got %r" % products)
-            return products
-
-        products = [ProductShopify.get_by_shopify_id(product_uuid)]
-        if products[0]:
-            logging.debug("get products by Shopify ID, got %r" % products)
-            return products
-
-        if page_url and app:
-            products = [Product.get_or_fetch(page_url, app.client)]
-        return products
 
 
 class ShowResults(URIHandler):
@@ -1049,10 +908,11 @@ class SIBTServeScript(URIHandler):
         # have page_url, store_url, app, client. fetch everything!
         user = User.get_or_create_by_cookie(self, app)
         product = Product.get_or_fetch(page_url, client)
-        instance, event = self.get_instance_event(app=app,
-                                                  user=user,
-                                                  page_url=page_url,
-                                                  willet_code=willet_code)
+        (instance, event) = get_instance_event(urihandler=self,
+                                               app=app,
+                                               user=user,
+                                               page_url=page_url,
+                                               willet_code=willet_code)
 
         if not hasattr(app, 'extra_url'):
             """Check if target (almost always window.location.href) has the
@@ -1198,37 +1058,6 @@ class SIBTServeScript(URIHandler):
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
-
-    def get_instance_event(self, app=None, user=None, page_url='',
-                           willet_code=None):
-        """Returns an (instance, event) tuple for this pageload,
-        if there is an instance.
-        """
-        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
-        if instance:
-            return (instance, 'SIBTShowingResults')
-
-        if willet_code:
-            link = Link.get_by_code(willet_code)
-            if link:
-                instance = link.sibt_instance.get()
-            if instance:
-                return (instance, 'SIBTShowingResults')
-
-        if user:
-            instances = SIBTInstance.all(keys_only=True)\
-                                    .filter('url =', page_url)\
-                                    .fetch(100)
-            key_list = [key.id_or_name() for key in instances]
-            action = SIBTClickAction.get_for_instance(app, user, page_url,
-                                                      key_list)
-            if action:
-                instance = action.sibt_instance
-
-            if instance:
-                return (instance, 'SIBTShowingVote')
-
-        return (None, '')
 
 
 class SIBTShopifyServeScript(URIHandler):
