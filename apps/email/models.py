@@ -253,7 +253,6 @@ class Email():
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
             product_img = 'http://rf.rs/static/imgs/blank.png' # blank
-        logging.debug('product_img is %r' % product_img)
 
         if len(products) > 1:  # WOSIB mode
             template_file = 'wosib_ask.html'

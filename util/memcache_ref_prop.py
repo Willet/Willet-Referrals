@@ -27,7 +27,8 @@ class MemcacheReferenceProperty(db.Property):
     to it.
     """
 
-    def __init__(self, reference_class=None, verbose_name=None, collection_name=None, memcache_key=None, **attrs):
+    def __init__(self, reference_class=None, verbose_name=None,
+                 collection_name=None, memcache_key=None, **attrs):
         """Construct MemcacheReferenceProperty.
 
         Args:
@@ -152,7 +153,6 @@ class MemcacheReferenceProperty(db.Property):
 
     def __set__(self, model_instance, value):
         """Set reference."""
-
         if not self.memcache_key:
             if not value:
                 raise TypeError('MemcacheReferenceProperty: cannot set reference to None!')

@@ -335,7 +335,7 @@ class VoteDynamicLoader(URIHandler):
         sharing_message = instance.sharing_message
 
         if instance.asker:
-            name = instance.asker.get_full_name()
+            name = instance.asker.name
 
         if not link:
             link = instance.link
@@ -373,7 +373,7 @@ class VoteDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
 
             'user': user,
-            'asker_name': name if name else "your friend",
+            'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
@@ -572,7 +572,7 @@ class ShowResults(URIHandler):
                 'app': app,
                 'URL': URL,
                 'user': user,
-                'asker_name': name if name != '' else "your friend",
+                'asker_name': name or "your friend",
                 'asker_pic': instance.asker.get_attr('pic'),
                 'target_url': target,
                 'fb_comments_url': '%s#code=%s' % (target, link.willt_url_code),
@@ -959,7 +959,7 @@ class SIBTServeScript(URIHandler):
         # an instance is pretended not to exist if it is not live.
         if instance and is_live:
             # get the asker's first name.
-            asker_name = instance.asker.get_first_name() or "Your friend"
+            asker_name = instance.asker.name or "Your friend"
             try:
                 asker_name = asker_name.split(' ')[0]
             except:

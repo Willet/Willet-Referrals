@@ -104,12 +104,13 @@
                     type: 'post',
                     data: payload,
                     success: function () {
-                        /*
-                        discount code thing is temporarily "discouraged"
-                        $(".choice, #product_screen").hide();
-                        $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
-                        getDiscount();
-                        */
+                        {% if discount_enabled %}
+                            {# discount_enabled is undefined on purpose #}
+                            discount code thing is temporarily "discouraged"
+                            $(".choice, #product_screen").hide();
+                            $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+                            getDiscount();
+                        {% endif %}
                         ctl.text('Voted').attr('disabled', 'disabled');
                     },
                     error: function () {

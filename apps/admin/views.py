@@ -210,7 +210,7 @@ class SIBTInstanceStats(URIHandler):
         live_instances = SIBTInstance.all().filter('is_live =', True)
         for l in live_instances:
             try:
-                if not l.asker.is_admin():
+                if not l.asker.is_admin(urihandler=self):
                     str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code)
             except:
                 pass
@@ -219,7 +219,7 @@ class SIBTInstanceStats(URIHandler):
         dead_instances = SIBTInstance.all().filter('is_live =', False)
         for l in dead_instances:
             try:
-                if not l.asker.is_admin():
+                if not l.asker.is_admin(urihandler=self):
                     str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code)
             except:
                 pass
@@ -275,7 +275,7 @@ class SIBTInstanceStats(URIHandler):
             if hasattr(u, 'ips'):
                 str += " IPs: %s " % u.ips
 
-                str += " Admin? %s</td> </tr>" % u.is_admin()
+                str += " Admin? %s</td> </tr>" % u.is_admin(urihandler=self)
 
         str += "</table> <h2> Instance Comments </h2>"
 

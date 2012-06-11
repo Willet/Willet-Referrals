@@ -481,7 +481,7 @@ ul.friends li>div, ul.askers li>div {
 .fb_connect {
     width: 220px;
     height: 30px;
-    background-image: url('/static/plugin/imgs/fb_connect.png');
+    background-image: url('/static/imgs/fb_connect.png');
 
 }
 .fb_connect:hover {

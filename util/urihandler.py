@@ -14,6 +14,7 @@ from apps.user.models import User
 from util.consts import *
 from util.cookies import LilCookies
 from util.gaesessions import get_current_session
+from util.helpers import read_user_cookie
 from util.templates import render
 
 

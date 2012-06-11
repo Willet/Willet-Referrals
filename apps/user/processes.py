@@ -235,7 +235,7 @@ class UpdateEmailAddress(URIHandler):
             user.update(email=email)
         name = self.request.get('name')
         if name:
-            user.update(name=name)
+            user.update(full_name=name)
 
 
 class UpdateFBAccessToken(URIHandler):

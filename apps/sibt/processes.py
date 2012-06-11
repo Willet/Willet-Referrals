@@ -579,7 +579,7 @@ class SendFriendAsks(URIHandler):
             products = [product]
         elif not product:
             product = random.choice(products)
-        logging.debug('got product %r, products %r' % (product, products))
+        # logging.debug('got product %r, products %r' % (product, products))
 
         if not user:
             logging.error('failed to get user by uuid %s' % rget('user_uuid'))
