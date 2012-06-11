@@ -560,9 +560,9 @@
             "dir": "/static/imgs/jquery-lightswitch/",
             "change": function (event) {
                 if (event.target.checked) {
-                    $('#confirmation_options').show();
+                    $('#confirmation_options').slideDown("slow");
                 } else {
-                    $('#confirmation_options').hide();
+                    $('#confirmation_options').slideUp("slow");
                 }
             }
         });
