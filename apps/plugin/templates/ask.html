@@ -18,6 +18,37 @@
             {% include "../../sibt/templates/js/willet.loader.js" %}
             {% include "../../sibt/templates/js/willet.analytics.js" %}
         </script>
+        {% if not embed %}{# intentionally left blank #}{% else %}
+            <style>
+                ul.friends, ul.askers {
+                    max-height: 150px;
+                }
+                ul.askers {
+                    margin-top: 0;
+                }
+                .center_col {
+                    margin-top: 43px;
+                }
+
+                /* reduce size of button */
+                .button {
+                    height: 32px;
+                }
+                .button > img {
+                    width: 23px;
+                    height: 23px;
+                    margin: 2.5px !important; /* override id > img selector */
+                }
+                .button .title {
+                    min-width: 150px !important; /* override id selector */
+                    margin-right: 8px;
+                    margin-left: 45px;
+                }
+                .button .subtitle {
+                    display: none;
+                }
+            </style>
+        {% endif %}
     </head>
     <body>
         <div class="wrapper" id="wrapper">
@@ -28,10 +59,12 @@
             <!--                   Choose Friends Screen                    -->
 
             <div id="choose">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Choose Friends To Ask For Advice</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Choose Friends To Ask For Advice</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <ul class="friends" id="friends">
                         <!-- Friends appended when document ready -->
@@ -42,7 +75,7 @@
                             Add Another Friend
                         </div>
                     </div>
-                    <div id="chosenButton" class="button inactive corner">
+                    <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
                         <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                         <div class="title">Ask Chosen Friends</div>
                         <div class="subtitle">Giving advice is fun</div>
@@ -53,17 +86,19 @@
             <!--                   Asker Info Screen                        -->
 
             <div id="asker_info">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Let Your Friends Know Who Is Asking</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Let Your Friends Know Who Is Asking</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
+                    <div class="center_col" style="margin-top: 35px;">
+                        <p class="centered">We will email you when a friend provides advice.</p>
+                    </div>
                     <ul class="askers" id="askers">
                         <!-- Asker appended when document ready -->
                     </ul>
-                    <div class="center_col">
-                        <p class="centered">We will email you when a friend provides advice.</p>
-                    </div>
                     <div id="askButton" class="button inactive corner">
                         <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                         <div class="title">Ask Chosen Friends</div>
@@ -75,10 +110,12 @@
             <!--                        Asking Screen                       -->
 
             <div id="asking">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Choose Friends To Ask For Advice</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Choose Friends To Ask For Advice</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <div class="middled">
                         <div>Asking...</div>
@@ -90,10 +127,12 @@
             <!--                       Success Screen                       -->
 
             <div id="success">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Success! Your Question Has Been Sent</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Success! Your Question Has Been Sent</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow">
                     <div class="center_col">
                         {% if incentive_enabled %}
@@ -109,28 +148,38 @@
                             <p>You will receive an email when one of your trusted friends gives advice!</p>
                         {% endif %}
                     </div>
-                    <div id="cancelButton" class="button close">
-                        <div class="simpletitle">Close</div>
-                    </div>
+                    {% if not embed %}
+                        <div id="cancelButton" class="button close">
+                            <div class="simpletitle">Close</div>
+                        </div>
+                    {% else %}
+                        <div onclick="closeIframe();" class="button close">
+                            <div class="simpletitle">Save</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
             <!--                      Failure Screen                        -->
 
             <div class="narrow_screen" id="failure">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Sorry, But Something Went Wrong...</div>
-                </div>
+                {% if not embed %}
+                    <div class="title_bar">
+                        <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                        <div>Sorry, But Something Went Wrong...</div>
+                    </div>
+                {% endif %}
                 <div class="content narrow"
                     <div class="center_col">
                         <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
                         <p class='error_message'>An error happened.</p>
                         <p>You were so excited to get advice and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
                     </div>
-                    <div id="cancelButton" class="button close">
-                        <div class="simpletitle">Close</div>
-                    </div>
+                    {% if not embed %}
+                        <div id="cancelButton" class="button close">
+                            <div class="simpletitle">Close</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -143,7 +192,7 @@
             document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
         }
     </script>
-    <script src="/static/js/jquery.imagedropdown.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.imagedropdown.js"></script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
     <script src="/static/js/jquery.mailcheck.js" type="text/javascript"></script>
     <script type="text/javascript">
@@ -908,13 +957,19 @@
         };
 
         // Closes iframe
-        var closeIframe = function( action ) {
-            if ( action !== "" ){
-                storeAnalytics( action );
+        var closeIframe = function (action) {
+            if (action){
+                storeAnalytics(action);
             }
 
-            doPostMessage('close');
-            window.close();
+            {% if not embed %}
+                doPostMessage('close');
+                window.close();
+            {% else %}
+                if (window.parent) {
+                    window.parent.location = "{{ share_url }}";
+                }
+            {% endif %}
         };
 
         // Post to parent page that we are hosted in

@@ -355,13 +355,14 @@ class User(db.Expando):
 
     # Constructors ---------------------------------------------------------------------
     @classmethod
-    def create(cls, app):
+    def create(cls, app=None):
         """Create a new User object with the given attributes"""
         uuid = generate_uuid(16)
         user = cls(key_name=uuid, uuid=uuid)
         user.put_later()
 
-        UserCreate.create(user, app) # Store User creation action
+        if app:
+            UserCreate.create(user, app) # Store User creation action
 
         return user
 
@@ -433,18 +434,16 @@ class User(db.Expando):
                 taskqueue.add(url = '/fetchFB', params = {'fb_id': user.fb_identity})
 
         # Update the user
-        user.update(
-            fb_identity=fb_id,
-            fb_first_name=first_name,
-            fb_last_name=last_name,
-            fb_name=name,
-            email=email,
-            referrer=referrer,
-            fb_gender=gender,
-            fb_verified=verified,
-            fb_access_token=token,
-            fb_friends=friends
-        )
+        user.update(fb_identity=fb_id,
+                    fb_first_name=first_name,
+                    fb_last_name=last_name,
+                    fb_name=name,
+                    email=email,
+                    referrer=referrer,
+                    fb_gender=gender,
+                    fb_verified=verified,
+                    fb_access_token=token,
+                    fb_friends=friends)
 
         # Set a cookie to identify the user in the future
         if request_handler is not None:
@@ -475,7 +474,8 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def get_or_create_by_cookie(cls, request_handler, app):
+    def get_or_create_by_cookie(cls, request_handler, app=None):
+        """I just made app optional."""
         user = cls.get_by_cookie(request_handler)
         if user is None:
             user = cls.create(app)
@@ -1030,55 +1030,8 @@ class User(db.Expando):
                 logging.error('Error posting action: %r' % fb_response)
 
         return fb_share_id, plugin_response
-# end class
 
 
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-# DEPRECEATED - Gets by X
-def get_user_by_facebook(fb_id):
-    raise DeprecationWarning('Replaced by User.get_by_facebook')
-    User.get_by_facebook(fb_id)
-
-def get_user_by_facebook_for_taskqueue(fb_id):
-    raise DeprecationWarning('Replaced by User.get_by_facebook_for_taskqueue')
-    User.get_by_facebook_for_taskqueue(fb_id)
-
-def get_user_by_email(email):
-    raise DeprecationWarning('Replaced by User.get_by_email')
-    User.get_by_email(email)
-
-def get_user_by_cookie(request_handler):
-    raise DeprecationWarning('Replaced by User.get_by_cookie')
-    User.get_by_cookie(request_handler)
-
-def create_user_by_facebook(*args, **kwargs):
-    raise DeprecationWarning('Replaced by User.create_by_facebook')
-    User.create_by_facebook(*args, **kwargs)
-
-def create_user_by_email(email, app):
-    raise DeprecationWarning('Replaced by User.create_by_email')
-    User.create_by_email(email, app)
-
-def create_user(app):
-    raise DeprecationWarning('Replaced by User.create')
-    User.create(app)
-
-def get_or_create_user_by_facebook(*args, **kwargs):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_facebook')
-    User.get_or_create_by_facebook(*args, **kwargs)
-
-def get_or_create_user_by_email(email, request_handler, app):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_email')
-    User.get_or_create_by_email(email, request_handler, app)
-
-def get_or_create_user_by_cookie(request_handler, app):
-    raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
-    User.get_or_create_by_cookie(request_handler, app)
-
-
-# -----
-# UserIPs Class Definition
-# -----
 class UserIPs(Model):
     user = MemcacheReferenceProperty(User, collection_name="user_ips")
     ips = db.StringListProperty(default=None)

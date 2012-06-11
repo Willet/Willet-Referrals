@@ -135,7 +135,7 @@ class AppShopify(Model):
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
-
+    
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
                           suppress_errors = False):
@@ -235,7 +235,7 @@ class AppShopify(Model):
                                 { "application_charge": settings })
 
         data = result["application_charge"]
-        logging.debug('data = %r' % data)
+        # logging.debug('data = %r' % data)
 
         if data['status'] != 'pending':
             raise ShopifyBillingError("Setup of application charge was denied", data)
@@ -290,7 +290,7 @@ class AppShopify(Model):
         result = self._retrieve_application_charge()
 
         charge_data = result['application_charge']
-        logging.debug('charge_data = %r' % charge_data)
+        # logging.debug('charge_data = %r' % charge_data)
         charge_status = charge_data['status']
 
         if charge_status == 'accepted':

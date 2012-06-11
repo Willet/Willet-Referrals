@@ -1,4 +1,7 @@
 /* ---------------------   DEFAULTS   ------------------------------- */
+html {
+    background-color: rgba(255, 255, 255, 0.2); /* for embedded */
+}
 
 html, body {
     /*background-color: white;*/
@@ -164,7 +167,7 @@ p {
 }
 .button.close {
     position: absolute;
-    bottom: 50px;
+    bottom: 15px;
     left: 50%;
     margin-left: -75px;
     width: 150px;
@@ -208,7 +211,7 @@ p {
     white-space: nowrap;
     font-size: 20px;
     min-width: 100px;
-    line-height: 50px;
+    line-height: 32px;
 }
 
 
@@ -283,9 +286,12 @@ p {
     vertical-align:top;
 }
 .message>textarea {
-    float: right;
+    /*float: right;
     width: 70%;
-    height: 84px; /* textarea has 16px of outer stuff */
+    height: 84px;*/ /* textarea has 16px of outer stuff */
+    width: 100%;
+    height: 40px;
+    margin-left: -10px;
 }
 .message>.detailed {
     float: right;
@@ -298,9 +304,9 @@ p {
 .options {
     position: absolute;
     left: 0;
-    bottom: 30px;
+    bottom: 8px;
     margin: 0;
-    height: 100px;
+    /*height: 100px;*/
     width: 100%;
     text-align: center;
     z-index: 100; /* PIE shows in IE8 */
@@ -312,13 +318,13 @@ p {
 }
 .or {
     float: left;
-    line-height: 60px;
+    line-height: 50px;
     text-align: center;
     font-size: 14px;
     color: #888;
 }
 .options .or {
-    width: 72px;
+    width: 100px;
     *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {
@@ -343,7 +349,7 @@ p {
     margin: 2px 7px 2px 7px;
 }
 #postOnWall>img {
-    width: 60px;
+    width: 36px;
 }
 #postOnWall>.title, #postOnWall>.subtitle,
 #askButton>.title, #askButton>.subtitle {

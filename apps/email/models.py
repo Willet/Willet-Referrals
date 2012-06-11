@@ -42,8 +42,11 @@ class Email():
     def emailDevTeam(msg, subject=None, monospaced=False):
         ''' If on a dev site, this function will only email its site owner (see DEV_APPS). '''
         to_addrs = []
-        if subject is None:
+        if not subject:
             subject = '[Willet]'
+
+        if USING_DEV_SERVER:
+            subject = '[debug] %s' % subject
 
         if monospaced is True:
             body = '<pre>%s</pre>' % msg
@@ -103,7 +106,7 @@ class Email():
         subject = 'Thanks for Installing "%s"' % (app_name)
 
         if not app_name:
-            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
+            logging.warn("Attempt to email welcome for unknown app %s" % app_name)
             return
 
         if not use_full_name:

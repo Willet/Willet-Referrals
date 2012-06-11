@@ -21,7 +21,7 @@ from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 
-from util.consts import P3P_HEADER, SHOPIFY_APPS, URL  # MEMCACHE_TIMEOUT
+from util.consts import P3P_HEADER, SECURE_URL, SHOPIFY_APPS, URL
 from util.helpers import admin_required, get_target_url
 from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
@@ -48,6 +48,8 @@ class SIBTShopifyWelcome(URIHandler):
             client = self.get_client() # May be None if not authenticated
 
             token = self.request.get('t') # token
+            if not token:  # manually hitting rf.rs/s/shopify
+                self.redirect('/')
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
@@ -90,6 +92,7 @@ class SIBTShopifyWelcome(URIHandler):
             template_values = {
                 'app': app,
                 'URL' : URL,
+                'SECURE_URL' : SECURE_URL,
                 'shop_name' : shop_name,
                 'shop_owner': shop_owner,
                 'client_email': client_email,

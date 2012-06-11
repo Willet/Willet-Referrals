@@ -9,6 +9,7 @@ import os
 import random
 import urllib2
 
+from urllib import urlencode
 from urlparse import urlparse, urlunsplit
 
 from django.utils import simplejson as json
@@ -19,11 +20,11 @@ from apps.app.models import App
 from apps.client.models import Client
 from apps.link.models import Link
 from apps.product.models import Product
-from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
+from apps.sibt.actions import SIBTNoConnectFBCancelled, \
                               SIBTShowingButton, SIBTShowingAskIframe, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.models import get_app, get_instance_event, get_products
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
@@ -31,7 +32,7 @@ from apps.user.models import User
 from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, SECURE_URL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
-from util.shopify_helpers import get_shopify_url
+from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -61,19 +62,24 @@ class AskDynamicLoader(URIHandler):
             products (required): UUIDs of all products to be included
                                  (first UUID will be primary product)
 
+            store_url (optional): helps pinpoint the store
             user_uuid (optional)
+            embed (optional): reduces size of window and removes some elements.
+            instance_uuid (optional): if supplied, ask.html will not create
+                                      a new instance. asks will be sent with
+                                      this instance.
         """
-        fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
+        instance = SIBTInstance.get(instance_uuid)  # None
+        link = None
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         page_url = self.request.get('url', '') or \
                    self.request.get('page_url', '') or \
                    self.request.get('target_url', '') or \
                    self.request.get('refer_url', '') or \
                    self.request.headers.get('referer', '')  # NOT page url!
-        product = product_shopify = None
+        product = None
         product_images = []
-        product_desc = []
         store_url = ''
         template_products = []
         vendor = self.request.get('vendor', '')  # changes template used
@@ -81,49 +87,6 @@ class AskDynamicLoader(URIHandler):
         # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(user_uuid)
         user_found = hasattr(user, 'fb_access_token')
-        user_is_admin = user.is_admin() if isinstance(user , User) else False
-
-        def get_products(app=None):
-            """Fetch products.
-
-            Order of precedence:
-            - product UUIDs
-            - product Shopify IDs
-            - product UUID
-            - product Shopify ID
-            - page url
-            """
-            # at least one of these must be present to initiate an ask.
-            products = []
-            product_shopify_id = self.request.get('product_shopify_id', '')
-            product_uuid = self.request.get('product_uuid', '')
-            product_uuids = self.request.get('products', '').split(',')
-            product_ids = self.request.get('ids', '').split(',')
-
-            products = [Product.get(uuid) for uuid in product_uuids]
-            if products[0]:
-                logging.debug("get products by UUIDs, got %r" % products)
-                return products
-
-            products = [ProductShopify.get_by_shopify_id(id) \
-                        for id in product_ids]
-            if products[0]:
-                logging.debug("get products by Shopify IDs, got %r" % products)
-                return products
-
-            products = [Product.get(product_uuid)]
-            if products[0]:
-                logging.debug("get products by UUID, got %r" % products)
-                return products
-
-            products = [ProductShopify.get_by_shopify_id(product_uuid)]
-            if products[0]:
-                logging.debug("get products by Shopify ID, got %r" % products)
-                return products
-
-            if page_url and app:
-                products = [Product.get_or_fetch(page_url, app.client)]
-            return products
 
         # Store registration url (with backup options if it's missing)
         store_url = self.request.get('store_url', '') or page_url
@@ -135,13 +98,7 @@ class AskDynamicLoader(URIHandler):
             return
 
         # have page_url, store_url
-        app = SIBT.get_by_store_url(store_url)
-        if not app and store_url:
-            url_parts = urlparse(store_url)
-            # all db entries are currently http; makes sure https browsers
-            # can also get app.
-            store_url = "http://%s" % url_parts.netloc
-            app = SIBT.get_by_store_url(store_url)  # re-get
+        app = get_app(urihandler=self)
 
         if not app:
             logging.error("Could not find SIBT app for %s" % store_url)
@@ -179,7 +136,7 @@ class AskDynamicLoader(URIHandler):
                 pass  # failure is, in fact, an option.
 
         incentive_enabled = getattr(app, 'incentive_enabled', False)
-        product_shopify_id = getattr(product, 'shopify_id', '')
+        shopify_id = getattr(product, 'shopify_id', '')
 
         # see which template we should we using.
         try:
@@ -189,7 +146,7 @@ class AskDynamicLoader(URIHandler):
             pass  # not a vendor
 
         # successive steps to obtain the product(s) using any way possible
-        products = get_products(app=app)
+        products = get_products(urihandler=self)
         if not products[0]:  # we failed to find a single product!
             logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
@@ -204,11 +161,11 @@ class AskDynamicLoader(URIHandler):
                     image = '/static/imgs/noimage-willet.png'
 
                 template_products.append({
-                    'id': product_shopify_id,
+                    'id': shopify_id,
                     'uuid': product.uuid,
                     'image': image,
                     'title': product.title,
-                    'shopify_id': product_shopify_id,
+                    'shopify_id': shopify_id,
                     'product_uuid': product.uuid,
                     'product_desc': strip_html(product.description),
                 })
@@ -234,7 +191,11 @@ class AskDynamicLoader(URIHandler):
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
-        link = Link.create(page_url, app, origin_domain, user)
+        if instance:
+            link = instance.link  # re-use old link to get to this instance!
+            logging.info("Reusing the link of an existing instance.")
+        else:
+            link = Link.create(page_url, app, origin_domain, user)
 
         # log this "showage"
         if user_found:
@@ -245,6 +206,7 @@ class AskDynamicLoader(URIHandler):
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
+            'embed': bool(self.request.get('embed', '0') == '1'),
 
             'app': app,
             'app_uuid': app_uuid,
@@ -257,7 +219,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
-            'instance_uuid': self.request.get('instance_uuid'),
+            'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
@@ -290,74 +252,87 @@ class AskDynamicLoader(URIHandler):
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on one or more products.
 
-    On v10 and up (standalone vote page), "voter is never asker"
+    VoteDynamicLoader handles two modes of operation:
+    - new instance
+    - existing instance
+
+    params required for new instance:
+        app_uuid: pinpoints the store
+        products: uuids ('uuid,uuid,uuid') for the products to be shown.
+                  SIBT and WOSIB modes are automatically managed.
+
+    params required for existing instance:
+        instance_uuid: show the vote page for this instance.
     """
     def get(self):
         app = None
+        event = 'SIBTMakingVote'
         instance_uuid = self.request.get('instance_uuid')
         link = None
+        new_instance = False  # True if this function creates one
         products = [] # populate this to show products on design page.
         share_url = ''
         sharing_message = ''
-        target = get_target_url(self.request.get('url', ''))
+        store_url = get_shopify_url(self.request.get('store_url')) or \
+                    get_shopify_url(self.request.get('page_url'))
+        target = get_target_url(self.request.get('url', '')) or \
+                 get_target_url(self.request.get('target_url', '')) or \
+                 get_target_url(self.request.get('page_url', ''))
         template_values = {}
-        user = None
+        user = User.get(self.request.get('user_uuid')) or \
+               User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
-        willt_code = self.request.get('willt_code')
 
-        def get_instance():
-            """successive stages to get instance."""
-            link = None
+        (instance, _) = get_instance_event(urihandler=self)
+        if instance:
+            logging.debug('instance found')
 
-            # stage 1: get instance by instance_uuid
-            instance = SIBTInstance.get(instance_uuid)
-            if instance:
-                return instance
+            if not instance.is_live:
+                # We can't find the instance, so let's assume the vote is over
+                self.response.out.write("This vote is now over.")
+                return
 
-            # stage 2: get instance by willet code in URL
-            # using willet code (fast) or raw DB lookup (slower)
-            if willt_code:
-                logging.info('trying to get instance for code: %s' % willt_code)
-                link = Link.get_by_code(willt_code)
-                if not link:
-                    link = Link.all()\
-                               .filter('user =', user)\
-                               .filter('target_url =', target)\
-                               .filter('app_ =', app)\
-                               .get()
-            if link:
-                instance = link.sibt_instance.get()
-            if instance:
-                return instance
+            app = instance.app_
+            if not app:  # We can't find the app?!
+                self.response.out.write("This vote was not created properly.")
+                return
 
-            # stage 3: get instance by user and URL
-            if user and target:
-                instance = SIBTInstance.get_by_asker_for_url(user, target)
-            return instance  # could be none
+            # record that the vote page was once opened.
+            SIBTShowingVote.create(user=user, instance=instance)
+            event = 'SIBTShowingVote'
 
-        instance = get_instance()
-        if not instance or not instance.is_live:
-            # We can't find the instance, so let's assume the vote is over
-            self.response.out.write("This vote is now over.")
-            return
+            # In the case of a Shopify product, it will fetch from a .json URL.
+            product = Product.get_or_fetch(instance.url, app.client)
+            products = [Product.get(uuid) for uuid in instance.products]
+        else:  # v11 mode: auto-create
+            logging.debug('instance not found - creating one')
+
+            app_uuid = self.request.get('app_uuid')
+            if not app_uuid:
+                self.response.out.write("This vote is now over.")
+
+            app = get_app(urihandler=self)
+            if not app:
+                logging.error("Could not find SIBT app for %s" % store_url)
+                self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
+                                        "to use this product.")
+                return
+
+            products = get_products(urihandler=self)
+            if products:
+                product_uuids = [product.uuid for product in products]
+                logging.debug('app = %r' % app)
+                logging.debug('target = %r' % target)
+                logging.debug('product_uuids = %r' % product_uuids)
+                instance = self.create_instance(app=app,
+                                                page_url=target,
+                                                product_uuids=product_uuids,
+                                                sharing_message="")
+                # update variables to reflect "creation"
+                new_instance = True
+                instance_uuid =  instance.uuid
 
         sharing_message = instance.sharing_message
-        app = instance.app_
-        if not app:
-            # We can't find the app?!
-            self.response.out.write("Drat! This vote was not created properly.")
-            return
-
-        # see which template we should we using.
-        try:
-            if app.client and app.client.is_vendor:
-                vendor = app.client.name
-        except NameError, AttributeError:
-            pass  # not a vendor
-
-
-        user = User.get(self.request.get('user_uuid')) or \
-               User.get_or_create_by_cookie(self, app)
 
         if instance.asker:
             name = instance.asker.get_full_name()
@@ -367,16 +342,16 @@ class VoteDynamicLoader(URIHandler):
         try:
             share_url = link.get_willt_url()
         except AttributeError, e:
-            logging.warn ('Faulty link')
+            logging.warn('Faulty link')
 
-        # record that the vote page was once opened.
-        SIBTShowingVote.create(user=user, instance=instance)
-        event = 'SIBTShowingVote'
+        # see which template we should we using.
+        try:
+            if app.client and app.client.is_vendor:
+                vendor = app.client.name
+        except NameError, AttributeError:
+            pass  # not a vendor
 
-        # In the case of a Shopify product, it will fetch from a .json URL.
-        product = Product.get_or_fetch(instance.url, app.client)
-        products = [Product.get(uuid) for uuid in instance.products]
-
+        # sync the variables
         if not product:
             product = products[0]
         elif not products:
@@ -387,27 +362,24 @@ class VoteDynamicLoader(URIHandler):
         except:
             product_img = ''
 
-        yesses = instance.get_yesses_count()
-        nos = instance.get_nos_count()
-        try:
-            percentage = yesses / float(yesses + nos)
-        except ZeroDivisionError:
-            percentage = 0.0 # "it's true that 0% said buy it"
-
         template_values = {
+            'URL': URL,
+
             'evnt': event,
             'product': product,
             'product_img': product_img,
+            'client': app.client,
             'app': app,
-            'URL': URL,
             'instance_uuid': instance_uuid,
 
             'user': user,
             'asker_name': name if name else "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
+            'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
             'fb_comments_url': '%s' % (link.get_willt_url()),
-            'percentage': percentage,
+            'new_instance': new_instance,
+            # 'percentage': percentage,
             'products': products,
             'share_url': share_url,
             'sharing_message': strip_html(sharing_message),
@@ -415,9 +387,17 @@ class VoteDynamicLoader(URIHandler):
             'store_url': app.store_url,
             'store_name': app.store_name,
             'instance': instance,
-            'votes': yesses + nos,
-            'yesses': instance.get_yesses_count(),
-            'noes': instance.get_nos_count()
+            # 'votes': yesses + nos,
+            # 'yesses': instance.get_yesses_count(),
+            # 'noes': instance.get_nos_count(),
+            'ask_qs': urlencode({'app_uuid': app.uuid,
+                                 'instance_uuid': instance.uuid,  # golden line
+                                 'user_uuid': instance.asker.uuid,
+                                 'products': ','.join(instance.products),
+                                 'product_uuid': product.uuid,
+                                 'page_url': target,
+                                 'store_url': app.store_url,
+                                 'embed': 1})
         }
 
         filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
@@ -428,6 +408,45 @@ class VoteDynamicLoader(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message=""):
+        """Helper to create an instance without question."""
+        user = User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
 
 
 class ShowResults(URIHandler):
@@ -726,6 +745,63 @@ class SIBTGetUseCount (URIHandler):
             self.response.out.write ('0') # no shame in that?
 
 
+class SIBTInstanceStatusChecker(URIHandler):
+    """Lightweight view for visitors to check their instances' statuses.
+
+    Checks visitors (with their cookies) whether they have made an instance,
+    and, if true, return if the instance is still valid (not expired).
+
+    This handler is GET-only. All other methods raise NotImplementedError.
+    """
+    @obtain('instance_uuids')
+    def get(self, instance_uuids):
+        """Result is a serialised json object.
+
+        {
+            "uuid": "(uuid of the most recently active instance)"
+                    OR
+                    "(empty string if no active instances)",
+            "products": ["(product_uuid)", "(product_uuid)", ...]
+                        OR
+                        [(empty array if no active instances)]
+                        OR
+                        [(empty array if SIBT single product mode)],
+
+            ... future expansion possible
+        }
+        """
+        instances = []  # objects
+        iul = []  # short for Instance-Uuid-List
+        mr_instance = None  # most recent instance
+        output = {'uuid': '',
+                  'products': []}  # will be serialised
+
+        if instance_uuids:  # "perform checks on an instance"
+            iul = unicode(instance_uuids).split(',')  # [u'1', u'2', u'3']
+
+        if len(iul):  # if list of uuids is non-empty
+            instances = [SIBTInstance.get(uuid) for uuid in iul]
+            for instance in instances:
+                if not instance:
+                    continue  # instance is None, skip it
+                if not instance.is_live:
+                    continue  # instance is expired, skip it
+
+                if not mr_instance:
+                    # if most recent instance is still empty, register one
+                    mr_instance = instance
+                elif instance.created > mr_instance.created:
+                    mr_instance = instance  # this instance is more recent
+
+        if mr_instance:  # found one most recent, active instance
+            output['uuid'] = mr_instance.uuid
+            output['products'] = mr_instance.products
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(json.dumps(output))
+        return
+
+
 class SIBTServeScript(URIHandler):
     """Serves a script that shows the SIBT button.
 
@@ -834,10 +910,11 @@ class SIBTServeScript(URIHandler):
         # have page_url, store_url, app, client. fetch everything!
         user = User.get_or_create_by_cookie(self, app)
         product = Product.get_or_fetch(page_url, client)
-        instance, event = self.get_instance_event(app=app,
-                                                  user=user,
-                                                  page_url=page_url,
-                                                  willet_code=willet_code)
+        (instance, event) = get_instance_event(urihandler=self,
+                                               app=app,
+                                               user=user,
+                                               page_url=page_url,
+                                               willet_code=willet_code)
 
         if not hasattr(app, 'extra_url'):
             """Check if target (almost always window.location.href) has the
@@ -983,37 +1060,6 @@ class SIBTServeScript(URIHandler):
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
-
-    def get_instance_event(self, app=None, user=None, page_url='',
-                           willet_code=None):
-        """Returns an (instance, event) tuple for this pageload,
-        if there is an instance.
-        """
-        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
-        if instance:
-            return (instance, 'SIBTShowingResults')
-
-        if willet_code:
-            link = Link.get_by_code(willet_code)
-            if link:
-                instance = link.sibt_instance.get()
-            if instance:
-                return (instance, 'SIBTShowingResults')
-
-        if user:
-            instances = SIBTInstance.all(keys_only=True)\
-                                    .filter('url =', page_url)\
-                                    .fetch(100)
-            key_list = [key.id_or_name() for key in instances]
-            action = SIBTClickAction.get_for_instance(app, user, page_url,
-                                                      key_list)
-            if action:
-                instance = action.sibt_instance
-
-            if instance:
-                return (instance, 'SIBTShowingVote')
-
-        return (None, '')
 
 
 class SIBTShopifyServeScript(URIHandler):

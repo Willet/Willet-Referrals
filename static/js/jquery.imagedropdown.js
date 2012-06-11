@@ -18,7 +18,10 @@
                 'background-color': '#fff',
                 'overflow': 'hidden',
                 // 'display': 'inline-block',
-                'cursor': 'pointer'
+                'cursor': 'pointer',
+                'click': function () {},  // custom event
+                'select': function () {},  // custom event
+                'hover': function () {},  // custom event
             };
 
             return this.each(function () { // return: chain
@@ -114,6 +117,7 @@
                 box_onclick = function (event) {
                     event.stopPropagation(); // stop bubbling up, bro
                     toggleDropdown();
+                    settings.click();  // call custom event
                 };
 
                 image_onclick = function (event) {
@@ -127,6 +131,7 @@
                     $selected_image.click(openDropdown);
                     $this.append($selected_image);
 
+                    settings.select();  // call custom event
                     return closeDropdown();
                 };
 

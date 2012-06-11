@@ -2,7 +2,7 @@
 
 &lt;script type="text/javascript"&gt;
   (function()&#123;
-    var jsUrl   = '{{URL}}/o/shopify/create.js?client_uuid={{client_uuid}}';
+    var jsUrl   = '{{ SECURE_URL }}/o/shopify/create.js?client_uuid={{ client_uuid }}';
     var i       = 0;
     var items   = '';
     &#123;% for line in line_items %&#125;

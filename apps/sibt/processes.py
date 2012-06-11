@@ -31,7 +31,7 @@ from util.consts import *
 from util.helpers import url
 from util.helpers import remove_html_tags
 from util.strip_html import strip_html
-from util.urihandler import URIHandler
+from util.urihandler import obtain, URIHandler
 
 
 class SIBTSignUp(URIHandler):
@@ -44,12 +44,10 @@ class SIBTSignUp(URIHandler):
 
     This is called by AJAX. Response is an empty page with appropriate code.
     """
-    def post(self):
+    @obtain('email', 'fullname', 'shopname', 'shop_url')
+    def post(self, email, fullname, shopname, shop_url):
         """POST request lets you sign up."""
-        email = self.request.get("email")
-        fullname = self.request.get("fullname")
-        shopname = self.request.get("shopname")
-        shop_url = self.request.get("shop_url")
+
         # optional stuff
         address1 = self.request.get("address1", '')
         address2 = self.request.get("address2", '')
@@ -137,12 +135,13 @@ class StartSIBTInstance(URIHandler):
                                            dialog="ConnectFB",
                                            img=img,
                                            motivation=None,
-                                           sharing_message="")
+                                           sharing_message="",
+                                           products=[])
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
             response['data']['message'] = str(e)
-            logging.error('we had an error creating the instnace', exc_info=True)
+            logging.error('we had an error creating the instance', exc_info=True)
 
         self.response.out.write(json.dumps(response))
 
@@ -207,9 +206,8 @@ class GetExpiredSIBTInstances(URIHandler):
             # Has been reported to GOOG: http://code.google.com/p/googleappengine/issues/detail?id=7341
             right_now = datetime.datetime.now()
 
-        expired_instances = SIBTInstance.all()\
-                .filter('is_live =', True)\
-                .filter('end_datetime <=', right_now)
+        expired_instances = SIBTInstance.all().filter('end_datetime <=',
+                                                      right_now)
 
         for instance in expired_instances:
             taskqueue.add(
@@ -238,8 +236,10 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
-            Email.SIBTVoteCompletion(instance=instance,
-                                     product=instance.products[0])
+            products = instance.products
+            if products and len(products):
+                Email.SIBTVoteCompletion(instance=instance,
+                                         product=products[0])
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
@@ -491,7 +491,8 @@ class StartSIBTAnalytics(URIHandler):
             'b_counts': things['b']['counts'],
         }
 
-        self.response.out.write(self.render_page('action_stats.html', template_values))
+        self.response.out.write(self.render_page('action_stats.html',
+                                template_values))
 
 
 class SendFriendAsks(URIHandler):
@@ -513,6 +514,8 @@ class SendFriendAsks(URIHandler):
         user_uuid: <string> a <User> uuid
         fb_access_token: <string> a Facebook API access token for this user
         fb_id: <string> a Facebook user id for this user
+        instance_uuid (optional): if not empty, will ask friends about
+                                  this FULL instance.
 
     Expected output (JSON-encoded):
         success: <Boolean> at least some friends were successfully contacted
@@ -539,10 +542,15 @@ class SendFriendAsks(URIHandler):
         fb_share_counter = 0
         fb_token = rget('fb_access_token')
         friends = json.loads(rget('friends'))
-        instance = None
-        link = Link.get_by_code(rget('willt_code'))
         msg = rget('msg', '')[:1000]  # sharing message is limited to 1k chars
         user = User.get(rget('user_uuid'))
+
+        # re-use instance link if there already is one
+        instance = SIBTInstance.get(rget('instance_uuid')) or None
+        if instance:
+            link = instance.link
+        else:
+            link = Link.get_by_code(rget('willt_code'))
 
         product = Product.get(rget('product_uuid'))
         logging.debug('got uuid %s, product %r' % (rget('product_uuid'),
@@ -717,14 +725,22 @@ class SendFriendAsks(URIHandler):
 
             if friend_share_counter > 0:
                 # create the instance!
-                instance = app.create_instance(user=user,
-                                               end=None,
-                                               link=link,
-                                               dialog="ConnectFB",
-                                               img=product_image,
-                                               motivation="",
-                                               sharing_message=msg,
-                                               products=product_uuids)
+                if not instance:
+                    instance = app.create_instance(user=user,
+                                                   end=None,
+                                                   link=link,
+                                                   dialog="ConnectFB",
+                                                   img=product_image,
+                                                   motivation="",
+                                                   sharing_message=msg,
+                                                   products=product_uuids)
+                else:  # instance exists! update its details.
+                    instance.asker = user
+                    instance.sharing_message = msg
+                    instance.products = product_uuids
+                    instance.dialog = "ConnectFB"
+                    instance.img = product_image
+                    logging.debug('updating existing instance')
 
                 # change link to reflect to the vote page.
                 link.target_url = urlparse.urlunsplit([PROTOCOL,
@@ -736,6 +752,9 @@ class SendFriendAsks(URIHandler):
                 logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
                 link.put()
                 link.memcache_by_code() # doubly memcached
+
+                instance.link = link
+                instance.put()
 
                 # increment shares
                 for _ in range(friend_share_counter):
@@ -778,6 +797,60 @@ class SendFriendAsks(URIHandler):
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
+
+
+class SaveProductsToInstance(URIHandler):
+    """Modifies the products in an instance.
+
+    Expected inputs:
+        instance_uuid (required)
+        products (required): a comma-separated string of product UUIDs.
+        unshift (optional, 0): if 1, handler will only affect the order of
+                               the list of products.
+            Example: products in instance: 1,2,3,4
+                     products: 4,3
+                     unshift: 1
+                     -> products in instance (updated): 4,3,1,2
+
+    Expected outputs:
+        (200/400 response headers)
+    """
+    def post(self):
+        """See class docstring for details."""
+        logging.info("Saving product selection of a given instance")
+
+        # Shorthand
+        rget = self.request.get
+
+        # fetch instance and products... run code if both are valid inputs
+        instance = SIBTInstance.get(rget('instance_uuid'))
+        product_uuids = rget('products', '').split(',')
+        products = [Product.get(uuid) for uuid in product_uuids]
+        unshift = bool(rget('unshift', '0') == '1')
+
+        logging.debug('instance = %r' % instance)
+        logging.debug('product_uuids = %r' % product_uuids)
+        logging.debug('products = %r' % products)
+
+        if instance and all(products):
+            if unshift:  # re-order mode
+                logging.debug('instance.products = %r' % instance.products)
+                remainder = frozenset(instance.products).difference(product_uuids)
+                logging.debug('remainder = %r' % remainder)
+                instance.products = product_uuids
+                instance.products.extend(list(remainder))
+                logging.debug('instance.products = %r' % instance.products)
+            else:  # replace mode
+                instance.products = product_uuids
+                logging.debug('replace mode '
+                              'instance.products = %r' % instance.products)
+            instance.put()
+            # logging.info('response: %s' % response)
+            self.error(200)
+            return
+
+        # logging.info('response: %s' % response)
+        self.error(400)
 
 
 def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):

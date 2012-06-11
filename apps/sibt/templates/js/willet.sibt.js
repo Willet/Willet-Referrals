@@ -51,41 +51,53 @@ _willet.sibt = (function (me) {
         topbar_hide_button = null;
 
     // declare vars in this scope
-    var app, instance, popup, products, topbar, user;
+    var popup, products, topbar;
+
+    // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
+    var app = {
+        // true when SIBT needs to be disabled on the same page as Buttons
+        'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
+        'features': {
+            'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
+            'button': ('{{app.button_enabled}}' === 'True'),
+            'topbar': ('{{app.top_bar_enabled}}' === 'True')
+        },
+        'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
+        // true when visitor on page more than (5) times
+        'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+        'uuid': '{{ app.uuid }}',
+        'version': '{{sibt_version|default:"10"}}'
+    }, instance = {
+        'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
+        'has_results': ('{{has_results}}' === 'True'),
+        'is_live': ('{{is_live}}' === 'True'),
+        'show_votes': ('{{show_votes}}' === 'True'),
+        'uuid': '{{ instance.uuid }}'
+    }, user = {
+        'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
+        'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
+        'uuid': '{{ user.uuid }}'
+    };
 
     me.init = me.init || function (jQueryObject) {
+        // this function may be called only once. use reInit afterwards
+        // to update the UI.
+
         $ = jQueryObject;  // throw $ into module scope
         wm.fire('log', 'Let the (SIBT) games begin!');
 
-        // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
-        app = {
-            // true when SIBT needs to be disabled on the same page as Buttons
-            'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
-            'features': {
-                'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
-                'button': ('{{app.button_enabled}}' === 'True'),
-                'topbar': ('{{app.top_bar_enabled}}' === 'True')
-            },
-            'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
-            // true when visitor on page more than (5) times
-            'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
-            'uuid': '{{ app.uuid }}',
-            'version': '{{sibt_version|default:"10"}}'
-        };
-        instance = {
-            'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
-            'has_results': ('{{has_results}}' === 'True'),
-            'is_live': ('{{is_live}}' === 'True'),
-            'show_votes': ('{{show_votes}}' === 'True'),
-            'uuid': '{{ instance.uuid }}'
-        };
-        user = {
-            'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
-            'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
-            'uuid': '{{ user.uuid }}'
-        };
-
         me.updateProductHistory(); // generates the required variable, 'products'
+
+        me.updateUI();
+    };
+
+    me.updateUI = me.updateUI || function (instance_uuid) {
+        // requires $. call init() first.
+
+        if (instance_uuid) {  // server side update value
+            instance.uuid = instance_uuid;
+            instance.is_live = true;
+        }
 
         for(var prop in selectors) {
             if(!selectors.hasOwnProperty(prop)) {
@@ -130,6 +142,11 @@ _willet.sibt = (function (me) {
                Boolean($('#_vendor_shouldIBuyThisButton').length);
     }
 
+    me.showPopupWindow = me.showPopupWindow || function (url) {
+        var new_window = window.open(url, '_blank');
+        new_window.focus();
+    };
+
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
         wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
@@ -148,6 +165,30 @@ _willet.sibt = (function (me) {
                 "&ids=" + shopify_ids.join(',') +
                 "&" + me.metadata()
         });
+
+        // else if no products: do nothing
+        wm.fire('log', "no products! cancelling dialogue.");
+    };
+
+    me.showVote = me.showVote || function (message) {
+        wm.fire('storeAnalytics', message || 'SIBTShowingVote');
+        var shopify_ids = [];
+        if (cart_items) {
+            // WOSIB exists on page; send extra data
+            for (var i = 0; i < cart_items.length; i++) {
+                shopify_ids.push(cart_items[i].id);
+            }
+        }
+
+        return me.showPopupWindow(
+                "{{URL}}{% url VoteDynamicLoader %}" +
+                // do not merge with metadata(): it escapes commas
+                "?products=" + me.getProductUUIDs().join(',') +
+                // if instance exists, it will be shown, not made!
+                "&instance_uuid={{ instance.uuid }}" +
+                "&ids=" + shopify_ids.join(',') +
+                "&" + me.metadata()
+        );
 
         // else if no products: do nothing
         wm.fire('log', "no products! cancelling dialogue.");
@@ -306,7 +347,8 @@ _willet.sibt = (function (me) {
                     .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                     .appendTo(button)
                     .css('display', 'inline-block')
-                    .click(me.showResults);
+                    // .click(me.showResults);
+                    .click(me.showVote);
                 }
 
                 var $wbtn = $('#_willet_button_v3 .button');
@@ -411,7 +453,8 @@ _willet.sibt = (function (me) {
             .css({
                 'display': 'inline-block'
             })
-            .click(me.showResults);
+            // .click(me.showResults);
+            .click(me.showVote);
         }
     };
 
@@ -621,14 +664,14 @@ _willet.sibt = (function (me) {
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
-        me.hideBottomPopup(); // don't want it here now!
-        if (user.is_asker || instance.show_votes) {
-            // we are no longer showing results with the topbar.
-            me.showResults();
-        } else {
-            // wm.fire('storeAnalytics', message);
-            me.showAsk(message);
-        }
+        // previous behaviour shown here:
+        // me.hideBottomPopup(); // don't want it here now!
+        // if (user.is_asker || instance.show_votes) {
+        //     me.showResults();
+        // } else {
+        //     me.showAsk(message);
+        // }
+        me.showVote(message);
     };
 
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
@@ -662,6 +705,31 @@ _willet.sibt = (function (me) {
             src: "{{URL}}{% url ShowOnUnloadHook %}?" +
                  me.metadata({'evnt': 'SIBTVisitLength'})
         }).appendTo("body");
+    };
+
+    me.changeUIStatus = me.changeUIStatus || function (cb) {
+        // using stored cookie, determine if a user's SIBT instance is still
+        // active. if at least one instance is active, change the UI to match
+        // our finding.
+
+        // if user has no instances, the ajax call is skipped entirely.
+        var instances = $.cookie('sibt_instances');
+        if (!instances) {
+            // return '';
+            wm.fire('sibt_has_no_instances');
+        }
+        $.ajax({
+            url: '{{ URL }}{% url SIBTInstanceStatusChecker %}',
+            dataType: 'json',
+            data: {
+                'instance_uuids': instances
+            },
+            success: function (data) {
+                if (data && data.uuid !== '') {
+                    wm.fire('updateUI', data.uuid);
+                }
+            }
+        });
     };
 
     // ==================== bottom popup functions ============================
@@ -1043,6 +1111,7 @@ _willet.sibt = (function (me) {
 
         // auto-show results on hash
         wm.on('scriptComplete', me.autoShowResults);
+        wm.on('updateUI', me.updateUI);
         // wm.on('scriptComplete', me.getVisitLength);
 
         // hooks for other libraries

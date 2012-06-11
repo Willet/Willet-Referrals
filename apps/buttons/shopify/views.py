@@ -213,7 +213,7 @@ class ButtonsShopifyTailoredInstall(URIHandler):
         if not app:
             logging.error("ButtonsShopifyTailoredInstall: "
                           "I don't think you're calling it right")
-        logging.debug('app = %r' % app)
+        # logging.debug('app = %r' % app)
 
         # Start the billing process
         callback_url = build_url('ButtonsShopifyOneTimeBillingCallback')
@@ -250,7 +250,7 @@ class ButtonsShopifyPaidInstallThanks(URIHandler):
         store_url = self.request.get('shop')
         app = ButtonsShopify.get(app_uuid) or \
               ButtonsShopify.get_by_url(store_url)
-        logging.debug('app = %r' % app)
+        # logging.debug('app = %r' % app)
 
         Email.buttons_custom_install_request(app)
 
@@ -283,16 +283,16 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
         store_url = self.request.get('store_url')
         app = ButtonsShopify.get(app_uuid) or \
               ButtonsShopify.get_by_url(store_url)
-        logging.debug('app = %r' % app)
+        # logging.debug('app = %r' % app)
 
         if not app:
             logging.error("error calling billing callback: 'app' not found")
 
         client  = app.client
-        logging.debug('client = %r' % client)
+        # logging.debug('client = %r' % client)
 
         charge_id = int(self.request.get('charge_id'))
-        logging.debug('charge_id = %r' % charge_id)
+        # logging.debug('charge_id = %r' % charge_id)
 
         # an AppShopify can only be one-time-charged once.
         # to be exact, you can charge it multiple times, but it only saves the

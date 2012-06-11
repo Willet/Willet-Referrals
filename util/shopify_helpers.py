@@ -21,6 +21,19 @@ def get_shopify_url(shopify_url):
 
     return shopify_url
 
+def get_domain(url):
+    """Extract the domain from a URL. Will not come with trailing slash.
+
+    Example output: http://google.com
+
+    Commonly, AttributeErrors are raised if the url itself is invalid.
+    """
+    parts = urlparse.urlparse(url)
+    if not (parts.scheme and parts.netloc):
+        raise AttributeError('Invalid URL')
+    return '%s://%s' % (parts.scheme, parts.netloc)
+
+
 def get_url_variants(domain, keep_path=True):
     """Given a url, return it, as well as its similar domain with
     or without www.
@@ -46,16 +59,20 @@ def get_url_variants(domain, keep_path=True):
 
     www_domain = domain
     ua = urlparse.urlsplit(domain)
-    if len(ua.scheme) <= 0 or len(ua.netloc) <= 0:
-        raise LookupError('domain supplied is not valid')
+    if len(ua.scheme) <= 0:
+        ua_scheme = 'http'  # most likely doing things like 'kiehn-mertz.com'
+        ua_netloc = ua.path  # if scheme is missing, netloc is shifted to path
+    else:
+        ua_scheme = ua.scheme
+        ua_netloc = ua.netloc
 
     # extra check for www.site.com
-    if 'www.' in ua.netloc[:4]:  # url includes www.
-        domain = "%s://%s" % (ua.scheme, ua.netloc[4:])  # remove www.
-        www_domain = "%s://%s" % (ua.scheme, ua.netloc)  # keep www.
+    if 'www.' in ua_netloc[:4]:  # url includes www.
+        domain = "%s://%s" % (ua_scheme, ua_netloc[4:])  # remove www.
+        www_domain = "%s://%s" % (ua_scheme, ua_netloc)  # keep www.
     else:  # url does not include www.
-        domain = "%s://%s" % (ua.scheme, ua.netloc)  # do not add www.
-        www_domain = "%s://www.%s" % (ua.scheme, ua.netloc)  # add www.
+        domain = "%s://%s" % (ua_scheme, ua_netloc)  # do not add www.
+        www_domain = "%s://www.%s" % (ua_scheme, ua_netloc)  # add www.
 
     # re-append path info if it is needed
     if keep_path:

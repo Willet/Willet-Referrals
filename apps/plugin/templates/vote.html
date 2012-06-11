@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <!-- Favicon -->
-        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
-        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <title>Willet Vote</title>
+        <link rel='icon' type='image/vnd.microsoft.icon'
+              href='/static/imgs/favicon.ico' />
 
+        <!-- Blueprint CSS must be first -->
+        <link rel="stylesheet" href="/static/css/screen.css"
+              type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/print.css"
+              type="text/css" media="print" />
+        <!--[if IE]>
+            <link rel="stylesheet" href="/static/css/ie.css"
+                  type="text/css" media="screen, projection" />
+        <![endif]-->
+
+        <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
-        {% block styles %}{% endblock %}
+        <link rel="stylesheet" href="/static/css/colorbox.css" />
+        <link rel="stylesheet" href="/static/css/facebook.css" />
+
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.tinycarousel.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.imagedropdown.js"></script>
+        <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
         <script type="text/javascript">
             if (typeof jQuery == 'undefined') {
                 var script= document.createElement('script');
@@ -16,35 +34,188 @@
                 script.src= '/static/js/jquery.min.js';
                 document.appendChild(script);
             }
+
             {% block head_script %}{% endblock %}
+
+            $(document).ready(function () {
+                // "show invitation dialog"
+
+                var resizeCloud = function (px, instant) {
+                    if (instant) {
+                        $('#white').css({'height': (px + 'px')});
+                    } else {
+                        $('#white').delay(500).animate({'height': (px + 'px')});
+                    }
+                };
+
+                // genius "tabs" functionality
+                var showPage = function (page) {
+                    // tabs sit on top of pages
+                    // tabs must contain a hashtag link
+                    // pages must have class "page" and unique id
+                    $(".page").animate({'opacity': '0'}, {'queue': false})
+                              .css('display', 'none');  // hide all tabs
+                    $('#' + page + '_page').css('opacity', '0')
+                           .css('display', 'block')
+                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
+
+                    event.preventDefault();
+                };
+
+                $('#window_location').val(window.location.href);
+
+                {% if is_asker %}
+                    showPage('friends_selector');
+                    resizeCloud(255);  // init the page
+                {% else %}
+                    showPage('friends_selectee');
+                    resizeCloud(150);  // init the page
+                {% endif %}
+            });
         </script>
-        <style type="text/css">
-            #wrapper, .wrapper { /* overrides ask.css defaults */
-                height: auto;
-                /* width: auto; */
-                display: auto;
-            }
-            #error_bar {
-                display:none;
-                color: #f00;
-            }
-            #cart_items_display li {
-                background-color: transparent;
-                border: 2px transparent solid;
-                box-shadow: none;
-            }
-        </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Willet Vote</title>
+        {% block styles %}
+
+        {% endblock styles %}
     </head>
     <body>
-        {% block body_start %}{% endblock %}
+        {% block body_start %}
+
+        {% endblock %}
+        <div id='header'>
+            <div id="white">
+                {% if is_asker %}
+                    <div id="friends_selector_page" class="page">
+                        <div class="span-9 text-center">
+                            <h2 style="margin-top: 25px;
+                                       color: #fff;
+                                       text-shadow: 0 1px 0 #666;">
+                                {% if new_instance %}
+                                    You have created a vote!
+                                    <br />
+                                    Invite friends to get started ⇝
+                                {% else %}
+                                    Your vote is still running!
+                                    <br />
+                                    Invite more friends to the conversation ⇝
+                                {% endif %}
+                            </h2>
+                            <img src="/static/sibt/imgs/happy-people-245x120.png" />
+                        </div>
+                        <div class="span-16">
+                            <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
+                                    style="width: 600px;
+                                           height: 224px;
+                                           box-shadow: 0px 1px 5px 0px #777 inset;
+                                           border-radius: 15px;"></iframe>
+                        </div>
+                    </div>
+                {% else %}
+                    <div id="friends_selectee_page" class="page">
+                        <div class="span-7">
+                            <img src="/static/sibt/imgs/happy-people-245x120.png" />
+                        </div>
+                        <div class="span-18 title">
+                            Help {{ asker_name }} shop by giving advice
+                            <img alt="Look under here"
+                                 class="look_under_arrow"
+                                 src="/static/sibt/imgs/arrow-42x42.png" />
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
         <div id="wrapper">
+            {% if is_asker %}
+                <p class="text-center"
+                   style="font-style: italic;color: #666;margin-top: 21px;">
+                    This is a preview of what your friends will see
+                </p>
+            {% endif %}
+            <div id="asker_bar">
+                <div class="mini-highlight blob-disabled">
+                    <p>
+                        <img class="profile_pic"
+                                src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
+                        <span class="fbName">{{ asker_name }}</span>
+                        <br />
+                        <span class="fbPost">
+                            {{ sharing_message|escape|default:"I like this, but..." }}
+                        </span>
+                    </p>
+                    <div id="fb-root"></div>
+                    <div id="FOO" class="fb-comments"
+                        data-href="{{fb_comments_url}}"
+                        data-reverse="true"
+                        order_by="reverse_time"
+                        data-num-posts="5"
+                        data-width="400"></div>
+                </div>
+                {% block left_screens %}{% endblock left_screens %}
+            </div>
+            <div id="main_content" class="mini-highlight">
+                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
+                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
+                </div>
+                <div id="discount_screen" class="hidden">
+                    <h2>Thank you for helping {{asker_name}}.</h2>
+                    <div id="discount_gettest">
+                        <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
+                        <input id="discount_code" type="text" />
+                    </div>
+
+                    <!-- great massages -->
+                    <div id="success_message">
+                        <h4 class="yes">
+                            Tell {{ asker_name }} why you voted YES.
+                        </h4>
+                        <h4 class="no">
+                            Tell {{ asker_name }} why you voted NO.
+                        </h4>
+                    </div>
+
+                    {% if store_url %}
+                        <p style="margin-top:24px;">
+                            <a href="{{ store_url }}">Continue Shopping</a>
+                        </p>
+                    {% endif %}
+                </div>
+                {% block right_screens %}{% endblock right_screens %}
+            </div>
+            <p class="text-center">
+                <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
+                on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
+            </p>
             {% block screens %}{% endblock %}
         </div>
         <script type="text/javascript">
             {% block body_script %}{% endblock %}
+
+            window.fbAsyncInit = function() {
+                // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+                FB.init({
+                    appId: '{{FACEBOOK_APP_ID}}', // App ID
+                    //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                    status: true, // check login status
+                    cookie: true, // enable cookies to allow the server to access the session
+                    oauth: true, // enable OAuth 2.0
+                    width: 400,
+                    xfbml: true,  // parse XFBML
+                    reverse: true,
+                    order_by: "reverse_time"
+                });
+            };
+            var fbinit = function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) {return;}
+                js = d.createElement(s);
+                js.id = id;
+                js.async = true;
+                js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+                fjs.parentNode.insertBefore(js, fjs);
+            };
         </script>
         <!-- Google Analytics -->
         <script type="text/javascript">
