@@ -60,6 +60,7 @@ class AskDynamicLoader(URIHandler):
 
         params:
             url (required): the product URL; typically window.location.href
+                v11: page_url may be vote page url.
             products (required): UUIDs of all products to be included
                                  (first UUID will be primary product)
 
@@ -77,7 +78,6 @@ class AskDynamicLoader(URIHandler):
         page_url = self.request.get('url', '') or \
                    self.request.get('page_url', '') or \
                    self.request.get('target_url', '') or \
-                   self.request.get('refer_url', '') or \
                    self.request.headers.get('referer', '')  # NOT page url!
         product = None
         product_images = []
@@ -265,10 +265,10 @@ class VoteDynamicLoader(URIHandler):
     params required for existing instance:
         instance_uuid: show the vote page for this instance.
     """
-    def get(self):
+    @obtain('instance_uuid', 'app_uuid')
+    def get(self, instance_uuid, app_uuid):
         app = None
         event = 'SIBTMakingVote'
-        instance_uuid = self.request.get('instance_uuid')
         link = None
         new_instance = False  # True if this function creates one
         products = [] # populate this to show products on design page.

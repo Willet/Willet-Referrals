@@ -39,11 +39,6 @@
                     height: 23px;
                     margin: 2.5px !important; /* override id > img selector */
                 }
-                .button .title {
-                    min-width: 150px !important; /* override id selector */
-                    margin-right: 8px;
-                    margin-left: 45px;
-                }
                 .button .subtitle {
                     display: none;
                 }
@@ -972,6 +967,10 @@
             {% endif %}
         };
 
+        var refreshParentFrame = function () {
+            window.parent.location.reload();
+        };
+
         // Post to parent page that we are hosted in
         var doPostMessage = function(message) {
             var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
@@ -987,18 +986,25 @@
 
         // Open up the FB dialog. Does not do a FB connect with us.
         var postOnWall = function () {
-            startPartialInstance();
+            try { // detect adblock
+                if (startPartialInstance()) {
+                    FB.ui({
+                        method:  'feed',
+                        display: 'popup',
+                        link:    '{{share_url}}',
+                        picture: '{{product_images|first}}' || "{{ image }}",
+                        name:    "{{product_title|escape}}" || "{{title|escape}}",
+                        caption: '{{store_domain}}',
+                        description: "{{ product_desc|striptags|escape }}" || $('#fbComment').val(),
+                        redirect_uri: '{{fb_redirect}}'
+                    });
+                }
+            } catch (e) {
+                alert ('Oops... AdBlock is probably blocking facebook!');
+            }
 
-            FB.ui({ method:  'feed',
-                    display: 'popup',
-                    link:    '{{share_url}}',
-                    picture: '{{product_images|first}}',
-                    name:    "{{product_title|escape}}",
-                    caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags|escape }}",
-                    redirect_uri: '{{fb_redirect}}' });
-
-            closeIframe( 'SIBTNoConnectFBDialog' );
+            storeAnalytics('SIBTNoConnectFBDialog');
+            refreshParentFrame();
         };
 
         // Add blank friend entry to Choose Friend's screen
@@ -1149,9 +1155,9 @@
             asker.email = $.cookie('asker_email');
 
             // this line will be "None" if user_name is None on the server!
-            {% if user_name %}asker.name = "{{user_name|escape}}"{% endif %}
-            {% if user_pic %}asker.pic = "{{user_pic|escape}}";{% endif %}
-            {% if user_email %}asker.email = "{{user_email|escape}}";{% endif %}
+            {% if user_name %}asker.name = "{{ user_name|escape }}"{% endif %}
+            {% if user_pic %}asker.pic = "{{ user_pic|escape }}";{% endif %}
+            {% if user_email %}asker.email = "{{ user_email|escape }}";{% endif %}
             if (asker.name || asker.pic || asker.email) {
                 asker.updateView();
             }

@@ -200,8 +200,8 @@ _willet.sibt = (function (me) {
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
             href: "{{URL}}/s/results.html?" +
-                me.metadata({
-                    'refer_url': me.getCanonicalURL(window.location.href)
+                me.metadata({  // force page_url to be the current location
+                    'page_url': me.getCanonicalURL(window.location.href)
                 })
         });
     };

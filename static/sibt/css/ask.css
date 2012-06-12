@@ -139,6 +139,7 @@ p {
 }
 
 button, .button {
+    cursor: pointer;
     -moz-box-shadow:inset 0px 1px 1px 0px #f5978e;
     -webkit-box-shadow:inset 0px 1px 1px 0px #f5978e;
     box-shadow:inset 0px 1px 1px 0px #f5978e;
@@ -155,9 +156,9 @@ button, .button {
     font-family:arial;
     font-size:15px;
     font-weight:bold;
-    padding:6px 76px;
+    padding:6px 15px;
     text-decoration:none;
-    text-shadow:1px 1px 0px #810e05;
+    text-shadow:1px 1px 0px #666;
 }
 button:hover, .button:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #9e453d), color-stop(1, #cc5047) );
@@ -220,8 +221,6 @@ button img {
 }
 .button>.title, .button>.subtitle {
     white-space: nowrap;
-    margin-left: 60px;
-    min-width: 170px;
 }
 .button>.title {
     padding-top: 3px;
@@ -234,7 +233,6 @@ button img {
 .button>.simpletitle {
     white-space: nowrap;
     font-size: 20px;
-    min-width: 100px;
     line-height: 32px;
 }
 
@@ -348,7 +346,7 @@ button img {
     color: #888;
 }
 .options .or {
-    width: 44px;
+    width: 174px;
     *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {
@@ -374,10 +372,6 @@ button img {
 }
 #postOnWall>img {
     width: 36px;
-}
-#postOnWall>.title, #postOnWall>.subtitle,
-#askButton>.title, #askButton>.subtitle {
-    min-width: 150px;
 }
 
 /* ---------------------   Choose Friends  ----------------------- */
@@ -548,7 +542,6 @@ li.ui-menu-item:hover {
 }
 #chosenButton>.title, #chosenButton>.subtitle,
 #askButton>.title, #askButton>.subtitle {
-    margin-left: 50px;
     min-width: 185px;
 }
 
