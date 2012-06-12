@@ -602,61 +602,65 @@ class ShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
         partial = PartialSIBTInstance.get_by_user(user)
+        instance = SIBTInstance.get_by_user(user)
         product = None
 
-        if not partial:
-            logging.warn('PartialSIBTInstance is already gone')
+        if not (partial or instance):
+            logging.warn('Instance is already gone')
             return  # there's nothing we can do now
 
         if post_id != "":
             user_cancelled = False
 
             # Grab stuff from PartialSIBTInstance
-            try:
-                app = partial.app_
-                link = partial.link
-                product = getattr(partial, 'product', None)
-                products = getattr(partial, 'products', [])
-            except AttributeError, err:
-                logging.error("partial is: %s (%s)" % (partial, err))
+            if partial:
+                try:
+                    app = partial.app_
+                    link = partial.link
+                    product = getattr(partial, 'product', None)
+                    products = getattr(partial, 'products', [])
+                except AttributeError, err:
+                    logging.error("partial is: %s (%s)" % (partial, err))
 
-            try:
-                if not product and products and products[0]:
-                    logging.info('instance with no product but with '
-                                 'products - using products[0] as product')
-                    product = Product.get(products[0])
-                product_image = product.images[0]
-            except:
-                logging.warn('product has no image - resorting to blank')
-                product_image = '%s/static/imgs/blank.png' % URL # blank
+                try:
+                    if not product and products and products[0]:
+                        logging.info('instance with no product but with '
+                                    'products - using products[0] as product')
+                        product = Product.get(products[0])
+                    product_image = product.images[0]
+                except:
+                    logging.warn('product has no image - resorting to blank')
+                    product_image = '%s/static/imgs/blank.png' % URL # blank
 
-            # Make the Instance!
-            instance = app.create_instance(user=user,
-                                           end=None,
-                                           link=link,
-                                           img=product_image,
-                                           motivation=None,
-                                           dialog="NoConnectFB",
-                                           sharing_message="",
-                                           products=products)
+                # Make the Instance!
+                instance = app.create_instance(user=user,
+                                            end=None,
+                                            link=link,
+                                            img=product_image,
+                                            motivation=None,
+                                            dialog="NoConnectFB",
+                                            sharing_message="",
+                                            products=products)
 
-            # partial's link is actually bogus (points to vote.html without an instance_uuid)
-            # this adds the full SIBT instance_uuid to the URL, so that the vote page can
-            # be served.
-            link.target_url = urlunsplit([PROTOCOL,
-                                          DOMAIN,
-                                          url('VoteDynamicLoader'),
-                                          ('instance_uuid=%s' % instance.uuid),
-                                          ''])
-            logging.info ("link.target_url changed to %s (%s)" % (
-                           link.target_url, instance.uuid))
+                # partial's link is actually bogus (points to vote.html without an instance_uuid)
+                # this adds the full SIBT instance_uuid to the URL, so that the vote page can
+                # be served.
+                link.target_url = urlunsplit([PROTOCOL,
+                                            DOMAIN,
+                                            url('VoteDynamicLoader'),
+                                            ('instance_uuid=%s' % instance.uuid),
+                                            ''])
+                logging.info ("link.target_url changed to %s (%s)" % (
+                            link.target_url, instance.uuid))
 
-            # increment link stuff
-            link.app_.increment_shares()
-            link.add_user(user)
-            link.put()
-            link.memcache_by_code() # doubly memcached
-            logging.info('incremented link and added user')
+                # increment link stuff
+                link.app_.increment_shares()
+                link.add_user(user)
+                link.put()
+                link.memcache_by_code() # doubly memcached
+                logging.info('incremented link and added user')
+            else:
+                pass  # full instance? you're all set.
         elif partial != None:
             # Create cancelled action
             SIBTNoConnectFBCancelled.create(user,

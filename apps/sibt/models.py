@@ -361,6 +361,11 @@ class SIBTInstance(Model):
                 .filter('link =', link)\
                 .get()
 
+    @classmethod
+    def get_by_user(cls, user):
+        """Correct, the user field is called asker for SIBTInstances."""
+        return cls.all().filter('asker =', user).get()
+
     @staticmethod
     def get_by_uuid(uuid):
         return SIBTInstance.get(uuid)

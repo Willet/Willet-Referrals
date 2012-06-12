@@ -1,25 +1,11 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-       <!-- Google Analytics -->
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-23764505-9']);
-            _gaq.push(['_trackPageview']);
-            (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
 
-        <meta http-equiv="X-UA-Compatible" content="IE=8" />
-        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Should I Buy This?</title>
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
@@ -42,59 +28,57 @@
                 });
             };
 
-            var storeAnalytics = function( evnt ) {
-                $.ajax({
-                    url: "{{ URL }}{% url TrackSIBTUserAction %}",
-                    data: {
-                        what: evnt,
-                        instance_uuid: '',
-                        app_uuid: '{{ app.uuid }}',
-                        user_uuid: '{{ user.uuid }}',
-                        target_url: '{{ target_url }}'
-                    }, type: 'get',
-                    success: function (response) {
-                        return;
-                    }
-                });
-            };
-
-
             $(document).ready(function() {
                 {% if user_cancelled %}
                     window.close();
                 {% endif %}
             });
         </script>
-        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
 
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Should I Buy This?</title>
     </head>
-    <body>
-    <div id="thanks_wrapper">
-        <div id="fb_header">
-            <img src="/static/imgs/sibt_logo.png" />
-            <h2>Thanks!</h2>
-        </div>
-        <div id="thanks" class="willt">
-            <h1 style="margin-top: 0.75em">Asking your friends ...</h1>
+    <body class="willt">
+        <div id="thanks_wrapper">
+            <div id="fb_header">
+                <img src="/static/sibt/imgs/logo.png" />
+                <h2>Thanks!</h2>
+            </div>
+            <div id="thanks">
+                <h1 style="margin-top: 0.75em">Success!</h1>
 
-            <div id="email-wrapper">
-                <p id="top_text">
-                    {% if incentive_enabled %}
-                        Enter your PayPal email and we'll send you $5 immediately after you make a purchase!
-                    {% else %}
-                        Leave your e-mail so we can notify you when your friends give feedback:
-                    {% endif %}
-                </p>
+                <div id="email-wrapper">
+                    <p id="top_text">
+                        {% if incentive_enabled %}
+                            Enter your PayPal email and we'll send you $5 immediately after you make a purchase!
+                        {% else %}
+                            Leave your e-mail so we can notify you when your friends give feedback:
+                        {% endif %}
+                    </p>
 
-                <input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input>
-                <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+                    <input class="fb_textinput"
+                           id="email-field"
+                           type="text"
+                           value="{{ email }}"
+                           placeholder="john@example.com"></input>
+                    <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+                </div>
+            </div>
+            <div id="fb_footer">
+                <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
             </div>
         </div>
-        <div id="fb_footer">
-            <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
-            <button id="cancel-btn" onClick="window.close();">Cancel</button>
-        </div>
-    </div>
-</body>
+        <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
 </html>
-

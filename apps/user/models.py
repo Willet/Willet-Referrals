@@ -36,7 +36,11 @@ class EmailModel(Model):
     user = MemcacheReferenceProperty(db.Model, collection_name='emails')
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
+        if 'created' in kwargs:
+            self._memcache_key = kwargs['created']
+        else:
+            self._memcache_key = generate_uuid(16)
+
         super(EmailModel, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
@@ -63,21 +67,20 @@ class EmailModel(Model):
             try:
                 # Check if this is a returning user who has cleared their cookies
                 if existing_model.user.uuid != user.uuid:
+                    '''
                     Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (
                                         existing_model.address,
                                         existing_model.user.uuid, user.uuid),
-                                       subject='Duplicate user detected')
-
-                    # TODO: We might need to merge Users here
-                    existing_model.user = user
+                                        subject='Duplicate user detected')
+                    '''
+                    logging.warn('merging two duplicate users.')
+                    user.merge_data(existing_model.user)  # merge
+                    existing_model.user = user  # replace reference
             except AttributeError, err:
-                logging.error('%s.%s.create() error: %s' % (cls.__module__,
-                                                            cls.__name__, err),
-                              exc_info=True)
-
-            existing_model.put()
+                logging.error('wtf? user has no uuid.', exc_info=True)
         else:  # ... or create
             existing_model = cls(key_name=email, address=email, user=user)
+        existing_model.put()
 
     @classmethod
     def get_by_email(cls, email):
@@ -544,7 +547,7 @@ class User(db.Expando):
     def merge_data(self, u):
         """ Merge u into self."""
         if self.key() == u.key():
-            return
+            return True
 
         logging.info("merging %s into %s" % (u.uuid, self.uuid))
 

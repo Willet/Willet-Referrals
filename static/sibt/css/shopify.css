@@ -1,7 +1,13 @@
-/* CSS for original Should I Buy This
-Carefully replicates a FB style share
-Author: Matt Harris
-Date: Oct 2011      */
+/*
+ * CSS for original Should I Buy This
+ * Carefully replicates a FB style share
+ * Author: Matt Harris
+ * Date: Oct 2011
+ *
+ * Cool story bro
+ * Editor: Brian Lai
+ * Date: Jun 2012
+*/
 
 body {
     overflow: hidden;
@@ -13,43 +19,27 @@ body {
 
 #thanks_wrapper {
     text-align: center;
-    font-size: 80%; 
+    font-size: 80%;
     margin: 0 auto;
-    height: 235px;
     width: 100%;
-    border: 1px solid #BDC7D8;
 }
 
 #fb_header{
-    background-attachment: scroll;
-    background-clip: border-box;
-    background-color: #6D84B4;
-    background-image: none;
-    background-origin: padding-box;
+    background: url("http://brian-willet.appspot.com/static/imgs/tiles/noise.png") #94B7CF;
+    border-bottom: 1px solid #1C537A;
+    box-shadow: 0px 8px 11px 0px #DDDDDD;
     color: white;
-    direction: ltr;
-    display: block;
     font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
     font-size: 11px;
-    height: 32px;
-    line-height: 14px;
-    margin-bottom: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-top: 0px;
+    height: 42px;
     text-align: left;
-    width: 100%; 
+    width: 100%;
 }
 
 #fb_header img {
     float: left;
-    border-radius: 5px;
     height: 24px;
-    margin: 4px 10px 4px 0px;
+    margin: 9px 9px 4px 10px;
 }
 
 #fb_header h2 {
@@ -159,10 +149,7 @@ body {
     font-weight: bold;
     letter-spacing: normal;
     line-height: normal;
-    margin-bottom: 0px;
-    margin-left: 10px;
-    margin-right: 0px;
-    margin-top: 0px;
+    margin: 0 5px;
     outline-color: #333;
     outline-style: none;
     outline-width: 0px;
@@ -179,39 +166,11 @@ body {
 }
 
 #fb_footer {
-    background-attachment: scroll;
-    background-clip: border-box;
-    background-color: #F2F2F2;
-    background-image: none;
-    background-origin: padding-box;
-    bottom: 0px;
-    color: #333;
-    direction: ltr;
-    display: block;
-    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
-    font-size: 11px;
-    height: 46px;
-    left: 0px;
-    line-height: 14px;
-    margin-bottom: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 400px;
-    padding-right: 0px;
-    padding-top: 0px;
-    position: fixed;
-    right: 0px;
-    text-align: left;
-    unicode-bidi: normal;
-    z-index: 10;
-    width: 160px;
+    text-align: center;
+    margin-top: 24px;
 }
 .willt {
-    background: #F7F7F7;
-    border: 1px solid #DDD;
-    /*margin: 20px 0;*/
+    background: #F7F7F7 url(/static/imgs/tiles/diagonal.png);
     border-radius: 3px;
     height: 100%;
     width: 100%;
@@ -283,7 +242,7 @@ body {
     font-weight:bold;
     height:28px;
     cursor:pointer;
-    
+
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
 
     background: rgb(175,212,237);
@@ -429,7 +388,7 @@ body {
     margin: 0;
     font-size: 100%
 }
-.close-button { 
+.close-button {
     -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
     cursor: pointer;
     display: inline-block;
