@@ -37,7 +37,6 @@
                 .button > img {
                     width: 23px;
                     height: 23px;
-                    margin: 2.5px !important; /* override id > img selector */
                 }
                 .button .subtitle {
                     display: none;
@@ -60,21 +59,19 @@
                         <div>Choose Friends To Ask For Advice</div>
                     </div>
                 {% endif %}
-                <div class="content narrow">
-                    <ul class="friends" id="friends">
-                        <!-- Friends appended when document ready -->
-                    </ul>
-                    <div class="holder" id="addFriend">
-                        <div class="grey_bar">
-                            <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
-                            Add Another Friend
-                        </div>
+                <ul class="friends" id="friends">
+                    <!-- Friends appended when document ready -->
+                </ul>
+                <div class="holder" id="addFriend">
+                    <div class="grey_bar">
+                        <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
+                        Add Another Friend
                     </div>
-                    <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
-                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                        <div class="title">Ask Chosen Friends</div>
-                        <div class="subtitle">Giving advice is fun</div>
-                    </div>
+                </div>
+                <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
                 </div>
             </div>
 
@@ -87,18 +84,16 @@
                         <div>Let Your Friends Know Who Is Asking</div>
                     </div>
                 {% endif %}
-                <div class="content narrow">
-                    <div class="center_col" style="margin-top: 35px;">
-                        <p class="centered">We will email you when a friend provides advice.</p>
-                    </div>
-                    <ul class="askers" id="askers">
-                        <!-- Asker appended when document ready -->
-                    </ul>
-                    <div id="askButton" class="button inactive corner">
-                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                        <div class="title">Ask Chosen Friends</div>
-                        <div class="subtitle">Giving advice is fun</div>
-                    </div>
+                <div class="center_col" style="margin-top: 35px;">
+                    <p class="centered">We will email you when a friend provides advice.</p>
+                </div>
+                <ul class="askers" id="askers">
+                    <!-- Asker appended when document ready -->
+                </ul>
+                <div id="askButton" class="button inactive corner">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
                 </div>
             </div>
 

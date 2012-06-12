@@ -43,8 +43,8 @@ p {
     width: 100%;
 }
 .content.narrow {
-    width: 600px;
-    margin: 0 auto;
+    width: 90%;
+    margin: 0 5%;
 }
 .left {
     float: left;
@@ -206,11 +206,10 @@ button img {
 }
 
 .button.close {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    margin-left: -75px;
-    width: 150px;
+    display: block;
+    margin: 0 auto;
+    padding: 5px 14px;
+    width: 45px;
 }
 
 .button>img {
@@ -326,10 +325,10 @@ button img {
 .options {
     position: absolute;
     left: 0;
-    bottom: 8px;
-    margin: 0;
+    bottom: 30px;
+    padding: 0 5%;
     /*height: 100px;*/
-    width: 100%;
+    width: 90%;
     text-align: center;
     z-index: 100; /* PIE shows in IE8 */
 }
@@ -538,7 +537,7 @@ li.ui-menu-item:hover {
     background-color: #E0F0F8;
 }
 #chosenButton>img, #askButton>img {
-    margin: 5px;
+    margin: 5px 5px 5px 0;
 }
 #chosenButton>.title, #chosenButton>.subtitle,
 #askButton>.title, #askButton>.subtitle {

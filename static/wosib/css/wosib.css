@@ -72,16 +72,15 @@
     background-color: #f0f0f0;
     padding: 10px;
 }
-.options {
+/*.options {
     bottom: 35px;
     width: 90%;
     padding: 0 5%;
 }
 .options div.restrictedWidth {
-    /*width: 600px;*/
     width: 100%;
     margin:auto;
-}
+}*/
 .step {
     text-align:left;
     margin-left: 10px;
