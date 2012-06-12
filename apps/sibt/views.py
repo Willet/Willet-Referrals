@@ -24,7 +24,8 @@ from apps.sibt.actions import SIBTNoConnectFBCancelled, \
                               SIBTShowingButton, SIBTShowingAskIframe, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
-from apps.sibt.models import get_app, get_instance_event, get_products
+from apps.sibt.models import get_app, get_instance_event, get_products, \
+                             get_user
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
@@ -284,13 +285,8 @@ class VoteDynamicLoader(URIHandler):
         vendor = self.request.get('vendor', '')  # changes template used
 
         (instance, _) = get_instance_event(urihandler=self)
-        if instance:
-            logging.debug('instance found')
-
-            if not instance.is_live:
-                # We can't find the instance, so let's assume the vote is over
-                self.response.out.write("This vote is now over.")
-                return
+        if instance and instance.is_live:
+            logging.debug('running instance found')
 
             app = instance.app_
             if not app:  # We can't find the app?!
@@ -305,11 +301,7 @@ class VoteDynamicLoader(URIHandler):
             product = Product.get_or_fetch(instance.url, app.client)
             products = [Product.get(uuid) for uuid in instance.products]
         else:  # v11 mode: auto-create
-            logging.debug('instance not found - creating one')
-
-            app_uuid = self.request.get('app_uuid')
-            if not app_uuid:
-                self.response.out.write("This vote is now over.")
+            logging.debug('running instance not found - creating one')
 
             app = get_app(urihandler=self)
             if not app:
@@ -321,24 +313,24 @@ class VoteDynamicLoader(URIHandler):
             products = get_products(urihandler=self)
             if products:
                 product_uuids = [product.uuid for product in products]
-                logging.debug('app = %r' % app)
-                logging.debug('target = %r' % target)
-                logging.debug('product_uuids = %r' % product_uuids)
-                instance = self.create_instance(app=app,
-                                                page_url=target,
+                instance = self.create_instance(app=app, page_url=target,
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
                 # update variables to reflect "creation"
                 new_instance = True
-                instance_uuid =  instance.uuid
+                instance_uuid = instance.uuid
 
         sharing_message = instance.sharing_message
 
         if instance.asker:
             name = instance.asker.name
+        else:  # fix instance by assigning a best-guess user
+            logging.warn('Fixing user-less instance. '
+                         'Assigning whichever user we can get.')
+            instance.asker = get_user(urihandler=self)
+            instance.put()
 
-        if not link:
-            link = instance.link
+        link = instance.link
         try:
             share_url = link.get_willt_url()
         except AttributeError, e:

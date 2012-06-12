@@ -137,34 +137,73 @@ p {
 .center_col {
         margin: 40px 20% 0 20%;
 }
-.button {
-    height: 50px;
-    padding: 6px;
-    background-color: #C1F0F5;
-    text-align: center;
-    border: 1px solid #999;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -pie-background: linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
-    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    behavior: url(/static/js/PIE.htc);
+
+button, .button {
+    -moz-box-shadow:inset 0px 1px 1px 0px #f5978e;
+    -webkit-box-shadow:inset 0px 1px 1px 0px #f5978e;
+    box-shadow:inset 0px 1px 1px 0px #f5978e;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #cc5047), color-stop(1, #9e453d) );
+    background:-moz-linear-gradient( center top, #cc5047 5%, #9e453d 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#cc5047', endColorstr='#9e453d');
+    background-color:#cc5047;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #996865;
+    display:inline-block;
+    color:#ffffff;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 76px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #810e05;
 }
-.button.inactive {
-    background-color: #EEE;
-    background-image: -moz-linear-gradient(top, #F7F7F7, #EEE);
-    background-image: -webkit-linear-gradient(top, #F7F7F7, #EEE);
-    background-image: -ms-linear-gradient(top, #F7F7F7, #EEE);
-    -pie-background: linear-gradient(top, #F7F7F7, #EEE);
-    background-image: linear-gradient(top, #F7F7F7, #EEE);
-    behavior: url(/static/js/PIE.htc);
+button:hover, .button:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #9e453d), color-stop(1, #cc5047) );
+    background:-moz-linear-gradient( center top, #9e453d 5%, #cc5047 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#9e453d', endColorstr='#cc5047');
+    background-color:#9e453d;
 }
+
+button:active, .button:active {
+    position:relative;
+    top:1px;
+}
+
+button.grey, .button.grey,
+button.inactive, .button.inactive {
+    -webkit-box-shadow: 0 1px 2px #999;
+    -moz-box-shadow: 0 1px 2px #999;
+    box-shadow: 0 1px 2px #999;
+    color: #FFF;
+    border-color: #AAA #999 #777;
+    background: #DCDCDC;
+    background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(167,167,167,1)));
+    background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -o-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
+    background: linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+}
+button.grey:hover, .button.grey:hover {
+    /* button.inactive does not have a hover state */
+    background-color: #939393;
+    background: -moz-linear-gradient(top, rgba(216,216,216,1) 0%, rgba(147,147,147,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(216,216,216,1)), color-stop(100%,rgba(147,147,147,1)));
+    background: -webkit-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -o-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -ms-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d8d8d8', endColorstr='#939393',GradientType=0 );
+    background: linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+}
+
+.button img,
+button img {
+    float: left;
+}
+
 .button.close {
     position: absolute;
     bottom: 15px;
@@ -172,21 +211,7 @@ p {
     margin-left: -75px;
     width: 150px;
 }
-.button:hover {
-    cursor: pointer;
-    cursor: hand;
-    -moz-box-shadow: 0 0 4px 1px #BBB;
-    -webkit-box-shadow: 0 0 4px 1px #BBB;
-    box-shadow: 0 0 4px 1px #BBB;
-    behavior: url(/static/js/PIE.htc);
-}
-.button.inactive:hover {
-    cursor: auto;
-    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    behavior: url(/static/js/PIE.htc);
-}
+
 .button>img {
     float: left;
     margin: 5px 10px 5px 10px;
@@ -200,7 +225,6 @@ p {
 }
 .button>.title {
     padding-top: 3px;
-    font-size: 18px;
     line-height: 28px;
 }
 .button>.subtitle {
@@ -324,7 +348,7 @@ p {
     color: #888;
 }
 .options .or {
-    width: 100px;
+    width: 44px;
     *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {

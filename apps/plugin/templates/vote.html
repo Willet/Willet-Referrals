@@ -129,10 +129,16 @@
 
         <div id="wrapper">
             {% if is_asker %}
-                <p class="text-center"
-                   style="font-style: italic;color: #666;margin-top: 21px;">
+                <h2 class="text-center"
+                    style="font-style: italic;
+                           color: #666;
+                           margin: 21px auto 13px auto;
+                           padding: 10px;
+                           border: 1px dashed #CCC;
+                           width: 96%;
+                           background-color: #FAFAFA;">
                     This is a preview of what your friends will see
-                </p>
+                </h2>
             {% endif %}
             <div id="asker_bar">
                 <div class="mini-highlight blob-disabled">
@@ -178,13 +184,13 @@
 
                     {% if store_url %}
                         <p style="margin-top:24px;">
-                            <a href="{{ store_url }}">Continue Shopping</a>
+                            <a href="{{ store_url }}">See what else {{ client.name }} has to offer.</a>
                         </p>
                     {% endif %}
                 </div>
                 {% block right_screens %}{% endblock right_screens %}
             </div>
-            <p class="text-center">
+            <p class="text-center" style="clear:both; padding-top: 24px;">
                 <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
                 on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
             </p>

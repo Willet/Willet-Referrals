@@ -28,15 +28,19 @@
             <div class="options">
                 <div class="option left">
                     <div class="button" id="postOnWall" title="Post to your wall">
-                        <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
-                        <div class="title">Ask Friends</div>
+                        {% if not embed %}
+                            <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                        {% endif %}
+                        <div class="title">Post to Facebook</div>
                         <div class="subtitle">Post to Facebook</div>
                     </div>
                 </div>
                 <div class="or">or</div>
                 <div class="option right">
                     <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                        <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        {% if not embed %}
+                            <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        {% endif %}
                         <div class="title">Choose Friends</div>
                         <div class="subtitle">Get trusted advice</div>
                     </div>

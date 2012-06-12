@@ -181,13 +181,13 @@ _willet.sibt = (function (me) {
         }
 
         return me.showPopupWindow(
-                "{{URL}}{% url VoteDynamicLoader %}" +
-                // do not merge with metadata(): it escapes commas
-                "?products=" + me.getProductUUIDs().join(',') +
-                // if instance exists, it will be shown, not made!
-                "&instance_uuid={{ instance.uuid }}" +
-                "&ids=" + shopify_ids.join(',') +
-                "&" + me.metadata()
+            "{{URL}}{% url VoteDynamicLoader %}" +
+            // do not merge with metadata(): it escapes commas
+            "?products=" + me.getProductUUIDs().join(',') +
+            // if instance exists, it will be shown, not made!
+            "&instance_uuid={{ instance.uuid }}" +
+            "&ids=" + shopify_ids.join(',') +
+            "&" + me.metadata()
         );
 
         // else if no products: do nothing
@@ -200,9 +200,9 @@ _willet.sibt = (function (me) {
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
             href: "{{URL}}/s/results.html?" +
-                    me.metadata({
-                        'refer_url': me.getCanonicalURL(window.location.href)
-                    })
+                me.metadata({
+                    'refer_url': me.getCanonicalURL(window.location.href)
+                })
         });
     };
 
