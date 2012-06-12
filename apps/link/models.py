@@ -95,7 +95,6 @@ class Link(Model):
                        _queue='slow-deferred')
         logging.info("Deferred put of Link %s" % self.key_name)
 
-
     def count_clicks(self):
         """Count this link's sharded clicks"""
 

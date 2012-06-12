@@ -22,7 +22,7 @@ from apps.user.actions import UserCreate
 
 from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
                         MEMCACHE_TIMEOUT
-from util.helpers import generate_uuid, set_user_cookie, url
+from util.helpers import common_items, generate_uuid, set_user_cookie, url
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -194,6 +194,7 @@ class User(db.Expando):
     def get(cls, memcache_key=None):
         """Class retriever.
 
+        memcache_key must be a valid string. Function returns None if invalid:
         cls.get() => None
         cls.get(None) => None
         ...
@@ -526,7 +527,7 @@ class User(db.Expando):
 
         emails = EmailModel.get_by_user(self)
         # intersection > 0 means user is an admin!
-        if len(frozenset(emails) & frozenset(ADMIN_EMAILS)):
+        if len(common_items(emails, ADMIN_EMAILS)) > 0:
             logging.info("%s (%s) is an ADMIN (via email check)" % (
                             self.uuid, self.get_full_name()))
             self.user_is_admin = True
