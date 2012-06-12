@@ -145,9 +145,9 @@
                     <p>
                         <img class="profile_pic"
                                 src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
-                        <span class="fbName">{{ asker_name }}</span>
+                        <span class="fbName asker_name_target">{{ asker_name }}</span>
                         <br />
-                        <span class="fbPost">
+                        <span class="fbPost sharing_message_target">
                             {{ sharing_message|escape|default:"I like this, but..." }}
                         </span>
                     </p>

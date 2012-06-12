@@ -990,7 +990,7 @@
                     picture: '{{ product_images|first }}' || "{{ image }}",
                     name:    "{{ product_title|escape }}" || "{{ title|escape }}",
                     caption: '{{ store_domain }}',
-                    description: "{{ product_desc|striptags|escape }}" || $('#fbComment').val(),
+                    description: "{{ product_desc|striptags|escape }}" || $('#shareText').val(),
                     redirect_uri: '{{ fb_redirect }}'
                 });
             } catch (e) {
@@ -1202,6 +1202,18 @@
                         element.val(suggestion.full);
                     }
                 });
+            });
+
+            $('.asker .name').live('keyup', function () {
+                try {  // mask lengthy variable checks
+                    window.parent.$('.asker_name_target').text($(this).val());
+                } catch (e) {}
+            });
+
+            $('#shareText').keyup(function () {
+                try {  // mask lengthy variable checks
+                    window.parent.$('.sharing_message_target').text($('#shareText').val());
+                } catch (e) {}
             });
 
             // Add your js initialization code here!

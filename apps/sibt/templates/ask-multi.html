@@ -29,7 +29,7 @@
         </div>
         <div class="options">
             <div class="restrictedWidth">
-                <textarea id="fbComment" name="fbComment">I like both of these items. Which one do you like more?</textarea>
+                <textarea id='shareText' name='shareText' maxlength='1000'>I like both of these items. Which one do you like more?</textarea>
                 <br />
                 <br />
                 <div class="option left">
@@ -112,7 +112,7 @@
     // Sends information to server to ask friends & handles response
     var sendMessages = function() {
         var payload, friend_info, asker_info,
-            msg   = $("#fbComment").val(),
+            msg   = $("#shareText").val(),
             error = false;
 
         // Gather up friend info, recording if a friend has an error
