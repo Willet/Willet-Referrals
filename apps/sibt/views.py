@@ -313,7 +313,9 @@ class VoteDynamicLoader(URIHandler):
             products = get_products(urihandler=self)
             if products:
                 product_uuids = [product.uuid for product in products]
+                vote_url = '...'  # link to vote page
                 instance = self.create_instance(app=app, page_url=target,
+                                                vote_url=vote_url,
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
                 # update variables to reflect "creation"
@@ -401,7 +403,7 @@ class VoteDynamicLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-    def create_instance(self, app, page_url, product_uuids=None,
+    def create_instance(self, app, page_url, vote_url='', product_uuids=None,
                         sharing_message=""):
         """Helper to create an instance without question."""
         user = User.get_or_create_by_cookie(self, app)
@@ -943,7 +945,7 @@ class SIBTServeScript(URIHandler):
         # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
-        if instance and instance.asker and user:
+        if instance and getattr(instance, 'asker', None) and user:
             is_asker = bool(instance.asker.key() == user.key())
             is_live = instance.is_live
             event = 'SIBTShowingResults'

@@ -987,24 +987,22 @@
         // Open up the FB dialog. Does not do a FB connect with us.
         var postOnWall = function () {
             try { // detect adblock
-                if (startPartialInstance()) {
-                    FB.ui({
-                        method:  'feed',
-                        display: 'popup',
-                        link:    '{{share_url}}',
-                        picture: '{{product_images|first}}' || "{{ image }}",
-                        name:    "{{product_title|escape}}" || "{{title|escape}}",
-                        caption: '{{store_domain}}',
-                        description: "{{ product_desc|striptags|escape }}" || $('#fbComment').val(),
-                        redirect_uri: '{{fb_redirect}}'
-                    });
-                }
+                // startPartialInstance() ...
+                FB.ui({
+                    method:  'feed',
+                    display: 'popup',
+                    link:    '{{ share_url }}',
+                    picture: '{{ product_images|first }}' || "{{ image }}",
+                    name:    "{{ product_title|escape }}" || "{{ title|escape }}",
+                    caption: '{{ store_domain }}',
+                    description: "{{ product_desc|striptags|escape }}" || $('#fbComment').val(),
+                    redirect_uri: '{{ fb_redirect }}'
+                });
             } catch (e) {
                 alert ('Oops... AdBlock is probably blocking facebook!');
             }
 
             storeAnalytics('SIBTNoConnectFBDialog');
-            refreshParentFrame();
         };
 
         // Add blank friend entry to Choose Friend's screen
