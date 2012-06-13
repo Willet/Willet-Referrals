@@ -122,7 +122,7 @@
                             $("#success_pending").hide();
                             $("#success_screen").show();
                         {% endif %}
-                        ctl.text('Voted').attr('disabled', 'disabled');
+                        $(ctl).text('Voted').attr('disabled', 'disabled');
                     },
                     error: function () {
                         $("#error_message").show();
