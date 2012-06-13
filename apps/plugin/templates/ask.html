@@ -994,7 +994,11 @@
                     redirect_uri: '{{ fb_redirect }}'
                 });
             } catch (e) {
-                alert ('Oops... AdBlock is probably blocking facebook!');
+                if ($) {  // if FB is lagging, then chances are $ is also lagging
+                    // disables the posting button.
+                    $('#postOnWall').unbind('click').addClass('inactive');
+                    $('#postOnWall .title').text('AdBlock detected!');
+                }
             }
 
             storeAnalytics('SIBTNoConnectFBDialog');
