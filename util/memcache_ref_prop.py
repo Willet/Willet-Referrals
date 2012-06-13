@@ -155,27 +155,36 @@ class MemcacheReferenceProperty(db.Property):
         """Set reference."""
         if not self.memcache_key:
             if not value:
-                raise TypeError('MemcacheReferenceProperty: cannot set reference to None!')
+                raise TypeError('MemcacheReferenceProperty: '
+                                'cannot set reference to None!')
 
             if isinstance(value, datastore.Key):
-                logging.debug('MemcacheReferenceProperty: value is a datastore key.')
+                logging.debug('MemcacheReferenceProperty: '
+                              'value is a datastore key.')
                 obj = db.get(value)
 
                 if obj:
-                    logging.debug('MemcacheReferenceProperty: got Model from DB; using its DB key.')
+                    logging.debug('MemcacheReferenceProperty: '
+                                  'got Model from DB; using its DB key.')
                     self.memcache_key = obj.get_key()
-                else:  # wtf? what is this for?
-                    logging.debug('MemcacheReferenceProperty: db.get(%s) miss - using %s' % (value, memcache.get(unicode(value))))
+                else:  #
+                    logging.debug('MemcacheReferenceProperty: '
+                                  'db.get(%s) miss - using %s' % (
+                                   value, memcache.get(unicode(value))))
                     self.memcache_key = memcache.get(unicode(value))
 
             elif isinstance(value, db.Model):
                 self.memcache_key = value.get_key()
-                logging.debug('MemcacheReferenceProperty: value is a Model class object.')
+                logging.debug('MemcacheReferenceProperty: '
+                              'value is a Model class object.')
             else:
-                raise TypeError('Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model> (supplied %s)' % type (value))
+                raise TypeError('Value supplied is neither <google.appengine.datastore.Key> '
+                                'nor <google.appengine.ext.db.Model> (supplied %s)' % type(value))
 
         if not self.memcache_key:
-            logging.error('Cannot get/create memcache key for %s!' % value)
+            logging.error('Cannot get/create memcache key for %s! '
+                          'The referenced object no longer exists.' % value,
+                          exc_info=True)
 
         value = self.validate(value)
         if value is not None:

@@ -479,7 +479,7 @@ class User(db.Expando):
 
         return pics
 
-    def get_attr(self, attr_name):
+    def get_attr(self, attr_name, default=None):
         # get_attr? There has got to be a more pythonic way to do this!
         if attr_name == 'email':
             try:
@@ -504,10 +504,7 @@ class User(db.Expando):
             else:
                 return 'https://rf.rs/static/imgs/happy_face.png'
 
-        if hasattr(self, attr_name):
-            return getattr(self, attr_name)
-        else:
-            return None
+        return getattr(self, attr_name, default)
 
     def is_admin(self, default=False, urihandler=None):
         """Returns True if current user is an admin.

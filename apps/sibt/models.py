@@ -337,7 +337,8 @@ class SIBTInstance(Model):
         url cannot be ''.
         """
         if not (user and url):
-            logging.error('Must supply user and url to get_by_asker_for_url!')
+            logging.error('Must supply user and url to get_by_asker_for_url!',
+                          exc_info=True)
             return None
 
         data = memcache.get('%s-%s' % (user.uuid, url))
@@ -655,20 +656,25 @@ def get_instance_event(**kwargs):
     # take that, circularreferenciophobes!
     req = getattr(urihandler, 'request', None) or kwargs
 
+    instance = None
     link = None
     target = get_target_url(req.get('url', ''))
 
+    # stage 1: by uuid
     instance_uuid = req.get('instance_uuid')
     instance = SIBTInstance.get(instance_uuid)
     if instance:
         return (instance, 'SIBTShowingVote')
 
+    # stage 2: by user and page combo
     page_url = req.get('page_url', '')
     user = get_user(urihandler=urihandler)
-    instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+    if user and page_url:
+        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
     if instance:
         return (instance, 'SIBTShowingResults')
 
+    # stage 3: by willet code (not memcached)
     willet_code = req.get('willt_code')
     if willet_code:
         link = Link.get_by_code(willet_code)

@@ -33,7 +33,7 @@ class FetchFacebookData(URIHandler):
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
                     ",gender,username,timezone,updated_time,verified,birthday"+\
                     ",email,interested_in,location,relationship_status,religion"+\
-                    ",website,work&access_token=" + user.get_attr('fb_access_token')
+                    ",website,work&access_token=" + user.get_attr('fb_access_token', '')
                 fb_response = json.loads(urllib.urlopen(url).read())
                 logging.info(fb_response)
                 target_data = [
@@ -49,7 +49,7 @@ class FetchFacebookData(URIHandler):
                 collected_data = {}
                 for td in target_data:
                     if fb_response.has_key(td):
-                        collected_data['fb_'+str(td)] = str(fb_response[td])
+                        collected_data['fb_%s' % td] = unicode(fb_response[td])
                 try:
                     collected_data['facebook_profile_pic'] = '%s%s/picture' % (
                         FACEBOOK_QUERY_URL,
