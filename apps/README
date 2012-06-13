@@ -1,12 +1,11 @@
-Last-Updated: Feb 13, 2012
+Last-Updated: Jun 13, 2012
 
 Egads! You've made it all the way into the depths of the apps/ folder?!
 
 Here's a brief explanation of the apps in here. I make no promise that
 this README will be kept up-to-date after I leave!
 
- - action: We've built our own analytics code in-house. Good idea? Not
-           entirely sure yet!
+ - action: We've built our own analytics code in-house. NOT a good idea!
 
            All analytics are stored as 'action' datapoints. The top-level, parent
            class Actions are all located in models.py.
@@ -26,6 +25,7 @@ this README will be kept up-to-date after I leave!
                       in here.
 
                       Written by: MrMCH
+                      Deprecated.
 
  - app: Each 'app' we develop for merchants will have some commonalities. These
         are all managed in here.
@@ -35,6 +35,7 @@ this README will be kept up-to-date after I leave!
         Therefore, Shopify Apps inherit from App and AppShopify.
 
  - buttons: A simple Shopify App to get us some initial customers.
+            Well, it got us some customers alright.
 
  - client: A store is known as a 'Client'. We store all metadata about a
            store here.
@@ -55,7 +56,7 @@ this README will be kept up-to-date after I leave!
 
               So simple, eh?
 
- - homepage: We have a realyl spiffy website. It's all kept in here. Mostly just
+ - homepage: We have a really spiffy website. It's all kept in here. Mostly just
              views and HTML.
 
  - link: These were used heavily in some other projects we've built and they were
