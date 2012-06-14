@@ -21,6 +21,9 @@ class ButtonsShopifyEmailReports(URIHandler):
         apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
 
         for app in apps:
+            if hasattr(app, "unsubscribed") and app.unsubscribed:
+                continue  # don't email unsubscribed people
+
             logging.info("Setting up taskqueue for %s" % app.client.name)
             params = {
                 "store": app.store_url,

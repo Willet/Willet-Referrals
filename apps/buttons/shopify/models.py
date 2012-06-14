@@ -39,6 +39,8 @@ NUM_VOTE_SHARDS = 15
 
 
 class ButtonsShopify(Buttons, AppShopify):
+    unsubscribed = db.BooleanProperty(default=False)
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)

@@ -21,10 +21,10 @@ SECURE_PROTOCOL = 'https'
 APP_DOMAIN = 'social-referral.appspot.com'
 APP_LIVE = 'social-referral'
 USING_DEV_SERVER = bool(get_application_id() != APP_LIVE) # False on live
-DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN
+DOMAIN = os.environ.get('HTTP_HOST') if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
-KEYS = os.environ['HTTP_HOST']
+KEYS = os.environ.get('HTTP_HOST')
 
 # Our BS P3P Header
 P3P_HEADER = 'CP="IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT"'
