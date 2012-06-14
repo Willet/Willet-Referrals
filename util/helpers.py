@@ -106,6 +106,11 @@ def to_dict(something, recursion=0):
     return output
 
 
+def common_items(list1, list2):
+    """Returns the items present in both lists."""
+    return frozenset(list1) & frozenset(list2)
+
+
 def get_target_url(referrer):
     """ Clean up a URL to only contain protocol://domain.com/file.htm """
     target = ""

@@ -12,8 +12,8 @@ def can_control_experiments(request_handler=None):
     if request_handler:
         user = User.get_by_cookie(request_handler)
         logging.info('user: %s' % user)
-        logging.info('is admin: %s' % user.is_admin())
-        return user.is_admin()
+        logging.info('is admin: %s' % user.is_admin(urihandler=request_handler))
+        return user.is_admin(urihandler=request_handler)
 
     # TODO: Make this false .. true only for testing
     return False #True

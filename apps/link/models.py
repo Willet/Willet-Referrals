@@ -40,9 +40,7 @@ def put_link(memcache_key):
     except Exception, e:
         logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
 
-# ------------------------------------------------------------------------------
-# Link Class    ----------------------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class Link(Model):
     """A tracking link that will be shared by our future Users. A Link keeps
        track of how many unique clicks it receives"""
@@ -88,6 +86,14 @@ class Link(Model):
     def _get_from_datastore(willt_url_code):
         """Datastore retrieval using memcache_key"""
         return db.Query(Link).filter('willt_url_code =', willt_url_code).get()
+
+    def put_later(self):
+        """Deferred write."""
+        self.memcache_by_code()
+        deferred.defer(put_link,
+                       Link.get_memcache_key_for_code(self.key_name),
+                       _queue='slow-deferred')
+        logging.info("Deferred put of Link %s" % self.key_name)
 
     def count_clicks(self):
         """Count this link's sharded clicks"""
@@ -185,18 +191,10 @@ class Link(Model):
                     origin_domain=domain,
                     retweets=[])
 
-        #link.put()
-        link.memcache_by_code()
-        deferred.defer(put_link,
-                       Link.get_memcache_key_for_code(code),
-                       _queue='slow-deferred')
-        logging.info("Successful put of Link %s" % code)
+        link.put()
         return link
 
 
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
 class LinkCounter(db.Model):
     """Sharded counter for link click-throughs"""
 
@@ -209,9 +207,6 @@ def delete_counters(willt_url_code):
     return True
 
 
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
 class CodeCounter(Model):
     """This is a counter we use to generate random, short URLs"""
     # the current count
