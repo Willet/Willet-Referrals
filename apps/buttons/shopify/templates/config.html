@@ -20,15 +20,14 @@
         padding-left: 90px;
         margin: 0;
     }
-    .box-design form, .box-design .preview {
-        padding-top: 20px;
-        padding-bottom: 20px;
+    .box-design form {
         font-size: 1.5em;
+        padding-bottom: 20px;
     }
     .page {
         margin-top: 30px;
     }
-    #config-free {
+    .config-free {
         display: block;
     }
 
@@ -39,14 +38,31 @@
     .config-option {
         display: block;
     }
-
+    .config-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
     .left-column {
         display   : inline-block;
         text-align: right;
-        width     : 200px;
+        width     : 250px;
+    }
+    .left-textarea-column {
+        display: block;
+        float: left;
+        margin-right: 5px;
+        height: 60px;
+        width: 250px;
+        line-height: 60px;
+        text-align: right;
     }
 
     input {
+    }
+    textarea {
+        height: 48px;
+        line-height: 24px;
+        font-size: 16px;
     }
 
     .buttons {
@@ -65,8 +81,13 @@
     .submit {
         text-align: center;
     }
+    hr.widget-break {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
 
-    #unused-buttons, #default-buttons {
+    #unused-buttons,
+    #default-buttons {
         list-style-type: none;
         margin: 0;
         display: inline-block;
@@ -76,7 +97,8 @@
         border: 1px dashed #aaa;
     }
 
-    #default-buttons li, #unused-buttons li {
+    #default-buttons li,
+    #unused-buttons li {
         display: inline-block;
     }
 
@@ -162,11 +184,17 @@
     }
 
     .preview {
+        padding: 20px;
+        margin-bottom: 10px;
         display: block;
         background-color: #ffa;
     }
+    .preview>div {
+        text-align: center;
+    }
 
-    #buttons-preview {
+    #buttons-preview,
+    #confirmation-preview {
         display: inline-block;
         border: 1px dotted #000;
         margin-left: 200px;
@@ -278,17 +306,6 @@
         padding: 20px;
         min-width: 340px;
     }
-    /*
-    .loadmask-msg>div>div {
-        position: relative;
-        height: 38px;
-        line-height: 38px;
-    }
-    .loadmask-msg>div>div>div {
-        position: absolute;
-        right: 0;
-        top: 0;
-    } */
     .loadmask-msg>div>p {
         position: relative;
         margin: 0;
@@ -321,6 +338,32 @@
     .masked-hidden {
         visibility: hidden !important;
     }
+
+    /* Confirm preview */
+    div.sharing {
+        padding: 0 15px;
+        margin: 10px 0 0 0;
+        background-color:#FFF;
+    }
+    div.sharing ul {
+        list-style-type:none;
+        padding: 0 40px;
+        line-height:40px;
+        margin-bottom: 0;
+    }
+    div.sharing li {
+        display: inline-table;
+        width: 140px;
+    }
+
+    #confirmation-preview {
+        background-color: #fff;
+    }
+
+    #confirmation-preview p {
+        font-size: 1em;
+    }
+
 </style>
 <!--[if IE 7]>
 <style>
@@ -384,15 +427,15 @@
     }
 </style>
 <![endif]-->
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"
-        type="text/javascript"></script>
-<script src="/static/js/jquery.qtip-1.0.0-rc3.min.js"
-        type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+<script src="/static/js/jquery.qtip-1.0.0-rc3.min.js" type="text/javascript"></script>
+<script src="/static/js/jquery.lightswitch.js" type="text/javascript"></script>
         {% if not config_enabled %}<script src="/static/js/jquery.loadmask.min.js" type="text/javascript"></script>{% endif %}
 <script>
     $(document).ready(function () {
         var redirectToUpgrade,
             changeTabs,
+            confirmUpdate,
             maxButtons,
             update,
             updateNetworks,
@@ -495,12 +538,34 @@
             event.preventDefault();
         };
 
+        confirmUpdate = function(network) {
+            var $input  = $("[name="+network+"_username]"),
+                $target = $("#confirmation-preview .item-" + network);
+
+            if($input.val()) {
+                $target.show();
+            } else {
+                $target.hide();
+            }
+        };
+
         //--------------- UI SETUP ---------------//
 
         {% if not config_enabled %}
         // Display a mask if the user has not paid
         $("#configuration .mask-target").mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
         {% endif %}
+
+        $("#confirmation-enabled").lightSwitch({
+            "dir": "/static/imgs/jquery-lightswitch/",
+            "change": function (event) {
+                if (event.target.checked) {
+                    $('#confirmation_options').slideDown("slow");
+                } else {
+                    $('#confirmation_options').slideUp("slow");
+                }
+            }
+        });
 
         // Set the default selected element
         // We do this in JS because it is cleaner than in the template
@@ -536,6 +601,16 @@
         $("[name=button_count]").change(update);
         $("#max-buttons").change(update);
 
+        $("[name=twitter_username]").keyup(function(event) {
+            confirmUpdate('twitter', event);
+        })
+        $("[name=facebook_username]").keyup(function(event) {
+            confirmUpdate('facebook', event);
+        })
+        $("[name=pinterest_username]").keyup(function(event) {
+            confirmUpdate('pinterest', event);
+        })
+
         // Enable tabbing
         $(".tab-header").not(".tab-ignore").click(changeTabs);
 
@@ -545,6 +620,10 @@
 
         // Refresh the preview since the page is ready
         updatePreview();
+        var networks = ['twitter','pinterest','facebook'];
+        for(var i = 0; i < networks.length; i++) {
+            confirmUpdate(networks[i]);
+        }
     });
 </script>
 {% endblock head %}
@@ -589,20 +668,12 @@
      style="margin-top: 0px;">
     <div id="configuration" class="page prepend-top prepend-3 span-18 append-3 append-bottom last">
         <div class="box-design mask-target">
-            <div class="preview">
-                <span class="left-column">
-                    <label for="buttons-preview">Preview:</label>
-                </span>
-                <span style="margin-right: 20px;">
-                    See how your ShopConnection buttons
-                    will appear in your store.
-                </span>
-
-                <span id="buttons-preview">
-                </span>
-            </div>
             <form method="POST" action="{{ action }}">
-                <div id="config-free">
+                <div class="preview">
+                    <div><b>Preview:</b> How the social buttons will appear on product pages.</div>
+                    <span id="buttons-preview"></span>
+                </div>
+                <div class="config-free">
                     <div class="config-option buttons">
                         <span class="left-column">
                             <label for="default-buttons">
@@ -715,7 +786,7 @@
                                class="textbox"/>px
                     </div>
                     <div class="config-option">
-                        <span class="left-column">
+                        <span class="left-textarea-column">
                             <label for="sharing-message">
                                 Sharing Message:
                             </label>
@@ -726,14 +797,101 @@
                                  <i>Default: I found this on {{shop_url}}</i>"
                                  class="help">
                         </span>
-                        <input id="sharing-message" name="sharing_message"
-                               type="text" value="{{ sharing_message }}"
-                               class="textbox"/>
+                        <textarea id="sharing-message" name="sharing_message"
+                               class="textbox">{{ sharing_message }}</textarea>
                     </div>
                 </div>
                 <div class="submit">
                     <input id="button-order" type="hidden" name="button_order"
                            value='{{ button_order|join:"," }}' />
+                    <button class="blue">Save</button>
+                </div>
+
+                <hr class="widget-break"/>
+
+                <div class="config-free">
+                    <div class="config-header">
+                        <label for="confirmation-enabled">
+                            Enable Confirmation Widget:
+                        </label>
+                        <img src="/static/imgs/info.png" alt="Help Icon"
+                             title="Add Follow buttons to the final page of the checkout process.
+                                    This is a great way keep customers engaged after the purchase."
+                             class="help">
+                        <input id="confirmation-enabled" name="conf_enabled"
+                               type="checkbox" value="true" {% ifequal confirmation_enabled 'true' %}checked="checked"{% endifequal %}
+                               value="Enable post-purchase Follow widget" class="textbox"/>
+                    </div>
+                    <div id="confirmation_options" style="display:{% ifequal confirmation_enabled 'true' %}block{% else %}none{% endifequal %}">
+                        <div class="preview">
+                            <div><b>Preview:</b> How the 'follow' buttons
+                                will appear on the purchase confirmation
+                                page.</div>
+                            <span id="confirmation-preview">
+                                <div class='sharing'>
+                                    <p>Thanks! Check us out on these networks:</p>
+                                    <ul>
+                                        <li class="item-facebook" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-facebook.png"/>
+                                        </li>
+                                        <li class="item-pinterest" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-pinterest.png"/>
+                                        </li>
+                                        <li class="item-twitter" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-twitter.png"/>
+                                        </li>
+                                      </ul>
+                                    </div>
+                            </span>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="facebook-username">
+                                    Facebook Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores' Facebook fanpage short-name.<br/><br/>
+
+                                     <i>If empty, Facebook follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            <input id="facebook-username" name="facebook_username"
+                                   type="text" value="{{ facebook_username }}"
+                                   class="textbox"/>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="twitter-username">
+                                    Twitter Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores' Twitter account name.<br/><br/>
+
+                                     <i>If empty, Twitter follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            <input id="twitter-username" name="twitter_username"
+                                   type="text" value="{{ twitter_username }}"
+                                   class="textbox"/>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="pinterest-username">
+                                    Pinterest Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores Pinterest account short-name.<br/><br/>
+
+                                     <i>If empty, Pinterest follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            <input id="pinterest-username" name="pinterest_username"
+                                   type="text" value="{{ pinterest_username }}"
+                                   class="textbox"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="submit">
                     <button class="blue">Save</button>
                 </div>
             </form>
