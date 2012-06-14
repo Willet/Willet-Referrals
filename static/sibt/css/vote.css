@@ -129,14 +129,8 @@ img.profile_pic {
 }
 
 #success_screen {
-    margin-top: 20px;
-    clear: both;
-    font-size: 12pt;
-    font-weight: normal;
-}
-
-#success_screen h2 {
-    display: none;
+    display: none; /* js */
+    text-align: center;
 }
 
 #left-content {

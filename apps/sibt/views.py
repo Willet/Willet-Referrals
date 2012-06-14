@@ -24,7 +24,8 @@ from apps.sibt.actions import SIBTNoConnectFBCancelled, \
                               SIBTShowingButton, SIBTShowingAskIframe, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
-from apps.sibt.models import get_app, get_instance_event, get_products
+from apps.sibt.models import get_app, get_instance_event, get_products, \
+                             get_user
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
@@ -59,6 +60,7 @@ class AskDynamicLoader(URIHandler):
 
         params:
             url (required): the product URL; typically window.location.href
+                v11: page_url may be vote page url.
             products (required): UUIDs of all products to be included
                                  (first UUID will be primary product)
 
@@ -76,7 +78,6 @@ class AskDynamicLoader(URIHandler):
         page_url = self.request.get('url', '') or \
                    self.request.get('page_url', '') or \
                    self.request.get('target_url', '') or \
-                   self.request.get('refer_url', '') or \
                    self.request.headers.get('referer', '')  # NOT page url!
         product = None
         product_images = []
@@ -264,10 +265,10 @@ class VoteDynamicLoader(URIHandler):
     params required for existing instance:
         instance_uuid: show the vote page for this instance.
     """
-    def get(self):
+    @obtain('instance_uuid', 'app_uuid')
+    def get(self, instance_uuid, app_uuid):
         app = None
         event = 'SIBTMakingVote'
-        instance_uuid = self.request.get('instance_uuid')
         link = None
         new_instance = False  # True if this function creates one
         products = [] # populate this to show products on design page.
@@ -284,13 +285,8 @@ class VoteDynamicLoader(URIHandler):
         vendor = self.request.get('vendor', '')  # changes template used
 
         (instance, _) = get_instance_event(urihandler=self)
-        if instance:
-            logging.debug('instance found')
-
-            if not instance.is_live:
-                # We can't find the instance, so let's assume the vote is over
-                self.response.out.write("This vote is now over.")
-                return
+        if instance and instance.is_live:
+            logging.debug('running instance found')
 
             app = instance.app_
             if not app:  # We can't find the app?!
@@ -305,11 +301,7 @@ class VoteDynamicLoader(URIHandler):
             product = Product.get_or_fetch(instance.url, app.client)
             products = [Product.get(uuid) for uuid in instance.products]
         else:  # v11 mode: auto-create
-            logging.debug('instance not found - creating one')
-
-            app_uuid = self.request.get('app_uuid')
-            if not app_uuid:
-                self.response.out.write("This vote is now over.")
+            logging.debug('running instance not found - creating one')
 
             app = get_app(urihandler=self)
             if not app:
@@ -321,24 +313,26 @@ class VoteDynamicLoader(URIHandler):
             products = get_products(urihandler=self)
             if products:
                 product_uuids = [product.uuid for product in products]
-                logging.debug('app = %r' % app)
-                logging.debug('target = %r' % target)
-                logging.debug('product_uuids = %r' % product_uuids)
-                instance = self.create_instance(app=app,
-                                                page_url=target,
+                vote_url = '...'  # link to vote page
+                instance = self.create_instance(app=app, page_url=target,
+                                                vote_url=vote_url,
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
                 # update variables to reflect "creation"
                 new_instance = True
-                instance_uuid =  instance.uuid
+                instance_uuid = instance.uuid
 
         sharing_message = instance.sharing_message
 
         if instance.asker:
-            name = instance.asker.get_full_name()
+            name = instance.asker.name
+        else:  # fix instance by assigning a best-guess user
+            logging.warn('Fixing user-less instance. '
+                         'Assigning whichever user we can get.')
+            instance.asker = get_user(urihandler=self)
+            instance.put()
 
-        if not link:
-            link = instance.link
+        link = instance.link
         try:
             share_url = link.get_willt_url()
         except AttributeError, e:
@@ -373,7 +367,7 @@ class VoteDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
 
             'user': user,
-            'asker_name': name if name else "your friend",
+            'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
@@ -409,7 +403,7 @@ class VoteDynamicLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-    def create_instance(self, app, page_url, product_uuids=None,
+    def create_instance(self, app, page_url, vote_url='', product_uuids=None,
                         sharing_message=""):
         """Helper to create an instance without question."""
         user = User.get_or_create_by_cookie(self, app)
@@ -572,7 +566,7 @@ class ShowResults(URIHandler):
                 'app': app,
                 'URL': URL,
                 'user': user,
-                'asker_name': name if name != '' else "your friend",
+                'asker_name': name or "your friend",
                 'asker_pic': instance.asker.get_attr('pic'),
                 'target_url': target,
                 'fb_comments_url': '%s#code=%s' % (target, link.willt_url_code),
@@ -608,61 +602,65 @@ class ShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
         partial = PartialSIBTInstance.get_by_user(user)
+        instance = SIBTInstance.get_by_user(user)
         product = None
 
-        if not partial:
-            logging.warn('PartialSIBTInstance is already gone')
+        if not (partial or instance):
+            logging.warn('Instance is already gone')
             return  # there's nothing we can do now
 
         if post_id != "":
             user_cancelled = False
 
             # Grab stuff from PartialSIBTInstance
-            try:
-                app = partial.app_
-                link = partial.link
-                product = getattr(partial, 'product', None)
-                products = getattr(partial, 'products', [])
-            except AttributeError, err:
-                logging.error("partial is: %s (%s)" % (partial, err))
+            if partial:
+                try:
+                    app = partial.app_
+                    link = partial.link
+                    product = getattr(partial, 'product', None)
+                    products = getattr(partial, 'products', [])
+                except AttributeError, err:
+                    logging.error("partial is: %s (%s)" % (partial, err))
 
-            try:
-                if not product and products and products[0]:
-                    logging.info('instance with no product but with '
-                                 'products - using products[0] as product')
-                    product = Product.get(products[0])
-                product_image = product.images[0]
-            except:
-                logging.warn('product has no image - resorting to blank')
-                product_image = '%s/static/imgs/blank.png' % URL # blank
+                try:
+                    if not product and products and products[0]:
+                        logging.info('instance with no product but with '
+                                    'products - using products[0] as product')
+                        product = Product.get(products[0])
+                    product_image = product.images[0]
+                except:
+                    logging.warn('product has no image - resorting to blank')
+                    product_image = '%s/static/imgs/blank.png' % URL # blank
 
-            # Make the Instance!
-            instance = app.create_instance(user=user,
-                                           end=None,
-                                           link=link,
-                                           img=product_image,
-                                           motivation=None,
-                                           dialog="NoConnectFB",
-                                           sharing_message="",
-                                           products=products)
+                # Make the Instance!
+                instance = app.create_instance(user=user,
+                                            end=None,
+                                            link=link,
+                                            img=product_image,
+                                            motivation=None,
+                                            dialog="NoConnectFB",
+                                            sharing_message="",
+                                            products=products)
 
-            # partial's link is actually bogus (points to vote.html without an instance_uuid)
-            # this adds the full SIBT instance_uuid to the URL, so that the vote page can
-            # be served.
-            link.target_url = urlunsplit([PROTOCOL,
-                                          DOMAIN,
-                                          url('VoteDynamicLoader'),
-                                          ('instance_uuid=%s' % instance.uuid),
-                                          ''])
-            logging.info ("link.target_url changed to %s (%s)" % (
-                           link.target_url, instance.uuid))
+                # partial's link is actually bogus (points to vote.html without an instance_uuid)
+                # this adds the full SIBT instance_uuid to the URL, so that the vote page can
+                # be served.
+                link.target_url = urlunsplit([PROTOCOL,
+                                            DOMAIN,
+                                            url('VoteDynamicLoader'),
+                                            ('instance_uuid=%s' % instance.uuid),
+                                            ''])
+                logging.info ("link.target_url changed to %s (%s)" % (
+                            link.target_url, instance.uuid))
 
-            # increment link stuff
-            link.app_.increment_shares()
-            link.add_user(user)
-            link.put()
-            link.memcache_by_code() # doubly memcached
-            logging.info('incremented link and added user')
+                # increment link stuff
+                link.app_.increment_shares()
+                link.add_user(user)
+                link.put()
+                link.memcache_by_code() # doubly memcached
+                logging.info('incremented link and added user')
+            else:
+                pass  # full instance? you're all set.
         elif partial != None:
             # Create cancelled action
             SIBTNoConnectFBCancelled.create(user,
@@ -951,7 +949,7 @@ class SIBTServeScript(URIHandler):
         # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
-        if instance and instance.asker and user:
+        if instance and hasattr(instance, 'asker') and user:
             is_asker = bool(instance.asker.key() == user.key())
             is_live = instance.is_live
             event = 'SIBTShowingResults'
@@ -959,7 +957,7 @@ class SIBTServeScript(URIHandler):
         # an instance is pretended not to exist if it is not live.
         if instance and is_live:
             # get the asker's first name.
-            asker_name = instance.asker.get_first_name() or "Your friend"
+            asker_name = instance.asker.name or "Your friend"
             try:
                 asker_name = asker_name.split(' ')[0]
             except:

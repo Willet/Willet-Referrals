@@ -33,7 +33,7 @@ class FetchFacebookData(URIHandler):
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
                     ",gender,username,timezone,updated_time,verified,birthday"+\
                     ",email,interested_in,location,relationship_status,religion"+\
-                    ",website,work&access_token=" + user.get_attr('fb_access_token')
+                    ",website,work&access_token=" + user.get_attr('fb_access_token', '')
                 fb_response = json.loads(urllib.urlopen(url).read())
                 logging.info(fb_response)
                 target_data = [
@@ -49,7 +49,7 @@ class FetchFacebookData(URIHandler):
                 collected_data = {}
                 for td in target_data:
                     if fb_response.has_key(td):
-                        collected_data['fb_'+str(td)] = str(fb_response[td])
+                        collected_data['fb_%s' % td] = unicode(fb_response[td])
                 try:
                     collected_data['facebook_profile_pic'] = '%s%s/picture' % (
                         FACEBOOK_QUERY_URL,
@@ -77,7 +77,7 @@ class FetchFacebookData(URIHandler):
         if hasattr(result_user, 'fb_email'):
             logging.info("DOING EMAIL STUFF: %s" % result_user.get_attr('fb_email'))
             email = result_user.fb_email
-            EmailModel.create(result_user, email)
+            EmailModel.get_or_create(result_user, email)
 
             delattr(result_user, 'fb_email')
             result_user.put_later()
@@ -222,9 +222,20 @@ def unpacker(obj, user):
 
 
 class UpdateEmailAddress(URIHandler):
+    """Allows updates to the current user.
+
+    New: allows update of the name attribute as well.
+    """
     def post(self):
         user = User.get_by_cookie(self)
-        user.update(email=self.request.get('email'))
+        if not user:  # null-cookie'd
+            return
+        email = self.request.get('email')
+        if email:
+            user.update(email=email)
+        name = self.request.get('name')
+        if name:
+            user.update(full_name=name)
 
 
 class UpdateFBAccessToken(URIHandler):

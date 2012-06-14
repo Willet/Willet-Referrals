@@ -24,7 +24,7 @@
                     "&app_uuid={{app_uuid}}" +
                     "&user_uuid={{user_uuid}}" +
                     "&instance_uuid={{instance_uuid}}" +
-                    "&refer_url={{refer_url}}";
+                    "&page_url={{ page_url }}";
 
         document.body.appendChild( iframe );
     };

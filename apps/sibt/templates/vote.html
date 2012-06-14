@@ -24,9 +24,17 @@
             <div class="title">
                 Should <b>{{asker_name}}</b> get this?
             </div>
-            <div class="center">
+            <div id="success_pending" class="center">
                 <button class="button" id="yes">Yes</button>
                 <button class="button" id="no">No</button>
+            </div>
+            <div id="success_screen">
+                <h2>Thank you for helping {{asker_name}}!</h2>
+                {% if store_url %}
+                    <p style="margin-top:24px;">
+                        <a href="{{ store_url }}">Continue Shopping</a>
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -43,26 +51,30 @@
                     which : which
                 },
                 success: function (tr) {
-                    $(".choice, #product_screen").hide();
-                    $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-
-                    // get the discount code.
-                    $.ajax({
-                        url: "{% url DispenseClientDiscountCode %}",
-                        data: {
-                            'client_uuid': "{{ client_uuid }}",
-                            'store_url': "{{ store_url }}"
-                        },
-                        type: 'post',
-                        dataType: 'text',
-                        success: function (data) {
-                            if (data) {
-                                $("#discount_gettest").show();
+                    {% if discount_enabled %}
+                        $(".choice, #product_screen").hide();
+                        $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
+                        {# discount_enabled is undefined on purpose #}
+                        // get the discount code.
+                        $.ajax({
+                            url: "{% url DispenseClientDiscountCode %}",
+                            data: {
+                                'client_uuid': "{{ client_uuid }}",
+                                'store_url': "{{ store_url }}"
+                            },
+                            type: 'post',
+                            dataType: 'text',
+                            success: function (data) {
+                                if (data) {
+                                    $("#discount_gettest").show();
+                                }
+                                $("#discount_code").val(data || "We're out!");
                             }
-                            $("#discount_code").val(data || "We're out!");
-                        }
-                    });
-                    // fbinit (document, 'script', 'facebook-jssdk');
+                        });
+                    {% else %}
+                        $("#success_pending").hide();
+                        $("#success_screen").show();
+                    {% endif %}
                 },
                 error: function () {
                     $(".choice").hide();

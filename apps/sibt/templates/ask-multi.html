@@ -29,20 +29,24 @@
         </div>
         <div class="options">
             <div class="restrictedWidth">
-                <textarea id="fbComment" name="fbComment">I like both of these items. Which one do you like more?</textarea>
+                <textarea id='shareText' name='shareText' maxlength='1000'>I like both of these items. Which one do you like more?</textarea>
                 <br />
                 <br />
                 <div class="option left">
                     <div class="button" id="postOnWall" title="Post to your wall">
-                        <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
-                        <div class="title">Ask Friends</div>
+                        {% if not embed %}
+                            <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                        {% endif %}
+                        <div class="title">Post to Facebook</div>
                         <div class="subtitle">Post to Facebook</div>
                     </div>
                 </div>
                 <div class="or">or</div>
                 <div class="option right">
                     <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                        <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        {% if not embed %}
+                            <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        {% endif %}
                         <div class="title">Choose Friends</div>
                         <div class="subtitle">Get trusted advice</div>
                     </div>
@@ -97,10 +101,7 @@
                 url: "{{ URL }}{% url StartPartialSIBTInstance %}",
                 type: 'post',
                 dataType: 'json',
-                data: payload,
-                success: function (tr) {
-                    window._willet_sibt_partial_instance_uuid = tr;
-                }
+                data: payload
             });
             return true;
         } else {
@@ -111,7 +112,7 @@
     // Sends information to server to ask friends & handles response
     var sendMessages = function() {
         var payload, friend_info, asker_info,
-            msg   = $("#fbComment").val(),
+            msg   = $("#shareText").val(),
             error = false;
 
         // Gather up friend info, recording if a friend has an error
@@ -181,24 +182,6 @@
 
 
 {% block js_functions %}
-    // Open up the FB dialog. Does not do a FB connect with us.
-    var postOnWall = function () {
-        try { // detect adblock
-            if (startPartialInstance ()) {
-                FB.ui({ method:  "feed",
-                        display: "popup",
-                        link:    "{{share_url}}",
-                        picture: "{{ image }}",
-                        name:    "{{title|escape}}",
-                        caption: "{{store_domain}}",
-                        description: $('#fbComment').val(),
-                        redirect_uri: "{{fb_redirect}}" });
-            }
-        } catch (e) {
-            alert ('Oops... AdBlock is probably blocking facebook!');
-        }
-        closeIframe( 'SIBTNoConnectFBDialog' );
-    };
 
     var resizeProductImage = function (img) {
         var logoWidth = img.width,
@@ -268,8 +251,6 @@
             $selection_box
                 .imageDropdown();
         }
-
-        $('#postOnWall').click(postOnWall);
     });
 
     showScreen('splash');

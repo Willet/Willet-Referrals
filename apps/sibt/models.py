@@ -146,10 +146,6 @@ class SIBT(App):
         # Create a ClickAction
         act = SIBTClickAction.create(user, self, link)
 
-        # GAY BINGO!
-        # if not user.is_admin():
-        #     bingo('sibt_share_text3')
-
         # Go to where the link points
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url,
@@ -193,10 +189,6 @@ class SIBT(App):
 
         # Now, make an action
         SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
-
-        # GAY BINGO
-        if not user.is_admin():
-            bingo('sibt_share_text3')
 
         # "if it is a non-admin share on live server"
         if not user.is_admin() and not USING_DEV_SERVER:
@@ -345,7 +337,8 @@ class SIBTInstance(Model):
         url cannot be ''.
         """
         if not (user and url):
-            logging.error('Must supply user and url to get_by_asker_for_url!')
+            logging.error('Must supply user and url to get_by_asker_for_url!',
+                          exc_info=True)
             return None
 
         data = memcache.get('%s-%s' % (user.uuid, url))
@@ -368,6 +361,11 @@ class SIBTInstance(Model):
                 .filter('is_live =', only_live)\
                 .filter('link =', link)\
                 .get()
+
+    @classmethod
+    def get_by_user(cls, user):
+        """Correct, the user field is called asker for SIBTInstances."""
+        return cls.all().filter('asker =', user).get()
 
     @staticmethod
     def get_by_uuid(uuid):
@@ -596,27 +594,27 @@ def get_products(**kwargs):
         products = [Product.get(uuid) for uuid in product_uuids]
         if products[0]:
             logging.debug("get products by product_uuids, got %r" % products)
-            return products
+            return filter(None, products)
 
     shopify_ids = req.get('shopify_ids', '').split(',')
     if shopify_ids and len(shopify_ids):
         products = [ProductShopify.get_by_shopify_id(id) for id in shopify_ids]
         if products[0]:
             logging.debug("get products by shopify_ids, got %r" % products)
-            return products
+            return filter(None, products)
 
     product_uuid = req.get('product_uuid', '')
     if product_uuid:
         products = [Product.get(product_uuid)]
         if products[0]:
             logging.debug("get products by product_uuid, got %r" % products)
-            return products
+            return filter(None, products)
 
     shopify_id = req.get('shopify_id', '')
     products = [ProductShopify.get_by_shopify_id(shopify_id)]
     if products[0]:
         logging.debug("get products by shopify_id, got %r" % products)
-        return products
+        return filter(None, products)
 
     page_url = req.get('page_url', '')
     if page_url:
@@ -624,13 +622,13 @@ def get_products(**kwargs):
         client = Client.get(client_uuid)
         products = [Product.get_or_fetch(page_url, client)]
         if products[0]:
-            return products
+            return filter(None, products)
 
         app_uuid = req.get('app_uuid', '')
         app = App.get(app_uuid)
         products = [Product.get_or_fetch(page_url, app.client)]
         if products[0]:
-            return products
+            return filter(None, products)
 
     return products
 
@@ -658,20 +656,25 @@ def get_instance_event(**kwargs):
     # take that, circularreferenciophobes!
     req = getattr(urihandler, 'request', None) or kwargs
 
+    instance = None
     link = None
     target = get_target_url(req.get('url', ''))
 
+    # stage 1: by uuid
     instance_uuid = req.get('instance_uuid')
     instance = SIBTInstance.get(instance_uuid)
     if instance:
         return (instance, 'SIBTShowingVote')
 
+    # stage 2: by user and page combo
     page_url = req.get('page_url', '')
     user = get_user(urihandler=urihandler)
-    instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+    if user and page_url:
+        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
     if instance:
         return (instance, 'SIBTShowingResults')
 
+    # stage 3: by willet code (not memcached)
     willet_code = req.get('willt_code')
     if willet_code:
         link = Link.get_by_code(willet_code)

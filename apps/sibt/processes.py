@@ -579,7 +579,7 @@ class SendFriendAsks(URIHandler):
             products = [product]
         elif not product:
             product = random.choice(products)
-        logging.debug('got product %r, products %r' % (product, products))
+        # logging.debug('got product %r, products %r' % (product, products))
 
         if not user:
             logging.error('failed to get user by uuid %s' % rget('user_uuid'))
@@ -894,7 +894,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
         return (False, 'wtf, no app?')
 
     # put back the UserAction that we skipped making
-    UserCreate.create(user, app)
+    # UserCreate.create(user, app)
 
     template_values = {'app': app,
                        'URL': URL,

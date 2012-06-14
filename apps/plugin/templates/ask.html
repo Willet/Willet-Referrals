@@ -37,12 +37,6 @@
                 .button > img {
                     width: 23px;
                     height: 23px;
-                    margin: 2.5px !important; /* override id > img selector */
-                }
-                .button .title {
-                    min-width: 150px !important; /* override id selector */
-                    margin-right: 8px;
-                    margin-left: 45px;
                 }
                 .button .subtitle {
                     display: none;
@@ -65,21 +59,19 @@
                         <div>Choose Friends To Ask For Advice</div>
                     </div>
                 {% endif %}
-                <div class="content narrow">
-                    <ul class="friends" id="friends">
-                        <!-- Friends appended when document ready -->
-                    </ul>
-                    <div class="holder" id="addFriend">
-                        <div class="grey_bar">
-                            <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
-                            Add Another Friend
-                        </div>
+                <ul class="friends" id="friends">
+                    <!-- Friends appended when document ready -->
+                </ul>
+                <div class="holder" id="addFriend">
+                    <div class="grey_bar">
+                        <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
+                        Add Another Friend
                     </div>
-                    <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
-                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                        <div class="title">Ask Chosen Friends</div>
-                        <div class="subtitle">Giving advice is fun</div>
-                    </div>
+                </div>
+                <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
                 </div>
             </div>
 
@@ -92,18 +84,16 @@
                         <div>Let Your Friends Know Who Is Asking</div>
                     </div>
                 {% endif %}
-                <div class="content narrow">
-                    <div class="center_col" style="margin-top: 35px;">
-                        <p class="centered">We will email you when a friend provides advice.</p>
-                    </div>
-                    <ul class="askers" id="askers">
-                        <!-- Asker appended when document ready -->
-                    </ul>
-                    <div id="askButton" class="button inactive corner">
-                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                        <div class="title">Ask Chosen Friends</div>
-                        <div class="subtitle">Giving advice is fun</div>
-                    </div>
+                <div class="center_col" style="margin-top: 35px;">
+                    <p class="centered">We will email you when a friend provides advice.</p>
+                </div>
+                <ul class="askers" id="askers">
+                    <!-- Asker appended when document ready -->
+                </ul>
+                <div id="askButton" class="button inactive corner">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
                 </div>
             </div>
 
@@ -906,17 +896,17 @@
         };
 
         var updateEmailAddress = function() {
-            var addr = asker.email;
+            var addr = asker.email,
+                name = asker.name || '';
 
             if (asker.email !== '') {
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
-                    data: { email : addr }/*,
-                    success: function (tr) {
-                        doPostMessage('close');
-                        window.close();
-                    }*/
+                    data: {
+                        'email': addr,
+                        'name': name
+                    }
                 });
             }
         };
@@ -972,6 +962,10 @@
             {% endif %}
         };
 
+        var refreshParentFrame = function () {
+            window.parent.location.reload();
+        };
+
         // Post to parent page that we are hosted in
         var doPostMessage = function(message) {
             var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
@@ -987,18 +981,27 @@
 
         // Open up the FB dialog. Does not do a FB connect with us.
         var postOnWall = function () {
-            startPartialInstance();
-
-            FB.ui({ method:  'feed',
+            try { // detect adblock
+                // startPartialInstance() ...
+                FB.ui({
+                    method:  'feed',
                     display: 'popup',
-                    link:    '{{share_url}}',
-                    picture: '{{product_images|first}}',
-                    name:    "{{product_title|escape}}",
-                    caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags|escape }}",
-                    redirect_uri: '{{fb_redirect}}' });
+                    link:    '{{ share_url }}',
+                    picture: '{{ product_images|first }}' || "{{ image }}",
+                    name:    "{{ product_title|escape }}" || "{{ title|escape }}",
+                    caption: '{{ store_domain }}',
+                    description: "{{ product_desc|striptags|escape }}" || $('#shareText').val(),
+                    redirect_uri: '{{ fb_redirect }}'
+                });
+            } catch (e) {
+                if ($) {  // if FB is lagging, then chances are $ is also lagging
+                    // disables the posting button.
+                    $('#postOnWall').unbind('click').addClass('inactive');
+                    $('#postOnWall .title').text('AdBlock detected!');
+                }
+            }
 
-            closeIframe( 'SIBTNoConnectFBDialog' );
+            storeAnalytics('SIBTNoConnectFBDialog');
         };
 
         // Add blank friend entry to Choose Friend's screen
@@ -1149,9 +1152,9 @@
             asker.email = $.cookie('asker_email');
 
             // this line will be "None" if user_name is None on the server!
-            {% if user_name %}asker.name = "{{user_name|escape}}"{% endif %}
-            {% if user_pic %}asker.pic = "{{user_pic|escape}}";{% endif %}
-            {% if user_email %}asker.email = "{{user_email|escape}}";{% endif %}
+            {% if user_name %}asker.name = "{{ user_name|escape }}"{% endif %}
+            {% if user_pic %}asker.pic = "{{ user_pic|escape }}";{% endif %}
+            {% if user_email %}asker.email = "{{ user_email|escape }}";{% endif %}
             if (asker.name || asker.pic || asker.email) {
                 asker.updateView();
             }
@@ -1203,6 +1206,18 @@
                         element.val(suggestion.full);
                     }
                 });
+            });
+
+            $('.asker .name').live('keyup', function () {
+                try {  // mask lengthy variable checks
+                    window.parent.$('.asker_name_target').text($(this).val());
+                } catch (e) {}
+            });
+
+            $('#shareText').keyup(function () {
+                try {  // mask lengthy variable checks
+                    window.parent.$('.sharing_message_target').text($('#shareText').val());
+                } catch (e) {}
             });
 
             // Add your js initialization code here!
