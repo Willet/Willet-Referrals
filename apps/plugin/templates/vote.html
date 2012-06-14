@@ -58,8 +58,6 @@
                     $('#' + page + '_page').css('opacity', '0')
                            .css('display', 'block')
                            .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
-
-                    event.preventDefault();
                 };
 
                 $('#window_location').val(window.location.href);
@@ -90,7 +88,8 @@
                         <div class="span-9 text-center">
                             <h2 style="margin-top: 25px;
                                        color: #fff;
-                                       text-shadow: 0 1px 0 #666;">
+                                       text-shadow: 0 1px 0 #666;
+                                       text-shadow: none\0/;">
                                 {% if new_instance %}
                                     You have created a vote!
                                     <br />
@@ -107,7 +106,7 @@
                             <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
                                     style="width: 600px;
                                            height: 224px;
-                                           box-shadow: 0px 3px 10px 0px #777 inset;
+                                           box-shadow: 0px 1px 5px 0px #777 inset;
                                            border-radius: 15px;"></iframe>
                         </div>
                     </div>
@@ -128,16 +127,27 @@
         </div>
 
         <div id="wrapper">
-            {% block screens %}{% endblock %}
+            {% if is_asker %}
+                <h2 class="text-center"
+                    style="font-style: italic;
+                           color: #666;
+                           margin: 21px auto 13px auto;
+                           padding: 10px;
+                           border: 1px dashed #CCC;
+                           width: 96%;
+                           background-color: #FAFAFA;">
+                    This is a preview of what your friends will see
+                </h2>
+            {% endif %}
             <div id="asker_bar">
                 <div class="mini-highlight blob-disabled">
                     <p>
                         <img class="profile_pic"
                                 src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
-                        <span class="fbName">{{ asker_name }}</span>
+                        <span class="fbName asker_name_target">{{ asker_name }}</span>
                         <br />
-                        <span class="fbPost">
-                            {{ sharing_message|escape|default:"I like this, but..." }}
+                        <span class="fbPost sharing_message_target">
+                            {{ sharing_message|escape|default:"I like this - what do you think?" }}
                         </span>
                     </p>
                     <div id="fb-root"></div>
@@ -173,12 +183,17 @@
 
                     {% if store_url %}
                         <p style="margin-top:24px;">
-                            <a href="{{ store_url }}">Continue Shopping</a>
+                            <a href="{{ store_url }}">See what else {{ client.name }} has to offer.</a>
                         </p>
                     {% endif %}
                 </div>
                 {% block right_screens %}{% endblock right_screens %}
             </div>
+            <p class="text-center" style="clear:both; padding-top: 24px;">
+                <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
+                on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
+            </p>
+            {% block screens %}{% endblock %}
         </div>
         <script type="text/javascript">
             {% block body_script %}{% endblock %}

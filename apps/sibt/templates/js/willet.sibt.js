@@ -181,11 +181,13 @@ _willet.sibt = (function (me) {
         }
 
         return me.showPopupWindow(
-                "{{URL}}{% url VoteDynamicLoader %}" +
-                // do not merge with metadata(): it escapes commas
-                "?products=" + me.getProductUUIDs().join(',') +
-                "&ids=" + shopify_ids.join(',') +
-                "&" + me.metadata()
+            "{{URL}}{% url VoteDynamicLoader %}" +
+            // do not merge with metadata(): it escapes commas
+            "?products=" + me.getProductUUIDs().join(',') +
+            // if instance exists, it will be shown, not made!
+            "&instance_uuid={{ instance.uuid }}" +
+            "&ids=" + shopify_ids.join(',') +
+            "&" + me.metadata()
         );
 
         // else if no products: do nothing
@@ -198,9 +200,9 @@ _willet.sibt = (function (me) {
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
             href: "{{URL}}/s/results.html?" +
-                    me.metadata({
-                        'refer_url': me.getCanonicalURL(window.location.href)
-                    })
+                me.metadata({  // force page_url to be the current location
+                    'page_url': me.getCanonicalURL(window.location.href)
+                })
         });
     };
 
@@ -345,7 +347,8 @@ _willet.sibt = (function (me) {
                     .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                     .appendTo(button)
                     .css('display', 'inline-block')
-                    .click(me.showResults);
+                    // .click(me.showResults);
+                    .click(me.showVote);
                 }
 
                 var $wbtn = $('#_willet_button_v3 .button');
@@ -450,7 +453,8 @@ _willet.sibt = (function (me) {
             .css({
                 'display': 'inline-block'
             })
-            .click(me.showResults);
+            // .click(me.showResults);
+            .click(me.showVote);
         }
     };
 
@@ -660,14 +664,14 @@ _willet.sibt = (function (me) {
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
-        me.hideBottomPopup(); // don't want it here now!
-        if (user.is_asker || instance.show_votes) {
-            // we are no longer showing results with the topbar.
-            me.showResults();
-        } else {
-            // me.showAsk(message);
-            me.showVote(message);
-        }
+        // previous behaviour shown here:
+        // me.hideBottomPopup(); // don't want it here now!
+        // if (user.is_asker || instance.show_votes) {
+        //     me.showResults();
+        // } else {
+        //     me.showAsk(message);
+        // }
+        me.showVote(message);
     };
 
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
