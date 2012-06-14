@@ -79,7 +79,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             logging.info("No shares have ever occured this period (or ever?)")
             Email.report_smart_buttons(email=email, items={}, networks={},
                                        shop_name=shop,
-                                       client_name=name)
+                                       client_name=name, id=app.uuid)
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
@@ -92,4 +92,26 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         Email.report_smart_buttons(email=email, items=top_items,
                                    networks=top_shares,
-                                   shop_name=shop, client_name=name)
+                                   shop_name=shop, client_name=name, id=app.uuid)
+
+class ButtonsShopifyUnsubscribe(URIHandler):
+    def get(self):
+        id = self.request.get("id")
+        template_values = {
+            'id': id
+        }
+        self.response.out.write(self.render_page('unsubscribe.html',
+                                                 template_values))
+
+    def post(self):
+        id = self.request.get("id")
+
+        app = ButtonsShopify.all().filter(" uuid = ", id)
+
+        if app:
+            app.unsubscribed = True
+
+        template_values = {}
+
+        self.response.out.write(self.render_page('unsubscribe.html',
+                                                 template_values))

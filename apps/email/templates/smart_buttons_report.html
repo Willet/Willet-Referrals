@@ -16,6 +16,11 @@
             <div style="font-size:110%; margin-left: 70px;">
                 {% include "smart_buttons_report_content.html" %}
             </div>
+            <div style="text-align: right; font-size: 9px;">
+                <a href="{{ willet_url }}{% url ButtonsShopifyUnsubscribe %}?id={{ id }}">
+                    Unsubscribe?
+                </a>
+            </div>
         </td>
     </tr>
 </table>
