@@ -27,12 +27,12 @@ urlpatterns = [
     (r'/admin/analytics/generate',      GenerateOlderHourPeriods),
     (r'/admin/analytics/rpc',           AnalyticsRPC),
     (r'/admin/analytics/(.*)/rpc',      AppAnalyticsRPC),
-    (r'/admin/ithinkiateacookie',       ClientSideMessage),
     (r'/admin/sibt_reset/',             SIBTReset),
     (r'/admin/updateStore',             UpdateStore),
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
     (r'/email/everyone',                EmailEveryone),
     (r'/email/someone',                 EmailSomeone),
+    (r'/email/clientsidemessage',       ClientSideMessage),
     (r'/admin/db_integrity_check',      DBIntegrityCheck),
     (r'/admin/clean_old_actions',       CleanOldActions)
 ]

@@ -216,7 +216,7 @@ class Model(db.Model):
             logging.debug('%s.get via %s --> %r' % (cls.__name__, method, obj))
             obj._memcache() # update memcache
         else:
-            logging.warn('model.get DB miss for %s' % identifier)
+            logging.warn('%s.get DB miss for %s' % (cls.__name__, identifier))
 
         return obj
 

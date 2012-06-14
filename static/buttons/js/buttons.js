@@ -137,7 +137,7 @@ _willet.util = {
             + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
-        _willetImage.src =  window.location.protocol + "//social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.src =  window.location.protocol + "//social-referral.appspot.com/email/clientsidemessage?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage);
