@@ -30,9 +30,9 @@ class Action(Model, polymodel.PolyModel):
     # Length of time a compound action had persisted prior to its creation
     duration = db.FloatProperty(default = 0.0)
     # Person who did the action
-    user = MemcacheReferenceProperty(db.Model, collection_name = 'user_actions')
+    user = MemcacheReferenceProperty(db.Model, collection_name='user_actions')
     # True iff this Action's User is an admin
-    is_admin = db.BooleanProperty(default = False)
+    is_admin = db.BooleanProperty(default=False)
     # The App that this Action is for
     app_ = db.ReferenceProperty(db.Model, collection_name = 'app_actions')
 

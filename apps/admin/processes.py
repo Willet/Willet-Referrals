@@ -458,7 +458,7 @@ class DBIntegrityCheck(URIHandler):
         if not checks:
             logging.debug('no valid checks to run (%r); quitting' % checks)
             self.response.out.write("checks none valid; "
-                                     "allowed checks are:\n- %s\n" % '\n-'.join(allowed_checks))
+                                    "allowed checks are:\n- %s\n" % '\n-'.join(allowed_checks))
             return
 
         for check in checks:

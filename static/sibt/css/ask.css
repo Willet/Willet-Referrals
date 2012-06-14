@@ -1,10 +1,9 @@
 /* ---------------------   DEFAULTS   ------------------------------- */
 html {
-    background-color: rgba(255, 255, 255, 0.1); /* for embedded */
+    background-color: rgba(255, 255, 255, 0.2); /* for embedded */
 }
 
 html, body {
-    /*background-color: white;*/
     color: #383f41;
     overflow: hidden;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -43,8 +42,8 @@ p {
     width: 100%;
 }
 .content.narrow {
-    width: 600px;
-    margin: 0 auto;
+    width: 90%;
+    margin: 0 5%;
 }
 .left {
     float: left;
@@ -137,56 +136,81 @@ p {
 .center_col {
         margin: 40px 20% 0 20%;
 }
-.button {
-    height: 50px;
-    padding: 6px;
-    background-color: #C1F0F5;
-    text-align: center;
-    border: 1px solid #999;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -pie-background: linear-gradient(top, #D9F7FA, #C1F0F5);
-    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
-    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    behavior: url(/static/js/PIE.htc);
-}
-.button.inactive {
-    background-color: #EEE;
-    background-image: -moz-linear-gradient(top, #F7F7F7, #EEE);
-    background-image: -webkit-linear-gradient(top, #F7F7F7, #EEE);
-    background-image: -ms-linear-gradient(top, #F7F7F7, #EEE);
-    -pie-background: linear-gradient(top, #F7F7F7, #EEE);
-    background-image: linear-gradient(top, #F7F7F7, #EEE);
-    behavior: url(/static/js/PIE.htc);
-}
-.button.close {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    margin-left: -75px;
-    width: 150px;
-}
-.button:hover {
+
+button, .button {
+    color: #ffffff !important;
     cursor: pointer;
-    cursor: hand;
-    -moz-box-shadow: 0 0 4px 1px #BBB;
-    -webkit-box-shadow: 0 0 4px 1px #BBB;
-    box-shadow: 0 0 4px 1px #BBB;
-    behavior: url(/static/js/PIE.htc);
+    -moz-box-shadow:inset 0px 1px 1px 0px #f5978e;
+    -webkit-box-shadow:inset 0px 1px 1px 0px #f5978e;
+    box-shadow:inset 0px 1px 1px 0px #f5978e;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #cc5047), color-stop(1, #9e453d) );
+    background:-moz-linear-gradient( center top, #cc5047 5%, #9e453d 100% );
+    -ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr='#cc5047', endColorstr='#9e453d')";
+    background-color:#cc5047;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #996865;
+    display:inline-block;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 15px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #666;
 }
-.button.inactive:hover {
-    cursor: auto;
-    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    behavior: url(/static/js/PIE.htc);
+button:hover, .button:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #9e453d), color-stop(1, #cc5047) );
+    background:-moz-linear-gradient( center top, #9e453d 5%, #cc5047 100% );
+    -ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr='#9e453d', endColorstr='#cc5047')";
+    background-color:#9e453d;
 }
+
+button:active, .button:active {
+    position:relative;
+    top:1px;
+}
+
+button.grey, .button.grey,
+button.inactive, .button.inactive {
+    -webkit-box-shadow: 0 1px 2px #999;
+    -moz-box-shadow: 0 1px 2px #999;
+    box-shadow: 0 1px 2px #999;
+    color: #FFF;
+    border-color: #AAA #999 #777;
+    background: #DCDCDC;
+    background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(167,167,167,1)));
+    background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -o-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 )";
+    background: linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+}
+button.grey:hover, .button.grey:hover {
+    /* button.inactive does not have a hover state */
+    background-color: #939393;
+    background: -moz-linear-gradient(top, rgba(216,216,216,1) 0%, rgba(147,147,147,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(216,216,216,1)), color-stop(100%,rgba(147,147,147,1)));
+    background: -webkit-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -o-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -ms-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient( startColorstr='#d8d8d8', endColorstr='#939393',GradientType=0 )";
+    background: linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+}
+
+.button img,
+button img {
+    float: left;
+}
+
+.button.close {
+    display: block;
+    margin: 0 auto;
+    padding: 5px 14px;
+    width: 45px;
+}
+
 .button>img {
     float: left;
     margin: 5px 10px 5px 10px;
@@ -195,13 +219,12 @@ p {
 }
 .button>.title, .button>.subtitle {
     white-space: nowrap;
-    margin-left: 60px;
-    min-width: 170px;
+    color: #ffffff !important;
 }
 .button>.title {
     padding-top: 3px;
-    font-size: 18px;
     line-height: 28px;
+    color: #ffffff !important;
 }
 .button>.subtitle {
     font-size: 12px;
@@ -210,7 +233,6 @@ p {
 .button>.simpletitle {
     white-space: nowrap;
     font-size: 20px;
-    min-width: 100px;
     line-height: 32px;
 }
 
@@ -304,10 +326,10 @@ p {
 .options {
     position: absolute;
     left: 0;
-    bottom: 8px;
-    margin: 0;
+    bottom: 30px;
+    padding: 0 5%;
     /*height: 100px;*/
-    width: 100%;
+    width: 90%;
     text-align: center;
     z-index: 100; /* PIE shows in IE8 */
 }
@@ -324,7 +346,7 @@ p {
     color: #888;
 }
 .options .or {
-    width: 100px;
+    width: 174px;
     *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {
@@ -351,10 +373,6 @@ p {
 #postOnWall>img {
     width: 36px;
 }
-#postOnWall>.title, #postOnWall>.subtitle,
-#askButton>.title, #askButton>.subtitle {
-    min-width: 150px;
-}
 
 /* ---------------------   Choose Friends  ----------------------- */
 
@@ -374,6 +392,7 @@ ul.friends li, ul.askers li {
     display: block;
     height: 80px;
     margin-right: 10px;
+    margin-right: 0\0/; /* IE 8, 9 hack */
 }
 ul.friends li {
     border-bottom: 1px solid #BBB;
@@ -481,7 +500,7 @@ ul.friends li>div, ul.askers li>div {
 .fb_connect {
     width: 220px;
     height: 30px;
-    background-image: url('/static/plugin/imgs/fb_connect.png');
+    background-image: url('/static/imgs/fb_connect.png');
 
 }
 .fb_connect:hover {
@@ -520,11 +539,10 @@ li.ui-menu-item:hover {
     background-color: #E0F0F8;
 }
 #chosenButton>img, #askButton>img {
-    margin: 5px;
+    margin: 5px 5px 5px 0;
 }
 #chosenButton>.title, #chosenButton>.subtitle,
 #askButton>.title, #askButton>.subtitle {
-    margin-left: 50px;
     min-width: 185px;
 }
 

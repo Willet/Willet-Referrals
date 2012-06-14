@@ -43,7 +43,7 @@ class ShowProfilePage(URIHandler):
                 'total_conversions': total_conversions,
                 'total_referrals': links.count(),
                 'total_profit': total_profit,
-                #'results': results 
+                #'results': results
             }
         else:
             template_values = {
@@ -53,7 +53,7 @@ class ShowProfilePage(URIHandler):
             }
         self.response.out.write(
             self.render_page(
-                'profile.html', 
+                'profile.html',
                 template_values
             )
         )
@@ -86,7 +86,7 @@ class UserCookieSafariHack(URIHandler):
         self.get()
 
     def get(self):
-        user = User.get(self.request.get('user_uuid'))   
+        user = User.get(self.request.get('user_uuid'))
         if user:
             set_user_cookie(self, user.uuid)
         self.response.headers.add_header('P3P', P3P_HEADER)
