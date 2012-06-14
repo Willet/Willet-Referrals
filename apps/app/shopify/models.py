@@ -190,13 +190,19 @@ class AppShopify(Model):
             try:
                 data = response_actions.get(int(resp.status))(content)
                 error = (True if data.get("errors") else False)
-            except (TypeError, ValueError):  # Key Didn't exist,
-            # or couldn't parse JSON
+            except (TypeError, ValueError):
+                # Key Didn't exist, or couldn't parse JSON
                 error = True
         else:
             error = True
 
         if not error or suppress_errors:
+            if suppress_errors:
+                logging.error("API Request Failed: %s %s\n" \
+                              "URL: %s\n" \
+                              "PAYLOAD: %s\n" \
+                              "CONTENT: %s\n" \
+                              % (resp.status, resp.reason, url, payload, content))
             return data
         else:
             Email.emailDevTeam(

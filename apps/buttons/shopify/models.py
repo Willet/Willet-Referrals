@@ -239,7 +239,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     "event": "onload"
                 }
         }]
-        self.queue_script_tags(script_tags)
+        self.queue_script_tags(script_tags=script_tags)
 
         self.queue_assets(assets=[{
             'asset': {
@@ -358,9 +358,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
         try:
             result = self._call_Shopify_API("GET", "themes.json")
-        except ShopifyAPIError:
-            pass # User is unbilled
-        else:
+
             theme_id = None
             for theme in result['themes']:
                 if 'role' in theme and 'id' in theme:
@@ -373,21 +371,20 @@ class ButtonsShopify(Buttons, AppShopify):
                 "theme_id": theme_id
             })
 
-            try:
-                result = self._call_Shopify_API("GET",
-                                       "themes/%s/assets.json?%s" %
-                                       (theme_id, query_params))
-            except ShopifyAPIError:
-                pass # Either user is unbilled, or doesn't have the snippet.
-            else:
-                try:
-                    if result.get("asset") and result["asset"].get("value"):
-                        value           = result["asset"]["value"]
-                        _, var_value, _ = value.split("/*----*/")
-                        _, json_str     = var_value.split("=")
-                        prefs           = json.loads(json_str.strip().strip(";"))
-                except ValueError:
-                    pass  # TODO: Problem parsing the JSON
+            result = self._call_Shopify_API("GET",
+                                   "themes/%s/assets.json?%s" %
+                                   (theme_id, query_params))
+
+            if result.get("asset") and result["asset"].get("value"):
+                value           = result["asset"]["value"]
+                _, var_value, _ = value.split("/*----*/")
+                _, json_str     = var_value.split("=")
+                prefs           = json.loads(json_str.strip().strip(";"))
+        except ShopifyAPIError:
+            pass  # Either user is unbilled, or doesn't have the snippet.
+        except ValueError:
+            pass  # TODO: Problem parsing the JSON
+
         return prefs
 
     def update_social_accounts(self, social_accounts):
@@ -400,45 +397,40 @@ class ButtonsShopify(Buttons, AppShopify):
             results = self._call_Shopify_API("GET", "script_tags.json")
         except ShopifyAPIError:
             logging.error('Error retrieving script tags:', exc_info=True)
-            pass  # Either user is unbilled, or doesn't have the snippet.
-        else:
-            if not results.get("script_tags"):
-                logging.warning("No script tags, can't update social accounts")
-                # No installed script tags?
-                return
-            
-            # Find confirmation.js script
-            tag = None
-            for script_tag in results.get("script_tags"):
-                logging.info("script_tag = %r" % script_tag)
-                if "confirmation.js" in script_tag.get("src", ""):
-                    tag = script_tag
-                    break
+            return  # Either user is unbilled, or doesn't have the snippet.
 
-            # Build query string
-            query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )
-            query_params.update({ 'app_uuid': self.uuid })
-            qs = urlencode(query_params)
+        if not results.get("script_tags"):
+            logging.warning("No script tags, can't update social accounts")
+            # No installed script tags?
+            return
 
+        # Find confirmation.js script
+        tag = None
+        for script_tag in results.get("script_tags"):
+            logging.info("script_tag = %r" % script_tag)
+            if "confirmation.js" in script_tag.get("src", ""):
+                tag = script_tag
+                break
+
+        # Build query string
+        query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )
+        query_params.update({ 'app_uuid': self.uuid })
+        qs = urlencode(query_params)
+
+        try:
             if tag:
                 tag["src"] = "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
-                try:
-                    self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
-                                           payload={"script_tag": tag})
-                except ShopifyAPIError:
-                    logging.error('Error saving social accounts:', exc_info=True)
+                self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"], payload={"script_tag": tag})
+
             else:
-                payload = {
-                        'script_tag': {
-                            "event": "onload",
-                            "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
-                        }
-                }
-                try:
-                    self._call_Shopify_API("POST", "script_tags.json",
-                                            payload=payload )
-                except ShopifyAPIError:
-                    logging.error('Error saving social accounts:', exc_info=True)
+                self._call_Shopify_API("POST", "script_tags.json", payload={
+                    'script_tag': {
+                        "event": "onload",
+                        "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                    }
+                })
+        except ShopifyAPIError:
+            logging.error('Error saving social accounts:', exc_info=True)
 
     def get_social_accounts(self):
         """Get social_accounts, provided that they exist."""
@@ -452,7 +444,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     if 'confirmation.js' in src:
                         # Return parsed query string
                         # NOTE: parse_qs moved from cgi module to urlparse module in Python 2.6
-                        return dict( (key,value) for key,value in parse_qsl( urlparse(src).query ) )
+                        return dict(parse_qsl(urlparse(src).query))
 
         except ShopifyAPIError:
             logging.error('Error retrieving social accounts:', exc_info=True)

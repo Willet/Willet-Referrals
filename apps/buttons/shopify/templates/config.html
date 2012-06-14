@@ -602,13 +602,13 @@
         $("#max-buttons").change(update);
 
         $("[name=twitter_username]").keyup(function(event) {
-            confirmUpdate('twitter', event)
+            confirmUpdate('twitter', event);
         })
         $("[name=facebook_username]").keyup(function(event) {
-            confirmUpdate('facebook', event)
+            confirmUpdate('facebook', event);
         })
         $("[name=pinterest_username]").keyup(function(event) {
-            confirmUpdate('pinterest', event)
+            confirmUpdate('pinterest', event);
         })
 
         // Enable tabbing
@@ -798,8 +798,7 @@
                                  class="help">
                         </span>
                         <textarea id="sharing-message" name="sharing_message"
-                               type="text" value="{{ sharing_message }}"
-                               class="textbox"></textarea>
+                               class="textbox">{{ sharing_message }}</textarea>
                     </div>
                 </div>
                 <div class="submit">
