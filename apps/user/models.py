@@ -130,8 +130,13 @@ class User(db.Expando):
         logging.debug("PUTTING %s" % self.__class__.__name__)
         key = self.get_key()
 
-        self.hardPut() # Will validate the instance.
-        logging.debug("user has been hardput().")
+        try:
+            self._validate_self()
+        except NotImplementedError, e:
+            logging.error(e)
+        db.put(self)
+
+        logging.debug("user has been put().")
 
         # Memcache *after* model is given datastore key
         if self.key():
@@ -178,14 +183,6 @@ class User(db.Expando):
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
         logging.info('put_later: %s' % self.uuid)
-
-    def hardPut(self):
-        logging.debug("PUTTING %s" % self.__class__.__name__)
-        try:
-            self._validate_self()
-        except NotImplementedError, e:
-            logging.error(e)
-        db.put(self)
 
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
