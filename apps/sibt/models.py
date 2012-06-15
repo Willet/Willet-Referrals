@@ -28,7 +28,8 @@ from apps.user.models import User
 from apps.vote.models import VoteCounter
 
 from util.consts import USING_DEV_SERVER
-from util.helpers import generate_uuid, get_target_url
+from util.helpers import generate_uuid, get_target_url, \
+                         unhashable_object_unique_filter
 from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -590,8 +591,8 @@ def get_products(**kwargs):
 
     default: []
 
-    These operations are NOT additive, i.e. it is not possible to use this
-    type of query: product_uuid=123, shopify_id=456 -> [Product1, Product2]
+    These operations are additive, i.e.
+        product_uuid=123, shopify_id=456 -> [Product1, Product2]
 
     """
     products = []
@@ -604,46 +605,36 @@ def get_products(**kwargs):
     product_uuids = (req.get('products', '') or \
                      req.get('product_uuids', '')).split(',')
     if product_uuids and len(product_uuids):
-        products = [Product.get(uuid) for uuid in product_uuids]
-        if products[0]:
-            logging.debug("get products by product_uuids, got %r" % products)
-            return filter(None, products)
+        products.extend([Product.get(uuid) for uuid in product_uuids])
 
     shopify_ids = req.get('shopify_ids', '').split(',')
     if shopify_ids and len(shopify_ids):
-        products = [ProductShopify.get_by_shopify_id(id) for id in shopify_ids]
-        if products[0]:
-            logging.debug("get products by shopify_ids, got %r" % products)
-            return filter(None, products)
+        products.extend([ProductShopify.get_by_shopify_id(id) for id in shopify_ids])
 
     product_uuid = req.get('product_uuid', '')
     if product_uuid:
-        products = [Product.get(product_uuid)]
-        if products[0]:
-            logging.debug("get products by product_uuid, got %r" % products)
-            return filter(None, products)
+        products.extend([Product.get(product_uuid)])
 
     shopify_id = req.get('shopify_id', '')
-    products = [ProductShopify.get_by_shopify_id(shopify_id)]
-    if products[0]:
-        logging.debug("get products by shopify_id, got %r" % products)
-        return filter(None, products)
+    products.extend([ProductShopify.get_by_shopify_id(shopify_id)])
 
     page_url = req.get('page_url', '')
     if page_url:
         client_uuid = req.get('client_uuid', '')
         client = Client.get(client_uuid)
-        products = [Product.get_or_fetch(page_url, client)]
-        if products[0]:
-            return filter(None, products)
+        if client:
+            products.extend([Product.get_or_fetch(page_url, client)])
 
         app_uuid = req.get('app_uuid', '')
         app = App.get(app_uuid)
-        products = [Product.get_or_fetch(page_url, app.client)]
-        if products[0]:
-            return filter(None, products)
+        if app:
+            products.extend([Product.get_or_fetch(page_url, app.client)])
 
-    return products
+    unique_products = unhashable_object_unique_filter(filter(None, products),
+                                                      attr='uuid')
+    logging.debug('unique_products = %r' % unique_products)
+
+    return unique_products
 
 
 def get_instance_event(**kwargs):

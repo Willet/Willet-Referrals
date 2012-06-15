@@ -333,6 +333,8 @@ class Email():
             }
         )
 
+        logging.error('Going to send a SIBT email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -379,6 +381,8 @@ class Email():
                 'buy_it': buy_it,
                 'buy_it_percentage': buy_it_percentage})
 
+        logging.error('Going to send a SIBT email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -451,6 +455,8 @@ class Email():
                                 'client_name': client.name,
                                 'client_domain': client.domain})
 
+        logging.error('Going to send a WOSIB email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
