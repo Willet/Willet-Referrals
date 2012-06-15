@@ -197,7 +197,7 @@ class AppShopify(Model):
             error = True
 
         if not error or suppress_errors:
-            if suppress_errors:
+            if error and suppress_errors:
                 logging.error("API Request Failed: %s %s\n" \
                               "URL: %s\n" \
                               "PAYLOAD: %s\n" \
