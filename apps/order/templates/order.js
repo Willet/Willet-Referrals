@@ -36,7 +36,7 @@
 
             var el = document.createElement('img');
             var _body = document.getElementsByTagName('body')[0];
-            el.setAttribute('src', window.location.protocol + '//rf.rs/email/clientsidemessage?script=' + script + '&error=' + error + '&st=' + message);
+            el.setAttribute('src', window.location.protocol + '//social-referral.appspot.com/email/clientsidemessage?script=' + script + '&error=' + error + '&st=' + message);
             _body.appendChild(el);
         }
     };
