@@ -316,7 +316,11 @@ class Email():
         name = instance.asker.get_full_name() or "Savvy Shopper"
 
         product_url = "%s#open=1" % instance.url  # full product link
-        product_img = instance.product_img
+
+        try:
+            product_img = instance.products[0].images[0]
+        except:
+            product_img = instance.product_img
 
         logging.info("product_url, product_img = %r" % [product_url,
                                                         product_img])
