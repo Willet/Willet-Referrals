@@ -21,6 +21,9 @@ class ButtonsShopifyEmailReports(URIHandler):
         apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
 
         for app in apps:
+            if hasattr(app, "unsubscribed") and app.unsubscribed:
+                continue  # don't email unsubscribed people
+
             logging.info("Setting up taskqueue for %s" % app.client.name)
             params = {
                 "store": app.store_url,
@@ -76,7 +79,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             logging.info("No shares have ever occured this period (or ever?)")
             Email.report_smart_buttons(email=email, items={}, networks={},
                                        shop_name=shop,
-                                       client_name=name)
+                                       client_name=name, uuid=app.uuid)
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
@@ -89,4 +92,36 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         Email.report_smart_buttons(email=email, items=top_items,
                                    networks=top_shares,
-                                   shop_name=shop, client_name=name)
+                                   shop_name=shop, client_name=name, id=app.uuid)
+
+class ButtonsShopifyUnsubscribe(URIHandler):
+    def get(self):
+        uuid = self.request.get("uuid")
+        app = ButtonsShopify.all().filter(" uuid = ", uuid).get()
+
+        unsubscribed = True
+        if app:
+            unsubscribed = app.unsubscribed
+
+        template_values = self.response.out.write(self.render_page('unsubscribe.html', {
+            'uuid': uuid,
+            'unsubscribed': unsubscribed,
+            'app_exists': True if app else False
+        }))
+
+    def post(self):
+        uuid = self.request.get("uuid")
+
+        app = ButtonsShopify.all().filter(" uuid = ", uuid).get()
+
+        if app:
+            app.unsubscribed = True
+            app.put()
+
+        template_values = {
+            "unsubscribed": True,
+            'app_exists': True if app else False
+        }
+
+        self.response.out.write(self.render_page('unsubscribe.html',
+                                                 template_values))
