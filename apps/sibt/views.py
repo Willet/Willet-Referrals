@@ -323,6 +323,9 @@ class VoteDynamicLoader(URIHandler):
                                         url('VoteDynamicLoader', qs={
                                             'instance_uuid': instance_uuid
                                         })))
+            else:
+                self.response.out.write("No products?")
+            return
 
         sharing_message = instance.sharing_message
 

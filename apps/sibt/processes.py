@@ -162,7 +162,7 @@ class DoVote(URIHandler):
 
         user_vote_count = instance.get_votes_count(user=user)
         if user_vote_count >= 1:  # already voted
-            self.error(429)  # too many requests (not in the intended sense)
+            self.error(403)  # "you can't vote again"
             return
 
         # which = response, in either the product uuid or yes/no
