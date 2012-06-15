@@ -119,7 +119,7 @@
         ];
 
         // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-        if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
+        if (!w.jQuery || w.jQuery.fn.jquery < "1.4.4") {
             scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
         }
 

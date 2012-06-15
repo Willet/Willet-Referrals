@@ -83,6 +83,11 @@ _willet.sibt = (function (me) {
         // this function may be called only once. use reInit afterwards
         // to update the UI.
 
+        if (!jQueryObject) {
+            wm.fire('error', 'init() must be called with jQuery as param1.');
+            return;
+        }
+
         $ = jQueryObject;  // throw $ into module scope
         wm.fire('log', 'Let the (SIBT) games begin!');
 
@@ -162,7 +167,7 @@ _willet.sibt = (function (me) {
             href: "{{URL}}{% url AskDynamicLoader %}" +
                 // do not merge with metadata(): it escapes commas
                 "?products=" + me.getProductUUIDs().join(',') +
-                "&ids=" + shopify_ids.join(',') +
+                "&shopify_ids=" + shopify_ids.join(',') +
                 "&" + me.metadata()
         });
 
@@ -186,7 +191,7 @@ _willet.sibt = (function (me) {
             "?products=" + me.getProductUUIDs().join(',') +
             // if instance exists, it will be shown, not made!
             "&instance_uuid={{ instance.uuid }}" +
-            "&ids=" + shopify_ids.join(',') +
+            "&shopify_ids=" + shopify_ids.join(',') +
             "&" + me.metadata()
         );
 
@@ -507,14 +512,18 @@ _willet.sibt = (function (me) {
         var nMaxDim = 0;
         var largest_image = '';
         $(within).find('img').each(function () {
-            var $this = $(this),
-                $prop = $this.prop || $this.attr;  // low-level jQuery fallback
-            if (this && $this) {
-                var nDim = parseFloat($this.width()) * parseFloat($this.height());
-                if (nDim > nMaxDim) {
-                    largest_image = $prop('src');
-                    nMaxDim = nDim;
+            try {
+                var $this = $(this),
+                    $prop = $this.prop || $this.attr;  // low-level jQuery fallback
+                if (this && $this && $prop) {
+                    var nDim = parseFloat($this.width()) * parseFloat($this.height());
+                    if (nDim > nMaxDim) {
+                        largest_image = this.src || '';
+                        nMaxDim = nDim;
+                    }
                 }
+            } catch (err) {  // is DOM traversal being stupid today?
+                wm.fire('log', "Yes, DOM traversal IS being stupid today.");
             }
         });
         return largest_image;
