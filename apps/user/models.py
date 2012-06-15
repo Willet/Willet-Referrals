@@ -499,7 +499,7 @@ class User(db.Expando):
                         getattr(self, 'fb_identity')
                     )
             else:
-                return 'https://rf.rs/static/imgs/happy_face.png'
+                return 'https://social-referral.appspot.com/static/imgs/happy_face.png'
 
         return getattr(self, attr_name, default)
 
