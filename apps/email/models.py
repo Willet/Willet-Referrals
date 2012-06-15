@@ -327,12 +327,15 @@ class Email():
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
                 'product_url'   : product_url,
+                'vote_url'      : instance.link.get_willt_url(),
                 'product_img'   : product_img,
                 'client_name'   : client.name,
                 'client_domain' : client.domain
             }
         )
 
+        logging.error('Going to send a SIBT email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -373,12 +376,15 @@ class Email():
             Email.template_path('sibt_voteCompletion.html', client), {
                 'name': name,
                 'product_url': getattr(product, 'resource_url', ''),
+                'vote_url'   : instance.link.get_willt_url(),
                 'product_img': product.images[0],
                 'yesses': yesses,
                 'noes': noes,
                 'buy_it': buy_it,
                 'buy_it_percentage': buy_it_percentage})
 
+        logging.error('Going to send a SIBT email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -444,13 +450,17 @@ class Email():
         cart_url = "%s#open=1" % instance.link.origin_domain
 
         body = template.render(Email.template_path('wosib_voteNotification.html',
-                                                   client),
-                               {'name': name.title(),
-                                'cart_url': cart_url,
-                                'product': product,
-                                'client_name': client.name,
-                                'client_domain': client.domain})
+                                                   client), {
+                'name': name.title(),
+                'cart_url': cart_url,
+                'product': product,
+                'vote_url': instance.link.get_willt_url(),
+                'client_name': client.name,
+                'client_domain': client.domain
+            })
 
+        logging.error('Going to send a WOSIB email... '
+                      '(not actually an error, but worth looking at)')
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,

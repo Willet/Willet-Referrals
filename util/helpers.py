@@ -357,3 +357,27 @@ def create_hash(*args):
         keys.append (SALT)
     key = "".join(list(('%s$' % str(k)) for k in keys))
     return hashlib.sha224(key).hexdigest()
+
+def unhashable_object_unique_filter(objects, attr='uuid'):
+    """Supply objects, returns objects whose attributes reflect uniqueness.
+
+    attr should be a unique field, and MUST be present in all objects.
+
+    Example:
+        Model1.uuid = 1
+        Model2.uuid = 2
+        Model3.uuid = 3
+        Model4.uuid = 3
+        unhashable_object_unique_filter([Model1, Model2, Model3, Model3])
+        => [Model1, Model2, Model3].
+    """
+    attrs = []
+    filtered_objs = []
+
+    for obj in objects:
+        if obj:  # rid None
+            if not getattr(obj, attr) in attrs:
+                filtered_objs.append(obj)
+                attrs.append(getattr(obj, attr))
+
+    return filtered_objs
