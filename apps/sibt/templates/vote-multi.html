@@ -38,10 +38,12 @@
                         class="product-image center" />
                     <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
                     <p style="text-align: center;">
-                        <button class="button vote"
-                                data-uuid="{{ product.uuid }}">
-                            Vote
-                        </button>
+                        {% if not user_voted %}
+                            <button class="button vote"
+                                    data-uuid="{{ product.uuid }}">
+                                Vote
+                            </button>
+                        {% endif %}
                     </p>
                     <div id="success_screen">
                         <h2>Thank you for helping {{asker_name}}!</h2>
@@ -62,10 +64,12 @@
                                 class="product-image center"/>
                         </a>
                         <p style="text-align: center;">
-                            <button class="button vote"
-                                    data-uuid="{{ product.uuid }}">
-                                Vote
-                            </button>
+                            {% if not user_voted %}
+                                <button class="button vote"
+                                        data-uuid="{{ product.uuid }}">
+                                    Vote
+                                </button>
+                            {% endif %}
                         </p>
                     </div>
                     <div style="float:right; width: 400px;">
@@ -99,42 +103,44 @@
             });
         };
 
-        var vote = function (ctl) {
-            var product_uuid = $(ctl).data('uuid');
-            if (product_uuid) {
-                var payload = {
-                    "user_uuid" : "{{ user_uuid }}",
-                    "instance_uuid" : "{{ instance_uuid }}",
-                    "product_uuid" : product_uuid
-                };
-                $.ajax({
-                    url: "{{ URL }}{% url DoVote %}",
-                    type: 'post',
-                    data: payload,
-                    success: function () {
-                        {% if discount_enabled %}
-                            {# discount_enabled is undefined on purpose #}
-                            // discount code thing is temporarily "discouraged"
-                            $(".choice, #product_screen").hide();
-                            $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
-                            getDiscount();
-                        {% else %}
-                            $("#success_pending").hide();
-                            $("#success_screen").show();
-                        {% endif %}
-                        $(ctl).text('Voted').attr('disabled', 'disabled');
-                    },
-                    error: function () {
-                        $("#error_message").show();
-                    }
-                });
-            }
-        };
+        {% if not user_voted %}
+            var vote = function (ctl) {
+                var product_uuid = $(ctl).data('uuid');
+                if (product_uuid) {
+                    var payload = {
+                        "user_uuid" : "{{ user_uuid }}",
+                        "instance_uuid" : "{{ instance_uuid }}",
+                        "product_uuid" : product_uuid
+                    };
+                    $.ajax({
+                        url: "{{ URL }}{% url DoVote %}",
+                        type: 'post',
+                        data: payload,
+                        success: function () {
+                            {% if discount_enabled %}
+                                {# discount_enabled is undefined on purpose #}
+                                // discount code thing is temporarily "discouraged"
+                                $(".choice, #product_screen").hide();
+                                $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+                                getDiscount();
+                            {% else %}
+                                $("#success_pending").hide();
+                                $("#success_screen").show();
+                            {% endif %}
+                            $(ctl).text('Voted').attr('disabled', 'disabled');
+                        },
+                        error: function () {
+                            $("#error_message").show();
+                        }
+                    });
+                }
+            };
 
-        $('.vote').click(function (event) {
-            event.stopPropagation();
-            vote(event.target || event.currentTarget);
-        });
+            $('.vote').click(function (event) {
+                event.stopPropagation();
+                vote(event.target || event.currentTarget);
+            });
+        {% endif %}
 
 <!--                // wosib mode view product's info                       -->
         $('.info_launch').click(function () {
