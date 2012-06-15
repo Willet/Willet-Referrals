@@ -3,7 +3,8 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-from datetime import datetime
+import datetime
+import logging
 import random
 import re
 import hashlib
@@ -11,25 +12,21 @@ import urlparse
 
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
-from google.appengine.ext import webapp, db
+from google.appengine.ext import db
 
+from apps.action.models import Action
 from apps.app.models import App
-from apps.action.models import UserAction
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
-from apps.product.shopify.models import ProductShopify
 from apps.product.models import Product
-from apps.sibt.actions import *
+from apps.sibt.actions import SIBTShowAction, SIBTUserAction, SIBTVoteAction
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserCreate, UserIsFBLoggedIn
 from apps.user.models import User
-from apps.wosib.actions import *
 
-from util.consts import *
+from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
-from util.helpers import remove_html_tags
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -139,7 +136,7 @@ class StartSIBTInstance(URIHandler):
                                            products=[])
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
-        except Exception,e:
+        except Exception, e:
             response['data']['message'] = str(e)
             logging.error('we had an error creating the instance', exc_info=True)
 
@@ -158,10 +155,15 @@ class DoVote(URIHandler):
         app = instance.app_
         user_uuid = self.request.get('user_uuid')
         if user_uuid:
-            user = User.get (user_uuid)
+            user = User.get(user_uuid)
             #user = User.all().filter('uuid =', user_uuid).get()
         if not user:
-            user = User.get_or_create_by_cookie (self, app)
+            user = User.get_or_create_by_cookie(self, app)
+
+        user_vote_count = instance.get_votes_count(user=user)
+        if user_vote_count >= 1:  # already voted
+            self.error(429)  # too many requests (not in the intended sense)
+            return
 
         # which = response, in either the product uuid or yes/no
         which = self.request.get('product_uuid') or \
@@ -273,7 +275,7 @@ class TrackSIBTShowAction(URIHandler):
                                          url=url,
                                          app=app,
                                          duration=duration)
-        except Exception,e:
+        except Exception, e:
             logging.debug('Could not create Action class %s: %s' % (event, e))
         else:
             logging.info('tracked action: %s' % action)
@@ -330,7 +332,7 @@ class TrackSIBTUserAction(URIHandler):
                     app=app,
                     duration=duration
             )
-        except Exception,e:
+        except Exception, e:
             logging.warn('(this is not serious) could not create class: %s' % e)
             try:
                 action = SIBTUserAction.create(user, instance, event)
@@ -694,7 +696,7 @@ class SendFriendAsks(URIHandler):
                     fb_share_counter += len(fb_share_ids)
                     logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
-                except Exception,e:
+                except Exception, e:
                     # Should still do email friends
                     response['data']['warnings'].append('Error sharing on Facebook: %s' % str(e))
                     logging.error('we had an error sharing on facebook', exc_info=True)
@@ -714,7 +716,7 @@ class SendFriendAsks(URIHandler):
                                       product=product or None,
                                       products=products or [],
                                       asker_img=a['pic'])
-                    except Exception,e:
+                    except Exception, e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email',
                                       exc_info=True)
