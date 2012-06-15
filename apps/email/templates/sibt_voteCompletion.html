@@ -14,15 +14,9 @@
                     <p>
                         Overall, <strong>{{ buy_it_percentage }}%</strong> said to buy it.
                     </p>
-                    {% if buy_it %}
-                        <p>
-                            <a href="{{ product_url }}">Click here to buy it now!</a>
-                        </p>
-                    {% else %}
-                        <p>
-                            <a href="{{ product_url }}">Find something else you might like!</a>
-                        </p>
-                    {% endif %}
+                    <p>
+                        <a href="{{ vote_url }}">Check the vote again!</a>
+                    </p>
                 </div>
             </td>
         </tr>
