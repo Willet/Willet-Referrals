@@ -15,76 +15,80 @@
 {% block right_screens %}
     <div id="product_screen">
         <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
-        <img id="product_img" class="slight-highlight product-image" src="{{ product_img }}" />
+        <img id="product_img" class="slight-highlight product-image" src="{{ product_img|default:"/static/imgs/noimage-willet.png" }}" />
         <div class="description">
             {{ product.description|striptags }}
         </div>
-        <div class="choice blob"
-             style="text-align:center; margin: 18px;">
-            <div class="title">
-                Should <b>{{asker_name}}</b> get this?
+        {% if not user_voted %}
+            <div class="choice blob"
+                style="text-align:center; margin: 18px;">
+                <div class="title">
+                    Should <b>{{asker_name}}</b> get this?
+                </div>
+                <div id="success_pending" class="center">
+                    <button class="button" id="yes">Yes</button>
+                    <button class="button" id="no">No</button>
+                </div>
+                <div id="success_screen">
+                    <h2>Thank you for helping {{asker_name}}!</h2>
+                    {% if store_url %}
+                        <p style="margin-top:24px;">
+                            <a href="{{ store_url }}">Continue Shopping</a>
+                        </p>
+                    {% endif %}
+                </div>
             </div>
-            <div id="success_pending" class="center">
-                <button class="button" id="yes">Yes</button>
-                <button class="button" id="no">No</button>
-            </div>
-            <div id="success_screen">
-                <h2>Thank you for helping {{asker_name}}!</h2>
-                {% if store_url %}
-                    <p style="margin-top:24px;">
-                        <a href="{{ store_url }}">Continue Shopping</a>
-                    </p>
-                {% endif %}
-            </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock right_screens %}
 
 {% block body_script %}
     $(document).ready(function () {
-        var vote = function (which) {
-            $.ajax({
-                url: "{% url DoVote %}",
-                type: 'post',
-                data: {
-                    instance_uuid : "{{instance.uuid}}",
-                    which : which
-                },
-                success: function (tr) {
-                    {% if discount_enabled %}
-                        $(".choice, #product_screen").hide();
-                        $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-                        {# discount_enabled is undefined on purpose #}
-                        // get the discount code.
-                        $.ajax({
-                            url: "{% url DispenseClientDiscountCode %}",
-                            data: {
-                                'client_uuid': "{{ client_uuid }}",
-                                'store_url': "{{ store_url }}"
-                            },
-                            type: 'post',
-                            dataType: 'text',
-                            success: function (data) {
-                                if (data) {
-                                    $("#discount_gettest").show();
+        {% if not user_voted %}
+            var vote = function (which) {
+                $.ajax({
+                    url: "{% url DoVote %}",
+                    type: 'post',
+                    data: {
+                        instance_uuid : "{{instance.uuid}}",
+                        which : which
+                    },
+                    success: function (tr) {
+                        {% if discount_enabled %}
+                            $(".choice, #product_screen").hide();
+                            $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
+                            {# discount_enabled is undefined on purpose #}
+                            // get the discount code.
+                            $.ajax({
+                                url: "{% url DispenseClientDiscountCode %}",
+                                data: {
+                                    'client_uuid': "{{ client_uuid }}",
+                                    'store_url': "{{ store_url }}"
+                                },
+                                type: 'post',
+                                dataType: 'text',
+                                success: function (data) {
+                                    if (data) {
+                                        $("#discount_gettest").show();
+                                    }
+                                    $("#discount_code").val(data || "We're out!");
                                 }
-                                $("#discount_code").val(data || "We're out!");
-                            }
-                        });
-                    {% else %}
-                        $("#success_pending").hide();
-                        $("#success_screen").show();
-                    {% endif %}
-                },
-                error: function () {
-                    $(".choice").hide();
-                    $("#error_message").show();
-                }
+                            });
+                        {% else %}
+                            $("#success_pending").hide();
+                            $("#success_screen").show();
+                        {% endif %}
+                    },
+                    error: function () {
+                        $(".choice").hide();
+                        $("#error_message").show();
+                    }
+                });
+            };
+            $('.choice button').click(function () {
+                vote(this.id); // click button = vote
             });
-        };
-        $('.choice button').click(function () {
-            vote(this.id); // click button = vote
-        });
+        {% endif %}
 
         fbinit (document, 'script', 'facebook-jssdk');
     });

@@ -337,7 +337,7 @@ _willet.sibt = (function (me) {
 
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
-                if (instance.is_live || instance.has_results) {
+                if (instance.is_live) {
                     wm.fire('storeAnalytics', 'SIBTShowingResultsButton');
                     $('#_willet_button_v3 .button').hide();
                     $('<div />', {
@@ -442,7 +442,7 @@ _willet.sibt = (function (me) {
 
         // if server sends a flag that indicates "results available"
         // (not necessarily "finished") then show finished button
-        if (instance.is_live || instance.has_results) {
+        if (instance.is_live) {
             $('#_willet_button').hide();
             $('<div />', {
                 'id': "_willet_WOSIB_results",
@@ -1110,7 +1110,6 @@ _willet.sibt = (function (me) {
         wm.on('hasjQuery', me.init);
 
         // auto-show results on hash
-        wm.on('scriptComplete', me.autoShowResults);
         wm.on('updateUI', me.updateUI);
         // wm.on('scriptComplete', me.getVisitLength);
 

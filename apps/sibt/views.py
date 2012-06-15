@@ -270,7 +270,6 @@ class VoteDynamicLoader(URIHandler):
         app = None
         event = 'SIBTMakingVote'
         link = None
-        new_instance = False  # True if this function creates one
         products = [] # populate this to show products on design page.
         share_url = ''
         sharing_message = ''
@@ -280,8 +279,7 @@ class VoteDynamicLoader(URIHandler):
                  get_target_url(self.request.get('target_url', '')) or \
                  get_target_url(self.request.get('page_url', ''))
         template_values = {}
-        user = User.get(self.request.get('user_uuid')) or \
-               User.get_or_create_by_cookie(self, app=None)
+        user = User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
 
         (instance, _) = get_instance_event(urihandler=self)
@@ -319,8 +317,12 @@ class VoteDynamicLoader(URIHandler):
                                                 product_uuids=product_uuids,
                                                 sharing_message="")
                 # update variables to reflect "creation"
-                new_instance = True
                 instance_uuid = instance.uuid
+
+                self.redirect("%s%s" % (URL,
+                                        url('VoteDynamicLoader', qs={
+                                            'instance_uuid': instance_uuid
+                                        })))
 
         sharing_message = instance.sharing_message
 
@@ -356,6 +358,8 @@ class VoteDynamicLoader(URIHandler):
         except:
             product_img = ''
 
+        user_voted = bool(instance.get_votes_count(user=user) > 0)
+
         template_values = {
             'URL': URL,
 
@@ -367,13 +371,12 @@ class VoteDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
 
             'user': user,
+            'user_voted': user_voted,
             'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
             'fb_comments_url': '%s' % (link.get_willt_url()),
-            'new_instance': new_instance,
-            # 'percentage': percentage,
             'products': products,
             'share_url': share_url,
             'sharing_message': strip_html(sharing_message),
@@ -381,9 +384,6 @@ class VoteDynamicLoader(URIHandler):
             'store_url': app.store_url,
             'store_name': app.store_name,
             'instance': instance,
-            # 'votes': yesses + nos,
-            # 'yesses': instance.get_yesses_count(),
-            # 'noes': instance.get_nos_count(),
             'ask_qs': urlencode({'app_uuid': app.uuid,
                                  'instance_uuid': instance.uuid,  # golden line
                                  'user_uuid': instance.asker.uuid,

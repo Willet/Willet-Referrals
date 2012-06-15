@@ -20,5 +20,6 @@ urlpatterns = [
     # Processes
     (r'/b/shopify/start_report',        ButtonsShopifyEmailReports),
     (r'/b/shopify/item_shared_report',  ButtonsShopifyItemSharedReport),
+    (r'/b/shopify/unsubscribe',         ButtonsShopifyUnsubscribe),
 ]
 
