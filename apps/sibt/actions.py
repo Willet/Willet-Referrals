@@ -21,8 +21,9 @@ from apps.action.models import VoteAction
 from apps.gae_bingo.gae_bingo import bingo
 from apps.product.models import Product
 
-from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
+from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 ## ----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ---------------------------------------------------
@@ -117,14 +118,13 @@ class SIBTClickAction(ClickAction):
             self.user.uuid
         )
 
-## -----------------------------------------------------------------------------
-## SIBTVoteAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+
 class SIBTVoteAction(VoteAction):
     """ Designates a 'vote' action for a User on a SIBT instance.
         Currently used for 'SIBT' App """
 
-    sibt_instance = db.ReferenceProperty(db.Model, collection_name="vote_actions")
+    sibt_instance = db.ReferenceProperty(db.Model,
+                                         collection_name="vote_actions")
 
     # added if multi-product.
     product_uuid = db.StringProperty(indexed=True, required=False)

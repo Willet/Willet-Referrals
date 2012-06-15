@@ -22,7 +22,8 @@ from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
+from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated, \
+                              SIBTVoteAction
 from apps.user.models import User
 from apps.vote.models import VoteCounter
 
@@ -371,8 +372,20 @@ class SIBTInstance(Model):
     def get_by_uuid(uuid):
         return SIBTInstance.get(uuid)
 
-    def get_votes_count(self):
-        """Count this instance's total number of votes."""
+    def get_votes_count(self, user=None):
+        """Count this instance's total number of votes.
+
+        If a user is supplied, only return the number of votes made by
+        this user. This also causes more database reads than fetching votes
+        by all users*.
+
+        user should always be a kwarg.
+
+        * Vote counts are sharded; Actual votes are not.
+        """
+        if user and isinstance(user, User):
+            return SIBTVoteAction.all().filter('user =', user).count()
+
         total = self.get_yesses_count() + self.get_nos_count()
         return total
 

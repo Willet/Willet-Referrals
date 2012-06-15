@@ -358,6 +358,8 @@ class VoteDynamicLoader(URIHandler):
         except:
             product_img = ''
 
+        user_voted = bool(instance.get_votes_count(user=user) > 0)
+
         template_values = {
             'URL': URL,
 
@@ -369,6 +371,7 @@ class VoteDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
 
             'user': user,
+            'user_voted': user_voted,
             'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
