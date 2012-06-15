@@ -39,6 +39,10 @@ NUM_VOTE_SHARDS = 15
 
 
 class ButtonsShopify(Buttons, AppShopify):
+    # Billed users will receive weekly emails. However,
+    # they MAY want to unsubscribe from these message. To handle this case,
+    # we have the 'unsubscribed' property. Users who have 'billing_enabled' and
+    # 'unsubscribed' will not receive weekly emails
     unsubscribed = db.BooleanProperty(default=False)
 
     def __init__(self, *args, **kwargs):

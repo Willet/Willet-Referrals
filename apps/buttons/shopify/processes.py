@@ -79,7 +79,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             logging.info("No shares have ever occured this period (or ever?)")
             Email.report_smart_buttons(email=email, items={}, networks={},
                                        shop_name=shop,
-                                       client_name=name, id=app.uuid)
+                                       client_name=name, uuid=app.uuid)
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
@@ -96,31 +96,31 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
 class ButtonsShopifyUnsubscribe(URIHandler):
     def get(self):
-        id = self.request.get("id")
-        app = ButtonsShopify.all().filter(" uuid = ", id).get()
+        uuid = self.request.get("uuid")
+        app = ButtonsShopify.all().filter(" uuid = ", uuid).get()
 
         unsubscribed = True
         if app:
             unsubscribed = app.unsubscribed
 
-        template_values = {
-            'id': id,
-            'unsubscribed': unsubscribed
-        }
-        self.response.out.write(self.render_page('unsubscribe.html',
-                                                 template_values))
+        template_values = self.response.out.write(self.render_page('unsubscribe.html', {
+            'uuid': uuid,
+            'unsubscribed': unsubscribed,
+            'app_exists': True if app else False
+        }))
 
     def post(self):
-        id = self.request.get("id")
+        uuid = self.request.get("uuid")
 
-        app = ButtonsShopify.all().filter(" uuid = ", id).get()
+        app = ButtonsShopify.all().filter(" uuid = ", uuid).get()
 
         if app:
             app.unsubscribed = True
             app.put()
 
         template_values = {
-            "unsubscribed": True
+            "unsubscribed": True,
+            'app_exists': True if app else False
         }
 
         self.response.out.write(self.render_page('unsubscribe.html',

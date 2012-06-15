@@ -162,7 +162,7 @@ class Email():
     @staticmethod
     def report_smart_buttons(email="info@getwillet.com", items={},
                              networks={}, shop_name=None, client_name=None,
-                             id=None):
+                             uuid=None):
         if shop_name is None:
             shop_name = ""
 
@@ -177,7 +177,7 @@ class Email():
                 'client_name'   : client_name,
                 'item_shares'   : items,
                 'network_shares': networks,
-                'id'            : id
+                'uuid'          : uuid
             }
         )
 

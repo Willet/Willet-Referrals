@@ -17,7 +17,8 @@
                 {% include "smart_buttons_report_content.html" %}
             </div>
             <div style="text-align: right; font-size: 9px;">
-                <a href="{{ willet_url }}{% url ButtonsShopifyUnsubscribe %}?id={{ id }}">
+                <a
+                        href="{{ willet_url }}{% url ButtonsShopifyUnsubscribe %}?uuid={{ uuid }}">
                     Unsubscribe?
                 </a>
             </div>
