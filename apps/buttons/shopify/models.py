@@ -12,7 +12,9 @@ import logging
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from time import time
-from urllib import urlencode
+from urllib import urlencode, quote
+from urlparse import urlparse
+from cgi import parse_qsl
 
 from django.utils import simplejson as json
 from google.appengine.ext import db
@@ -90,6 +92,40 @@ class ButtonsShopify(Buttons, AppShopify):
         self.put()
         return price
 
+    def get_monthly_orders(self):
+        """returns a tuple containing client name, client url and monthly orders
+        """
+        survey = ( 0, u'dead', u'', u'', u'')
+        result = self._call_Shopify_API( verb="GET",
+                                         call="shop.json?fields=created_at",
+                                         suppress_errors=True )
+        if result:
+            now          = datetime.utcnow()
+            shop_created = self._Shopify_str_to_datetime(result["shop"]["created_at"])
+            start_date   = max(shop_created, now - timedelta(days=365))
+            months       = ((now - start_date).days) / 30.0
+
+            query_params = {
+                "created_at_min": start_date.strftime("%Y-%m-%d %H:%M"),
+                "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
+            }
+
+            urlencoded_params = "?" + urlencode(query_params)
+
+            result = self._call_Shopify_API( verb="GET",
+                                             call="orders/count.json%s" % urlencoded_params)
+
+            orders = int(result["count"])
+            monthly_orders = orders / months if months else orders
+            
+            survey = ( int(monthly_orders),
+                       self.client.name,
+                       self.client.url,
+                       self.client.merchant.get_full_name(),
+                       self.client.email or u'' )
+        return survey
+            
+
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
@@ -107,7 +143,7 @@ class ButtonsShopify(Buttons, AppShopify):
             },
             {
                 "script_tag": {
-                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                    "src": "%s/b/shopify/load/confirmation.js?enabled=false&app_uuid=%s" % (
                         SECURE_URL,
                         self.uuid
                     ),
@@ -184,16 +220,26 @@ class ButtonsShopify(Buttons, AppShopify):
         self.uninstall_script_tags()
         version = os.environ['CURRENT_VERSION_ID']
 
-        self.queue_script_tags(script_tags=[{
-            "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
-                    URL,
-                    self.uuid,
-                    version
-                ),
-                "event": "onload"
-            }
-        }])
+        script_tags= [{
+                "script_tag": {
+                    "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
+                        URL,
+                        self.uuid,
+                        version
+                    ),
+                    "event": "onload"
+                }
+            },
+            {
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                        SECURE_URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+        }]
+        self.queue_script_tags(script_tags=script_tags)
 
         self.queue_assets(assets=[{
             'asset': {
@@ -216,7 +262,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 """
             }
         }])
-
+        
         self.install_queued()
 
         # Email DevTeam
@@ -252,7 +298,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
             tag = None
             for script_tag in results.get("script_tags"):
-                if "/b/shopify/load/" in script_tag.get("src", ""):
+                if "buttons.js" in script_tag.get("src", ""):
                     tag = script_tag
                     break
 
@@ -328,7 +374,7 @@ class ButtonsShopify(Buttons, AppShopify):
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
                                    (theme_id, query_params),
-                                   suppress_errors = True)
+                                   suppress_errors=True)
 
             if result.get("asset") and result["asset"].get("value"):
                 value           = result["asset"]["value"]
@@ -341,6 +387,71 @@ class ButtonsShopify(Buttons, AppShopify):
             pass  # TODO: Problem parsing the JSON
 
         return prefs
+
+    def update_social_accounts(self, social_accounts):
+        """Update preferences for the application."""
+        if not self.billing_enabled:
+            return
+
+        try:
+            # Get the previous tag...
+            results = self._call_Shopify_API("GET", "script_tags.json")
+        except ShopifyAPIError:
+            logging.error('Error retrieving script tags:', exc_info=True)
+            return  # Either user is unbilled, or doesn't have the snippet.
+
+        if not results.get("script_tags"):
+            logging.warning("No script tags, can't update social accounts")
+            # No installed script tags?
+            return
+
+        # Find confirmation.js script
+        tag = None
+        for script_tag in results.get("script_tags"):
+            logging.info("script_tag = %r" % script_tag)
+            if "confirmation.js" in script_tag.get("src", ""):
+                tag = script_tag
+                break
+
+        # Build query string
+        query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )
+        query_params.update({ 'app_uuid': self.uuid })
+        qs = urlencode(query_params)
+
+        try:
+            if tag:
+                tag["src"] = "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"], payload={"script_tag": tag})
+
+            else:
+                self._call_Shopify_API("POST", "script_tags.json", payload={
+                    'script_tag': {
+                        "event": "onload",
+                        "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                    }
+                })
+        except ShopifyAPIError:
+            logging.error('Error saving social accounts:', exc_info=True)
+
+    def get_social_accounts(self):
+        """Get social_accounts, provided that they exist."""
+        #need to get theme id first...
+        try:
+            result = self._call_Shopify_API("GET", "script_tags.json")
+
+            if result.get("script_tags"):
+                for script in result.get("script_tags"):
+                    src = script.get("src","")
+                    if 'confirmation.js' in src:
+                        # Return parsed query string
+                        # NOTE: parse_qs moved from cgi module to urlparse module in Python 2.6
+                        return dict(parse_qsl(urlparse(src).query))
+
+        except ShopifyAPIError:
+            logging.error('Error retrieving social accounts:', exc_info=True)
+            pass  # Either user is unbilled, or doesn't have the snippet.
+
+        return {}
 
     # Constructors ------------------------------------------------------------
     @classmethod

@@ -135,7 +135,7 @@ class AppShopify(Model):
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
-
+    
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
                           suppress_errors = False):
@@ -145,6 +145,9 @@ class AppShopify(Model):
             verb - <String> one of GET, POST, PUT, DELETE
             call - <String> api call
             payload - <Object> Data to send with request
+            suppress_errors - <Boolean> Quietly proceed if call errors
+                              NOTE: Only use this if you expect errors from this call
+                                    No error event is logged, so debugging will be difficult
 
         Returns:
             <Object> response data
@@ -187,13 +190,19 @@ class AppShopify(Model):
             try:
                 data = response_actions.get(int(resp.status))(content)
                 error = (True if data.get("errors") else False)
-            except (TypeError, ValueError):  # Key Didn't exist,
-            # or couldn't parse JSON
+            except (TypeError, ValueError):
+                # Key Didn't exist, or couldn't parse JSON
                 error = True
         else:
             error = True
 
         if not error or suppress_errors:
+            if suppress_errors:
+                logging.error("API Request Failed: %s %s\n" \
+                              "URL: %s\n" \
+                              "PAYLOAD: %s\n" \
+                              "CONTENT: %s\n" \
+                              % (resp.status, resp.reason, url, payload, content))
             return data
         else:
             Email.emailDevTeam(

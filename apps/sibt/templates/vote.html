@@ -15,7 +15,7 @@
 {% block right_screens %}
     <div id="product_screen">
         <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
-        <img id="product_img" class="slight-highlight product-image" src="{{ product_img }}" />
+        <img id="product_img" class="slight-highlight product-image" src="{{ product_img|default:"/static/imgs/noimage-willet.png" }}" />
         <div class="description">
             {{ product.description|striptags }}
         </div>

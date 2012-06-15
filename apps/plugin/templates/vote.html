@@ -58,8 +58,6 @@
                     $('#' + page + '_page').css('opacity', '0')
                            .css('display', 'block')
                            .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
-
-                    event.preventDefault();
                 };
 
                 $('#window_location').val(window.location.href);
@@ -90,16 +88,11 @@
                         <div class="span-9 text-center">
                             <h2 style="margin-top: 25px;
                                        color: #fff;
-                                       text-shadow: 0 1px 0 #666;">
-                                {% if new_instance %}
+                                       text-shadow: 0 1px 0 #666;
+                                       text-shadow: none\0/;">
                                     You have created a vote!
                                     <br />
                                     Invite friends to get started ⇝
-                                {% else %}
-                                    Your vote is still running!
-                                    <br />
-                                    Invite more friends to the conversation ⇝
-                                {% endif %}
                             </h2>
                             <img src="/static/sibt/imgs/happy-people-245x120.png" />
                         </div>

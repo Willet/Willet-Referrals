@@ -111,7 +111,7 @@ _willet.util = {
             + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = window.location.protocol + "//social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.src = window.location.protocol + "//social-referral.appspot.com/email/clientsidemessage?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage);
@@ -439,7 +439,7 @@ _willet = (function (me) {
 
     var sharePurchaseTemplate = ""
         + "<div class='sharing'>"
-        + "  {% if message %}<p>{{ message }}:</p>{% endif %}"
+        + "  <p>Thanks! Check us out on these networks:</p>"
         + "  <ul>"
         + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
@@ -455,9 +455,21 @@ _willet = (function (me) {
         + "</div>";
 
     var styleRules = ""
-        + "div.sharing { padding: 0 15px; margin: 10px 0 0 0; background-color:#FFF }"
-        + "div.sharing ul { list-style-type:none; padding: 0 40px; line-height:40px; }"
-        + "div.sharing li { display: inline-table; width: 140px; }"
+        + "div.sharing {"
+        + "    padding: 0 15px;"
+        + "    margin: 10px 0 0 0;"
+        + "    background-color:#FFF;"
+        + "}"
+        + "div.sharing ul {"
+        + "    list-style-type:none;"
+        + "    padding: 0 40px;"
+        + "    line-height:40px;"
+        + "    margin-bottom: 0;"
+        + "}"
+        + "div.sharing li {"
+        + "    display: inline-table;"
+        + "    width: 140px;"
+        + "}"
         + ".pinterest-button,"
         + ".pinterest-button a,"
         + ".pinterest-button span {"
@@ -555,20 +567,27 @@ _willet = (function (me) {
 
         var parseQueryString = function (src) {
             var qs = src.indexOf('?') ? src.substr(src.indexOf('?')+1) : null,
-                obj = {};
+                params = {};
 
             if (qs) {
                 // A little hack - convert the query string into JSON format and parse it
                 // '&' -> ',' and '=' -> ':'
-                obj = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                params = {
+                    "enabled": raw_obj.enabled || '',
+                    "shop":  raw_obj.shop || '',
+                    "facebookUsername": raw_obj.facebook_username || '',
+                    "twitterUsername":  raw_obj.twitter_username || '',
+                    "pinterestUsername": raw_obj.pinterest_username || ''
+                };
             }
 
-            return obj;
+            return params;
         }
 
         // Find this script
-        for (var i = scripts.length; i >= 0; i--) {
-            if (scripts[i].src.match('social-referral.appspot.com/b/shopify/load/confirmation.js')) {
+        for (var i = scripts.length-1; i >= 0; i--) {
+            if (scripts[i].src.match('/b/shopify/load/confirmation.js')) {
                 // parse query string
                 return parseQueryString( scripts[i].src );
             }
@@ -588,16 +607,22 @@ _willet = (function (me) {
                 // Retrieve configuration from script query string
                 var config = me.getConfigurationFromURL();
 
-                container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
-                container.appendChild( util.createStyle(styleRules) );
+                if (config.enabled) {
+                    container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
+                    container.appendChild( util.createStyle(styleRules) );
 
-                for (var i = scripts.length; i >= 0; i--) {
-                    HEAD.appendChild( util.createScript(scripts[i]) );
+                    for (var i = scripts.length; i >= 0; i--) {
+                        HEAD.appendChild( util.createScript(scripts[i]) );
+                    }
+
+                    // Add the div to the page
+                    content.parentNode.insertBefore(container, content);
+                } else {
+                    debug.log("Confirmation widget not loaded: disabled by configuration");
                 }
-
-                // Add the div to the page
-                content.parentNode.insertBefore(container, content);
             }
+        } else {
+            debug.log("Confirmation widget not loaded: not on confirmation page");
         }
     };
 
@@ -616,7 +641,7 @@ try {
         {
             _willet.init();
         } else {
-            _willet.debug.log("Buttons not loaded: Unsupported browser or localhost");
+            _willet.debug.log("Confirmation widget not loaded: Unsupported browser or localhost");
         }
     }
 

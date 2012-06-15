@@ -496,29 +496,34 @@ class ButtonsShopifyConfig(URIHandler):
         })
 
         preferences = app.get_prefs()
+        social_accounts = app.get_social_accounts()
 
         button_order, unused_buttons = self.determine_buttons(preferences)
         item_shares, network_shares  = self.get_button_shares(app)
 
         # Use .get in case properties don't exist yet
         template_values = {
-            'action'          : config_url,
-            'max_buttons'     : preferences.get("max_buttons", 3),
-            'button_range'    : self.button_range,
-            'button_count'    : preferences.get("button_count", False),
-            'button_spacing'  : preferences.get("button_spacing", 5),
-            'button_padding'  : preferences.get("button_padding", 5),
-            'sharing_message' : preferences.get("sharing_message", ""),
-            'message'         : self.request.get("message", "Welcome Back!"),
-            'button_order'    : button_order,
-            'unused_buttons'  : unused_buttons,
-            'shop_url'        : self.request.get("shop"),
-            'upgrade_url'     : upgrade_url,
-            'learn_more_url'  : learn_more_url,
-            'instructions_url': instructions_url,
-            'config_enabled'  : app.billing_enabled,
-            'item_shares'     : item_shares,
-            'network_shares'  : network_shares
+            'action'                : config_url,
+            'max_buttons'           : preferences.get("max_buttons", 3),
+            'button_range'          : self.button_range,
+            'button_count'          : preferences.get("button_count", False),
+            'button_spacing'        : preferences.get("button_spacing", 5),
+            'button_padding'        : preferences.get("button_padding", 5),
+            'sharing_message'       : preferences.get("sharing_message", ""),
+            'message'               : self.request.get("message", "Welcome Back!"),
+            'button_order'          : button_order,
+            'unused_buttons'        : unused_buttons,
+            'shop_url'              : self.request.get("shop"),
+            'upgrade_url'           : upgrade_url,
+            'learn_more_url'        : learn_more_url,
+            'instructions_url'      : instructions_url,
+            'config_enabled'        : app.billing_enabled,
+            'item_shares'           : item_shares,
+            'network_shares'        : network_shares,
+            'confirmation_enabled'  : social_accounts.get('enabled',"false"),
+            'facebook_username'     : social_accounts.get('facebook_username',''),
+            'twitter_username'      : social_accounts.get('twitter_username',''),
+            'pinterest_username'    : social_accounts.get('pinterest_username','')
         }
 
         # prepopulate values
@@ -527,7 +532,7 @@ class ButtonsShopifyConfig(URIHandler):
     @catch_error
     def post(self):
         """Store the results from the config form"""
-        r = self.request
+        req = self.request
         details = get_details(self)
         config_url = build_url("ButtonsShopifyConfig", qs={
             "t"   : self.request.get("t"),
@@ -553,25 +558,33 @@ class ButtonsShopifyConfig(URIHandler):
                 return default_value
 
         prefs = {}
-        prefs["button_count"]    = (r.get("button_count") == "True")
-        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
-        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
+        prefs["button_count"]    = (req.get("button_count") == "True")
+        prefs["button_spacing"]  = tryParse(int, req.get("button_spacing"))
+        prefs["button_padding"]  = tryParse(int, req.get("button_padding"))
         prefs["sharing_message"] = tryParse(strip_tags,
-                                            r.get("sharing_message"), "")
-        max_buttons              = tryParse(int, r.get("max_buttons"), 3)
+                                            req.get("sharing_message"), "")
+        max_buttons              = tryParse(int, req.get("max_buttons"), 3)
 
         if max_buttons in self.button_range:
             prefs["max_buttons"] = max_buttons
         else:
             prefs["max_buttons"] = 3 #Default
 
-        button_order = r.get("button_order")
+        button_order = req.get("button_order")
         if not button_order:
             prefs["button_order"] = None
         else:
             prefs["button_order"] = button_order.split(",")
 
+        # What validation should be done here?
+        social_accounts = {}
+        social_accounts["enabled"] = req.get("conf_enabled","false")
+        social_accounts["facebook_username"] = req.get("facebook_username")
+        social_accounts["twitter_username"]  = req.get("twitter_username")
+        social_accounts["pinterest_username"] = req.get("pinterest_username")
+
         app.update_prefs(prefs)
+        app.update_social_accounts(social_accounts)
         self.redirect(config_url)
 
 

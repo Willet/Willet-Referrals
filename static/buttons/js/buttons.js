@@ -137,7 +137,7 @@ _willet.util = {
             + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
-        _willetImage.src =  window.location.protocol + "//social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.src =  window.location.protocol + "//social-referral.appspot.com/email/clientsidemessage?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage);
@@ -692,8 +692,8 @@ _willet.networks = (function (willet) {
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
                     fb.setAttribute('data-href', params.canonicalUrl);
-                    var style = util.createStyle(".fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
-                             +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
+                    var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
+                             +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
                     button.appendChild(style);
 

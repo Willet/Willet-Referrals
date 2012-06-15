@@ -106,7 +106,7 @@ class Email():
         subject = 'Thanks for Installing "%s"' % (app_name)
 
         if not app_name:
-            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
+            logging.warn("Attempt to email welcome for unknown app %s" % app_name)
             return
 
         if not use_full_name:
