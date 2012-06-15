@@ -97,8 +97,15 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 class ButtonsShopifyUnsubscribe(URIHandler):
     def get(self):
         id = self.request.get("id")
+        app = ButtonsShopify.all().filter(" uuid = ", id).get()
+
+        unsubscribed = True
+        if app:
+            unsubscribed = app.unsubscribed
+
         template_values = {
-            'id': id
+            'id': id,
+            'unsubscribed': unsubscribed
         }
         self.response.out.write(self.render_page('unsubscribe.html',
                                                  template_values))
@@ -106,12 +113,15 @@ class ButtonsShopifyUnsubscribe(URIHandler):
     def post(self):
         id = self.request.get("id")
 
-        app = ButtonsShopify.all().filter(" uuid = ", id)
+        app = ButtonsShopify.all().filter(" uuid = ", id).get()
 
         if app:
             app.unsubscribed = True
+            app.put()
 
-        template_values = {}
+        template_values = {
+            "unsubscribed": True
+        }
 
         self.response.out.write(self.render_page('unsubscribe.html',
                                                  template_values))

@@ -1,1 +1,77 @@
-Are you sure you want to unsubscribe? {{ id }}
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .content-container {
+        margin-top: 125px;
+    }
+
+    #unsubscribe {
+        font-size: 2.5em;
+        text-align: center;
+    }
+
+    .small {
+        font-size: 0.75em;
+    }
+
+    #yes {
+        margin-right: 100px;
+    }
+
+    #no {
+        font-size: 15px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $("#yes").click(function(){
+            $("form").submit();
+        });
+
+        $("#no").click(function(event){
+            event.preventDefault();
+            window.history.back();
+        });
+    });
+</script>
+{% endblock head %}
+
+{% block header-class %}tall{% endblock %}
+
+{% block content %}
+<div class="span-24 shopconnection-header last">
+    <div class="span-8">
+        <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+        <h3></h3>
+    </div>
+    <div class="lower-15 span-16 last">
+        <h1>ShopConnection</h1>
+    </div>
+</div>
+
+<div class="span-24 last box-design content-container"
+     style="margin-top: 75px;">
+    <div id="unsubscribe" class="page
+    prepend-top prepend-3 span-18 append-3 append-bottom last">
+        {% if not unsubscribed %}
+        <form method="POST">
+            <div>Are you sure you want to unsubscribe?</div>
+            <div class="small">
+                You won't get any further messages from us about your weekly
+                shares
+            </div>
+            <div>
+                <input type="hidden" value="{{ id }}" name="id" />
+                <button id="yes">Yes</button>
+                <a href="#" id="no">No</a>
+            </div>
+        </form>
+        {% else %}
+        Unsubscribed successfully.
+        <div class="small">
+            You will no longer receive messages about your weekly shares.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
