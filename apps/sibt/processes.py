@@ -208,8 +208,9 @@ class GetExpiredSIBTInstances(URIHandler):
             # Has been reported to GOOG: http://code.google.com/p/googleappengine/issues/detail?id=7341
             right_now = datetime.datetime.now()
 
-        expired_instances = SIBTInstance.all().filter('end_datetime <=',
-                                                      right_now)
+        expired_instances = SIBTInstance.all()\
+                                        .filter('end_datetime <=', right_now)\
+                                        .filter('is_live =', True)
 
         for instance in expired_instances:
             taskqueue.add(
@@ -230,6 +231,7 @@ class RemoveExpiredSIBTInstance(URIHandler):
     def get(self):
         """Updates the SIBT instance in a transaction and then emails the user"""
         def txn(instance):
+            logging.info("setting is_live to False")
             instance.is_live = False
             instance.put()
             return instance
