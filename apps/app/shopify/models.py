@@ -296,13 +296,11 @@ class AppShopify(Model):
         result = self._retrieve_application_charge()
 
         charge_data = result['application_charge']
-        # logging.debug('charge_data = %r' % charge_data)
-        charge_status = charge_data['status']
 
-        if charge_status == 'accepted':
+        if charge_data['status'] == 'accepted':
             logging.debug('charge_data is accepted - win!')
             return True # I believe this is a good thing and should be praised
-        elif charge_status == 'pending':
+        elif charge_data['status'] == 'pending':
             logging.debug('we can now activate the charge')
 
             # Update status
@@ -325,9 +323,12 @@ class AppShopify(Model):
             else:
                 logging.debug('activation denied')
                 raise ShopifyBillingError('Charge activation denied', data)
+        elif charge_data['status'] == 'active':
+            return True  # Do not update the data, but succeed anyway
+        elif charge_data['status'] == 'declined':
+            return False
         else:
-            logging.debug('Charge cancelled before activation request')
-            raise ShopifyBillingError('Charge cancelled before activation request', charge_data)
+            raise ShopifyBillingError('Unexpected billing status reached!', charge_data)
 
         return False  # won't be here
 
