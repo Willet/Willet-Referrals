@@ -20,6 +20,9 @@ class ButtonsShopifyEmailReports(URIHandler):
         # Do we want also want to filter by non-null clients too?
         apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
 
+        # Allows us to test the service while live.
+        email = self.request.get("email")
+
         for app in apps:
             if hasattr(app, "unsubscribed") and app.unsubscribed:
                 continue  # don't email unsubscribed people
@@ -27,6 +30,7 @@ class ButtonsShopifyEmailReports(URIHandler):
             logging.info("Setting up taskqueue for %s" % app.client.name)
             params = {
                 "store": app.store_url,
+                "email": email
             }
             url = build_url('ButtonsShopifyItemSharedReport')
             logging.info("taskqueue URL: %s" % url)
@@ -75,6 +79,9 @@ class ButtonsShopifyItemSharedReport(URIHandler):
                         .order('-end')\
                         .get()
 
+        # Allows us to test the service while live.
+        email = self.request.get("email", email)
+
         if share_period is None or (share_period.end < datetime.date.today()):
             logging.info("No shares have ever occured this period (or ever?)")
             Email.report_smart_buttons(email=email, items={}, networks={},
@@ -93,6 +100,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
         Email.report_smart_buttons(email=email, items=top_items,
                                    networks=top_shares,
                                    shop_name=shop, client_name=name, id=app.uuid)
+
 
 class ButtonsShopifyUnsubscribe(URIHandler):
     def get(self):
