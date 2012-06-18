@@ -407,24 +407,19 @@ class ClientSideMessage(URIHandler):
         cs_message = self.request.get('st', '(no message)')
         subject    = self.request.get('subject', 'ClientSideMessage')
 
-        try:
-            level = int(self.request.get('level', '3'))
-        except:
-            level = 3
-
-        if level == 0:
-            log_func = logging.debug
-        elif level == 1:
-            log_func = logging.info
-        elif level == 2:
-            log_func = logging.warn
-        elif level == 3:
-            log_func = logging.error
+        loggers = {
+            "0": logging.debug,
+            "1": logging.info,
+            "2": logging.warn,
+            "3": logging.error
+        }
+        level = self.request.get('level', '3')  # default
+        log_func = loggers.get(level, logging.error)
 
         if log_func:
             log_func(u'ClientSideMessage: %s in file %s' % (cs_message, script))
 
-        if level >= 3:
+        if log_func == logging.error:
             msg_list = list()
             msg_list.append("Name      : %s")
             msg_list.append("Message   : \n%s\n")
