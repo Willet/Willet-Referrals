@@ -29,9 +29,12 @@ class ButtonsShopifyEmailReports(URIHandler):
 
             logging.info("Setting up taskqueue for %s" % app.client.name)
             params = {
-                "store": app.store_url,
-                "email": email
+                "store": app.store_url
             }
+
+            if email:
+                params.update({"email": email})
+
             url = build_url('ButtonsShopifyItemSharedReport')
             logging.info("taskqueue URL: %s" % url)
             taskqueue.add(queue_name='buttonsEmail', url=url, params=params)
