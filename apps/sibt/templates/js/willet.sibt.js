@@ -832,7 +832,8 @@ _willet.sibt = (function (me) {
                     }
                 });
                 $('#willet_sibt_popup .cta').click(function () {
-                    me.showAsk('SIBTUserClickedBottomPopupAsk');
+                    // me.showAsk('SIBTUserClickedBottomPopupAsk');
+                    me.showVote('SIBTUserClickedBottomPopupAsk');
                     me.hideBottomPopup();
                 });
                 $('#willet_sibt_popup #anti_cta').click(function (e) {
