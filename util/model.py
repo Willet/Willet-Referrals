@@ -60,6 +60,10 @@ class Model(db.Model):
     # Failure to cache a given field will raise a warning.
     _memcache_fields = []
 
+    def __hash__(self):
+        """Implement hash to allow frozenset() to filter unique duplicates."""
+        return hash(self.uuid)
+
     def _validate_self(self):
         """ All Model subclasses containing a _validate_self function
             will be checked for errors when they are put().
