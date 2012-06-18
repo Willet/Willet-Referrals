@@ -102,7 +102,8 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         Email.report_smart_buttons(email=email, items=top_items,
                                    networks=top_shares,
-                                   shop_name=shop, client_name=name, id=app.uuid)
+                                   shop_name=shop, client_name=name,
+                                   uuid=app.uuid)
 
 
 class ButtonsShopifyUnsubscribe(URIHandler):
