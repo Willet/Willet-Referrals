@@ -386,27 +386,53 @@ class AppAnalyticsRPC(URIHandler):
 
 
 class ClientSideMessage(URIHandler):
+    """Handler for receiving a (debug/error) message sent by a client.
+
+    Several error levels are allowed; they perform different actions.
+    - 0: debug. no emails will be sent.
+    - 1: info. no emails will be sent, either.
+    - 2: warn. no emails will be sent, either.
+    - 3: error (default). an email will be sent to the dev team.
+
+    Levels 0 and 1 will be buried in the logs, and might not be worth using.
+    A default level of 'error' is kept for compatibility.
+    """
     def get(self):
+        log_func   = None
         referer    = self.request.headers.get('referer')
         user_agent = self.request.headers.get('user-agent')
         remote_ip  = self.request.remote_addr
         name       = self.request.get('error')
-        script     = self.request.get('script')
-        cs_message = self.request.get('st')
+        script     = self.request.get('script', '(unknown script)')
+        cs_message = self.request.get('st', '(no message)')
         subject    = self.request.get('subject', 'ClientSideMessage')
+        level      = self.request.get('level', '3')
 
-        msg_list = list()
-        msg_list.append("Name      : %s")
-        msg_list.append("Message   : \n%s\n")
-        msg_list.append("Script    : %s")
-        msg_list.append("Page      : %s")
-        msg_list.append("User Agent: %s")
-        msg_list.append("Remote IP : %s")
+        if level == '0':
+            log_func = logging.debug
+        elif level == '1':
+            log_func = logging.info
+        elif level == '2':
+            log_func = logging.warn
+        elif level == '3':
+            log_func = logging.error
 
-        msg = "\n".join(msg_list)
-        msg = msg % (name, cs_message, script, referer, user_agent, remote_ip )
+        log_func(u'ClientSideMessage: %s in file %s' % (cs_message, script))
 
-        Email.emailDevTeam(msg, subject=subject, monospaced=True)
+        if level == '3':
+            msg_list = list()
+            msg_list.append("Name      : %s")
+            msg_list.append("Message   : \n%s\n")
+            msg_list.append("Script    : %s")
+            msg_list.append("Page      : %s")
+            msg_list.append("User Agent: %s")
+            msg_list.append("Remote IP : %s")
+
+            msg = "\n".join(msg_list)
+            msg = msg % (name, cs_message, script, referer, user_agent, remote_ip )
+
+            Email.emailDevTeam(msg, subject=subject, monospaced=True)
+
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
 
