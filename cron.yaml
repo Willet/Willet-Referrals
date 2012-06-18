@@ -49,10 +49,11 @@ cron:
   schedule: every 5 minutes
 
 # Smart-buttons
-- description: send smart button reports
-  url: /b/shopify/start_report
-  schedule: every sunday 23:00
-  timezone: America/Toronto
+# Disabled, for now
+#- description: send smart button reports
+#  url: /b/shopify/start_report
+#  schedule: every sunday 23:00
+#  timezone: America/Toronto
 
 - description: weekly DB cleanup
   url: /admin/db_integrity_check?check=all
