@@ -224,8 +224,11 @@ class AskDynamicLoader(URIHandler):
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
+
+            'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
             'share_url': link.get_willt_url(), # page_url
+
             'store_domain': store_url,
             'target_url': page_url,
 

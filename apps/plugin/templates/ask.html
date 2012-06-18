@@ -986,7 +986,7 @@
                 FB.ui({
                     method:  'feed',
                     display: 'popup',
-                    link:    '{{ share_url }}',
+                    link:    '{{ link.target_url }}',
                     picture: '{{ product_images|first }}' || "{{ image }}",
                     name:    "{{ product_title|escape }}" || "{{ title|escape }}",
                     caption: '{{ store_domain }}',
