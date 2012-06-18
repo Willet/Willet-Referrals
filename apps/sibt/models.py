@@ -668,6 +668,7 @@ def get_instance_event(**kwargs):
     instance_uuid = req.get('instance_uuid')
     instance = SIBTInstance.get(instance_uuid)
     if instance:
+        logging.info('Found instance by uuid: %s' % instance.uuid)
         return (instance, 'SIBTShowingVote')
 
     # stage 2: by user and page combo
@@ -676,6 +677,7 @@ def get_instance_event(**kwargs):
     if user and page_url:
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
     if instance:
+        logging.info('Found instance by page/url: %s' % instance.uuid)
         return (instance, 'SIBTShowingResults')
 
     # stage 3: by willet code (not memcached)
@@ -685,6 +687,7 @@ def get_instance_event(**kwargs):
         if link:
             instance = link.sibt_instance.get()
         if instance:
+            logging.info('Found instance by code: %s' % willet_code)
             return (instance, 'SIBTShowingResults')
 
     app = get_app(urihandler=urihandler)
@@ -699,6 +702,7 @@ def get_instance_event(**kwargs):
             instance = action.sibt_instance
 
         if instance:
+            logging.info('Found instance by actions: %s' % instance.uuid)
             return (instance, 'SIBTShowingVote')
 
         if not link:
@@ -710,11 +714,14 @@ def get_instance_event(**kwargs):
         if link:
             instance = link.sibt_instance.get()
         if instance:
+            logging.info('Found instance by user/app: %s' % instance.uuid)
             return (instance, 'SIBTShowingVote')
 
     if user and target:
         instance = SIBTInstance.get_by_asker_for_url(user, target)
-        return (instance, 'SIBTShowingVote') # could be none
+        if instance:
+            logging.info('Found instance by user/target: %s' % instance.uuid)
+            return (instance, 'SIBTShowingVote') # could be none
 
     return (None, '')
 
@@ -738,14 +745,17 @@ def get_user(urihandler, **kwargs):
 
     user = User.get(req.get('user_uuid'))
     if user:
+        logging.info('Found user by uuid: %s (%s)' % (user.uuid, user.name))
         return user
 
     user = User.get_by_cookie(urihandler)
     if user:
+        logging.info('Found user by cookie: %s (%s)' % (user.uuid, user.name))
         return user
 
     user = User.get_by_email(req.get('email'))
     if user:
+        logging.info('Found user by email: %s <%s>' % (user.name, req.get('email')))
         return user
 
     app = get_app(urihandler=urihandler)  # None

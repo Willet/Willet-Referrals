@@ -343,11 +343,7 @@ class Email():
 
     @staticmethod
     def SIBTVoteCompletion(instance, product):
-        client = getattr(product, 'client', None)
-        if not client:
-            logging.warn('client uninstalled app; '
-                         'not emailing on behalf of it.')
-            return  # client uninstalled
+        client = getattr(instance.app, 'client', None)
 
         if not instance.asker:
             logging.warn('The deuce? Instance has no asker.')
