@@ -58,6 +58,25 @@
         {% if user_voted %}
             fbinit(document, 'script', 'facebook-jssdk');
         {% else %}
+            var getDiscount = function () {
+                // get the discount code.
+                $.ajax({
+                    url: "{% url DispenseClientDiscountCode %}",
+                    data: {
+                        'client_uuid': "{{ client_uuid }}",
+                        'store_url': "{{ store_url }}"
+                    },
+                    type: 'post',
+                    dataType: 'text',
+                    success: function (data) {
+                        if (data) {
+                            $("#discount_gettest").show();
+                        }
+                        $("#discount_code").val(data || "We're out!");
+                    }
+                });
+            };
+
             var vote = function () {
                 var product_uuid = $(this).data('uuid');
                 if (product_uuid) {
@@ -75,21 +94,8 @@
                             $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
 
                             // get the discount code.
-                            $.ajax({
-                                url: "{% url DispenseClientDiscountCode %}",
-                                data: {
-                                    'client_uuid': "{{ client_uuid }}",
-                                    'store_url': "{{ store_url }}"
-                                },
-                                type: 'post',
-                                dataType: 'text',
-                                success: function (data) {
-                                    if (data) {
-                                        $("#discount_gettest").show();
-                                    }
-                                    $("#discount_code").val(data || "We're out!");
-                                }
-                            });
+                            getDiscount();
+
                             fbinit(document, 'script', 'facebook-jssdk');
                         },
                         error: function () {
