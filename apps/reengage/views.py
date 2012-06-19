@@ -2,13 +2,12 @@ import logging
 from django.utils import simplejson as json
 from google.appengine.ext import db
 from util.urihandler import URIHandler
-from util.helpers import to_dict
+from util.helpers import to_dict, generate_uuid
 from apps.reengage.models import *
 
 #TODO: How to avoid stupid `if json else` construct
 #TODO: How to return json response
 #TODO: Error handling
-#TODO: Reduce dependence on Shopify
 
 def get_queue(request):
     store_url = request.get("shop")
@@ -17,6 +16,13 @@ def get_queue(request):
 
     queue = ReEngageQueue.get_by_url(store_url)
     return queue
+
+def get_post(uuid):
+    if not uuid:
+        return None
+
+    post = ReEngagePost.all().filter(" uuid = ", uuid).get()
+    return post
 
 class ReEngageQueueHandler(URIHandler):
     def get(self):
@@ -27,10 +33,7 @@ class ReEngageQueueHandler(URIHandler):
                 self.respond(400)
                 return
 
-            logging.info(queue.queued)
-            objects = [to_dict(db.get(obj)) for obj in queue.queued]
-
-            json_response = json.dumps(objects)
+            json_response = queue.to_json()
             self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
             self.response.out.write(json_response)
         else:
@@ -48,7 +51,9 @@ class ReEngageQueueHandler(URIHandler):
         content = self.request.get("content")
         method  = self.request.get("method", "append")
 
-        post = ReEngagePost(content=content, network="facebook")
+        post = ReEngagePost(content=content,
+                            network="facebook",
+                            uuid=generate_uuid(16))
         post.put()
 
         if method == "append":
@@ -70,16 +75,28 @@ class ReEngageQueueHandler(URIHandler):
 
 
 class ReEngagePostHandler(URIHandler):
-    # Unused, for now
-
-    def get(self):
+    def get(self, uuid):
         """Get all details for a given post"""
-        self.respond(200)
+        post = get_post(uuid)
+        if not post:
+            self.respond(400)
+            return
 
-    def put(self):
+        json_response = post.to_json()
+        self.response.out.write(json_response)
+
+    def put(self, uuid):
         """Update the details of a post"""
+        # Unused, for now
         self.respond(200)
 
-    def delete(self):
+    def delete(self, uuid):
         """Delete an individual post"""
+        post = get_post(uuid)
+        if not post:
+            self.respond(400)
+            return
+
+        # TODO: What about Keys that reference this?
+        post.delete()
         self.respond(200)

@@ -1,7 +1,12 @@
+import logging
 from google.appengine.ext import db
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
+from django.utils import simplejson as json
+from util.helpers import to_dict
 from util.model import Model
+
+#TODO: How to automatically remove keys that no longer have models?
 
 class TwitterAssociation(Model):
     #app_uuid = db.StringProperty(indexed=True)
@@ -58,6 +63,27 @@ class ReEngageQueue(Model):
         self.queued = []
         self.put()
 
+    def to_json(self):
+        objects = []
+        expired = []
+
+        # TODO: Refactor into cleanup method?
+        for obj in self.queued:
+            model_object = db.get(obj)
+            if model_object:
+                objects.append(to_dict(model_object))
+            else:
+                # Object from Key no longer exists
+                expired.append(obj)
+
+        # Remove any expired objects
+        for obj in expired:
+            self.queued.remove(obj)
+
+        self.put()
+
+        return json.dumps(objects)
+
     @classmethod
     def get_by_url(cls, url):
         """Find a queue based on the store url"""
@@ -84,3 +110,6 @@ class ReEngagePost(Model):
 
     def _validate_self(self):
         return True
+
+    def to_json(self):
+        return json.dumps(to_dict(self))

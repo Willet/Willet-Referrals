@@ -12,5 +12,5 @@ urlpatterns = [
 
     # Re-engage handlers (beta)
     (r'/r/?$'      , ReEngageQueueHandler),
-    (r'/r/(\d+)/?$', ReEngagePostHandler),
+    (r'/r/(\w+)/?$', ReEngagePostHandler),
 ]
