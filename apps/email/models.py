@@ -226,7 +226,7 @@ class Email():
 
     @staticmethod
     def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
-                vote_url, product=None, products=None, asker_img= None):
+                vote_url, product=None, products=None, asker_img=None):
         """Please, supply products as their objects.
 
         Supplying a products list of more than one item will trigger WOSIB

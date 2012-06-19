@@ -323,14 +323,18 @@ class VoteDynamicLoader(URIHandler):
                 instance = self.create_instance(app=app, page_url=target,
                                                 vote_url=vote_url,
                                                 product_uuids=product_uuids,
-                                                sharing_message="")
+                                                sharing_message="",
+                                                user=user)
                 # update variables to reflect "creation"
                 instance_uuid = instance.uuid
 
                 self.redirect("%s%s" % (URL,
                                         url('VoteDynamicLoader', qs={
-                                            'instance_uuid': instance_uuid
+                                            'instance_uuid': instance_uuid,
+                                            'created': 1  # FYI only
                                         })))
+                return
+
             else:
                 self.response.out.write("No products?")
             return
@@ -373,6 +377,7 @@ class VoteDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
 
             'evnt': event,
             'product': product,
@@ -415,9 +420,10 @@ class VoteDynamicLoader(URIHandler):
         return
 
     def create_instance(self, app, page_url, vote_url='', product_uuids=None,
-                        sharing_message=""):
+                        sharing_message="", user=None):
         """Helper to create an instance without question."""
-        user = User.get_or_create_by_cookie(self, app)
+        if not user:
+            User.get_or_create_by_cookie(self, app)
 
         logging.debug('domain = %r' % get_domain(page_url))
         # the href will change as soon as the instance is done being created!

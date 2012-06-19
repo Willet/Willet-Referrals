@@ -184,6 +184,12 @@
             <p class="text-center" style="clear:both; padding-top: 24px;">
                 <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
                 on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
+                {% if debug %}
+                    <br/>
+                    <b>DEBUG</b>: instance_uuid {{ instance_uuid }},
+                                  user.uuid {{ user.uuid }},
+                                  asker.uuid {{ instance.asker.uuid }}
+                {% endif %}
             </p>
             {% block screens %}{% endblock %}
         </div>

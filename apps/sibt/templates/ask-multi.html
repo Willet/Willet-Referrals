@@ -220,10 +220,10 @@
     };
 
     var updateParentIframeImgSelection = function (src) {
+        console.log('calling updateParentIframeImgSelection(' + src + ')');
         if (window && window.parent && window.parent.$) {
             var wp$ = window.parent.$;
-            console.log(src);
-            wp$('.product-image').eq(1).attr('src', src);
+            wp$('#second_product_src_drop_target').attr('src', src);
         }
     };
 {% endblock js_functions %}

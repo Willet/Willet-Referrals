@@ -17,25 +17,6 @@ from util.consts import *
 from util.cookies import LilCookies
 
 
-user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, http://js-kit.com/', 'ceron.jp',
-    'Mozilla/5.0 (compatible; MSIE 6.0b; Windows NT 5.0) Gecko/2009011913 Firefox/3.0.6 TweetmemeBot',
-    'Jakarta Commons-HttpClient/3.1',
-    'Crowsnest/0.5 (+http://www.crowsnest.tv/)',
-    'Python-urllib/2.6',
-    'Mozilla/5.0 (compatible; HiveAnalyzer http://www.businessinsider.com)',
-    'trunk.ly spider contact@trunk.ly',
-    'Squrl Java/1.6.0_22',
-    'CURL/1.1',
-    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-    'PycURL/7.19.7', "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)",
-    'MetaURI API/2.0 +metauri.com', 'Mozilla/5.0 (compatible; PaperLiBot/2.1)',
-    'MLBot (www.metadatalabs.com/mlbot)', 'Mozilla/5.0 (compatible; Butterfly/1.0; +http://labs.topsy.com/butterfly/) Gecko/2009032608 Firefox/3.0.8',
-    'Mozilla/5.0 (compatible; Birubot/1.0) Gecko/2009032608 Firefox/3.0.8', 'Mozilla/5.0 (compatible; PrintfulBot/1.0; +http://printful.com/bot.html)',
-    'Summify (Summify/1.0.1; +http://summify.com)', 'LinkedInBot/1.0 (compatible; Mozilla/5.0; Jakarta Commons-HttpClient/3.1 +http://www.linkedin.com)',
-    'Mozilla/5.0 (compatible; ScribdReader/1.0; +http://www.scribd.com/reader.html)', 'LongURL API', 'InAGist URL Resolver (http://inagist.com)',
-    'Java/1.6.0_16', 'Java/1.6.0_26', 'Ruby', 'Twitturly / v0.6'
-    'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2) Gecko/20100115 Firefox/3.6 (FlipboardProxy/1.1; +http://flipboard.com/browserproxy)' ]
-
 ALPHABET = 'ZbDYFQLXx0PsHtmIcC2GA1qjB78VUdywJThkpnfWrOgSKu3olM59RizE64vNae'
 
 
@@ -295,6 +276,8 @@ user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, h
     'trunk.ly spider contact@trunk.ly',
     'Squrl Java/1.6.0_22',
     'CURL/1.1',
+    'facebookexternalhit/1.1',
+    'ia_archiver',
     'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     'PycURL/7.19.7', "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)",
     'MetaURI API/2.0 +metauri.com', 'Mozilla/5.0 (compatible; PaperLiBot/2.1)',
