@@ -250,7 +250,7 @@ class Email():
             to_first_name = to_name
 
         try:
-            product_img = product.images[0]
+            product_img = products[0].images[0]
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
@@ -317,7 +317,7 @@ class Email():
 
         product_url = "%s#open=1" % instance.url  # full product link
         try:
-            product_img = product.images[0]
+            product_img = instance,products[0].images[0]
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
