@@ -316,7 +316,13 @@ class Email():
         name = instance.asker.get_full_name() or "Savvy Shopper"
 
         product_url = "%s#open=1" % instance.url  # full product link
-        product_img = instance.product_img
+        try:
+            product_img = product.images[0]
+        except (TypeError, IndexError), err:
+            logging.debug('error while getting product_img: %s' % err,
+                          exc_info=True)
+            product_img = instance.product_img or \
+                          'http://rf.rs/static/imgs/blank.png' # blank
 
         logging.info("product_url, product_img = %r" % [product_url,
                                                         product_img])

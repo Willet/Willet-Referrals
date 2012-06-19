@@ -9,6 +9,23 @@
 
 
 {% block screens %}
+    <div id="wosib_select_window">
+        {% if not embed %}
+            <div class="title_bar">
+                <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
+            </div>
+        {% endif %}
+        <div style="width:400px;float:left;margin:47px 0 0 47px;">
+            <div id="selection_box_container">
+                <div id="selection_box"><!-- JS --></div>
+            </div>
+        </div>
+        <div style="width:132px;float:right;margin:96px -1px 0 0px;">
+            <button class="continue_to splash">Continue</button>
+        </div>
+    </div>
+
     <!--                          Splash Screen                             -->
     <div id="splash">
         {% if not embed %}
@@ -17,12 +34,11 @@
                 <div>&ldquo;What do <em>you</em> think?&rdquo;</div>
             </div>
         {% endif %}
-        <div style="margin-top:10px">
-            <!-- div class="step">Select items to ask.</div -->
+        <!-- div style="margin-top:10px">
             <div id="selection_box_container">
-                <div id="selection_box"><!-- JS --></div>
+                <div id="selection_box" --><!-- JS --><!-- /div>
             </div>
-        </div>
+        </div -->
         <div class="options">
             <div class="restrictedWidth">
                 <textarea id='shareText' name='shareText' maxlength='1000'>I like both of these items. Which one do you like more?</textarea>
@@ -202,52 +218,66 @@
         uuids.push($('#selection_box>img').prop('alt'));
         return uuids.join(',');
     };
+
+    var updateParentIframeImgSelection = function (src) {
+        if (window && window.parent && window.parent.$) {
+            var wp$ = window.parent.$;
+            console.log(src);
+            wp$('.product-image').eq(1).attr('src', src);
+        }
+    };
 {% endblock js_functions %}
 
 
 
 {% block js_init %}
-    $(document).ready(function () {
-        /*  server (AskDynamicLoader) guarantees there to be > 0 products;
-            if there are 0 products, this script is not loaded at all.
-        */
-        var cart_products = [ {% for product in products %}
-            {   "id": "{{product.id}}",
-                "title": "{{product.title}}",
-                "image": "{{product.image}}",
-                "uuid": "{{product.product_uuid}}"
-            },
-        {% endfor %} {}];
-        cart_products.pop(); // remove trailing element... IE7 trailing comma patch
+    /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+        if there are 0 products, this script is not loaded at all.
+    */
+    var cart_products = [ {% for product in products %}
+        {   "id": "{{product.id}}",
+            "title": "{{product.title}}",
+            "image": "{{product.image}}",
+            "uuid": "{{product.product_uuid}}"
+        },
+    {% endfor %} {}];
+    cart_products.pop(); // remove trailing element... IE7 trailing comma patch
 
-        // deal with the images only if they are there.
-        var $selection_box_container = $('#selection_box_container');
-        if ($selection_box_container && $selection_box_container.length) {
-            var $selection_box = $('#selection_box');
-            for (var i = 1; i < cart_products.length; i++) {
-                $selection_box
-                    .append($('<img />', { // 2nd image onwards are in a dropdown
-                        'src': cart_products[i].image,
-                        'alt': cart_products[i].uuid
-                    }));
-            }
-            $selection_box_container
-                .append($('<img />', { // 1st image is just a tag
-                    'src': cart_products[0].image,
-                    'alt': cart_products[0].uuid,
-                    'css': {
-                        'max-width': '150px',
-                        'max-height': '150px'
-                    }
-                }))
-                .append($('<img />', {
-                    'src': '/static/imgs/or-150.png'
-                }))
-                .append($selection_box);
+    // deal with the images only if they are there.
+    var $selection_box_container = $('#selection_box_container');
+    if ($selection_box_container && $selection_box_container.length) {
+        var $selection_box = $('#selection_box');
+        for (var i = 1; i < cart_products.length; i++) {
             $selection_box
-                .imageDropdown();
+                .append($('<img />', { // 2nd image onwards are in a dropdown
+                    'src': cart_products[i].image,
+                    'alt': cart_products[i].uuid
+                }));
         }
+        $selection_box_container
+            .append($('<img />', { // 1st image is just a tag
+                'src': cart_products[0].image,
+                'alt': cart_products[0].uuid,
+                'css': {
+                    'max-width': '120px',
+                    'max-height': '120px'
+                }
+            }))
+            .append($('<img />', {
+                'src': '/static/imgs/or-100.png',
+                'css': {'margin': '0 2px 8px 0'}
+            }))
+            .append($selection_box);
+        $selection_box.imageDropdown({
+            'width': '150px',
+            'height': '120px',
+            'select': updateParentIframeImgSelection
+        });
+    }
+
+    $('.continue_to.splash').click(function () {
+        showScreen('splash');
     });
 
-    showScreen('splash');
+    showScreen('wosib_select_window');
 {% endblock js_init %}

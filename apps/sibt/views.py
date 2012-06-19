@@ -285,7 +285,7 @@ class VoteDynamicLoader(URIHandler):
         user = User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
 
-        (instance, _) = get_instance_event(urihandler=self)
+        (instance, _) = get_instance_event(urihandler=self, user=user)
         if instance and instance.is_live:
             logging.debug('running instance found')
 
@@ -304,7 +304,12 @@ class VoteDynamicLoader(URIHandler):
         else:  # v11 mode: auto-create
             logging.debug('running instance not found - creating one')
 
-            app = get_app(urihandler=self)
+            if instance:  # i.e. found an expired instance
+                # we know we came from the same client, right? right.
+                app = instance.app_
+            else:
+                app = get_app(urihandler=self)
+
             if not app:
                 logging.error("Could not find SIBT app for %s" % store_url)
                 self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
@@ -382,7 +387,7 @@ class VoteDynamicLoader(URIHandler):
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
-            'fb_comments_url': '%s' % (link.get_willt_url()),
+            'fb_comments_url': link.target_url,
             'products': products,
             'share_url': share_url,
             'sharing_message': strip_html(sharing_message),

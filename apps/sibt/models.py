@@ -196,23 +196,20 @@ class SIBT(App):
         if not user.is_admin() and not USING_DEV_SERVER:
             try:
                 Email.emailDevTeam("""
-                    SIBT INSTANCE:<br />
+                    %s (%s) created an SIBT instance (%s) on %s
+                    (http://rf.rs/%s).<br />
+                    <br />
                     dialog = %s <br />
-                    uuid= %s<br />
-                    user.key= %s<br />
-                    page= %s<br />
-                    link= http://rf.rs/%s<br />
-                    name= %s<br />
                     fb_uuid= %s<br />
                     fb_access_token= %s <br />
                     <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
                     """ % (
-                        dialog,
+                        user.name or "Someone",
+                        user.get_attr('email'),
                         uuid,
-                        user.key(),
                         link.target_url,
                         link.willt_url_code,
-                        user.get_full_name(),
+                        dialog,
                         user.get_attr('fb_identity'),
                         user.get_attr('fb_access_token'),
                         user.get_attr('fb_identity'),
@@ -662,7 +659,6 @@ def get_instance_event(**kwargs):
 
     instance = None
     link = None
-    target = get_target_url(req.get('url', ''))
 
     # stage 1: by uuid
     instance_uuid = req.get('instance_uuid')
@@ -672,12 +668,12 @@ def get_instance_event(**kwargs):
         return (instance, 'SIBTShowingVote')
 
     # stage 2: by user and page combo
-    page_url = req.get('page_url', '')
-    user = get_user(urihandler=urihandler)
+    page_url = req.get('page_url', get_target_url(req.get('url', '')))
+    user = kwargs.get('user', get_user(urihandler=urihandler))
     if user and page_url:
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
     if instance:
-        logging.info('Found instance by page/url: %s' % instance.uuid)
+        logging.info('Found instance by user/page: %s' % instance.uuid)
         return (instance, 'SIBTShowingResults')
 
     # stage 3: by willet code (not memcached)
@@ -689,39 +685,6 @@ def get_instance_event(**kwargs):
         if instance:
             logging.info('Found instance by code: %s' % willet_code)
             return (instance, 'SIBTShowingResults')
-
-    app = get_app(urihandler=urihandler)
-    if user and app:
-        instances = SIBTInstance.all(keys_only=True)\
-                                .filter('url =', page_url)\
-                                .fetch(100)
-        key_list = [key.id_or_name() for key in instances]
-        action = SIBTClickAction.get_for_instance(app, user, page_url,
-                                                  key_list)
-        if action:
-            instance = action.sibt_instance
-
-        if instance:
-            logging.info('Found instance by actions: %s' % instance.uuid)
-            return (instance, 'SIBTShowingVote')
-
-        if not link:
-            link = Link.all()\
-                       .filter('user =', user)\
-                       .filter('target_url =', target)\
-                       .filter('app_ =', app)\
-                       .get()
-        if link:
-            instance = link.sibt_instance.get()
-        if instance:
-            logging.info('Found instance by user/app: %s' % instance.uuid)
-            return (instance, 'SIBTShowingVote')
-
-    if user and target:
-        instance = SIBTInstance.get_by_asker_for_url(user, target)
-        if instance:
-            logging.info('Found instance by user/target: %s' % instance.uuid)
-            return (instance, 'SIBTShowingVote') # could be none
 
     return (None, '')
 
