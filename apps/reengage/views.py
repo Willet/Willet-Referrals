@@ -1,293 +1,85 @@
 import logging
-from urllib import urlencode
-from google.appengine.api.taskqueue import taskqueue
-from apps.reengage.models import TwitterAssociation
-from util import httplib2
-from util.urihandler import URIHandler
-from util.local_consts import SHOPIFY_APPS
 from django.utils import simplejson as json
-from util.helpers import url as build_url
-from util import tweepy
+from google.appengine.ext import db
+from util.urihandler import URIHandler
+from util.helpers import to_dict
+from apps.reengage.models import *
 
-def _ReEngage_request(url, verb="GET", payload=None, headers=None):
-    """ Returns a the result of a request.
+#TODO: How to avoid stupid `if json else` construct
+#TODO: How to return json response
+#TODO: Error handling
+#TODO: Reduce dependence on Shopify
 
-    Returns the following:
-    - success: If the request succeeded or not
-    - result : The result or a reason for failure
-    """
-    response_types = ["text/plain", "text/javascript", "application/json"]
-    status_codes   = [200, 201]
-    response       = None
-    content        = None
+def get_queue(request):
+    store_url = request.get("shop")
+    if not store_url:
+        return None
 
-    http = httplib2.Http()
-    try:
-        if payload:
-            response, content = http.request(url, verb, urlencode(payload),
-                                             headers)
+    queue = ReEngageQueue.get_by_url(store_url)
+    return queue
+
+class ReEngageQueueHandler(URIHandler):
+    def get(self):
+        """Get all queued elements for a shop"""
+        if self.is_json():
+            queue = get_queue(self.request)
+            if not queue:
+                self.respond(400)
+                return
+
+            logging.info(queue.queued)
+            objects = [to_dict(db.get(obj)) for obj in queue.queued]
+
+            json_response = json.dumps(objects)
+            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
+            self.response.out.write(json_response)
         else:
-            response, content = http.request(url, verb, headers=headers)
-    except:
-        return False, "Problem making request. Invalid URL / Verb?"
-
-    if not any(x in response["content-type"] for x in response_types):
-        return False, "Invalid content type"
-
-    if not int(response.status) in status_codes:
-        return False, "Invalid status code"
-
-    # Other checks?
-
-    logging.info("Response: %s" % response)
-    logging.info("Content : %s" % content)
-
-    return True, content
-
-def _FB_get_access_token():
-    access_token_url = "https://graph.facebook.com/oauth/access_token"
-    data = {
-        "grant_type"   : "client_credentials",
-        "redirect_uri" : access_token_url,
-        "client_id"    : SHOPIFY_APPS["ReEngage"]["facebook"]["app_id"],
-        "client_secret": SHOPIFY_APPS["ReEngage"]["facebook"]["app_secret"]
-    }
-
-    success, content = _ReEngage_request(access_token_url, "POST", data)
-
-    token = None
-    if success:
-        token = content.split("=")[1]
-    else:
-        logging.error("FB Token Error: %s" % content)
-
-    return token
-
-def _FB_get_page_id(url):
-    graph_url = "https://graph.facebook.com/"
-    data = {
-        "id": url
-    }
-    final_url = "%s?%s" % (graph_url, urlencode(data))
-
-    success, content = _ReEngage_request(final_url, payload=data)
-
-    id = None
-    if success:
-        try:
-            result_dict = json.loads(content)
-            id = result_dict["id"]
-        except:
-            logging.error("FB Page Error: %s" % content)
-            return None
-    else:
-        logging.error("FB Page Error: %s" % content)
-
-    return id
-
-def _FB_post(message, page_id, token):
-    destination_url = "https://graph.facebook.com/feed"
-    data = {
-        "id"          : page_id,
-        "message"     : message,
-        "access_token": token
-    }
-
-    success, content = _ReEngage_request(destination_url, "POST", data)
-
-    if not success:
-        logging.error("FB Post Error: %s" % content)
-
-    return success
-
-def _Twitter_find_user_by_query(query):
-    """ Search for a twitter user (or users) based on some query.
-
-    Note: It takes somewhere around 30 seconds to go from the intial tweet to
-     being searchable with the twitter API
-    """
-    users    = []
-
-    base_url = "http://search.twitter.com/search.json"
-    params   = {
-        "q"          : "%s source:tweet_button" % query,
-        "result_type": "recent",
-        "show_user"  : "true"
-    }
-
-    search_url = "%s?%s" %(base_url, urlencode(params))
-    logging.info("Search URL: %s" % search_url)
-
-    success, content = _ReEngage_request(search_url)
-    logging.info("Success? %s\nContent: %s" % (success, content))
-
-    if not success:
-        return users
-
-    results = json.loads(content)
-
-    results = results.get("results")
-    if not results:
-        return users
-
-    for result in results:
-        user = result.get("from_user")
-        if user:
-            users.append(user)
-
-    return list(set(users))
-
-def _Twitter_associate_user(url, users):
-    associations, _ = TwitterAssociation.get_or_create(url)
-    for user in users:
-        if user not in associations.handles:
-            associations.handles.append(user)
-
-    associations.put()
-
-def _Twitter_post(message, url):
-    #Oauth is hard: let's go shopping!
-    consumer_key    = "xGzwuxKSs1Lc6EFd0MA"
-    consumer_secret = "5kKGsEAG23SAFlWy4e8UB02LmDSV9BoDXqyL6NUtxNg"
-
-    # In the long run, we probably want to have the user authenticate with
-    # their twitter handle. For now, this is a proof of concept. Use the app
-    # account.
-    key    = "600239400-Re2J1Q6ZpINrzpjHFOwH9G67IDOPiysDfrKHTZbP"
-    secret = "gFxBtgjn4TH18frYiNySolCUo5SGV49UIMbLwKmQGY"
-
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(key, secret)
-
-    api = tweepy.API(auth)
-
-    associations, _ = TwitterAssociation.get_or_create(url)
-    for handle in associations.handles:
-        # Assume messages are 120 characters or less
-        # because usernames can be up to 20 characters
-        api.update_status("@%s %s" % (handle, message))
-
-class ReEngageControlPanel(URIHandler):
-    def get(self, network=None):
-        if not network:
-            network = "fb"
-
-        self.response.out.write(self.render_page('control_panel.html', {
-            "network": network
-        }))
-
-class ReEngageProduct(URIHandler):
-    def get(self):
-        self.response.out.write(self.render_page('product.html', {
-            "host": self.request.host_url
-        }))
-
-class ReEngageFindTweet(URIHandler):
-    def get(self):
-        self.post()
+            page = self.render_page('index.html', {})
+            self.response.out.write(page)
 
     def post(self):
-        url   = self.request.get("url")
-        now   = (self.request.get("now", "false") == "true")
+        """Create a new post element in the queue"""
+        queue = get_queue(self.request)
+        if not queue:
+            self.respond(400)
+            return
 
-        if now:
-            logging.info("URL: %s" % url)
+        # TODO: Validate the arguments
+        content = self.request.get("content")
+        method  = self.request.get("method", "append")
 
-            users = _Twitter_find_user_by_query(url)
-            logging.info("Users: %s" % users)
+        post = ReEngagePost(content=content, network="facebook")
+        post.put()
 
-            _Twitter_associate_user(url, users)
+        if method == "append":
+            queue.append(post)
         else:
-            logging.info("Putting on task queue...")
-            params = {
-                "url": url,
-                "now": "true"
-            }
-            taskqueue.add(url=build_url('ReEngageFindTweet'),
-                          countdown=30, params=params)
+            queue.prepend(post)
 
-        self.response.out.write ("200 OK")
+        self.respond(200)
 
-class ReEngage(URIHandler):
-    def get(self, network=None):
-        if not network:
-            network = "fb"
-
-        message = self.request.get("message", "")
-        template_values = {
-            "message": message,
-            "host": self.request.host_url,
-            "network": network
-        }
-        self.response.out.write(self.render_page('%s.html' % network,
-                                                 template_values))
-
-    def post(self, network=None):
-        networks = {
-            "fb": self._FB_ReEngage,
-            "t" : self._Twitter_ReEngage,
-        }
-
-        networks.get(network, "fb")()
-
-    def _Twitter_ReEngage(self):
-        url     = self.request.get("url")
-        message = self.request.get("message", url)
-
-        _Twitter_post(message, url)
-
-        self.redirect(build_url("ReEngageControlPanel", "t"))
-        return
-
-    def _FB_ReEngage(self):
-        url     = self.request.get("url")
-        message = self.request.get("message", "Remember me?")
-
-        # get an access token
-        token = _FB_get_access_token()
-
-        if not token:
-            message = {
-                "message": "Your application seems to be misconfigured."
-            }
-            self.redirect(build_url("ReEngageControlPanel", "fb",
-                                    qs=message))
+    def delete(self):
+        """Delete all post elements in this queue"""
+        queue = get_queue(self.request)
+        if not queue:
+            self.respond(400)
             return
 
-        # get the id of the page
-        page_id = _FB_get_page_id(url)
-
-        if not page_id:
-            message = {
-                "message": "We couldn't message the page you requested."
-            }
-            self.redirect(build_url("ReEngageControlPanel", "fb",
-                                    qs=message))
-            return
-
-        # post the message
-        success = _FB_post(message, page_id, token)
-
-        if not success:
-            message = {
-                "message": "There was a problem posting the message."
-            }
-            self.redirect(build_url("ReEngageControlPanel", "fb",
-                                    qs=message))
-            return
-
-        message = {
-            "message": "Message sent successfully!"
-        }
-
-        self.redirect(build_url("ReEngageControlPanel", "fb",
-                                qs=message))
-        return
+        queue.remove_all()
+        self.respond(200)
 
 
+class ReEngagePostHandler(URIHandler):
+    # Unused, for now
 
+    def get(self):
+        """Get all details for a given post"""
+        self.respond(200)
 
+    def put(self):
+        """Update the details of a post"""
+        self.respond(200)
 
-
-
-
+    def delete(self):
+        """Delete an individual post"""
+        self.respond(200)

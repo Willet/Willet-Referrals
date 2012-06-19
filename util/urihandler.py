@@ -117,6 +117,17 @@ class URIHandler(webapp.RequestHandler):
         cookie = LilCookies(self, COOKIE_SECRET)
         return cookie.get_secure_cookie(name=field)
 
+    def is_json(self):
+        if self.request.headers.get('x-requested-with'):
+            return True
+        return False
+
+    def respond(self, code):
+        # It seems odd to use 'error' in our code
+        # So, we just rename the method to 'respond' even it doesn't change
+        # that fact.
+        self.error(code)
+
 # end class
 
 
