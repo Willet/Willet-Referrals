@@ -20,9 +20,7 @@
                 // 'display': 'inline-block',
                 'cursor': 'pointer',
                 'click': function () {},  // custom event
-                'select': function (selection) {  // custom event
-                    console.log('default function called');
-                },
+                'select': function (selection) {},  // custom event
                 'hover': function () {},  // custom event
             };
 
@@ -133,7 +131,6 @@
                     $selected_image.click(openDropdown);
                     $this.append($selected_image);
 
-                    console.log('called settings.select(' + $selected_image.attr('src') + ')');
                     settings.select($selected_image.attr('src'));  // call custom event
                     return closeDropdown();
                 };
