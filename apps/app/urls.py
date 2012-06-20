@@ -10,5 +10,5 @@ urlpatterns = [
     # Processes
     (r'/a/appClicksCounter',    AppClicksCounter),
     (r'/a/batchRequest',        BatchRequest),
-    (r'/a/storeSurvey',			BatchStoreSurvey)
+    (r'/a/storeSurvey',         BatchStoreSurvey)
 ]

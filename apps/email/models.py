@@ -226,7 +226,7 @@ class Email():
 
     @staticmethod
     def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
-                vote_url, product=None, products=None, asker_img= None):
+                vote_url, product=None, products=None, asker_img=None):
         """Please, supply products as their objects.
 
         Supplying a products list of more than one item will trigger WOSIB
@@ -250,7 +250,7 @@ class Email():
             to_first_name = to_name
 
         try:
-            product_img = product.images[0]
+            product_img = products[0].images[0]
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
@@ -316,11 +316,15 @@ class Email():
         name = instance.asker.get_full_name() or "Savvy Shopper"
 
         product_url = "%s#open=1" % instance.url  # full product link
-
-        try:
-            product_img = instance.products[0].images[0]
-        except:
+        
+	try:
             product_img = instance.product_img
+            product_img = instance.products[0].images[0]
+        except (TypeError, IndexError), err:
+            logging.debug('error while getting product_img: %s' % err,
+                          exc_info=True)
+            product_img = instance.product_img or \
+                          'http://rf.rs/static/imgs/blank.png' # blank
 
         logging.info("product_url, product_img = %r" % [product_url,
                                                         product_img])
@@ -347,11 +351,7 @@ class Email():
 
     @staticmethod
     def SIBTVoteCompletion(instance, product):
-        client = getattr(product, 'client', None)
-        if not client:
-            logging.warn('client uninstalled app; '
-                         'not emailing on behalf of it.')
-            return  # client uninstalled
+        client = getattr(instance.app, 'client', None)
 
         if not instance.asker:
             logging.warn('The deuce? Instance has no asker.')
