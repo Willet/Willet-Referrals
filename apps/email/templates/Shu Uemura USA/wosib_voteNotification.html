@@ -10,9 +10,16 @@
                     <p> Hi {{name}}, </p>
                     <p>
                         {% if product %}
-                        Your friend recommends getting <b>{{ product.title }}</b>.
+                            Your friend recommends getting <b>{{ product.title }}</b>.
+                            <br />
+                            <br />
+                            {% if product.images.0 %}
+                                <center>
+                                    <img src="{{ product.images.0 }}" />
+                                </center>
+                            {% endif %}
                         {% else %}
-                        Your friend voted for one of your products.
+                            Your friend voted for one of your products.
                         {% endif %}
                     </p>
                     <table cellspacing="0"

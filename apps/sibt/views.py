@@ -224,8 +224,11 @@ class AskDynamicLoader(URIHandler):
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
+
+            'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
             'share_url': link.get_willt_url(), # page_url
+
             'store_domain': store_url,
             'target_url': page_url,
 
@@ -282,7 +285,7 @@ class VoteDynamicLoader(URIHandler):
         user = User.get_or_create_by_cookie(self, app=None)
         vendor = self.request.get('vendor', '')  # changes template used
 
-        (instance, _) = get_instance_event(urihandler=self)
+        (instance, _) = get_instance_event(urihandler=self, user=user)
         if instance and instance.is_live:
             logging.debug('running instance found')
 
@@ -301,7 +304,12 @@ class VoteDynamicLoader(URIHandler):
         else:  # v11 mode: auto-create
             logging.debug('running instance not found - creating one')
 
-            app = get_app(urihandler=self)
+            if instance:  # i.e. found an expired instance
+                # we know we came from the same client, right? right.
+                app = instance.app_
+            else:
+                app = get_app(urihandler=self)
+
             if not app:
                 logging.error("Could not find SIBT app for %s" % store_url)
                 self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
@@ -315,14 +323,18 @@ class VoteDynamicLoader(URIHandler):
                 instance = self.create_instance(app=app, page_url=target,
                                                 vote_url=vote_url,
                                                 product_uuids=product_uuids,
-                                                sharing_message="")
+                                                sharing_message="",
+                                                user=user)
                 # update variables to reflect "creation"
                 instance_uuid = instance.uuid
 
                 self.redirect("%s%s" % (URL,
                                         url('VoteDynamicLoader', qs={
-                                            'instance_uuid': instance_uuid
+                                            'instance_uuid': instance_uuid,
+                                            'created': 1  # FYI only
                                         })))
+                return
+
             else:
                 self.response.out.write("No products?")
             return
@@ -365,6 +377,7 @@ class VoteDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
 
             'evnt': event,
             'product': product,
@@ -379,7 +392,7 @@ class VoteDynamicLoader(URIHandler):
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
             'target_url': target,
-            'fb_comments_url': '%s' % (link.get_willt_url()),
+            'fb_comments_url': link.target_url,
             'products': products,
             'share_url': share_url,
             'sharing_message': strip_html(sharing_message),
@@ -407,9 +420,10 @@ class VoteDynamicLoader(URIHandler):
         return
 
     def create_instance(self, app, page_url, vote_url='', product_uuids=None,
-                        sharing_message=""):
+                        sharing_message="", user=None):
         """Helper to create an instance without question."""
-        user = User.get_or_create_by_cookie(self, app)
+        if not user:
+            User.get_or_create_by_cookie(self, app)
 
         logging.debug('domain = %r' % get_domain(page_url))
         # the href will change as soon as the instance is done being created!
