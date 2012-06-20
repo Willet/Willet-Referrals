@@ -11,6 +11,8 @@ urlpatterns = [
     (r'/reengage/find_tweet',   ReEngageFindTweet),
 
     # Re-engage handlers (beta)
-    (r'/r/?$'      , ReEngageQueueHandler),
-    (r'/r/(\w+)/?$', ReEngagePostHandler),
+    (r'/r/shopify/?'            , ReEngageLanding),
+    (r'/r/shopify/welcome/?$'   , ReEngageWelcome),
+    (r'/r/shopify/queue/?$'     , ReEngageQueueHandler),
+    (r'/r/shopify/post/(\w+)/?$', ReEngagePostHandler),
 ]
