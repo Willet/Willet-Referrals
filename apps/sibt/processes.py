@@ -338,36 +338,36 @@ class StartPartialSIBTInstance(URIHandler):
 
 
 class SendFriendAsks(URIHandler):
-    """Sends messages to email & FB friends.
-
-    Expected inputs:
-        friends: JSON-encoded <Array> [ <array> [ <string> type,
-                                                  <string> name,
-                                                  <string> identifier ]
-        asker: JSON-encoded <array> [<string> name,
-                                     <string> email_address [,
-                                     <string> picture_url ]]
-        msg: <string> message
-        default_msg: <string> message before user edited it
-        app_uuid: <string> a SIBT app uuid
-        product_uuid: <string> a <Product> uuid
-        products: <string> a CSV of <Product> uuids
-        willt_code: <string> willt_code corresponding to a PartialSIBTInstance
-        user_uuid: <string> a <User> uuid
-        fb_access_token: <string> a Facebook API access token for this user
-        fb_id: <string> a Facebook user id for this user
-        instance_uuid (optional): if not empty, will ask friends about
-                                  this FULL instance.
-
-    Expected output (JSON-encoded):
-        success: <Boolean> at least some friends were successfully contacted
-        data: <Dict>
-            message: <String> description of outcome
-            warnings: <Array> [ <string> explanation of any incompleted
-                                friend asks ]
-    """
+    """Sends messages to email & FB friends."""
     def post(self):
-        """See class docstring for details."""
+        """
+        Expected inputs:
+            friends: JSON-encoded <Array> [ <array> [ <string> type,
+                                                    <string> name,
+                                                    <string> identifier ]
+            asker: JSON-encoded <array> [<string> name,
+                                        <string> email_address [,
+                                        <string> picture_url ]]
+            msg: <string> message
+            default_msg: <string> message before user edited it
+            app_uuid: <string> a SIBT app uuid
+            product_uuid: <string> a <Product> uuid
+            products: <string> a CSV of <Product> uuids
+            willt_code: <string> willt_code corresponding to a PartialSIBTInstance
+            user_uuid: <string> a <User> uuid
+            fb_access_token: <string> a Facebook API access token for this user
+            fb_id: <string> a Facebook user id for this user
+            instance_uuid (optional): if not empty, will ask friends about
+                                    this FULL instance.
+
+        Expected output (JSON-encoded):
+            success: <Boolean> at least some friends were successfully contacted
+            data: <Dict>
+                message: <String> description of outcome
+                warnings: <Array> [ <string> explanation of any incompleted
+                                    friend asks ]
+
+        """
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
 
         # Shorthand
@@ -642,23 +642,23 @@ class SendFriendAsks(URIHandler):
 
 
 class SaveProductsToInstance(URIHandler):
-    """Modifies the products in an instance.
-
-    Expected inputs:
-        instance_uuid (required)
-        products (required): a comma-separated string of product UUIDs.
-        unshift (optional, 0): if 1, handler will only affect the order of
-                               the list of products.
-            Example: products in instance: 1,2,3,4
-                     products: 4,3
-                     unshift: 1
-                     -> products in instance (updated): 4,3,1,2
-
-    Expected outputs:
-        (200/400 response headers)
-    """
+    """Modifies the products in an instance."""
     def post(self):
-        """See class docstring for details."""
+        """
+        Expected inputs:
+            instance_uuid (required)
+            products (required): a comma-separated string of product UUIDs.
+            unshift (optional, 0): if 1, handler will only affect the order of
+                                the list of products.
+                Example: products in instance: 1,2,3,4
+                        products: 4,3
+                        unshift: 1
+                        -> products in instance (updated): 4,3,1,2
+
+        Expected outputs:
+            (200/400 response headers)
+
+        """
         logging.info("Saving product selection of a given instance")
 
         # Shorthand
