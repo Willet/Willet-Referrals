@@ -39,11 +39,6 @@ Last-Updated: Feb 13, 2012
 
  - gaesessions/: Used to get clients by email address in URIHandler.
 
- - mapreduce/: This is GAE's mapreduce lib. Unfortunately, it needs to be kept
-               in a top level folder. It is used to compute the analytics.
-
- - pipeline/: Future versions of mapreduce use the Pipeline lib.
-
  - static/: All static content is served from here. Right now, it's a bit messy.
 
  - util/: Random helpers and libs go in here.
@@ -68,8 +63,6 @@ GAE is controlled using yaml files. The syntax is really straight-forward!
 
  - index.yaml: Tells GAE which db indexes it needs to build and serve. Only edit
                if GAE complains about a missing index when you deploy.
-
- - mapreduce.yaml: Controls the mapreduce settings.
 
  - queue.yaml: Inits the task queues for running processes out-of-band.
 
