@@ -66,7 +66,7 @@ class ReEngageQueueHandler(URIHandler):
             if not queue:
                 logging.error("Could not find queue. Store URL: %s" %
                              self.request.get("shop"))
-                self.respond(400)
+                self.respond(404)
                 return
 
             json_response = queue.to_json()
@@ -82,7 +82,7 @@ class ReEngageQueueHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          self.request.get("shop"))
-            self.respond(400)
+            self.respond(404)
             return
 
         # TODO: Validate the arguments
@@ -99,7 +99,7 @@ class ReEngageQueueHandler(URIHandler):
         else:
             queue.prepend(post)
 
-        self.respond(200)
+        self.respond(201)
 
     def delete(self):
         """Delete all post elements in this queue"""
@@ -107,11 +107,11 @@ class ReEngageQueueHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          self.request.get("shop"))
-            self.respond(400)
+            self.respond(404)
             return
 
         queue.remove_all()
-        self.respond(200)
+        self.respond(204)
 
 
 class ReEngagePostHandler(URIHandler):
@@ -120,7 +120,7 @@ class ReEngagePostHandler(URIHandler):
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(400)
+            self.respond(404)
             return
 
         json_response = post.to_json()
@@ -129,16 +129,16 @@ class ReEngagePostHandler(URIHandler):
     def put(self, uuid):
         """Update the details of a post"""
         # Unused, for now
-        self.respond(200)
+        self.respond(204)
 
     def delete(self, uuid):
         """Delete an individual post"""
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(400)
+            self.respond(404)
             return
 
         # TODO: What about Keys that reference this?
         post.delete()
-        self.respond(200)
+        self.respond(204)
