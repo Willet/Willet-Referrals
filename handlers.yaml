@@ -1,9 +1,5 @@
 handlers:
 
-- url: /mapreduce(/.*)?
-  script: mapreduce/main.py
-  login: admin
-
 # Google App Engine Bingo
 #- url: /gae_bingo/static
 #  static_dir: apps/gae_bingo/static
