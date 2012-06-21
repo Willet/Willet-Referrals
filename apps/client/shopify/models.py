@@ -115,10 +115,6 @@ class ClientShopify(Client):
         return ClientShopify.all().filter('id =', id).get()
 
     @staticmethod
-    def get_by_uuid(uuid):
-        return ClientShopify.all().filter('uuid =', uuid).get()
-
-    @staticmethod
     def get_or_create(store_url, store_token='',
                       request_handler=None, app_type=""):
         store = ClientShopify.get_by_url(store_url)

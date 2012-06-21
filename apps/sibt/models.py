@@ -146,7 +146,7 @@ class SIBT(App):
         user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
-        act = SIBTClickAction.create(user, self, link)
+        # act = SIBTClickAction.create(user, self, link)
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -190,7 +190,7 @@ class SIBT(App):
         instance.put()
 
         # Now, make an action
-        SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
+        # SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
 
         # "if it is a non-admin share on live server"
         if not user.is_admin() and not USING_DEV_SERVER:
@@ -279,10 +279,6 @@ class SIBTInstance(Model):
             raise ValueError('Sharing message is too long')
         return True
 
-    @staticmethod
-    def _get_from_datastore(uuid):
-        return db.Query(SIBTInstance).filter('uuid =', uuid).get()
-
     def get_products(self):
         """Returns this instance's products as objects."""
         return [Product.get(product_uuid) for product_uuid in self.products]
@@ -366,10 +362,6 @@ class SIBTInstance(Model):
         """Correct, the user field is called asker for SIBTInstances."""
         return cls.all().filter('asker =', user).get()
 
-    @staticmethod
-    def get_by_uuid(uuid):
-        return SIBTInstance.get(uuid)
-
     def get_votes_count(self, user=None):
         """Count this instance's total number of votes.
 
@@ -382,7 +374,9 @@ class SIBTInstance(Model):
         * Vote counts are sharded; Actual votes are not.
         """
         if user and isinstance(user, User):
-            return SIBTVoteAction.all().filter('user =', user).count()
+            return SIBTVoteAction.all()\
+                                 .filter('user =', user)\
+                                 .filter('sibt_instance =', self).count()
 
         total = self.get_yesses_count() + self.get_nos_count()
         return total
@@ -478,10 +472,6 @@ class PartialSIBTInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid']
         super(PartialSIBTInstance, self).__init__(*args, **kwargs)
-
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        return db.Query(cls).filter('uuid =', uuid).get()
 
     def _validate_self(self):
         return True

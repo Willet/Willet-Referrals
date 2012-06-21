@@ -9,7 +9,7 @@ import django.utils.simplejson as json
 
 from apps.app.models import App, ShareCounter
 from apps.buttons.shopify.models import ButtonsShopify
-from apps.user.models import * 
+from apps.user.models import *
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
@@ -249,7 +249,7 @@ class BatchStoreSurvey(URIHandler):
                     continue
 
                 result = getattr(app, method)(**converted_params)
-                
+
                 body += u'%s %s %s %s &lt;%s&gt;<br />' % result
 
                 logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
@@ -268,8 +268,8 @@ class BatchStoreSurvey(URIHandler):
 
 
 class AppClicksCounter(URIHandler):
-    def post(self): 
-        app = App.get_by_uuid(self.request.get('app_uuid'))
+    def post(self):
+        app = App.get(self.request.get('app_uuid'))
 
         app.cached_clicks_count = 0
         if hasattr(app, 'links_'):

@@ -10,10 +10,65 @@ from util.model import Model
 from util.shopify_helpers import get_url_variants
 
 
+class ProductCollection(Model):
+    """A "category" of sorts that binds multiple products under one roof.
+
+    ProductShopifyCollection (subclass) contains functionality to automatically
+    associate products with their collections.
+    """
+
+    # ProductCollection.products is a ReferenceProperty in Product
+
+    # Client.collections is a ReferenceProperty
+    client = db.ReferenceProperty(Client, collection_name='collections')
+
+    def __init__(self, *args, **kwargs):
+        super(ProductCollection, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        if not self.client:
+            raise AttributeError('ProductCollections must have Client')
+        return True
+
+    @classmethod
+    def create(cls, **kwargs):
+        """Creates a collection in the datastore using kwargs.
+
+        Subclasses will have different field requirements.
+
+        It will raise its own error if
+        - you do not supply the appropriate fields, or
+        - you give it too many fields.
+        """
+        kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
+        kwargs['key_name'] = kwargs.get('uuid')
+
+        obj = cls(**kwargs)
+        obj.put()
+
+        return code_obj
+
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        """Looks up by kwargs[uuid], or creates one using the rest of kwargs
+        if none found.
+        """
+        code = cls.get(kwargs.get('uuid', ''))
+        if code:
+            return code
+
+        code = cls.create(**kwargs)
+        return code
+
+
 class Product(Model, db.polymodel.PolyModel):
     """Stores information about a store's product."""
     created = db.DateTimeProperty(auto_now_add=True)
     client = db.ReferenceProperty(Client, collection_name='products')
+
+    collection = db.ReferenceProperty(ProductCollection,
+                                      collection_name='products')
+
     description = db.TextProperty(default="")
     images = db.StringListProperty()  # list of urls to images
     price = db.FloatProperty(default=0.0)
@@ -41,11 +96,6 @@ class Product(Model, db.polymodel.PolyModel):
     def _get_memcache_key (cls, unique_identifier):
         """ unique_identifier can be URL or ID """
         return '%s:%s' % (cls.__name__.lower(), str (unique_identifier))
-
-    @staticmethod
-    def _get_from_datastore(uuid):
-        """Datastore retrieval using memcache_key"""
-        return db.Query(Product).filter('uuid =', uuid).get()
 
     @staticmethod
     def create(title, description='', images=None, tags=None, price=0.0,

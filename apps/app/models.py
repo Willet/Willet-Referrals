@@ -65,12 +65,6 @@ class App(Model, polymodel.PolyModel):
     def _validate_self(self):
         return True
 
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        """Datastore retrieval using memcache_key"""
-        # logging.debug("cls = %r, uuid = %s" % (cls, uuid))
-        return cls.all().filter('uuid =', uuid).get()
-
     def delete(self):
         """ When someone uninstalls, put in a saved state """
         self.old_client = self.client

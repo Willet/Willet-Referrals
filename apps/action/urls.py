@@ -2,6 +2,4 @@
 
 from .processes import TrackShowAction
 
-urlpatterns = [
-    (r'/action/trackshowaction', TrackShowAction),        
-]
+urlpatterns = []

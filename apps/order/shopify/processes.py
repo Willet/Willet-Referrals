@@ -15,7 +15,6 @@ from apps.client.shopify.models import ClientShopify
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.user.models import User
-from apps.user.actions import UserCreate
 
 from util import httplib2
 from util.helpers import *
@@ -102,8 +101,8 @@ class OrderIframeNotification(URIHandler):
                 user.merge_data(order.user)
 
                 # Delete the old User
-                logging.info("Deleting %s" % order.user.uuid)
-                UserCreate.get_by_user(order.user).delete()
+                # logging.info("Deleting %s" % order.user.uuid)
+                # UserCreate.get_by_user(order.user).delete()
 
                 order.user.delete()
 

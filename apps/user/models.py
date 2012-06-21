@@ -18,7 +18,6 @@ from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 from apps.email.models import Email
-from apps.user.actions import UserCreate
 
 from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
                         MEMCACHE_TIMEOUT
@@ -196,9 +195,8 @@ class User(db.Expando):
         cls.get(None) => None
         ...
         cls.get({invalid key}) => None
-
-        Each subclass must have a classmethod _get_from_datastore.
         """
+
         # so now you can do Model.get(urihandler.request.get(id))) without
         # worrying about the resulting None.
         if not memcache_key:
@@ -251,10 +249,6 @@ class User(db.Expando):
 
         user = cls(**kwargs)
         user.put()
-
-        # if app:
-        #     UserCreate.create(user, app) # Store User creation action
-
         return user
 
     @classmethod
@@ -276,9 +270,6 @@ class User(db.Expando):
         # Store email
         EmailModel.get_or_create(user, email)
 
-        # Store User creation action
-        # UserCreate.create(user, app)
-
         # Query the SocialGraphAPI
         taskqueue.add(queue_name='socialAPI',
                       url='/socialGraphAPI',
@@ -294,10 +285,6 @@ class User(db.Expando):
         user.put() # cannot put_later() here; app creation relies on merchant
 
         EmailModel.get_or_create(user, email) # Store email
-
-        # if app:  # optional, really
-        #     UserCreate.create(user, app) # Store User creation action
-
         return user
 
     @classmethod
