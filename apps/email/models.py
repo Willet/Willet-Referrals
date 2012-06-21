@@ -351,6 +351,7 @@ class Email():
 
     @staticmethod
     def SIBTVoteCompletion(instance, product):
+        """Vote is over! Send asker an email."""
         client = getattr(instance.app_, 'client', None)
 
         if not instance.asker:

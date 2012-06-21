@@ -23,12 +23,11 @@
 
     // Load CSS onto the page.
     var colorbox_css = '{% spaceless %}{# include "../../plugin/templates/css/colorbox.css" #}{% endspaceless %}'; /* we aren't using this, are we? */
-    var topbar_css = '{% spaceless %}{# include "../../plugin/templates/css/topbar.css" #}{% endspaceless %}'; /* we aren't using this, are we? */
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 
     // load CSS for colorbox as soon as possible!!
-    _willet.mediator.fire('loadCSSText', app_css + colorbox_css + topbar_css + popup_css);
+    _willet.mediator.fire('loadCSSText', app_css + colorbox_css + popup_css);
 
     // Stores user_uuid for all browsers - differently for Safari.
     var setCookieStorageFlag = function () {

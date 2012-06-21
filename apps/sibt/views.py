@@ -295,7 +295,6 @@ class VoteDynamicLoader(URIHandler):
                 self.response.out.write("This vote was not created properly.")
                 return
 
-
             # In the case of a Shopify product, it will fetch from a .json URL.
             product = Product.get_or_fetch(instance.url, app.client)
             products = [Product.get(uuid) for uuid in instance.products]
@@ -732,24 +731,6 @@ class ShowOnUnloadHook(URIHandler):
         return
 
 
-class SIBTGetUseCount (URIHandler):
-    """Outputs the number of times the SIBT app has been used.
-
-    This handler is GET-only. All other methods raise NotImplementedError.
-    """
-    def get(self):
-        """Returns number of button loads divided by 100."""
-        try:
-            product_uuid = self.request.get ('product_uuid')
-            button_use_count = memcache.get ("usecount-%s" % product_uuid)
-            if button_use_count is None:
-                button_use_count = int (SIBTShowingButton.all().count() / 100)
-                memcache.add ("usecount-%s" % product_uuid, button_use_count)
-            self.response.out.write (str (button_use_count))
-        except:
-            self.response.out.write ('0') # no shame in that?
-
-
 class SIBTInstanceStatusChecker(URIHandler):
     """Lightweight view for visitors to check their instances' statuses.
 
@@ -994,10 +975,6 @@ class SIBTServeScript(URIHandler):
         SIBTShowingButton.create(app=app, url=page_url, user=user)
         if app and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked_urls: %r' % tracked_urls)
-            if tracked_urls.count(page_url) >= app.num_shows_before_tb:
-                # user has viewed page more than once show top-bar-ask
-                show_top_bar_ask = True
 
             # this number or more URLs tracked for (app and user)
             threshold = UNSURE_DETECTION['url_count_for_app_and_user']
