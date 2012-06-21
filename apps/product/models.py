@@ -13,7 +13,7 @@ from util.shopify_helpers import get_url_variants
 class ProductCollection(Model):
     """A "category" of sorts that binds multiple products under one roof.
 
-    CollectionShopify (subclass) contains functionality to automatically
+    ProductShopifyCollection (subclass) contains functionality to automatically
     associate products with their collections.
     """
 

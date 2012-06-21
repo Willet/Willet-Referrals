@@ -8,9 +8,19 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.product.models import Product
+from apps.product.models import Product, ProductCollection
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
+
+
+class ProductShopifyCollection(ProductCollection):
+    """A "category" of sorts that binds multiple products under one roof.
+
+    ProductShopifyCollection contains methods necessary to fetch Shopify
+    stores' collection information.
+    """
+    pass  # TODO
+
 
 class ProductShopify(Product):
 

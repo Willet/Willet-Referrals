@@ -13,17 +13,13 @@ from urllib import urlencode
 from urlparse import urlparse, urlunsplit
 
 from django.utils import simplejson as json
-from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
 from apps.app.models import App
 from apps.client.models import Client
 from apps.link.models import Link
 from apps.product.models import Product
-from apps.sibt.actions import SIBTNoConnectFBCancelled, \
-                              SIBTShowingButton, SIBTShowingAskIframe, \
-                              SIBTShowingVote, SIBTShowingResults, \
-                              SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.actions import SIBTShowingButton, SIBTVoteAction
 from apps.sibt.models import get_app, get_instance_event, get_products, \
                              get_user
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
@@ -198,10 +194,6 @@ class AskDynamicLoader(URIHandler):
         else:
             link = Link.create(page_url, app, origin_domain, user)
 
-        # log this "showage"
-        if user_found:
-            SIBTShowingAskIframe.create(user, url=page_url, app=app)
-
         template_values = {
             'URL': URL,
             'title': "Which One ... Should I Buy This?",
@@ -333,7 +325,7 @@ class VoteDynamicLoader(URIHandler):
                 return
 
             else:
-                self.response.out.write("No products?")
+                self.response.out.write("No products / Expired?")
             return
 
         sharing_message = instance.sharing_message
@@ -668,10 +660,7 @@ class ShowFBThanks(URIHandler):
             else:
                 pass  # full instance? you're all set.
         elif partial != None:
-            # Create cancelled action
-            SIBTNoConnectFBCancelled.create(user,
-                                            url=partial.link.target_url,
-                                            app=partial.app_)
+            pass
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!

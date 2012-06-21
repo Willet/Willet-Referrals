@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
-from apps.app.models import *
-from apps.user.models import *
+import logging
 
+from django.utils import simplejson as json
+
+from apps.app.models import App
+from apps.link.models import Link
+from apps.order.shopify.models import OrderShopify
+from apps.user.models import User
+
+from util.consts import P3P_HEADER
+from util.helpers import set_user_cookie
 from util.urihandler import URIHandler
 
 class ShowProfilePage(URIHandler):
