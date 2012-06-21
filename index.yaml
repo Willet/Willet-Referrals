@@ -40,11 +40,6 @@ indexes:
   - name: client
   - name: used
 
-- kind: Link
-  properties:
-  - name: user
-  - name: creation_time
-
 - kind: SharePeriod
   properties:
   - name: app_uuid

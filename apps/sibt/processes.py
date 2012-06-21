@@ -200,13 +200,20 @@ class GetExpiredSIBTInstances(URIHandler):
         return self.get()
 
     def get(self):
-        """Gets a list of SIBT instances to be expired and emails to be sent"""
+        """Gets a list of SIBT instances to be expired and emails to be sent.
+
+        2012-06-21: add '?early=1' to expire all instances one day earlier
+                    than expected.
+        """
         try:
             right_now = datetime.now() # let's assume datetime is the class
         except AttributeError:
             # App Engine sometimes imports datetime as a module...
             # Has been reported to GOOG: http://code.google.com/p/googleappengine/issues/detail?id=7341
             right_now = datetime.datetime.now()
+
+        if self.request.get('early', False):
+            right_now = right_now + datetime.timedelta(days=1)
 
         expired_instances = SIBTInstance.all()\
                                         .filter('end_datetime <=', right_now)\
