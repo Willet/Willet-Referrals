@@ -17,11 +17,11 @@ class FetchShopifyProducts(URIHandler):
         logging.debug("requested client_uuid = %s" % self.request.get('client_uuid'))
         logging.debug("requested app_type = %s" % self.request.get('app_type'))
 
-        client = ClientShopify.get_by_uuid(self.request.get('client'))
+        client = ClientShopify.get(self.request.get('client'))
         if not client:
             logging.debug ("Cannot find by client; checking by client_uuid")
-            client = ClientShopify.get_by_uuid(self.request.get('client_uuid'))
-        
+            client = ClientShopify.get(self.request.get('client_uuid'))
+
         try:
             app_type = self.request.get('app_type')
             client.get_products(app_type)

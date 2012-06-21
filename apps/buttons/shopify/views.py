@@ -344,7 +344,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
         """Activate the billing charges after Shopify has setup the charge."""
 
         app_uuid = self.request.get('app_uuid')
-        app = ButtonsShopify.get_by_uuid(app_uuid)
+        app = ButtonsShopify.get(app_uuid)
 
         # Fetch the client
         # Since we cannot get the client until we have the app, in this case,

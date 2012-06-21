@@ -108,7 +108,7 @@ class SIBTSignUp(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        app = App.get_by_uuid(self.request.get('app_uuid'))
+        app = App.get(self.request.get('app_uuid'))
         user = User.get_or_create_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
@@ -250,104 +250,33 @@ class RemoveExpiredSIBTInstance(URIHandler):
 
 
 class TrackSIBTShowAction(URIHandler):
-    """DB Action tracking is *being* replaced by Google Analytics."""
+    """DB Action tracking is *being* replaced by Google Analytics.
+
+    DEPRECATED.
+    """
     def get(self):
         """Compatibility with iframe scheisse."""
         self.post()
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        app = App.get(self.request.get('app_uuid'))
-        action = None
-        duration = self.request.get('duration', 0.0)
-        event = self.request.get('evnt')
-        instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        success = False
-        url = self.request.get('target_url')
-        user = User.get(self.request.get('user_uuid'))
-
-        if not (app and event and user):
-            return # we can't track who did what or what they did; logging this item is not useful.
-
-        try:
-            logging.debug ('user = %s, instance = %s, event = %s' % (user, instance, event))
-            action_class = globals()[event]
-            action = action_class.create(user,
-                                         instance=instance,
-                                         url=url,
-                                         app=app,
-                                         duration=duration)
-        except Exception, e:
-            logging.debug('Could not create Action class %s: %s' % (event, e))
-        else:
-            logging.info('tracked action: %s' % action)
-            self.response.out.write('')
-            return
-
-        try:
-            logging.debug('Retrying by creating generic action class')
-            action = SIBTShowAction.create(user, instance, event)
-        except Exception, e:
-            logging.error('Could not log action!: %s' % e, exc_info=True)
-        else:
-            logging.info('tracked action: %s' % action)
-
         self.response.out.write('')
         return
 
 
 class TrackSIBTUserAction(URIHandler):
-    """ For actions WITH AN INSTANCE """
+    """ For actions WITH AN INSTANCE
+
+    DEPRECATED.
+    """
     def get(self):
-        """Compatibility with iframe shizz"""
+        """Compatibility with iframe scheisse"""
         self.post()
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        app = None
-        action = None
-        duration = 0.0
-        instance = None
-        success = False
-        user = None
-
-        if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))
-        if self.request.get('user_uuid'):
-            user = User.get(self.request.get('user_uuid'))
-        event = self.request.get('what')
-        url = self.request.get('target_url')
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
-
-        if not event or not user:
-            return # we can't track who did what or what they did; logging this item is not useful.
-
-        action = None
-        try:
-            action_class = globals()[event]
-            action = action_class.create(user,
-                    instance=instance,
-                    url=url,
-                    app=app,
-                    duration=duration
-            )
-        except Exception, e:
-            logging.warn('(this is not serious) could not create class: %s' % e)
-            try:
-                action = SIBTUserAction.create(user, instance, event)
-            except Exception, e:
-                logging.error('this is serious: %s' % e, exc_info=True)
-            else:
-                logging.info('tracked action: %s' % action)
-                success = True
-        else:
-            logging.info('tracked action: %s' % action)
-            success = True
-
         self.response.out.write('')
+        return
 
 
 class StartPartialSIBTInstance(URIHandler):
@@ -399,104 +328,6 @@ class StartPartialSIBTInstance(URIHandler):
                            msg, [app, link, product_uuids, user]))
             self.response.out.write(msg)  # this is for humans to read
         return
-
-
-class StartSIBTAnalytics(URIHandler):
-    def get(self):
-        things = {
-            'tb': {
-                'action': 'SIBTUserClickedTopBarAsk',
-                'show_action': 'SIBTShowingTopBarAsk',
-                'l': [],
-                'counts': {},
-            },
-            'b': {
-                'action': 'SIBTUserClickedButtonAsk',
-                'show_action': 'SIBTShowingButton',
-                'l': [],
-                'counts': {},
-            }
-        }
-        actions_to_check = [
-            'SIBTShowingAskIframe',
-            'SIBTAskUserClickedEditMotivation',
-            'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare',
-            'SIBTInstanceCreated',
-        ]
-        for t in things:
-            things[t]['counts'][things[t]['show_action']] = Action\
-                    .all(keys_only=True)\
-                    .filter('class =', things[t]['show_action'])\
-                    .count(999999)
-
-            for click in Action.all().filter('what =', things[t]['action']).order('created'):
-                try:
-                    # we want to get the askiframe event
-                    # but we have to make sure there wasn't ANOTHER click after this
-
-                    next_show_button = Action.all()\
-                            .filter('user =', click.user)\
-                            .filter('created >', click.created)\
-                            .filter('app_ =', click.app_)\
-                            .filter('class =', 'SIBTShowingButton')\
-                            .get()
-
-                    for action in actions_to_check:
-                        if action not in things[t]['counts']:
-                            things[t]['counts'][action] = 0
-
-                        a = Action.all()\
-                                .filter('user =', click.user)\
-                                .filter('created >', click.created)\
-                                .filter('app_ =', click.app_)\
-                                .filter('class =', action)\
-                                .get()
-                        if a:
-                            logging.info(a)
-                            if next_show_button:
-                                if a.created > next_show_button.created:
-                                    logging.info('ignoring %s over %s' % (
-                                        a,
-                                        next_show_button
-                                   ))
-                                    continue
-                            things[t]['counts'][action] += 1
-                            logging.info('%s + 1' % action)
-
-                    client = ''
-                    if click.app_.client:
-                        if hasattr(click.app_.client, 'name'):
-                            client = click.app_.client.name
-                        elif hasattr(click.app_.client, 'domain'):
-                            client = click.app_.client.domain
-                        elif hasattr(click.app_.client, 'email'):
-                            client = click.app_.client.email
-                        else:
-                            client = click.app_.client.uuid
-                    else:
-                        client = 'No client'
-
-                    things[t]['l'].append({
-                        'created': '%s' % click.created,
-                        'uuid': click.uuid,
-                        'user': click.user.name,
-                        'client': client
-                    })
-                except Exception, e:
-                    logging.warn('had to ignore one: %s' % e, exc_info=True)
-            things[t]['counts'][things[t]['action']] = len(things[t]['l'])
-
-            l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
-            l = sorted(l, key=lambda item: item['value'], reverse=True)
-            things[t]['counts'] = l
-        template_values = {
-            'tb_counts': things['tb']['counts'],
-            'b_counts': things['b']['counts'],
-        }
-
-        self.response.out.write(self.render_page('action_stats.html',
-                                template_values))
 
 
 class SendFriendAsks(URIHandler):
@@ -896,9 +727,6 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     app = SIBT.get_or_create(client=client, domain=domain)
     if not client:
         return (False, 'wtf, no app?')
-
-    # put back the UserAction that we skipped making
-    # UserCreate.create(user, app)
 
     template_values = {'app': app,
                        'URL': URL,

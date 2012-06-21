@@ -288,15 +288,13 @@ class VoteDynamicLoader(URIHandler):
         (instance, _) = get_instance_event(urihandler=self, user=user)
         if instance and instance.is_live:
             logging.debug('running instance found')
+            event = 'SIBTShowingVote'
 
             app = instance.app_
             if not app:  # We can't find the app?!
                 self.response.out.write("This vote was not created properly.")
                 return
 
-            # record that the vote page was once opened.
-            SIBTShowingVote.create(user=user, instance=instance)
-            event = 'SIBTShowingVote'
 
             # In the case of a Shopify product, it will fetch from a .json URL.
             product = Product.get_or_fetch(instance.url, app.client)
@@ -475,7 +473,7 @@ class ShowResults(URIHandler):
 
         # successive stages to get instance
         # stage 1: get instance by instance_uuid
-        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
 
         # stage 2: get instance by willet code in URL
         if not instance and willet_code:
@@ -555,14 +553,6 @@ class ShowResults(URIHandler):
 
             if not instance.is_live:
                 has_voted = True
-
-            if is_asker:
-                SIBTShowingResultsToAsker.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                SIBTShowingResults.create(user=user, instance=instance)
-            else:
-                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None:
                 link = instance.link

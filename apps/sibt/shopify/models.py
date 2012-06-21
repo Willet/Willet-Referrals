@@ -122,11 +122,6 @@ class SIBTShopify(SIBT, AppShopify):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
-    # Retreivers --------------------------------------------------------------
-    @classmethod
-    def get_by_uuid(cls, uuid):
-        return cls.get(uuid)
-
     @classmethod
     def get_by_store_id(cls, store_id):
         return cls.all().filter('store_id =', store_id).get()

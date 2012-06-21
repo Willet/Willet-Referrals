@@ -34,3 +34,10 @@ class BillingError(Exception):
 class ShopifyBillingError(BillingError):
     """ A more descriptive exception for Shopify """
     pass
+
+
+def deprecated(fn):
+    """DeprecationWarning decorator."""
+    def wrapped(*args, **kwargs):
+        raise DeprecationWarning("Call to deprecated function " % fn.__name__)
+    return wrapped

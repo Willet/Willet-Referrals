@@ -136,11 +136,7 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
 
     @classmethod
     def get(cls, app_, start):
-        """Checks memcache for model before hitting database
-        Each class must have a staticmethod get_from_datastore
-        TODO(barbara): Enforce the above statement!!!
-        Also, should it be: get_from_datastore OR _get_from_datastore?
-        """
+        """Hits the database."""
         return cls._get_from_datastore(app_, start)
 
 
@@ -231,11 +227,7 @@ class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
 
     @classmethod
     def get(cls, start):
-        """Checks memcache for model before hitting database
-        Each class must have a staticmethod get_from_datastore
-        TODO(barbara): Enforce the above statement!!!
-        Also, should it be: get_from_datastore OR _get_from_datastore?
-        """
+        """Not memcached."""
         return cls._get_from_datastore(start)
 
 

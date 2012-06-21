@@ -13,6 +13,7 @@ import logging
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
+from util.errors import deprecated
 from util.helpers import generate_uuid
 from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
@@ -53,11 +54,6 @@ class Action(Model, polymodel.PolyModel):
         return self.__class__.__name__
     name = property(get_class_name)
 
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        """Datastore retrieval using memcache_key"""
-        return Action.all().filter('uuid =', uuid).get()
-
     def _validate_self(self):
         return True
 
@@ -68,40 +64,34 @@ class Action(Model, polymodel.PolyModel):
         # Subclasses should override this
         pass
 
-    ## Accessors
-    @staticmethod
-    def count(admins_too = False):
+    @deprecated
+    @classmethod
+    def count(cls, admins_too=False):
+        pass
+        '''
         if admins_too:
-            return Action.all().count()
+            return cls.all().count()
         else:
-            return Action.all().filter('is_admin =', False).count()
+            return cls.all().filter('is_admin =', False).count()
+        '''
 
-    @staticmethod
-    def get_all(admins_too = False):
-        if admins_too:
-            return Action.all()
-        else:
-            return Action.all().filter('is_admin =', False)
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return Action.get(uuid)
-
+    @deprecated
     @staticmethod
     def get_by_user(user):
-        return Action.all().filter('user =', user).get()
+        """Not indexed; will not work."""
+        # return Action.all().filter('user =', user).get()
 
+    @deprecated
     @staticmethod
     def get_by_app(app, admins_too = False):
+        """Not indexed; will not work."""
+        '''
         app_actions = Action.all().filter('app_ =', app)
         if admins_too:
             return app_actions.get()
         else:
             return app_actions.filter('is_admin =', False).get()
-
-    @staticmethod
-    def get_by_user_and_app(user, app):
-        return Action.all().filter('user =', user).filter('app_ =', app).get()
+        '''
 
 
 class ClickAction(Action):
@@ -148,41 +138,34 @@ class VoteAction(Action):
     def _validate_self(self):
         return True
 
+    @deprecated
     @classmethod
     def get_by_vote(cls, vote):
+        """Not indexed; will not work."""
         return cls.all().filter('vote =', vote)
 
+    @deprecated
     @classmethod
     def get_all_yesses(cls):
         return cls.get_by_vote('yes')
 
+    @deprecated
     @classmethod
     def get_all_nos(cls):
         return cls.get_by_vote('no')
 
 
 class LoadAction(Action):
-    """ Parent class for Load actions.
-        ie. ScriptLoad, ButtonLoad """
+    pass
 
-    url = db.LinkProperty(indexed = True, default=True)
-
-    def __str__(self):
-        return 'LoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-    @staticmethod
-    def get_by_url(url):
-        return LoadAction.all().filter('url =', url)
-
-    @staticmethod
-    def get_by_user_and_url(user, url):
-        return LoadAction.all().filter('user = ', user).filter('url =', url)
 
 class ScriptLoadAction(LoadAction):
     pass
 
+
 class ButtonLoadAction(LoadAction):
     pass
+
 
 class ShowAction(Action):
     """We are showing something ..."""
@@ -216,29 +199,4 @@ class ShowAction(Action):
 
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
-
-    # what did they do
-    what = db.StringProperty()
-
-    # url/page this was acted on
-    url = db.LinkProperty(indexed = True)
-
-    @staticmethod
-    def create(user, app, what, url):
-        uuid = generate_uuid(16)
-        action = UserAction(
-            key_name=uuid,
-            uuid=uuid,
-            user=user,
-            app_=app,
-            what=what,
-            url=url
-        )
-
-        action.put()
-        return action
-
-    def __str__(self):
-        return 'User %s did %s on %s' % (self.user.get_first_name(),
-                                         self.what,
-                                         self.url)
+    pass

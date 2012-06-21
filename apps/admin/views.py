@@ -240,8 +240,6 @@ class SIBTInstanceStats(URIHandler):
 
         # Get all actions
         actions = Action.all().filter('sibt_instance =', instance)
-        clicks = SIBTClickAction.get_by_instance(instance)
-        votes = SIBTVoteAction.get_by_instance(instance)
 
         # Init the page
         str = "<h1>SIBT Instance: "
@@ -250,8 +248,6 @@ class SIBTInstanceStats(URIHandler):
         str += "Started: %s" % instance.created.strftime('%H:%M:%S %A %B %d, %Y')
 
         str += "<h2># Actions: %d " % actions.count() if actions else 0
-        str += "# Clicks: %d " % clicks.count() if clicks else 0
-        str += "# Votes: %d</h2>" % votes.count() if votes else 0
 
         str += "<p>Product: <a href='%s'>%s</a></p>" % (link.target_url, link.target_url)
         str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token)
