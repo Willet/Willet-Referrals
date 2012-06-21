@@ -375,7 +375,7 @@ class SIBTInstance(Model):
         """
         if user and isinstance(user, User):
             return SIBTVoteAction.all()\
-                                 .filter('user =', user)
+                                 .filter('user =', user)\
                                  .filter('sibt_instance =', self).count()
 
         total = self.get_yesses_count() + self.get_nos_count()
