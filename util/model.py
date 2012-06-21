@@ -45,15 +45,6 @@ class Model(db.Model):
 
     # Unique identifier for memcache and DB key
     uuid = db.StringProperty(indexed=True)
-
-    @classmethod
-    def _get_from_datastore(cls, memcache_key):
-        """ Datastore retrieval using memcache_key """
-        raise NotImplementedError('_get_from_datastore should be \
-                                      implemented by <%s.%s>' %
-                                      (cls.__class__.__module__,
-                                       cls.__class__.__name__))
-
     # DB fields by which this object will be memcached.
     # Subclasses can add their own fields.
     # Memcaching with non-unique fields yields unexpected results!
@@ -63,6 +54,15 @@ class Model(db.Model):
     def __hash__(self):
         """Implement hash to allow frozenset() to filter unique duplicates."""
         return hash(self.uuid)
+
+    @classmethod
+    def _get_from_datastore(cls, memcache_key):
+        """Datastore retrieval using memcache_key.
+
+        By default, this method looks up the datastore by uuid.
+        Subclasses wishing to do otherwise should implement their own.
+        """
+        return db.Query(cls).filter('uuid =', memcache_key).get()
 
     def _validate_self(self):
         """ All Model subclasses containing a _validate_self function

@@ -17,11 +17,11 @@ class MemcacheBucketConfig(Model):
     name = db.StringProperty(indexed = True)
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
-    
+
     _memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
+        self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None
         super(MemcacheBucketConfig, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
@@ -32,11 +32,11 @@ class MemcacheBucketConfig(Model):
 
     def get_random_bucket(self):
         bucket = random.randint(0, self.count)
-        return self.get_bucket(bucket) 
+        return self.get_bucket(bucket)
 
     def decrement_count(self):
         if self.count == 0:
-            logging.error('trying to decrement count for %s lower than 0' % 
+            logging.error('trying to decrement count for %s lower than 0' %
                     self.name)
         else:
             self.count -= 1
@@ -88,7 +88,7 @@ class MemcacheBucketConfig(Model):
             # we are creating this MBC for the first time
             mbc = MemcacheBucketConfig.create(name, count)
         return mbc
-    
+
     @classmethod
     def _get_from_datastore(cls, name):
         """Datastore retrieval using memcache_key"""
@@ -121,12 +121,12 @@ def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
                 old_count = mbc.count
                 mbc.decrement_count()
                 logging.warn(
-                    'encounted error, going to decrement buckets from %s to %s' 
+                    'encounted error, going to decrement buckets from %s to %s'
                     % (old_count, mbc.count), exc_info=True)
 
                 last_keys = memcache.get(old_key) or []
                 memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
-                deferred.defer(batch_put, mbc_name, old_key, last_keys, 
+                deferred.defer(batch_put, mbc_name, old_key, last_keys,
                         decrementing=True, _queue='slow-deferred')
                 had_error = True
         except Exception, e:
@@ -139,8 +139,8 @@ def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
         for entity in entities_to_put:
             if entity.key():
                 memcache_key = entity.get_key()
-                memcache.set(memcache_key, 
-                        db.model_to_protobuf(entity).Encode(), 
+                memcache.set(memcache_key,
+                        db.model_to_protobuf(entity).Encode(),
                         time=MEMCACHE_TIMEOUT)
     except Exception,e:
         logging.error('Error putting %s: %s' % (entities_to_put, e), exc_info=True)

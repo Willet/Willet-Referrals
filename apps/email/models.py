@@ -316,7 +316,7 @@ class Email():
         name = instance.asker.get_full_name() or "Savvy Shopper"
 
         product_url = "%s#open=1" % instance.url  # full product link
-        
+
 	try:
             product_img = instance.product_img
             product_img = instance.products[0].images[0]
@@ -351,7 +351,8 @@ class Email():
 
     @staticmethod
     def SIBTVoteCompletion(instance, product):
-        client = getattr(instance.app, 'client', None)
+        """Vote is over! Send asker an email."""
+        client = getattr(instance.app_, 'client', None)
 
         if not instance.asker:
             logging.warn('The deuce? Instance has no asker.')

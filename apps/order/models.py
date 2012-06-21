@@ -47,10 +47,6 @@ class Order(Model, polymodel.PolyModel):
     def _validate_self(self):
         return True
 
-    @staticmethod
-    def _get_from_datastore(uuid):
-        """Datastore retrieval using memcache_key"""
-        return Order.all().filter('uuid =', uuid).get()
 
 # Accessors -------------------------------------------------------------------
 def get_order_by_uuid(uuid):

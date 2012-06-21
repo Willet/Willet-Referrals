@@ -13,17 +13,13 @@ from urllib import urlencode
 from urlparse import urlparse, urlunsplit
 
 from django.utils import simplejson as json
-from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
 from apps.app.models import App
 from apps.client.models import Client
 from apps.link.models import Link
 from apps.product.models import Product
-from apps.sibt.actions import SIBTNoConnectFBCancelled, \
-                              SIBTShowingButton, SIBTShowingAskIframe, \
-                              SIBTShowingVote, SIBTShowingResults, \
-                              SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.actions import SIBTShowingButton, SIBTVoteAction
 from apps.sibt.models import get_app, get_instance_event, get_products, \
                              get_user
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
@@ -198,10 +194,6 @@ class AskDynamicLoader(URIHandler):
         else:
             link = Link.create(page_url, app, origin_domain, user)
 
-        # log this "showage"
-        if user_found:
-            SIBTShowingAskIframe.create(user, url=page_url, app=app)
-
         template_values = {
             'URL': URL,
             'title': "Which One ... Should I Buy This?",
@@ -288,15 +280,12 @@ class VoteDynamicLoader(URIHandler):
         (instance, _) = get_instance_event(urihandler=self, user=user)
         if instance and instance.is_live:
             logging.debug('running instance found')
+            event = 'SIBTShowingVote'
 
             app = instance.app_
             if not app:  # We can't find the app?!
                 self.response.out.write("This vote was not created properly.")
                 return
-
-            # record that the vote page was once opened.
-            SIBTShowingVote.create(user=user, instance=instance)
-            event = 'SIBTShowingVote'
 
             # In the case of a Shopify product, it will fetch from a .json URL.
             product = Product.get_or_fetch(instance.url, app.client)
@@ -336,7 +325,7 @@ class VoteDynamicLoader(URIHandler):
                 return
 
             else:
-                self.response.out.write("No products?")
+                self.response.out.write("No products / Expired?")
             return
 
         sharing_message = instance.sharing_message
@@ -475,7 +464,7 @@ class ShowResults(URIHandler):
 
         # successive stages to get instance
         # stage 1: get instance by instance_uuid
-        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
 
         # stage 2: get instance by willet code in URL
         if not instance and willet_code:
@@ -555,14 +544,6 @@ class ShowResults(URIHandler):
 
             if not instance.is_live:
                 has_voted = True
-
-            if is_asker:
-                SIBTShowingResultsToAsker.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                SIBTShowingResults.create(user=user, instance=instance)
-            else:
-                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None:
                 link = instance.link
@@ -679,10 +660,7 @@ class ShowFBThanks(URIHandler):
             else:
                 pass  # full instance? you're all set.
         elif partial != None:
-            # Create cancelled action
-            SIBTNoConnectFBCancelled.create(user,
-                                            url=partial.link.target_url,
-                                            app=partial.app_)
+            pass
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!
@@ -740,24 +718,6 @@ class ShowOnUnloadHook(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
-
-
-class SIBTGetUseCount (URIHandler):
-    """Outputs the number of times the SIBT app has been used.
-
-    This handler is GET-only. All other methods raise NotImplementedError.
-    """
-    def get(self):
-        """Returns number of button loads divided by 100."""
-        try:
-            product_uuid = self.request.get ('product_uuid')
-            button_use_count = memcache.get ("usecount-%s" % product_uuid)
-            if button_use_count is None:
-                button_use_count = int (SIBTShowingButton.all().count() / 100)
-                memcache.add ("usecount-%s" % product_uuid, button_use_count)
-            self.response.out.write (str (button_use_count))
-        except:
-            self.response.out.write ('0') # no shame in that?
 
 
 class SIBTInstanceStatusChecker(URIHandler):
@@ -1004,10 +964,6 @@ class SIBTServeScript(URIHandler):
         SIBTShowingButton.create(app=app, url=page_url, user=user)
         if app and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked_urls: %r' % tracked_urls)
-            if tracked_urls.count(page_url) >= app.num_shows_before_tb:
-                # user has viewed page more than once show top-bar-ask
-                show_top_bar_ask = True
 
             # this number or more URLs tracked for (app and user)
             threshold = UNSURE_DETECTION['url_count_for_app_and_user']

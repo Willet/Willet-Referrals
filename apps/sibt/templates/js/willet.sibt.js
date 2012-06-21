@@ -44,14 +44,10 @@ _willet.sibt = (function (me) {
         cart_items = cart_items || window._willet_cart_items || [],
         PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
         SHAKE_DURATION = 0, // ms
-        SHAKE_WAIT = 1000, // ms
-
-        padding_elem = null,
-        topbar = null,
-        topbar_hide_button = null;
+        SHAKE_WAIT = 1000; // ms
 
     // declare vars in this scope
-    var popup, products, topbar;
+    var popup, products;
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     var app = {
@@ -122,10 +118,6 @@ _willet.sibt = (function (me) {
             }
         }
 
-        // show topbar and stuff ...
-        if (app.features.topbar) {
-            wm.fire('SIBTSetTopBar');
-        }
         if (app.features.bottom_popup) {
             wm.fire('SIBTSetBottomPopup');
         }
@@ -852,269 +844,6 @@ _willet.sibt = (function (me) {
         };
     {% endif %}
 
-    // =================== deprecated topbar functions ========================
-    {% if app.top_bar_enabled %}
-        me.setTopBar = me.setTopBar || function () {
-            wm.fire('log', 'topbar enabled');
-            wm.fire('storeAnalytics', 'SIBTTopBarEnabled');
-
-            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
-
-            // create the hide button
-            topbar_hide_button = $(document.createElement('div'));
-            topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-                .css('display', 'none')
-                .click(me.unhideTopbar);
-
-            if (app.show_top_bar_ask) {
-                topbar_hide_button.html('Get advice!');
-            } else if(user.is_asker) {
-                topbar_hide_button.html('See your results!');
-            } else {
-                topbar_hide_button.html('Help {{ asker_name }}!');
-            }
-
-            $('body').prepend(topbar_hide_button);
-
-            if (app.show_top_bar_ask) {
-                if (cookie_topbar_closed) {
-                    // user has hidden the top bar
-                    topbar_hide_button.slideDown('fast');
-                } else {
-                    // wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
-                    me.showTopbarAsk();
-                }
-            }
-        };
-
-        me.topbar_onclick = me.topbar_onclick || function(e) {
-            // Onclick event handler for the 'sibt' button
-            me.button_onclick(e, 'SIBTUserClickedTopBarAsk');
-        };
-
-        me.unhideTopbar = me.unhideTopbar || function() {
-            // When a user hides the top bar, it shows the little
-            // "Show" button in the top right. This handles the clicks to that
-            $.cookie('_willet_topbar_closed', false);
-            topbar_hide_button.slideUp('fast');
-            if (topbar === null) {
-                if (instance.show_votes || hash_index !== -1) {
-                    me.showTopbar();
-                    wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
-                } else {
-                    me.showTopbarAsk();
-                    wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
-                }
-            } else {
-                topbar.slideDown('fast');
-                wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
-            }
-        };
-
-        me.closeTopbar = me.closeTopbar || function() {
-            // Hides the top bar and padding
-            wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
-
-            $.cookie('_willet_topbar_closed', true);
-            topbar.slideUp('fast');
-            topbar_hide_button.slideDown('fast');
-        };
-
-        // Expand the top bar and load the results iframe
-        me.doVote = me.doVote || function(vote) {
-            // detecting if we just voted or not
-            var doing_vote = (vote !== -1);
-            var vote_result = (vote === 1);
-
-            // getting the neccesary dom elements
-            var iframe_div = topbar.find('div.iframe');
-            var iframe = topbar.find('div.iframe iframe');
-
-            // constructing the iframe src
-            var hash        = window.location.hash;
-            var hash_search = '#code=';
-            var hash_index  = hash.indexOf(hash_search);
-            var willt_code  = hash.substring(hash_index + hash_search.length ,
-                                             hash.length);
-            var results_src = "{{URL}}/s/results.html?" +
-                "willt_code=" + encodeURIComponent(willt_code) +
-                "&user_uuid={{user.uuid}}" +
-                "&doing_vote=" + encodeURIComponent(doing_vote) +
-                "&vote_result=" + encodeURIComponent(vote_result) +
-                "&is_asker=" + user.is_asker +
-                "&store_id={{store_id}}" +
-                "&store_url={{store_url}}" +
-                "&instance_uuid={{instance.uuid}}" +
-                "&url=" + encodeURIComponent(window.location.href);
-
-            // show/hide stuff
-            topbar.find('div.vote').hide();
-            if (doing_vote || user.has_voted) {
-                topbar.find('div.message').html('Thanks for voting!').fadeIn();
-            } else if (user.is_asker) {
-                topbar.find('div.message').html('Your friends say: ').fadeIn();
-            }
-
-            // start loading the iframe
-            iframe_div.show();
-            iframe.attr('src', '');
-            iframe.attr('src', results_src);
-
-            iframe.fadeIn('medium');
-        };
-
-        me.doVote_yes = me.doVote_yes || function () {
-            wm.fire('storeAnalytics', 'SIBTDoVoteYes');
-            me.doVote(1);
-        };
-        me.doVote_no = me.doVote_no || function () {
-            wm.fire('storeAnalytics', 'SIBTDoVoteNo');
-            me.doVote(0);
-        };
-
-        me.buildTopBarHTML = me.buildTopBarHTML || function (is_ask_bar) {
-            // Builds the top bar html
-            // is_ask_bar option boolean
-            // if true, loads ask_in_the_bar iframe
-
-            if (is_ask_bar || false) {
-                var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-                var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
-                    "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
-                    "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                    "</div>" +
-                "</div>";
-            } else {
-                var asker_text = '';
-                var message = 'Should <em>{{ asker_name }}</em> Buy This?';
-                var image_src = '{{ asker_pic }}';
-
-                var bar_html = "<div class='_willet_wrapper'> " +
-                    "<div class='asker'>" +
-                        "<div class='pic'><img src='" + image_src + "' /></div>" +
-                    "</div>" +
-                    "<div class='message'>" + message + "</div>" +
-                    "<div class='vote last' style='display: none'>" +
-                    "    <button id='yesBtn' class='yes'>Yes</button> "+
-                    "    <button id='noBtn' class='no'>No</button> "+
-                    "</div> "+
-                    "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
-                    "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+
-                    "</div>" +
-                    "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
-                    "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                    "</div>" +
-                "</div>";
-            }
-            return bar_html;
-        };
-
-        me.showTopbar = me.showTopbar || function() {
-            // Shows the vote top bar
-            wm.fire('storeAnalytics', 'SIBTShowTopbar');
-
-            var body = $('body');
-
-            // create the padding for the top bar
-            padding_elem = document.createElement('div');
-            padding_elem = $(padding_elem)
-                .attr('id', '_willet_padding')
-                .css('display', 'none');
-
-            topbar = document.createElement('div');
-            topbar = $(topbar)
-                .attr('id', '_willet_sibt_bar')
-                .css('display', "none")
-                .html(me.buildTopBarHTML());
-            body.prepend(padding_elem);
-            body.prepend(topbar);
-
-            // bind event handlers
-            $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
-            $('#yesBtn').click(me.doVote_yes);
-            $('#noBtn').click(me.doVote_no);
-
-            padding_elem.show();
-            topbar.slideDown('slow');
-
-            if (!instance.is_live) {
-                // voting is over folks!
-                topbar.find('div.message').html('Voting is over!');
-                me.toggleResults();
-            } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
-                // show voting!
-                topbar.find('div.vote').show();
-            } else if (user.has_voted && !user.is_asker) {
-                // someone has voted && not the asker!
-                topbar.find('div.message').html('Thanks for voting!').fadeIn();
-                me.toggleResults();
-            } else if (user.is_asker) {
-                // showing top bar to asker!
-                topbar.find('div.message').html('Your friends say:   ').fadeIn();
-                me.toggleResults();
-            }
-        };
-
-        me.showTopbarAsk = me.showTopbarAsk || function() {
-            //Shows the ask top bar
-            wm.fire('storeAnalytics', 'SIBTShowTopbarAsk');
-
-            // create the padding for the top bar
-            padding_elem = document.createElement('div');
-
-            padding_elem = $(padding_elem)
-                .attr('id', '_willet_padding')
-                .css('display', 'none');
-
-            topbar = $('<div />', {
-                'id': '_willet_sibt_ask_bar',
-                'class': 'willet_reset',
-                'css': {
-                    'display': 'none'
-                }
-            });
-            topbar.html(me.buildTopBarHTML(true));
-
-            $("body").prepend(padding_elem).prepend(topbar);
-
-            var iframe = topbar.find('div.iframe iframe');
-            var iframe_div = topbar.find('div.iframe');
-
-            $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
-
-            topbar.find( '._willet_wrapper p')
-                .css('cursor', 'pointer')
-                .click(me.topbar_onclick);
-            padding_elem.show();
-            topbar.slideDown('slow');
-        };
-
-        me.topbarAskSuccess = me.topbarAskSuccess || function () {
-            // if we get a postMessage from the iframe
-            // that the share was successful
-            wm.fire('storeAnalytics', 'SIBTTopBarShareSuccess');
-            var iframe = topbar.find('div.iframe iframe');
-            var iframe_div = topbar.find('div.iframe');
-
-            user.is_asker = true;
-
-            iframe_div.fadeOut('fast', function() {
-                topbar.animate({height: '40'}, 500);
-                iframe.attr('src', '');
-                me.toggleResults();
-            });
-        };
-
-        me.toggleResults = me.toggleResults || function() {
-            wm.fire('storeAnalytics', 'SIBTToggleResults');
-            // Used to toggle the results view
-            // iframe has no source, hasnt been loaded yet
-            // and we are FOR SURE showing it
-            doVote(-1);
-        };
-    {% endif %}
-
-
     // set up your module hooks
     if (wm) {
         wm.on('hasjQuery', me.init);
@@ -1132,8 +861,6 @@ _willet.sibt = (function (me) {
         wm.on('setLargeSIBTVendorButton', me.setLargeSIBTVendorButton);
 
         // others
-        // we don't know if setTopBar is always there
-        wm.on('SIBTSetTopBar', me.setTopBar || function () {});
         // we don't know if initBottomPopup is always there
         wm.on('SIBTSetBottomPopup', me.initBottomPopup || function () {});
     }
