@@ -19,13 +19,11 @@ class ProductShopifyCollection(ProductCollection):
     ProductShopifyCollection contains methods necessary to fetch Shopify
     stores' collection information.
     """
-    pass  # TODO
 
 
 class ProductShopify(Product):
-
-    shopify_id = db.StringProperty(indexed = True)
-    json_response = db.TextProperty(indexed = False) # add more product fields to json as necessary
+    """Methods for manipulating our copies of Shopify products."""
+    shopify_id = db.StringProperty(indexed=True)
 
     _memcache_fields = ['resource_url', 'shopify_id']
 

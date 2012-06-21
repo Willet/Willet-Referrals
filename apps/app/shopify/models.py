@@ -135,10 +135,10 @@ class AppShopify(Model):
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
-    
+
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
-                          suppress_errors = False):
+                          suppress_errors=False):
         """ Calls Shopify API
 
         Inputs:

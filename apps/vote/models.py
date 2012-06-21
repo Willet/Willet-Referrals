@@ -8,9 +8,6 @@ from google.appengine.api import memcache
 
 NUM_VOTE_SHARDS = 15
 
-# ------------------------------------------------------------------------------
-# VoteCounter Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
 
 class VoteCounter(db.Model):
     """Sharded counter for voting counts"""
