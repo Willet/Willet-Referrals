@@ -1,42 +1,24 @@
 #!/usr/bin/env python
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import re, urllib, sys
-from inspect import getmodule
-from datetime import datetime
-from time import time
+import logging
+import sys
 
 from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
-from google.appengine.ext import webapp
-from google.appengine.api import taskqueue
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
+from inspect import getmodule
 
-from apps.analytics_backend.models import *
-from apps.email.models import Email
-from apps.app.models import App
-from apps.app.shopify.models import AppShopify
+from google.appengine.api import memcache, taskqueue
+from google.appengine.ext import db
+
 from apps.action.models import Action
-# from apps.action.models import ScriptLoadAction
-from apps.client.models import Client
-from apps.client.shopify.models import ClientShopify
-from apps.link.models import Link
-from apps.order.shopify.models import OrderShopify
-from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import *
-from apps.sibt.models import SIBT
-from apps.sibt.shopify.models import SIBTShopify
-from apps.sibt.models import SIBTInstance
-from apps.user.models import *
-from util import httplib2
-from util.consts import *
-from util.helpers import *
-from util.helpers import url as reverse_url
-from util.urihandler import URIHandler
+from apps.app.models import App
+
+from util.consts import INSTALLED_APPS
+from util.helpers import url
 from util.memcache_bucket_config import MemcacheBucketConfig
+from util.urihandler import URIHandler
 
 
 class ShowRoutes(URIHandler):
@@ -264,25 +246,6 @@ class GetActionsSince(URIHandler):
             self.response.out.write(e)
 
 
-class FBConnectStats(URIHandler):
-    def get(self):
-        no_connect = SIBTNoConnectFBDialog.all().count()
-        connect = SIBTConnectFBDialog.all().count()
-
-        instance_connect = SIBTInstanceCreated.all().filter('medium =', "ConnectFB").count()
-        instance_noconnect = SIBTInstanceCreated.all().filter('medium =', "NoConnectFB").count()
-
-        html = "<h2> Opportunity Counts </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % no_connect
-        html += "<p>Connect Dialog: %d</p>" % connect
-
-        html += "<h2> Instances </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % instance_noconnect
-        html += "<p>Connect Dialog: %d</p>" % instance_connect
-
-        self.response.out.write(html)
-
-
 class ReloadURIS(URIHandler):
     def get(self):
         if self.request.get('all'):
@@ -361,73 +324,6 @@ class ShowMemcacheConsole(URIHandler):
         )
 
 
-class ShowCounts(URIHandler):
-    def get(self):
-
-        btn_shows = SIBTShowingButton.all().count()
-
-        click_ask_btn = SIBTUserClickedButtonAsk.all().count()
-        click_ask_overlay = SIBTUserClickedOverlayAsk.all().count()
-        click_ask_bar = SIBTUserClickedTopBarAsk.all().count()
-
-        ask_shows = SIBTShowingAskIframe.all().count()
-
-        ask_share = SIBTAskUserClickedShare.all().count()
-
-        connect_cancelled = SIBTFBConnectCancelled.all().count()
-
-        str = "<p>Button Shows: %d</p>" % btn_shows
-
-        str += "<p>Btn Clicks: %d</p>" % click_ask_btn
-        str += "<p>Bar Clicks: %d</p>" % click_ask_bar
-        str += "<p>Overlay Clicks: %d</p>" % click_ask_overlay
-        str += "<p>Showing Ask: %d</p>" % ask_shows
-        str += "<p>Shared the Ask: %d</p>" % ask_share
-        str += "<p>FB Connect Cancelled: %d</p>" % connect_cancelled
-
-        self.response.out.write(str)
-
-
-class ShowAnalytics(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-
-        template_values = {
-            'actions': actions_to_count,
-            'app': ''
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
-class ShowAppAnalytics(URIHandler):
-    def get(self, app_uuid):
-        app = App.get(app_uuid)
-
-        template_values = {
-            'actions': actions_to_count,
-            'app': app
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
-class AppAnalyticsCompare(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-        template_values = {
-            'actions': actions_to_count,
-            'app': ''
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
 class EmailEveryone (URIHandler):
     # TODO: change mass_mail_client.html to call EmailBatch instead of post
     # TODO: change EmailBatch request into BatchRequest
@@ -474,7 +370,6 @@ class EmailEveryone (URIHandler):
         taskqueue.add(url=url('EmailBatch'), params=params)
 
         self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write ("%r" % all_emails)
         return
 
 
