@@ -84,7 +84,7 @@ class API(object):
         payload_type = 'relation', payload_list = True,
         allowed_param = ['id'],
         require_auth = False
-	)
+    )
 
     """/statuses/:id/retweeted_by/ids.format"""
     retweeted_by_ids = bind_api(

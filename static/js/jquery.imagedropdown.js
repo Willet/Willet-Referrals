@@ -20,7 +20,7 @@
                 // 'display': 'inline-block',
                 'cursor': 'pointer',
                 'click': function () {},  // custom event
-                'select': function () {},  // custom event
+                'select': function (selection) {},  // custom event
                 'hover': function () {},  // custom event
             };
 
@@ -57,7 +57,7 @@
                 $images.css({
                     'border-radius': settings['border-radius'],
                     'display': 'block',
-                    'width': parseInt(settings.width) - 20,
+                    'width': parseInt(settings.width) - 30,
                     'height': parseInt(settings.height),
                     'margin-top': '5'
                 }).hover(
@@ -131,7 +131,7 @@
                     $selected_image.click(openDropdown);
                     $this.append($selected_image);
 
-                    settings.select();  // call custom event
+                    settings.select($selected_image.attr('src'));  // call custom event
                     return closeDropdown();
                 };
 

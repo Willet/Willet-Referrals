@@ -31,6 +31,11 @@ class ShopifyRedirect(URIHandler):
         store_token = self.request.get('t')
         shopify_timestamp = self.request.get('timestamp')
 
+        if not (app and shopify_url and store_token):
+            self.response.out.write('You are doing it wrong')
+            logging.error('/a/shopify called incorrectly', exc_info=True)
+            return
+
         # Get the store or create a new one
         client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
         client_modified = False

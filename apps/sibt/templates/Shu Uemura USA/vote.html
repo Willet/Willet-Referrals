@@ -1,78 +1,95 @@
 {% extends "vote-base.html" %}
 
 {% block left_screens %}
-    <div class="choice blob">
-        <div class="title">
-            Should <b>{{asker_name}}</b> get this?
+    {% if user_voted %}
+        <div id="success_message" class="blob">
+            <div id="fb-root"></div>
+            <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
         </div>
-        <div class="center">
-            <button class="button" id="yes">Yes</button>
-            <button class="button" id="no">No</button>
+    {% else %}
+        <div class="choice blob">
+            <div class="title">
+                Should <b>{{asker_name}}</b> get this?
+            </div>
+            <div class="center">
+                <button class="button" id="yes">Yes</button>
+                <button class="button" id="no">No</button>
+            </div>
         </div>
-    </div>
-    <div id="success_message" class="hidden blob">
-        <div class="title">Thanks for voting!</div>
-        <h4 class="yes">
-            Tell {{asker_name}} why you voted YES.
-        </h4>
-        <h4 class="no">
-            Tell {{asker_name}} why you voted NO.
-        </h4>
-        <div id="fb-root"></div>
-        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
-    </div>
+        <div id="success_message" class="hidden blob">
+            <div class="title">Thanks for voting!</div>
+            <h4 class="yes">
+                Tell {{asker_name}} why you voted YES.
+            </h4>
+            <h4 class="no">
+                Tell {{asker_name}} why you voted NO.
+            </h4>
+            <div id="fb-root"></div>
+            <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
+        </div>
+    {% endif %}
 {% endblock left_screens %}
 
 {% block right_screens %}
     <div id="product_screen">
-        <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
+        <h2><a href="{{ product_url }}">{{ product.title|striptags }}</a></h2>
         <img id="product_img" class="product-image" src="{{ product_img }}" />
         <div id="right-div" class="description">
-            {{ product.description|striptags|escape }}
+            {{ product.description|striptags }}
         </div>
     </div>
 {% endblock right_screens %}
 
 {% block body_script %}
     $(document).ready(function () {
-        var vote = function (which) {
-            $.ajax({
-                url: "{% url DoVote %}",
-                type: 'post',
-                data: {
-                    instance_uuid : "{{instance.uuid}}",
-                    which : which
-                },
-                success: function (tr) {
-                    $(".choice, #product_screen").hide();
-                    $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-
-                    // get the discount code.
-                    $.ajax({
-                        url: "{% url DispenseClientDiscountCode %}",
-                        data: {
-                            'client_uuid': "{{ client_uuid }}",
-                            'store_url': "{{ store_url }}"
-                        },
-                        type: 'post',
-                        dataType: 'text',
-                        success: function (data) {
-                            if (data) {
-                                $("#discount_gettest").show();
-                            }
-                            $("#discount_code").val(data || "We're out!");
+        {% if user_voted %}
+            fbinit(document, 'script', 'facebook-jssdk');
+        {% else %}
+            var getDiscount = function () {
+                // get the discount code.
+                $.ajax({
+                    url: "{% url DispenseClientDiscountCode %}",
+                    data: {
+                        'client_uuid': "{{ client_uuid }}",
+                        'store_url': "{{ store_url }}"
+                    },
+                    type: 'post',
+                    dataType: 'text',
+                    success: function (data) {
+                        if (data) {
+                            $("#discount_gettest").show();
                         }
-                    });
-                    fbinit (document, 'script', 'facebook-jssdk');
-                },
-                error: function () {
-                    $(".choice").hide();
-                    $("#error_message").show();
-                }
+                        $("#discount_code").val(data || "We're out!");
+                    }
+                });
+            };
+
+            var vote = function (which) {
+                $.ajax({
+                    url: "{% url DoVote %}",
+                    type: 'post',
+                    data: {
+                        instance_uuid : "{{instance.uuid}}",
+                        which : which
+                    },
+                    success: function (tr) {
+                        $(".choice, #product_screen").hide();
+                        $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
+
+                        // get the discount code.
+                        getDiscount();
+
+                        fbinit(document, 'script', 'facebook-jssdk');
+                    },
+                    error: function () {
+                        $(".choice").hide();
+                        $("#error_message").show();
+                    }
+                });
+            };
+            $('.choice button').click(function () {
+                vote(this.id); // click button = vote
             });
-        };
-        $('.choice button').click(function () {
-            vote(this.id); // click button = vote
-        });
+        {% endif %}
     });
 {% endblock body_script %}

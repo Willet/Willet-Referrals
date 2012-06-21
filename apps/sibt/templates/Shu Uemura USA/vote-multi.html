@@ -1,29 +1,36 @@
 {% extends "vote-base.html" %}
 
 {% block left_screens %}
-    <div class="choice blob">
-        <div class="title">
-            Which one should <b>{{asker_name}}</b> get?
+    {% if user_voted %}
+        <div id="success_message" class="blob">
+            <div id="fb-root"></div>
+            <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
         </div>
-        <div class="center">
+    {% else %}
+        <div class="choice blob">
+            <div class="title">
+                Which one should <b>{{asker_name}}</b> get?
+            </div>
+            <div class="center">
+                {% for product in products %}
+                    <button class="button vote" data-uuid="{{ product.uuid }}">
+                        {{ product.title }}
+                    </button>
+                {% endfor %}
+                <div id="error_bar"></div>
+            </div>
+        </div>
+        <div id="success_message" class="hidden blob">
+            <div class="title">Thanks for voting!</div>
             {% for product in products %}
-                <button class="button vote" data-uuid="{{ product.uuid }}">
-                    {{ product.title }}
-                </button>
+                <h4 id="why-{{ product.uuid }}" class="hidden">
+                    Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
+                </h4>
             {% endfor %}
-            <div id="error_bar"></div>
+            <div id="fb-root"></div>
+            <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
         </div>
-    </div>
-    <div id="success_message" class="hidden blob">
-        <div class="title">Thanks for voting!</div>
-        {% for product in products %}
-            <h4 id="why-{{ product.uuid }}" class="hidden">
-                Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
-            </h4>
-        {% endfor %}
-        <div id="fb-root"></div>
-        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
-    </div>
+    {% endif %}
 {% endblock left_screens %}
 
 {% block right_screens %}
@@ -48,48 +55,58 @@
 
 {% block body_script %}
     $(document).ready(function () {
-        var vote = function () {
-            var product_uuid = $(this).data('uuid');
-            if (product_uuid) {
-                var payload = {
-                    "user_uuid" : "{{ user_uuid }}",
-                    "instance_uuid" : "{{ instance_uuid }}",
-                    "product_uuid" : product_uuid
-                };
+        {% if user_voted %}
+            fbinit(document, 'script', 'facebook-jssdk');
+        {% else %}
+            var getDiscount = function () {
+                // get the discount code.
                 $.ajax({
-                    url: "{{ URL }}{% url DoVote %}",
-                    type: 'post',
-                    data: payload,
-                    success: function () {
-                        $(".choice, #product_screen").hide();
-                        $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
-
-                        // get the discount code.
-                        $.ajax({
-                            url: "{% url DispenseClientDiscountCode %}",
-                            data: {
-                                'client_uuid': "{{ client_uuid }}",
-                                'store_url': "{{ store_url }}"
-                            },
-                            type: 'post',
-                            dataType: 'text',
-                            success: function (data) {
-                                if (data) {
-                                    $("#discount_gettest").show();
-                                }
-                                $("#discount_code").val(data || "We're out!");
-                            }
-                        });
-                        fbinit (document, 'script', 'facebook-jssdk');
+                    url: "{% url DispenseClientDiscountCode %}",
+                    data: {
+                        'client_uuid': "{{ client_uuid }}",
+                        'store_url': "{{ store_url }}"
                     },
-                    error: function () {
-                        $(".choice").hide();
-                        $("#error_message").show();
+                    type: 'post',
+                    dataType: 'text',
+                    success: function (data) {
+                        if (data) {
+                            $("#discount_gettest").show();
+                        }
+                        $("#discount_code").val(data || "We're out!");
                     }
                 });
-            }
-        };
-        $('.vote').click(vote);
+            };
+
+            var vote = function () {
+                var product_uuid = $(this).data('uuid');
+                if (product_uuid) {
+                    var payload = {
+                        "user_uuid" : "{{ user_uuid }}",
+                        "instance_uuid" : "{{ instance_uuid }}",
+                        "product_uuid" : product_uuid
+                    };
+                    $.ajax({
+                        url: "{{ URL }}{% url DoVote %}",
+                        type: 'post',
+                        data: payload,
+                        success: function () {
+                            $(".choice, #product_screen").hide();
+                            $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+
+                            // get the discount code.
+                            getDiscount();
+
+                            fbinit(document, 'script', 'facebook-jssdk');
+                        },
+                        error: function () {
+                            $(".choice").hide();
+                            $("#error_message").show();
+                        }
+                    });
+                }
+            };
+            $('.vote').click(vote);
+        {% endif %}
         $('#cart_items_display input').prop('checked', false);
     });
 {% endblock body_script %}
