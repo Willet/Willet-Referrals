@@ -45,6 +45,25 @@
 {% block body_script %}
     $(document).ready(function () {
         {% if not user_voted %}
+            var getDiscount = function () {
+                // get the discount code.
+                $.ajax({
+                    url: "{% url DispenseClientDiscountCode %}",
+                    data: {
+                        'client_uuid': "{{ client_uuid }}",
+                        'store_url': "{{ store_url }}"
+                    },
+                    type: 'post',
+                    dataType: 'text',
+                    success: function (data) {
+                        if (data) {
+                            $("#discount_gettest").show();
+                        }
+                        $("#discount_code").val(data || "We're out!");
+                    }
+                });
+            };
+
             var vote = function (which) {
                 $.ajax({
                     url: "{% url DoVote %}",
@@ -55,25 +74,11 @@
                     },
                     success: function (tr) {
                         {% if discount_enabled %}
+                            {# discount_enabled is undefined on purpose #}
                             $(".choice, #product_screen").hide();
                             $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-                            {# discount_enabled is undefined on purpose #}
                             // get the discount code.
-                            $.ajax({
-                                url: "{% url DispenseClientDiscountCode %}",
-                                data: {
-                                    'client_uuid': "{{ client_uuid }}",
-                                    'store_url': "{{ store_url }}"
-                                },
-                                type: 'post',
-                                dataType: 'text',
-                                success: function (data) {
-                                    if (data) {
-                                        $("#discount_gettest").show();
-                                    }
-                                    $("#discount_code").val(data || "We're out!");
-                                }
-                            });
+                            getDiscount();
                         {% else %}
                             $("#success_pending").hide();
                             $("#success_screen").show();

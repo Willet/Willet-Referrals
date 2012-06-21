@@ -574,7 +574,7 @@ _willet = (function (me) {
                 // '&' -> ',' and '=' -> ':'
                 var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
                 params = {
-                    "enabled": raw_obj.enabled || '',
+                    "enabled": raw_obj.enabled && (raw_obj.enabled === "true"),
                     "shop":  raw_obj.shop || '',
                     "facebookUsername": raw_obj.facebook_username || '',
                     "twitterUsername":  raw_obj.twitter_username || '',

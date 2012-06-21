@@ -88,11 +88,9 @@
                         <div class="span-9 text-center">
                             <h2 style="margin-top: 25px;
                                        color: #fff;
-                                       text-shadow: 0 1px 0 #666;
+                                       text-shadow: 0 3px 6px #666;
                                        text-shadow: none\0/;">
-                                    You have created a vote!
-                                    <br />
-                                    Invite friends to get started ⇝
+                                    Invite friends to give advice!
                             </h2>
                             <img src="/static/sibt/imgs/happy-people-245x120.png" />
                         </div>
@@ -146,7 +144,7 @@
                     </p>
                     <div id="fb-root"></div>
                     <div id="FOO" class="fb-comments"
-                        data-href="{{fb_comments_url}}"
+                        data-href="{{ fb_comments_url }}"
                         data-reverse="true"
                         order_by="reverse_time"
                         data-num-posts="5"
@@ -186,6 +184,12 @@
             <p class="text-center" style="clear:both; padding-top: 24px;">
                 <a href="http://rf.rs/s/shopify/beta">Should I Buy This</a>,
                 on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
+                {% if debug %}
+                    <br/>
+                    <b>DEBUG</b>: instance_uuid {{ instance_uuid }},
+                                  user.uuid {{ user.uuid }},
+                                  asker.uuid {{ instance.asker.uuid }}
+                {% endif %}
             </p>
             {% block screens %}{% endblock %}
         </div>
