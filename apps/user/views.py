@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 
-from apps.app.models import *
-from apps.user.models import *
+import logging
 
+from django.utils import simplejson as json
+
+from apps.app.models import App
+from apps.link.models import Link
+from apps.order.shopify.models import OrderShopify
+from apps.user.models import User
+
+from util.consts import P3P_HEADER
+from util.helpers import set_user_cookie
 from util.urihandler import URIHandler
 
 class ShowProfilePage(URIHandler):
     def get(self, app_id = None, user_id = None):
-        app = App.get_by_uuid(app_id)
+        app = App.get(app_id)
         user = User.get(user_id)
 
         if not app:

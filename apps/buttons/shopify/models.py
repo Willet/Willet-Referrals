@@ -52,10 +52,6 @@ class ButtonsShopify(Buttons, AppShopify):
     def _validate_self(self):
         return True
 
-    @staticmethod
-    def get_by_uuid( uuid ):
-        return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
-
     def get_price(self):
         """returns a float (e.g. 9.99) for the recurring price of the app.
 
@@ -123,14 +119,14 @@ class ButtonsShopify(Buttons, AppShopify):
 
             orders = int(result["count"])
             monthly_orders = orders / months if months else orders
-            
+
             survey = ( int(monthly_orders),
                        self.client.name,
                        self.client.url,
                        self.client.merchant.get_full_name(),
                        self.client.email or u'' )
         return survey
-            
+
 
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
@@ -268,7 +264,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 """
             }
         }])
-        
+
         self.install_queued()
 
         # Email DevTeam
