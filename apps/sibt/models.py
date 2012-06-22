@@ -437,78 +437,11 @@ class SIBTInstance(Model):
 
 
 class PartialSIBTInstance(Model):
-    """http://goo.gl/SWi1P
+    """Originally SIBTInstances that are meant to self-delete after 1 hour.
 
-    Whenever someone doesn't FB connect, we start a PartialInstance and open up
-    a FB dialog. We don't know if they actually pushed the message to FB or not,
-    right? This is why it's only a Partial Instance. When the User is redirected
-    to our "Thanks" screen, we complete the partialinstance and make a full one
-    and delete the partial one. If the person cancels, the PartialInstance is
-    deleted. If the person closes the window, the PartialInstance stays, but
-    ... "expires".
-
-    Each User can have at most 1 PartialInstance.
+    DEPRECATED; there was no sense in using this.
     """
-    # User is the only index.
-    user = MemcacheReferenceProperty(db.Model,
-                                     collection_name='partial_sibt_instances',
-                                     indexed=True)
-    link = db.ReferenceProperty(db.Model,
-                                collection_name='link_partial_sibt_instances',
-                                indexed=False)
-    # deprecated (SIBT now should accept 2 or more products)
-    product = db.ReferenceProperty(db.Model,
-                                   collection_name='product_partial_sibt_instances',
-                                   indexed=False)
-
-    # use self.get_products() to get products as objects
-    products = db.StringListProperty(db.Text, indexed=True)
-
-    app_ = db.ReferenceProperty(db.Model,
-                                collection_name='app_partial_sibt_instances',
-                                indexed=False)
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        self._memcache_key = kwargs['uuid']
-        super(PartialSIBTInstance, self).__init__(*args, **kwargs)
-
-    def _validate_self(self):
-        return True
-
-    def get_products(self):
-        """Returns this instance's products as objects."""
-        return [Product.get(product_uuid) for product_uuid in self.products]
-
-    @classmethod
-    def create(cls, user, app, link, product=None, products=None):
-        """Users can only have 1 of these ever.
-
-        If they already have one, update it.
-        Otherwise, make a new one.
-        """
-        instance = cls.get_by_user(user)
-        if instance:
-            instance.link = link
-            instance.product = product
-            instance.products = products
-            instance.app_ = app
-        else:
-            uuid = generate_uuid(16)
-
-            instance = cls(key_name=uuid,
-                           uuid=uuid,
-                           user=user,
-                           link=link,
-                           product=product,
-                           products=products,
-                           app_=app)
-        instance.put()
-        return instance
-
-    @classmethod
-    def get_by_user(cls, user):
-        return cls.all().filter('user =', user).get()
+    pass
 
 
 # retrieval helpers

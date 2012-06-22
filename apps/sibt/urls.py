@@ -24,5 +24,4 @@ urlpatterns = [
     (r'/s/instance/products',       SaveProductsToInstance),
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
     (r'/s/sendFriendAsks',          SendFriendAsks),
-    (r'/s/startPartialInstance',    StartPartialSIBTInstance),
 ]
