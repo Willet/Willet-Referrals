@@ -1,0 +1,3 @@
+[submodule "static/js/localstorage"]
+	path = static/js/localstorage
+	url = https://github.com/wojodesign/local-storage-js.git
