@@ -300,6 +300,8 @@ def url(view, *args, **kwargs):
     looks up a url for a view
         - view is a string, name of the view (such as ShowRoutes)
         - args are optional parameters for that view
+            for handlers with wildcards (capture groups), args is used to
+            fill in those groups.
         - **kwargs takes a named argument qs. qs is passed to
             urllib.urlencode and tacked on to the end of the url
             Basically, use this to pass a dict of arguments
