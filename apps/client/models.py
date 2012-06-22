@@ -49,11 +49,6 @@ class Client(Model, polymodel.PolyModel):
         return True
 
     @staticmethod
-    def _get_from_datastore(google_user):
-        """Datastore retrieval using memcache_key"""
-        return db.Query(Client).filter('uuid =', google_user).get()
-
-    @staticmethod
     def create(url, request_handler, user):
         """ Creates a Store (Client).
             This process requires a user (merchant) to be associated with the
@@ -130,10 +125,6 @@ class Client(Model, polymodel.PolyModel):
             return client
         return cls.all().filter('email =', email).get()
 
-    @classmethod
-    def get_by_uuid(cls, uuid):
-        return cls.all().filter('uuid =', uuid).get()
-
     # Mailing list methods ----------------------------------------------------
     def subscribe_to_mailing_list(self, list_name='', list_id=None):
         """Add client to MailChimp.
@@ -204,13 +195,3 @@ class Client(Model, polymodel.PolyModel):
                     # thrown when results is not iterable (eg bool)
                     logging.info('Unsubscribed %s from %s OK: %r' % (self.email, list_name, resp))
         return
-
-
-# TODO delete these deprecated functions after April 26, 2012 (1 month warning)
-def get_client_by_email(email):
-    logging.error('Deprecated function get_client_by_email should be replaced by Client.get_by_email')
-    return Client.get_by_email(email)
-
-def get_client_by_uuid(uuid):
-    logging.error('Deprecated function get_client_by_uuid should be replaced by Client.get_by_uuid')
-    return Client.get_by_uuid(uuid)

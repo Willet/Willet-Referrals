@@ -1,56 +1,24 @@
 #!/usr/bin/env python
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import re, urllib, sys
-from inspect import getmodule
-from datetime import datetime
-from time import time
+import logging
+import sys
 
 from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
-from google.appengine.ext import webapp
-from google.appengine.api import taskqueue
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
+from inspect import getmodule
 
-from apps.analytics_backend.models import *
-from apps.email.models import Email
-from apps.app.models import App
-from apps.app.shopify.models import AppShopify
+from google.appengine.api import memcache, taskqueue
+from google.appengine.ext import db
+
 from apps.action.models import Action
-# from apps.action.models import ScriptLoadAction
-from apps.client.models import Client
-from apps.client.shopify.models import ClientShopify
-from apps.link.models import Link
-from apps.order.shopify.models import OrderShopify
-from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import *
-from apps.sibt.models import SIBT
-from apps.sibt.shopify.models import SIBTShopify
-from apps.sibt.models import SIBTInstance
-from apps.user.models import *
-from util import httplib2
-from util.consts import *
-from util.helpers import *
-from util.helpers import url as reverse_url
-from util.urihandler import URIHandler
+from apps.app.models import App
+
+from util.consts import INSTALLED_APPS
+from util.helpers import url
 from util.memcache_bucket_config import MemcacheBucketConfig
-
-
-class Admin(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-        links = Link.all()
-        str = " Bad Links "
-        for l in links:
-            clicks = l.count_clicks()
-            if l.user == None and clicks != 0:
-                str += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
-
-        self.response.out.write(str)
+from util.urihandler import URIHandler
 
 
 class ShowRoutes(URIHandler):
@@ -60,11 +28,13 @@ class ShowRoutes(URIHandler):
         url = route[0]
         obj = route[1]
         obj_name = obj.__name__
+        obj_doc = getattr(obj, '__doc__', '') or ''
         module = getmodule(obj).__name__
         return {
             'route': url,
             'obj': obj_name,
             'module': module,
+            'doc': obj_doc,
         }
 
     def get(self):
@@ -97,6 +67,10 @@ class ShowRoutes(URIHandler):
 
 
 class ManageApps(URIHandler):
+    """Shows all App objects in the datastore.
+
+    Some modifying features are available.
+    """
     def get_app_list(self):
         all_apps = App.all()
         apps = {}
@@ -204,89 +178,6 @@ class ManageApps(URIHandler):
         )
 
 
-class SIBTInstanceStats(URIHandler):
-    def no_code(self):
-        str += "<h1> Live Instances </h1>"
-        live_instances = SIBTInstance.all().filter('is_live =', True)
-        for l in live_instances:
-            try:
-                if not l.asker.is_admin(urihandler=self):
-                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code)
-            except:
-                pass
-
-        str += "<br /><br /><h1> Dead Instances </h1>"
-        dead_instances = SIBTInstance.all().filter('is_live =', False)
-        for l in dead_instances:
-            try:
-                if not l.asker.is_admin(urihandler=self):
-                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code)
-            except:
-                pass
-        return str
-
-
-    def get(self):
-        willt_code = self.request.get('w')
-
-        if willt_code == '':
-            self.response.out.write(self.no_code())
-            return
-
-        link = Link.get_by_code(willt_code)
-
-        instance = link.sibt_instance.get()
-        asker = instance.asker
-
-        # Get all actions
-        actions = Action.all().filter('sibt_instance =', instance)
-        clicks = SIBTClickAction.get_by_instance(instance)
-        votes = SIBTVoteAction.get_by_instance(instance)
-
-        # Init the page
-        str = "<h1>SIBT Instance: "
-        str +="<a href='%s'>Link to Vote</a> </h1> " % (link.get_willt_url())
-
-        str += "Started: %s" % instance.created.strftime('%H:%M:%S %A %B %d, %Y')
-
-        str += "<h2># Actions: %d " % actions.count() if actions else 0
-        str += "# Clicks: %d " % clicks.count() if clicks else 0
-        str += "# Votes: %d</h2>" % votes.count() if votes else 0
-
-        str += "<p>Product: <a href='%s'>%s</a></p>" % (link.target_url, link.target_url)
-        str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token)
-
-        str += "<br /><br />"
-        str += "<table width='100%'><tr><td width='15%'> Time </td> <td width='15%'> Action </td> <td width='50%'> User </td></tr>"
-
-        # Actions
-        so = sorted(actions, key=lambda x: x.created, reverse=True)
-        for a in so:
-            logging.info("actions %s" % a.user)
-            u = a.user
-
-            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__)
-
-            if hasattr(u, 'fb_access_token'):
-                str += "<a href='https://graph.facebook.com/%s?access_token=%s'>%s</a>" % (u.fb_identity, u.fb_access_token, u.get_full_name())
-            else:
-                str += "'%s'" % u.get_full_name()
-
-            if hasattr(u, 'ips'):
-                str += " IPs: %s " % u.ips
-
-                str += " Admin? %s</td> </tr>" % u.is_admin(urihandler=self)
-
-        str += "</table> <h2> Instance Comments </h2>"
-
-        str += '<div id="fb-root"></div> <script>(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) {return;} js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=181838945216160"; fjs.parentNode.insertBefore(js, fjs); }(document, "script", "facebook-jssdk"));</script>'
-
-        str += '<div class="fb-comments" data-href="%s?%s" data-num-posts="5" data-width="500"></div>' % (instance.url, instance.uuid)
-
-        self.response.out.write(str)
-        return
-
-
 class ShowActions(URIHandler):
     #@admin_required
     #def get(self, admin):
@@ -353,124 +244,6 @@ class GetActionsSince(URIHandler):
         except Exception, e:
             logging.error(e, exc_info=True)
             self.response.out.write(e)
-
-
-class ShowClickActions(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-        things = {
-            'tb': {
-                'action': 'SIBTUserClickedTopBarAsk',
-                'show_action': 'SIBTShowingTopBarAsk',
-                'l': [],
-                'counts': {},
-            },
-            'b': {
-                'action': 'SIBTUserClickedButtonAsk',
-                'show_action': 'SIBTShowingButton',
-                'l': [],
-                'counts': {},
-            }
-        }
-        actions_to_check = [
-            'SIBTShowingAskIframe',
-            'SIBTAskUserClickedEditMotivation',
-            'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare',
-            'SIBTInstanceCreated',
-        ]
-        for t in things:
-            things[t]['counts'][things[t]['show_action']] = Action\
-                    .all(keys_only=True)\
-                    .filter('class =', things[t]['show_action'])\
-                    .count(999999)
-
-            for click in Action.all().filter('what =', things[t]['action']).order('created'):
-                try:
-                    # we want to get the askiframe event
-                    # but we have to make sure there wasn't ANOTHER click after this
-
-                    next_show_button = Action.all()\
-                            .filter('user =', click.user)\
-                            .filter('created >', click.created)\
-                            .filter('app_ =', click.app_)\
-                            .filter('class =', 'SIBTShowingButton')\
-                            .get()
-
-                    for action in actions_to_check:
-                        if action not in things[t]['counts']:
-                            things[t]['counts'][action] = 0
-
-                        a = Action.all()\
-                                .filter('user =', click.user)\
-                                .filter('created >', click.created)\
-                                .filter('app_ =', click.app_)\
-                                .filter('class =', action)\
-                                .get()
-                        if a:
-                            logging.info(a)
-                            if next_show_button:
-                                if a.created > next_show_button.created:
-                                    logging.info('ignoring %s over %s' % (
-                                        a,
-                                        next_show_button
-                                    ))
-                                    continue
-                            things[t]['counts'][action] += 1
-                            logging.info('%s + 1' % action)
-
-                    client = ''
-                    if click.app_.client:
-                        if hasattr(click.app_.client, 'name'):
-                            client = click.app_.client.name
-                        elif hasattr(click.app_.client, 'domain'):
-                            client = click.app_.client.domain
-                        elif hasattr(click.app_.client, 'email'):
-                            client = click.app_.client.email
-                        else:
-                            client = click.app_.client.uuid
-                    else:
-                        client = 'No client'
-
-                    things[t]['l'].append({
-                        'created': '%s' % click.created,
-                        'uuid': click.uuid,
-                        'user': click.user.name,
-                        'client': client
-                    })
-                except Exception, e:
-                    logging.warn('had to ignore one: %s' % e, exc_info=True)
-            things[t]['counts'][things[t]['action']] = len(things[t]['l'])
-
-            l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
-            l = sorted(l, key=lambda item: item['value'], reverse=True)
-            things[t]['counts'] = l
-        template_values = {
-            'tb_counts': things['tb']['counts'],
-            'b_counts': things['b']['counts'],
-        }
-
-        self.response.out.write(self.render_page('action_stats.html', template_values))
-
-
-class FBConnectStats(URIHandler):
-    def get(self):
-        no_connect = SIBTNoConnectFBDialog.all().count()
-        connect = SIBTConnectFBDialog.all().count()
-
-        instance_connect = SIBTInstanceCreated.all().filter('medium =', "ConnectFB").count()
-        instance_noconnect = SIBTInstanceCreated.all().filter('medium =', "NoConnectFB").count()
-
-        html = "<h2> Opportunity Counts </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % no_connect
-        html += "<p>Connect Dialog: %d</p>" % connect
-
-        html += "<h2> Instances </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % instance_noconnect
-        html += "<p>Connect Dialog: %d</p>" % instance_connect
-
-        self.response.out.write(html)
 
 
 class ReloadURIS(URIHandler):
@@ -551,73 +324,6 @@ class ShowMemcacheConsole(URIHandler):
         )
 
 
-class ShowCounts(URIHandler):
-    def get(self):
-
-        btn_shows = SIBTShowingButton.all().count()
-
-        click_ask_btn = SIBTUserClickedButtonAsk.all().count()
-        click_ask_overlay = SIBTUserClickedOverlayAsk.all().count()
-        click_ask_bar = SIBTUserClickedTopBarAsk.all().count()
-
-        ask_shows = SIBTShowingAskIframe.all().count()
-
-        ask_share = SIBTAskUserClickedShare.all().count()
-
-        connect_cancelled = SIBTFBConnectCancelled.all().count()
-
-        str = "<p>Button Shows: %d</p>" % btn_shows
-
-        str += "<p>Btn Clicks: %d</p>" % click_ask_btn
-        str += "<p>Bar Clicks: %d</p>" % click_ask_bar
-        str += "<p>Overlay Clicks: %d</p>" % click_ask_overlay
-        str += "<p>Showing Ask: %d</p>" % ask_shows
-        str += "<p>Shared the Ask: %d</p>" % ask_share
-        str += "<p>FB Connect Cancelled: %d</p>" % connect_cancelled
-
-        self.response.out.write(str)
-
-
-class ShowAnalytics(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-
-        template_values = {
-            'actions': actions_to_count,
-            'app': ''
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
-class ShowAppAnalytics(URIHandler):
-    def get(self, app_uuid):
-        app = App.get(app_uuid)
-
-        template_values = {
-            'actions': actions_to_count,
-            'app': app
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
-class AppAnalyticsCompare(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-        template_values = {
-            'actions': actions_to_count,
-            'app': ''
-            }
-        self.response.out.write(
-            self.render_page('analytics.html', template_values)
-        )
-
-
 class EmailEveryone (URIHandler):
     # TODO: change mass_mail_client.html to call EmailBatch instead of post
     # TODO: change EmailBatch request into BatchRequest
@@ -664,7 +370,6 @@ class EmailEveryone (URIHandler):
         taskqueue.add(url=url('EmailBatch'), params=params)
 
         self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write ("%r" % all_emails)
         return
 
 

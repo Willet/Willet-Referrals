@@ -89,7 +89,7 @@ class DoDeleteApp(URIHandler):
         app_uuid = self.request.get('app_uuid')
 
         logging.info('app id: %s' % app_uuid)
-        app = App.get_by_uuid(app_uuid)
+        app = App.get(app_uuid)
         if app.client.key() == client.key():
             logging.info('deleting')
             app.delete()
