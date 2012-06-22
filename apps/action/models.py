@@ -174,7 +174,7 @@ class ShowAction(Action):
     what = db.StringProperty()
 
     # url/page this was shown on
-    url = db.LinkProperty(indexed=True)
+    url = db.LinkProperty(indexed=False)
 
     @staticmethod
     def create(user, app, what, url):

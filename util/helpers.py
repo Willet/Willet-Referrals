@@ -109,16 +109,11 @@ def get_target_url(referrer):
 
 
 def generate_uuid(digits):
-    """Generate a 'digits'-character hex endcoded string as
-    a random identifier, with collision detection"""
-    while True:
-        tmp = min(digits, 32)
-        uid = uuid.uuid4().hex[:tmp]
-        digits -= 32
-        if digits <= 32:
-            break
+    """I am guessing this is a wrapper for uuid4."""
+    if digits > 32:
+        raise ValueError('max UUID length is 32')
 
-    return uid
+    return uuid.uuid4().hex[:digits]
 
 
 def encode_base62(num):

@@ -8,7 +8,9 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
+from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
+from util.errors import ShopifyAPIError
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
@@ -19,6 +21,117 @@ class ProductShopifyCollection(ProductCollection):
     ProductShopifyCollection contains methods necessary to fetch Shopify
     stores' collection information.
     """
+    shopify_id = db.IntegerProperty(required=True, indexed=True)
+
+    @classmethod
+    def fetch(cls, app=None, app_uuid=None):
+        """Obtains a list of collections for a client from Shopify.
+
+        The reason an app is needed is because a client's token is incorrect
+        if he/she installs more than one of our products. We must use the
+        app's store_token instead.
+
+        Either app or app_uuid must be supplied as kwargs.
+
+        Default: []
+        """
+        collections = []
+
+        if not app:
+            app = App.get(app_uuid)
+
+        if not app:
+            raise ValueError('Missing app/app_uuid')
+
+        # calling AppShopify's private member
+        # (getting product collections are hardly an app's job)
+        result = app._call_Shopify_API(verb="GET",
+                                       call="custom_collections.json")
+
+        if not result:
+            raise ShopifyAPIError("No custom collection data was returned: "
+                                  "%s" % result,
+                                  exc_info=True)
+        logging.error("%r" % result)
+
+        collections_jsons = result.get('custom_collections', False)
+        if not collections_jsons:
+            raise ShopifyAPIError("Custom collection data is malformed: "
+                                  "%s" % result,
+                                  exc_info=True)
+
+        collection_ids = [collection_json['id'] \
+                          for collection_json in collections_jsons]
+
+        collections = [cls(shopify_id=collection_id) \
+                       for collection_id in collection_ids]
+
+        for collection in collections:
+            collection.put()  # save them all
+
+        return collections
+
+    @classmethod
+    def get_or_fetch(cls, app=None, app_uuid=None):
+        """Given either the app or its uuid, generate all CustomCollection
+        objects ("collections") in his/her Shopify account.
+
+        Argument positions may change. This must be called with keywords.
+
+        Default: []
+
+        WARNING there are no CustomCollection webhooks. This information can
+        be outdate very quickly.
+        """
+        collections = []
+
+        if not app:
+            app = App.get(app_uuid)
+
+        if not app:
+            raise ValueError('Missing app/app_uuid')
+
+        collections = app.client.collections  # can be parent class
+        if not collections:
+            collections = cls.fetch(client=client)
+
+        return collections
+
+    def fetch_products(self, app=None, app_uuid=None):
+        """Retrieve Shopify products under this collection."""
+        if not app:
+            app = App.get(app_uuid)
+
+        if not app:
+            raise ValueError('Missing app/app_uuid')
+
+        # calling AppShopify's private member
+        # (getting product collections are hardly an app's job)
+        result = app._call_Shopify_API(
+            verb="GET", call="products.json?collection_id=%d" % self.shopify_id)
+
+        if not result:
+            raise ShopifyAPIError("No product data was returned: %s" % result,
+                                  exc_info=True)
+        logging.error("%r" % result)
+
+        products_jsons = result.get('products', False)
+        if not products_jsons:
+            raise ShopifyAPIError("Product data is malformed: %s" % result,
+                                  exc_info=True)
+
+        product_ids = [product_json['id'] for product_json in product_jsons]
+
+        products = [Product.get_or_fetch(product_id) for product_id in product_ids]
+
+        for product in products:
+            product.collection = self
+            product.put()  # save them all
+
+        return products
+
+    def get_or_fetch_products(self, app=None, app_uuid=None):
+        """Retrieve Shopify products under this collection."""
 
 
 class ProductShopify(Product):

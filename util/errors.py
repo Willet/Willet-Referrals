@@ -19,9 +19,11 @@ class RemoteError(Exception):
     def __str__(self):
         return "%s %s: %s" % (self.status, self.name, self.description)
 
+
 class ShopifyAPIError(RemoteError):
     """ A more descriptive exception for Shopify """
     pass
+
 
 class BillingError(Exception):
     """ Exception raised when a billing API request fails or returns an unexpected result"""
@@ -32,6 +34,7 @@ class BillingError(Exception):
 
     def __str__(self):
         return "%s\ndata: %r" % (self.message, self.data)
+
 
 class ShopifyBillingError(BillingError):
     """ A more descriptive exception for Shopify """

@@ -513,6 +513,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     logging.error('encountered error with reinstall', exc_info=True)
         return app, created
 
+
 class SharedItem():
     """An object that contains information about a share"""
     def __init__(self, name, network, url, img_url=None, created=None):
@@ -529,6 +530,7 @@ class SharedItem():
         self.url     = url
         self.img_url = img_url
         self.created = created if created else time()
+
 
 class SharePeriod(Model):
     """Model that manages shares for an application over some period"""

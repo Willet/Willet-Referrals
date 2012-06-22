@@ -6,7 +6,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from apps.client.models import Client
 
-from util.model import Model
+from util.model import Model, ObjectListReferenceProperty
 from util.shopify_helpers import get_url_variants
 
 
@@ -17,7 +17,9 @@ class ProductCollection(Model):
     associate products with their collections.
     """
 
-    # ProductCollection.products is a ReferenceProperty in Product
+    # so you can do both collection.products and products.collection
+    # (many to many); the two setups are not related
+    products = ObjectListReferenceProperty()  # well, type is implied Model
 
     # Client.collections is a ReferenceProperty
     client = db.ReferenceProperty(Client, collection_name='collections')
@@ -66,8 +68,9 @@ class Product(Model, db.polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     client = db.ReferenceProperty(Client, collection_name='products')
 
-    collection = db.ReferenceProperty(ProductCollection,
-                                      collection_name='products')
+    # so you can do both collection.products and products.collection
+    # (many to many); the two setups are not related
+    collections = ObjectListReferenceProperty()  # well, type is implied Model
 
     description = db.TextProperty(default="")
     images = db.StringListProperty()  # list of urls to images
