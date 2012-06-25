@@ -25,8 +25,31 @@ class ProductShopifyCollection(ProductCollection):
     # id of this same collection on Shopify.
     shopify_id = db.IntegerProperty(required=True, indexed=True)
 
+    # saving it now to be safe
+    shopify_handle = db.StringProperty(required=False, indexed=False)
+
     def __init__(self, *args, **kwargs):
         super(ProductShopifyCollection, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def create(**kwargs):
+        """Creates a collection in the datastore using kwargs.
+
+        In order to save as superclass (ProductCollection), all subclasses
+        must implement this exact function. Also, ProductCollection must be
+        a PolyModel.
+        """
+        kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
+        kwargs['key_name'] = kwargs.get('uuid')
+
+        # patch for fake python property
+        if kwargs.get('products', False):
+            kwargs['product_uuids'] = [x.uuid for x in kwargs.get('products')]
+
+        obj = ProductShopifyCollection(**kwargs)
+        obj.put()
+
+        return obj
 
     @classmethod
     def fetch(cls, app=None, app_uuid=None):
@@ -52,12 +75,12 @@ class ProductShopifyCollection(ProductCollection):
         # (getting product collections are hardly an app's job)
         result = app._call_Shopify_API(verb="GET",
                                        call="custom_collections.json")
+        logging.debug('result = %r' % result, exc_info=True)
 
         if not result:
             raise ShopifyAPIError("No custom collection data was returned: "
                                   "%s" % result,
                                   exc_info=True)
-        logging.error("%r" % result)
 
         collections_jsons = result.get('custom_collections', False)
         if not collections_jsons:
@@ -65,15 +88,16 @@ class ProductShopifyCollection(ProductCollection):
                                   "%s" % result,
                                   exc_info=True)
 
-        collection_ids = [collection_json['id'] \
-                          for collection_json in collections_jsons]
-
-        collections = [cls(client=app.client,\
-                           shopify_id=collection_id,\
-                           products=[]) \
-                       for collection_id in collection_ids]
+        for collection_json in collections_jsons:
+            collection = cls.create(client=app.client,
+                                    collection_name=collection_json['title'],
+                                    shopify_id=collection_json['id'],
+                                    shopify_handle=collection_json['handle'],
+                                    products=[])
+            collections.append(collection)
 
         for collection in collections:
+            collection.get_or_fetch_products(app=app, app_uuid=app_uuid)
             collection.put()  # save them all
 
         return collections
@@ -98,14 +122,21 @@ class ProductShopifyCollection(ProductCollection):
         if not app:
             raise ValueError('Missing app/app_uuid')
 
-        collections = app.client.collections  # can be parent class
+        collections = app.client.collections  # db.Query object?!
+        logging.debug('client.collections = %r' % collections)
         if not collections:
-            collections = cls.fetch(client=client)
+            logging.debug('Client has no collections; fetching.')
+        collections = cls.fetch(app=app, app_uuid=app_uuid)
 
         return collections
 
     def fetch_products(self, app=None, app_uuid=None):
-        """Retrieve Shopify products under this collection."""
+        """Retrieve Shopify products under this collection.
+
+        Products need to already exist in the database.
+        """
+        products = []
+
         if not app:
             app = App.get(app_uuid)
 
@@ -120,20 +151,27 @@ class ProductShopifyCollection(ProductCollection):
         if not result:
             raise ShopifyAPIError("No product data was returned: %s" % result,
                                   exc_info=True)
-        logging.error("%r" % result)
+        logging.error("products = %r" % result)
 
         products_jsons = result.get('products', False)
         if not products_jsons:
             raise ShopifyAPIError("Product data is malformed: %s" % result,
                                   exc_info=True)
 
-        product_ids = [product_json['id'] for product_json in product_jsons]
+        # fetch all products regardless.
+        # http://kiehn-mertz3193.myshopify.com/admin/products/{ id }.json
+        for product_json in products_jsons:
+            pid = product_json['id']
+            product = ProductShopify.get_by_shopify_id(pid)
+            if not product:  # create if not exists
+                result = app._call_Shopify_API(verb="GET",
+                                               call="products/%d.json" % pid)
+                product = ProductShopify.create_from_json(client=app.client,
+                                                          data=result['product'])
 
-        products = [Product.get_or_fetch(product_id) for product_id in product_ids]
-
-        for product in products:
-            product.collection = self
-            product.put()  # save them all
+            product.collections.append(self)
+            product.put()  # commitment last
+            products.append(product)
 
         return products
 
@@ -141,7 +179,7 @@ class ProductShopifyCollection(ProductCollection):
         """Retrieve Shopify products under this collection."""
         if not self.products:
             self.products = self.fetch_products(app=app, app_uuid=app_uuid)
-            self.put()
+            self.put()  # commitment last
         return self.products
 
 

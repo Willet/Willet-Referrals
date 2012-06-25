@@ -12,6 +12,7 @@ from util.urihandler import URIHandler
 class SkypeCallTestingService(URIHandler):
     def get(self):
         #ProductShopifyCollection.fetch(app=App.get_by_url('http://kiehn-mertz3193.myshopify.com'))
+        """
         ProductCollection.get_or_create(collection_name="derp",
                                         products=[Product.get('09c8d1d82d90423a'),
                                                   Product.get('4b4be412fc644580'),
@@ -19,4 +20,7 @@ class SkypeCallTestingService(URIHandler):
                                         client=Client.get('1b130711b754440e'))  # me
 
         my_col = ProductCollection.get_by_client_and_name(Client.get('1b130711b754440e'), 'derp')
-        logging.debug('%r' % my_col.products)
+        """
+        my_cols = ProductShopifyCollection.fetch(app=App.get_by_url('http://kiehn-mertz3193.myshopify.com'))
+
+        logging.debug('%r' % my_cols[0].products)

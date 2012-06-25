@@ -11,7 +11,7 @@ from util.model import Model
 from util.shopify_helpers import get_url_variants
 
 
-class ProductCollection(Model):
+class ProductCollection(Model, db.polymodel.PolyModel):
     """A "category" of sorts that binds multiple products under one roof.
 
     ProductShopifyCollection (subclass) contains functionality to automatically
@@ -26,7 +26,7 @@ class ProductCollection(Model):
     collection_name = db.StringProperty(required=True, indexed=True)
 
     # Client.collections is a ReferenceProperty
-    client = db.ReferenceProperty(Client, collection_name='collections')
+    client = db.ReferenceProperty(db.Model, collection_name='collections')
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -37,15 +37,13 @@ class ProductCollection(Model):
             raise AttributeError('ProductCollections must have Client')
         return True
 
-    @classmethod
-    def create(cls, **kwargs):
+    @staticmethod
+    def create(**kwargs):
         """Creates a collection in the datastore using kwargs.
 
-        Subclasses will have different field requirements.
-
-        It will raise its own error if
-        - you do not supply the appropriate fields, or
-        - you give it too many fields.
+        In order to save as superclass (ProductCollection), all subclasses
+        must implement this exact function. Also, ProductCollection must be
+        a PolyModel.
         """
         kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
         kwargs['key_name'] = kwargs.get('uuid')
@@ -54,7 +52,7 @@ class ProductCollection(Model):
         if kwargs.get('products', False):
             kwargs['product_uuids'] = [x.uuid for x in kwargs.get('products')]
 
-        obj = cls(**kwargs)
+        obj = ProductCollection(**kwargs)
         obj.put()
 
         return obj
@@ -148,7 +146,7 @@ class Product(Model, db.polymodel.PolyModel):
 
     @staticmethod
     def create(title, description='', images=None, tags=None, price=0.0,
-               client=None, resource_url='', type='', collections=None):
+               client=None, resource_url='', type='', collection_uuids=None):
         """Creates a product in the datastore.
            Accepts datastore fields, returns Product object.
         """
@@ -169,10 +167,10 @@ class Product(Model, db.polymodel.PolyModel):
                           description=description,
                           images=images,
                           price=price,
-                           client=client,
+                          client=client,
                           type=type,
                           tags=tags,
-                          collections=collections or [])
+                          collection_uuids=collection_uuids or [])
         product.resource_url = resource_url # apparently had to be separate
         product.put()
         return product
