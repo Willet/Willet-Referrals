@@ -48,10 +48,8 @@ class BatchRequest(URIHandler):
 
         filter_obj     = None
 
-        logging.warn('Running BatchRequest for %s.%s from %i to %i' % (app_cls,
-                                                                       method,
-                                                                       offset,
-                                                                       offset+batch_size-1))
+        logging.warn('Running BatchRequest for %s.%s from %i to %i' % (
+            app_cls, method, offset, offset+batch_size-1))
 
         # Convert JSON keys from unicode to strings
         # Python 2.5 doesn't like this, but it will work in 2.7

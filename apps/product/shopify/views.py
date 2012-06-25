@@ -9,6 +9,7 @@ from apps.product.shopify.models import ProductShopifyCollection
 
 from util.urihandler import URIHandler
 
+
 class SkypeCallTestingService(URIHandler):
     def get(self):
         #ProductShopifyCollection.fetch(app=App.get_by_url('http://kiehn-mertz3193.myshopify.com'))
@@ -21,6 +22,6 @@ class SkypeCallTestingService(URIHandler):
 
         my_col = ProductCollection.get_by_client_and_name(Client.get('1b130711b754440e'), 'derp')
         """
-        my_cols = ProductShopifyCollection.fetch(app=App.get_by_url('http://kiehn-mertz3193.myshopify.com'))
+        my_cols = ProductShopifyCollection.get_or_fetch(app=App.get_by_url('http://kiehn-mertz3193.myshopify.com'), collection_name="Frontpage")
 
         logging.debug('%r' % my_cols[0].products)

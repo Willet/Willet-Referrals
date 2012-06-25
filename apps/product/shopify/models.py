@@ -182,6 +182,18 @@ class ProductShopifyCollection(ProductCollection):
             self.put()  # commitment last
         return self.products
 
+    @classmethod
+    def get_by_shopify_id(cls, cid):
+        """Probably never memcached - tries anyway."""
+        cid = unicode(cid)
+        data = memcache.get(cls._get_memcache_key(cid))
+        if data:
+            collection = db.model_from_protobuf(entity_pb.EntityProto(data))
+        else:
+            collection = cls.all().filter('shopify_id =', cid).get()
+
+        return collection
+
 
 class ProductShopify(Product):
     """Methods for manipulating our copies of Shopify products."""
