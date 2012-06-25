@@ -556,10 +556,10 @@ class CleanOldActions(URIHandler):
 
         a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
         actions_deleted = 0
-        batch_size = 50
+        batch_size = int(self.request.get('batch_size', 50))
         keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
                      'sibtclickaction']
-        offset = 0
+        offset = int(self.request.get('offset', 0))
 
         while actions_deleted < 100:
             # keep fetching until we get 100 things to delete.

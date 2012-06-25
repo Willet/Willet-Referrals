@@ -21,7 +21,12 @@ class ProductShopifyCollection(ProductCollection):
     ProductShopifyCollection contains methods necessary to fetch Shopify
     stores' collection information.
     """
+
+    # id of this same collection on Shopify.
     shopify_id = db.IntegerProperty(required=True, indexed=True)
+
+    def __init__(self, *args, **kwargs):
+        super(ProductShopifyCollection, self).__init__(*args, **kwargs)
 
     @classmethod
     def fetch(cls, app=None, app_uuid=None):
@@ -29,7 +34,7 @@ class ProductShopifyCollection(ProductCollection):
 
         The reason an app is needed is because a client's token is incorrect
         if he/she installs more than one of our products. We must use the
-        app's store_token instead.
+        app's store_token instead. (also, AppShopify has the methods)
 
         Either app or app_uuid must be supplied as kwargs.
 
@@ -63,7 +68,9 @@ class ProductShopifyCollection(ProductCollection):
         collection_ids = [collection_json['id'] \
                           for collection_json in collections_jsons]
 
-        collections = [cls(shopify_id=collection_id) \
+        collections = [cls(client=app.client,\
+                           shopify_id=collection_id,\
+                           products=[]) \
                        for collection_id in collection_ids]
 
         for collection in collections:
@@ -132,6 +139,10 @@ class ProductShopifyCollection(ProductCollection):
 
     def get_or_fetch_products(self, app=None, app_uuid=None):
         """Retrieve Shopify products under this collection."""
+        if not self.products:
+            self.products = self.fetch_products(app=app, app_uuid=app_uuid)
+            self.put()
+        return self.products
 
 
 class ProductShopify(Product):
