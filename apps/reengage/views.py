@@ -139,6 +139,6 @@ class ReEngagePostHandler(URIHandler):
             self.respond(404)
             return
 
-        # TODO: What about Keys that reference this?
+        # TODO: What about Keys that reference this post?
         post.delete()
         self.respond(204)

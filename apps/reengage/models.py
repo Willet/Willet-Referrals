@@ -5,6 +5,7 @@ from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from django.utils import simplejson as json
 from apps.email.models import Email
+from apps.product.models import Product
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
@@ -180,48 +181,60 @@ class ReEngageQueue(Model):
         self.queued = []
         self.put()
 
-    def to_json(self):
-        objects = []
+    def _remove_expired(self):
+        """Remove any Keys that have expired"""
         expired = []
-
-        # TODO: Refactor into cleanup method?
         for obj in self.queued:
             model_object = db.get(obj)
-            if model_object:
-                objects.append(to_dict(model_object))
-            else:
-                # Object from Key no longer exists
+            if not model_object:
                 expired.append(obj)
 
-        # Remove any expired objects
         for obj in expired:
             self.queued.remove(obj)
 
         self.put()
 
+    def to_json(self):
+        """Converts the queue to JSON.
+
+        Note that it only converts queued items to JSON, not expired, etc."""
+        self._remove_expired()
+
+        objects = []
+        for obj in self.queued:
+            try:
+                objects.append(to_dict(db.get(obj)))
+            except:
+                continue
+
         return json.dumps(objects)
+
+    def get_products(self):
+        """Get products associated with this queue
+
+        Note: since queues are only associated with an app, at the moment,
+        we can only get all products associated with a particular client"""
+        logging.info("Client: %s" % self.owner.client)
+
+        products = Product.all().filter('client =', self.owner.client).fetch(None)
+
+        if products:
+            return products
+        else:
+            return []
 
     @classmethod
     def get_by_url(cls, url):
         """Find a queue based on the store url"""
-
-        logging.info("Store URL: %s" % url)
         app   = ReEngageShopify.get_by_url(url)
-        logging.info("Store App: %s" % app)
-        logging.info("App UUID: %s" % app.uuid)
         queue = None
-        logging.info("App Queue: %s" % queue)
         if app:
             queue = cls.all().filter("owner = ", app).get()
-        logging.info("App Queue: %s" % queue)
         return queue
 
     @classmethod
     def get_or_create(cls, app):
-        logging.info("App: %s" % app)
-        logging.info("App URL: %s" % app.store_url)
         queue = cls.get_by_url(app.store_url)
-        logging.info("Queue: %s" % queue)
 
         if queue:
             return queue, False
