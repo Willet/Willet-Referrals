@@ -5,6 +5,6 @@ from apps.product.processes import *
 
 urlpatterns = [
     (r'/product/create', CreateProduct),
-    (r'/collection', CollectionDynamicLoader),
-    (r'/product', ProductDynamicLoader),
+    (r'/collection', CollectionJSONDynamicLoader),
+    (r'/product', ProductJSONDynamicLoader),
 ]

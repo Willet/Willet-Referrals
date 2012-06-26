@@ -11,7 +11,7 @@ from apps.product.shopify.models import ProductShopifyCollection
 from util.urihandler import obtain, URIHandler
 
 
-class CollectionDynamicLoader(URIHandler):
+class CollectionJSONDynamicLoader(URIHandler):
     """Retrieve information about collections. Output is JSON."""
     @obtain('collection_uuid', 'collection_shopify_id', 'client_uuid',
             'collection_name')
@@ -59,25 +59,19 @@ class CollectionDynamicLoader(URIHandler):
             ]
         }
         """
-        json_base = {'collections': []}
-        for collection in collections:
-            collection_json = {
-                'uuid': collection.uuid,
-                'name': collection.collection_name,
-                'shopify_id': unicode(getattr(collection, 'shopify_id', '')),
-                'shopify_handle': getattr(collection, 'shopify_handle', ''),
-                'products': [x.uuid for x in collection.products],  # could be nothing!
-            }
-            json_base['collections'].append(collection_json)
+
+        # Decode an encoded json object, because I'm an idiot
+        cols_json = [json.loads(repr(col)) for col in collections]
+        json_base = {'collections': cols_json}
 
         self.response.out.write(json.dumps(json_base))
         return
 
 
-class ProductDynamicLoader(URIHandler):
+class ProductJSONDynamicLoader(URIHandler):
     """Retrieve information about products. Output is JSON."""
-    @obtain('product_uuid', 'product_shopify_id', 'client_uuid')
-    def get(self, product_uuid, product_shopify_id, client_uuid):
+    @obtain('product_uuid', 'product_shopify_id', 'client_uuid', 'collection_uuid')
+    def get(self, product_uuid, product_shopify_id, client_uuid, collection_uuid):
         """Retrieve information about products. Output is an array of
         products JSON.
 
@@ -85,6 +79,7 @@ class ProductDynamicLoader(URIHandler):
         - product_uuid
         - product_shopify_id
         - client_uuid
+        - collection_uuid
         """
         products = [Product.get(product_uuid)]
         if len(products):
@@ -98,6 +93,10 @@ class ProductDynamicLoader(URIHandler):
         if client:
             return self.jsonify(client.products)
 
+        collection = ProductCollection.get(collection_uuid)
+        if collection:
+            return self.jsonify(collection.products)
+
         return self.jsonify([])  # nothing
 
     def post(self):
@@ -105,42 +104,12 @@ class ProductDynamicLoader(URIHandler):
         pass
 
     def jsonify(self, products):
-        """PRINTS out a json object for the products supplied:
-        {
-            "products": [{
-                "uuid": "a2a0e0c3f1f34c9b",
-                "tags": ["Demo", " T-Shirt"],
-                "shopify_id": "75473022",
-                "client_uuid": "1b130711b754440e",
-                "title": "Secured non-volatile challenge",
-                "shopify_handle": "",
-                "images": [],
-                "resource_url": "",
-                "type": "Shirts",
-                "price": "19.0",
-                "description": "<p>So this is a product.<\/p><p>The..."
-            }]
-        }
+        """PRINTS out a json object for the products supplied.
 
         The json format mimics the shopify product json, but not exactly.
         (I am trying to make your life worse, lololo)
         """
-        json_base = {'products': []}
-        for product in products:
-            product_json = {
-                'uuid': product.uuid,
-                'client_uuid': product.client.uuid,
-                'shopify_id': unicode(getattr(product, 'shopify_id', '')),
-                'shopify_handle': getattr(product, 'shopify_handle', ''),
-                'images': getattr(product, 'images', []),
-                'description': product.description,
-                'price': unicode(product.price),
-                'resource_url': product.resource_url or '',
-                'tags': getattr(product, 'tags', []),
-                'title': product.title,
-                'type': product.type or '',
-            }
-            json_base['products'].append(product_json)
-
+        products_json = [json.loads(repr(product)) for product in products]
+        json_base = {'products': products_json}
         self.response.out.write(json.dumps(json_base))
         return

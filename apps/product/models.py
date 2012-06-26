@@ -2,6 +2,8 @@
 
 import logging
 
+from django.utils import simplejson as json
+
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from apps.client.models import Client
@@ -31,6 +33,20 @@ class ProductCollection(Model, db.polymodel.PolyModel):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(ProductCollection, self).__init__(*args, **kwargs)
+
+    def __str__(self):
+        """String representation of the object."""
+        return "%s %s" % (self.__class__, getattr(self, 'uuid', ''))
+
+    def __repr__(self):
+        """JSON representation of the product object."""
+        return json.dumps({
+            'uuid': getattr(self, 'uuid', ''),
+            'name': getattr(self, 'collection_name', ''),
+            'shopify_id': unicode(getattr(self, 'shopify_id', '')),
+            'shopify_handle': getattr(self, 'shopify_handle', ''),
+            'products': [x.uuid for x in getattr(self, 'products', [])],  # could be nothing!
+        })
 
     def _validate_self(self):
         if not self.client:
@@ -133,6 +149,43 @@ class Product(Model, db.polymodel.PolyModel):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(Product, self).__init__(*args, **kwargs)
+
+    def __str__(self):
+        """String representation of the product object."""
+        return "%s %s" % (self.__class__, getattr(self, 'uuid', ''))
+
+    def __repr__(self):
+        """JSON representation of the product object.
+
+        {
+            "products": [{
+                "uuid": "a2a0e0c3f1f34c9b",
+                "tags": ["Demo", " T-Shirt"],
+                "shopify_id": "75473022",
+                "client_uuid": "1b130711b754440e",
+                "title": "Secured non-volatile challenge",
+                "shopify_handle": "",
+                "images": [],
+                "resource_url": "",
+                "type": "Shirts",
+                "price": "19.0",
+                "description": "<p>So this is a product.<\/p><p>The..."
+            }]
+        }
+        """
+        return json.dumps({
+            'uuid': getattr(self, 'uuid', ''),
+            'client_uuid': getattr(getattr(self, 'client', None), 'uuid', ''),
+            'shopify_id': unicode(getattr(self, 'shopify_id', '')),
+            'shopify_handle': getattr(self, 'shopify_handle', ''),
+            'images': getattr(self, 'images', []),
+            'description': getattr(self, 'description'),
+            'price': unicode(getattr(self, 'price', '0')),
+            'resource_url': getattr(self, 'resource_url', ''),
+            'tags': getattr(self, 'tags', []),
+            'title': getattr(self, 'title', ''),
+            'type': getattr(self, 'type', ''),
+        })
 
     def _validate_self(self):
         """Do some cleanup before saving."""
