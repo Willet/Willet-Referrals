@@ -17,6 +17,7 @@
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
     {% include "js/willet.loader.js" %}
+    {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
     {# include "js/willet.colorbox.js" #} /* we aren't using this, are we? */
     {% include "js/willet.sibt.js" %}
