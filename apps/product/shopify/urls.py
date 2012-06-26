@@ -5,11 +5,12 @@ from apps.product.shopify.processes import *
 
 urlpatterns = [
     # Views
-    (r'/SkypeCallTestingService',        SkypeCallTestingService),
 
     # Processes
     (r'/product/shopify/webhook/create', CreateProductShopify),
     (r'/product/shopify/webhook/update', UpdateProductShopify),
-    (r'/product/shopify/webhook/delete', DeleteProductShopify)
+    (r'/product/shopify/webhook/delete', DeleteProductShopify),
 
+    (r'/product/shopify/fetch', FetchShopifyProducts),
+    (r'/collection/shopify/fetch', FetchShopifyCollections),
 ]
