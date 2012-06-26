@@ -771,7 +771,7 @@ class SIBTServeScript(URIHandler):
         store_url = get_shopify_url(self.request.get('store_url'))
         template_values = {}
         tracked_urls = []
-        unsure_multi_view = False
+        unsure_multi_view = False  # deprecated
         user = None
         vendor_name = ''
         votes_count = 0
@@ -901,19 +901,6 @@ class SIBTServeScript(URIHandler):
                 if time_diff <= datetime.timedelta(days=1):
                     has_results = True
             logging.debug ("has_results = %s" % has_results)
-
-        # unsure detection
-        # this must be created to track view counts.
-        SIBTShowingButton.create(app=app, url=page_url, user=user)
-        if app and not instance:
-            tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-
-            # this number or more URLs tracked for (app and user)
-            threshold = UNSURE_DETECTION['url_count_for_app_and_user']
-            logging.debug('len(tracked_urls) = %d' % len(tracked_urls))
-            if len(tracked_urls) >= threshold:
-                # activate unsure_multi_view (bottom popup)
-                unsure_multi_view = True
 
         # have client, app, user, and maybe instance
         try:
