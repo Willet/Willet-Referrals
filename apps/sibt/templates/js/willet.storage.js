@@ -9,12 +9,12 @@ _willet.storage = (function (me) {
     var wm = _willet.mediator || {};
 
     // default actions
-    // me.defaultParams = me.defaultParams || null;
+    me.localStorage = localStorage || window.localStorage || null;
 
     me.get = me.get || function (name, defaultValue) {
         // will always return defaultValue if localStorage is not supported!
-        if (localStorage) {
-            var value = localStorage.getItem(name);
+        if (me.localStorage) {
+            var value = me.localStorage.getItem(name);
             if (value === null || value === undefined) {
                 value = defaultValue;
             }
@@ -27,8 +27,8 @@ _willet.storage = (function (me) {
     me.read = me.get;  // compat alias
 
     me.set = me.set || function (name, value) {
-        if (localStorage) {
-            localStorage.setItem(name, value);
+        if (me.localStorage) {
+            me.localStorage.setItem(name, value);
         } else {
             me.reportError();
         }
@@ -36,8 +36,8 @@ _willet.storage = (function (me) {
     me.create = me.set;  // compat alias
 
     me.del = me.del || function (name) {
-        if (localStorage) {
-            localStorage.removeItem(name);
+        if (me.localStorage) {
+            me.localStorage.removeItem(name);
         } else {
             me.reportError();
         }

@@ -34,9 +34,11 @@ _willet.sibt = (function (me) {
                                   // until mediator says so.
 
     _willet.storage || function () {  // something twitter does
-        var a = ["get", "set", "del"];
+        var moduleMethods = ["get", "set", "del"];
         _willet.storage = {};
-        for (var b = 0; b < a.length; ++b) _willet.storage[a[b]] = function () {};
+        for (var i = 0; i < moduleMethods.length; ++i) {
+            _willet.storage[moduleMethods[i]] = function () {};
+        }
     }();
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,
@@ -606,9 +608,9 @@ _willet.sibt = (function (me) {
         // track number of pages the visitor had interacted
         _willet.storage.set(
             'visited_urls_count',  // exact URLs not tracked for privacy
-            _willet.storage.get('visited_urls', 0) + 1
+            parseInt(_willet.storage.get('visited_urls_count', 0)) + 1
         );
-        if (_willet.storage.get('visited_urls', 0) > 4) {  // UNSURE_MULTI_VIEW trigger
+        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 4) {  // UNSURE_MULTI_VIEW trigger
             // must be changed before initBottomPopup
             wm.fire('log', 'unsure_multi_view was turned on from the client side.');
             app.unsure_multi_view = true;
