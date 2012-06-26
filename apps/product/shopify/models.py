@@ -23,13 +23,18 @@ class ProductShopifyCollection(ProductCollection):
     """
 
     # id of this same collection on Shopify.
-    shopify_id = db.IntegerProperty(required=True, indexed=True)
+    shopify_id = db.StringProperty(required=True, indexed=True)
 
     # saving it now to be safe
     shopify_handle = db.StringProperty(required=False, indexed=False)
 
     def __init__(self, *args, **kwargs):
         super(ProductShopifyCollection, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        """."""
+        self.shopify_id = unicode(self.shopify_id)
+        return True
 
     @staticmethod
     def create(**kwargs):
@@ -54,6 +59,9 @@ class ProductShopifyCollection(ProductCollection):
     @classmethod
     def fetch(cls, app=None, app_uuid=None):
         """Obtains a list of collections for a client from Shopify.
+
+        Also fetches the products associated with this collection.
+        If a collection of the same name is found, it WILL be reused.
 
         The reason an app is needed is because a client's token is incorrect
         if he/she installs more than one of our products. We must use the
@@ -89,11 +97,16 @@ class ProductShopifyCollection(ProductCollection):
                                   exc_info=True)
 
         for collection_json in collections_jsons:
-            collection = cls.create(client=app.client,
-                                    collection_name=collection_json['title'],
-                                    shopify_id=collection_json['id'],
-                                    shopify_handle=collection_json['handle'],
-                                    products=[])
+            # use old one or make new one
+            collection = cls.get_by_shopify_id(collection_json['id'])
+            if not collection:
+                logging.warn("No collection found by id "
+                             "%s" % collection_json['id'])
+                collection = cls.create(client=app.client,
+                                        collection_name=collection_json['title'],
+                                        shopify_id=unicode(collection_json['id']),
+                                        shopify_handle=collection_json['handle'],
+                                        products=[])
             collections.append(collection)
 
         for collection in collections:
@@ -146,7 +159,7 @@ class ProductShopifyCollection(ProductCollection):
         # calling AppShopify's private member
         # (getting product collections are hardly an app's job)
         result = app._call_Shopify_API(
-            verb="GET", call="products.json?collection_id=%d" % self.shopify_id)
+            verb="GET", call="products.json?collection_id=%s" % self.shopify_id)
 
         if not result:
             raise ShopifyAPIError("No product data was returned: %s" % result,
@@ -165,7 +178,7 @@ class ProductShopifyCollection(ProductCollection):
             product = ProductShopify.get_by_shopify_id(pid)
             if not product:  # create if not exists
                 result = app._call_Shopify_API(verb="GET",
-                                               call="products/%d.json" % pid)
+                                               call="products/%s.json" % pid)
                 product = ProductShopify.create_from_json(client=app.client,
                                                           data=result['product'])
 
@@ -184,13 +197,17 @@ class ProductShopifyCollection(ProductCollection):
 
     @classmethod
     def get_by_shopify_id(cls, cid):
-        """Probably never memcached - tries anyway."""
+        """Scrapes the datastore for a collection by shopify_id."""
+        collection = None
         cid = unicode(cid)
-        data = memcache.get(cls._get_memcache_key(cid))
-        if data:
-            collection = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
+
+        try:
             collection = cls.all().filter('shopify_id =', cid).get()
+
+        # whatever exception it is when a query returns 0 results and you
+        # try to get() it
+        except Exception, err:
+            logging.error('oh no: %s' % err, exc_info=True)
 
         return collection
 

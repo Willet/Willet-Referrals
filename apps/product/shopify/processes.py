@@ -83,7 +83,7 @@ class FetchShopifyProducts(URIHandler):
 
     def post(self):
         """Given client or client_uuid both as uuid"""
-        logging.info("RUNNING client.shopify.processes::FetchShopifyProducts")
+        logging.info("RUNNING product.shopify.processes::FetchShopifyProducts")
 
         client = ClientShopify.get(self.request.get('client'))
         if not client:
@@ -98,23 +98,42 @@ class FetchShopifyProducts(URIHandler):
 
 
 class FetchShopifyCollections(URIHandler):
-    """Make a shopify store fetch its collections if none exist."""
+    """Make a shopify store fetch its collections if none exist.
 
-    @obtain('store_url')
-    def post(self, store_url):
+    Can be used by taskqueues."""
+    def get (self):
+        self.post()
+
+    def post(self):
         """Make a shopify store fetch its collections if none exist.
 
-        Required parameters:
+        Required parameters (either one):
             store_url (e.g. http://ohai.ca)
+            app_uuid
 
         Optional parameters:
             force (if anything is supplied for this param, collections will be
             force-fetched)
         """
-        app = App.get_by_url(store_url)
+        logging.info("RUNNING product.shopify.processes::FetchShopifyCollections")
+        app_uuid = self.request.get('app_uuid', '')
+        force = self.request.get('force', False)
+
+        app = App.get(app_uuid)
+
+        if not app:
+            store_url = self.request.get('store_url', '')
+            app = App.get_by_url(store_url)
+
         if app:
-            my_cols = ProductShopifyCollection.get_or_fetch(app=app)
-            if not my_cols:
+            if bool(force) == True:
+                my_cols = ProductShopifyCollection.fetch(app=app)
+            else:  # get or create
+                my_cols = ProductShopifyCollection.get_or_fetch(app=app)
+
+            if my_cols:
+                self.response.out.write("OK")
+            else:
                 logging.warn('Found no collections')
         else:
             logging.warn('Found no app by the url %s' % store_url)

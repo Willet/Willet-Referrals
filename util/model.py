@@ -217,7 +217,7 @@ class Model(db.Model):
         # Save in the memcache when you pull it - it may never be saved
         if obj:
             # method = 'datastore'
-            logging.debug('%s.get via %s --> %r' % (cls.__name__, method, obj))
+            logging.debug('%s.get via %s --> %s' % (cls.__name__, method, obj))
             obj._memcache() # update memcache
         else:
             logging.warn('%s.get DB miss for %s' % (cls.__name__, identifier))
