@@ -22,13 +22,22 @@ var _willet = _willet || {};  // ensure namespace is there
 // - URL
 // - vendor
 
+// requires modules:
+// - storage (localStorage)
+
 // The hasjQuery event starts off automatic initialisation.
 // product_title and product_description django tags require their own
 // double quotes!
 _willet.sibt = (function (me) {
     var wm = _willet.mediator || {};
     var $ = window.jQuery || {};  // I want jQuery here, but it won't be available
-                           // until mediator says so.
+                                  // until mediator says so.
+
+    _willet.storage || function () {  // something twitter does
+        var a = ["get", "set", "del"];
+        _willet.storage = {};
+        for (var b = 0; b < a.length; ++b) _willet.storage[a[b]] = function () {};
+    }();
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,
         SMALL_WOSIB = 3, LARGE_WOSIB = 4,
@@ -587,22 +596,33 @@ _willet.sibt = (function (me) {
     me.updateProductHistory = me.updateProductHistory || function () {
         // save past products' images
         // check if page is visited twice or more in a row
-        if (me.getLargestImage() !== $.cookie('product1_image') &&
-            me.getLargestImage() !== $.cookie('product2_image')) {
+        if (me.getLargestImage() !== _willet.storage.get('product1_image', '') &&
+            me.getLargestImage() !== _willet.storage.get('product2_image', '')) {
             // image 1 is more recent; shift products
-            $.cookie('product2_image', $.cookie('product1_image'));
-            $.cookie('product1_image', me.getLargestImage());
+            _willet.storage.set('product2_image', _willet.storage.get('product1_image', ''));
+            _willet.storage.set('product1_image', me.getLargestImage());
+        }
+
+        // track number of pages the visitor had interacted
+        _willet.storage.set(
+            'visited_urls_count',  // exact URLs not tracked for privacy
+            _willet.storage.get('visited_urls', 0) + 1
+        );
+        if (_willet.storage.get('visited_urls', 0) > 4) {  // UNSURE_MULTI_VIEW trigger
+            // must be changed before initBottomPopup
+            wm.fire('log', 'unsure_multi_view was turned on from the client side.');
+            app.unsure_multi_view = true;
         }
 
         // load product currently on page
-        var ptemp = $.cookie('products') || '';
+        var ptemp = _willet.storage.get('products', '');
         // wm.fire('log', "read product cookie, got " + ptemp);
         products = ptemp.split(','); // load
         if ($.inArray("{{product.uuid}}", products) === -1) { // unique
             products.unshift("{{product.uuid}}"); // insert as products[0]
             products = products.splice(0, PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
             products = me.cleanArray(products); // remove empties
-            $.cookie('products', products.join(',')); // save
+            _willet.storage.set('products', products.join(',')); // save
             wm.fire('log', "saving product cookie " + products.join(','));
         } else {
             // wm.fire('log', "product already in cookie");
@@ -714,7 +734,7 @@ _willet.sibt = (function (me) {
         // our finding.
 
         // if user has no instances, the ajax call is skipped entirely.
-        var instances = $.cookie('sibt_instances');
+        var instances = _willet.storage.get('sibt_instances');
         if (!instances) {
             // return '';
             wm.fire('sibt_has_no_instances');
@@ -752,7 +772,7 @@ _willet.sibt = (function (me) {
         }
 
         me.showBottomPopup = me.showBottomPopup || function () {
-            if ($.cookie('_willet_bottom_popup_closed')) {
+            if (_willet.storage.get('_willet_bottom_popup_closed')) {
                 wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopupWithCookie');
                 return;
             }
@@ -769,13 +789,14 @@ _willet.sibt = (function (me) {
             if (permanently) {
                 // save that preference.
                 wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
-                $.cookie('_willet_bottom_popup_closed', '1');
+                _willet.storage.set('_willet_bottom_popup_closed', '1');
             }
         };
 
         me.initBottomPopup = me.initBottomPopup || function () {
             // if user visited at least two different product pages
-            if ($.cookie('product1_image') && $.cookie('product2_image') &&
+            if (_willet.storage.get('product1_image') &&
+                _willet.storage.get('product2_image') &&
                 app.features.bottom_popup && app.unsure_multi_view) {
                 wm.fire('log', 'bottom popup enabled');
                 wm.fire('storeAnalytics', 'SIBTBottomPopupEnabled');
@@ -783,8 +804,8 @@ _willet.sibt = (function (me) {
 
                 popup = me.buildBottomPopup();
 
-                var product1_image = $.cookie('product1_image') || '';
-                var product2_image = $.cookie('product2_image') || '';
+                var product1_image = _willet.storage.get('product1_image', '');
+                var product2_image = _willet.storage.get('product2_image', '');
                 $('body').prepend(popup);
                 $('#product_selector').append(
                     '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
@@ -836,8 +857,8 @@ _willet.sibt = (function (me) {
                 });
             } else {
                 wm.fire('log', 'cookies not populated / not unsure yet: ',
-                        $.cookie('product1_image'),
-                        $.cookie('product2_image'),
+                        _willet.storage.get('product1_image', ''),
+                        _willet.storage.get('product2_image', ''),
                         app.features.bottom_popup,
                         app.unsure_multi_view);
             }
