@@ -29,16 +29,14 @@ from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
-# -----------------------------------------------------------------------------
-# ClientShopify Class Definition ----------------------------------------------
-# -----------------------------------------------------------------------------
+
 class ClientShopify(Client):
     """A Client of a Shopify website.
 
     ClientShopify models are meant for Shopify shops only - use Client to
     store information about stores without a specific platform.
     """
-    token = db.StringProperty(default = '')
+    token = db.StringProperty(default='')
     id = db.StringProperty(indexed = True)
 
     def __init__(self, *args, **kwargs):
@@ -167,8 +165,9 @@ class ClientShopify(Client):
         for p in products:
             ProductShopify.create_from_json(self, p)
 
-# Shopify API Calls  ----------------------------------------------------------
+
 def get_store_info(store_url, store_token, app_type):
+    """Shopify API Calls"""
 
     # Fix inputs (legacy)
     if app_type == "sibt":
