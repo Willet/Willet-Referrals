@@ -29,13 +29,13 @@ class Action(Model, polymodel.PolyModel):
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)
     # Length of time a compound action had persisted prior to its creation
-    duration = db.FloatProperty(default = 0.0)
+    duration = db.FloatProperty(default=0.0)
     # Person who did the action
     user = MemcacheReferenceProperty(db.Model, collection_name='user_actions')
     # True iff this Action's User is an admin
     is_admin = db.BooleanProperty(default=False)
     # The App that this Action is for
-    app_ = db.ReferenceProperty(db.Model, collection_name = 'app_actions')
+    app_ = db.ReferenceProperty(db.Model, collection_name='app_actions')
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -62,36 +62,7 @@ class Action(Model, polymodel.PolyModel):
 
     def __str__(self):
         # Subclasses should override this
-        pass
-
-    @deprecated
-    @classmethod
-    def count(cls, admins_too=False):
-        pass
-        '''
-        if admins_too:
-            return cls.all().count()
-        else:
-            return cls.all().filter('is_admin =', False).count()
-        '''
-
-    @deprecated
-    @staticmethod
-    def get_by_user(user):
-        """Not indexed; will not work."""
-        # return Action.all().filter('user =', user).get()
-
-    @deprecated
-    @staticmethod
-    def get_by_app(app, admins_too = False):
-        """Not indexed; will not work."""
-        '''
-        app_actions = Action.all().filter('app_ =', app)
-        if admins_too:
-            return app_actions.get()
-        else:
-            return app_actions.filter('is_admin =', False).get()
-        '''
+        return "%s %s" % (self.__class__.__name__, self.uuid)
 
 
 class ClickAction(Action):
@@ -138,22 +109,6 @@ class VoteAction(Action):
     def _validate_self(self):
         return True
 
-    @deprecated
-    @classmethod
-    def get_by_vote(cls, vote):
-        """Not indexed; will not work."""
-        return cls.all().filter('vote =', vote)
-
-    @deprecated
-    @classmethod
-    def get_all_yesses(cls):
-        return cls.get_by_vote('yes')
-
-    @deprecated
-    @classmethod
-    def get_all_nos(cls):
-        return cls.get_by_vote('no')
-
 
 class LoadAction(Action):
     pass
@@ -174,7 +129,7 @@ class ShowAction(Action):
     what = db.StringProperty()
 
     # url/page this was shown on
-    url = db.LinkProperty(indexed=True)
+    url = db.LinkProperty(indexed=False)
 
     @staticmethod
     def create(user, app, what, url):

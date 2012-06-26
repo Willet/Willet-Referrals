@@ -135,15 +135,16 @@ class AppShopify(Model):
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
-    
+
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
-                          suppress_errors = False):
+                          suppress_errors=False, prefix='admin/'):
         """ Calls Shopify API
 
         Inputs:
             verb - <String> one of GET, POST, PUT, DELETE
-            call - <String> api call
+            call - <String> api call (e.g. 'themes.json')
+                prefix - defaults to to 'admin/'.
             payload - <Object> Data to send with request
             suppress_errors - <Boolean> Quietly proceed if call errors
                               NOTE: Only use this if you expect errors from this call
@@ -158,7 +159,7 @@ class AppShopify(Model):
                     'PUT', 'put', 'DELETE', 'delete']:
             raise ValueError('verb must be one of GET, POST, PUT, DELETE')
 
-        url      = '%s/admin/%s' % (self.store_url, call)
+        url      = '%s/%s%s' % (self.store_url, prefix, call)
         username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}

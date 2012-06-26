@@ -97,7 +97,7 @@ class SIBTShopifyWelcome(URIHandler):
                 'shop_owner': shop_owner,
                 'client_email': client_email,
                 'client_uuid' : client.uuid,
-                'new_order_code' : new_order_code
+                'new_order_code' : False  # new_order_code (temp disabled)
             }
             path = 'welcome.html'
 
