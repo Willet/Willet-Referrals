@@ -80,7 +80,11 @@ class Email():
         body += "<p>Hi %s,</p>" % (name,)
 
         if app_name == 'ShopConnection':
-            body += """<p>Thanks for installing! Please lets us know if you have any suggestion to improve ShopConnection.</p>"""
+            body += """
+                        <p>Thanks for installing ShopConnection! We can align
+                        the buttons for you as part of a custom installation.</p>
+                        <p>Please lets us know if you have any suggestion to
+                        improve ShopConnection.</p>"""
 
         elif app_name == 'Should I Buy This':
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
