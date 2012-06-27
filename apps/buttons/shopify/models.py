@@ -26,7 +26,7 @@ from apps.link.models import Link
 
 from util.model import Model, ObjectListProperty
 from util.consts import *
-from util.helpers import generate_uuid
+from util.helpers import generate_uuid, url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.errors          import ShopifyBillingError, ShopifyAPIError
 
@@ -195,8 +195,14 @@ class ButtonsShopify(Buttons, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
+            custom_install_url = "%s%s" % (URL, \
+                build_url("ButtonsShopifyTailoredInstall", qs={
+                    "app_uuid": self.uuid,
+                    "store_url": self.store_url
+                }))
             Email.welcomeClient("ShopConnection", email, name, store,
-                                use_full_name=use_full_name)
+                                use_full_name=use_full_name,
+                                custom_install_url=custom_install_url)
 
         # Email DevTeam
         Email.emailDevTeam(
