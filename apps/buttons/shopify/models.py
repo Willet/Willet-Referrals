@@ -196,9 +196,11 @@ class ButtonsShopify(Buttons, AppShopify):
         else:
             # Fire off "personal" email from Fraser
             custom_install_url = "%s%s" % (URL, \
-                build_url("ButtonsShopifyTailoredInstall", qs={
-                    "app_uuid": self.uuid,
-                    "store_url": self.store_url
+                build_url("ButtonsShopifyInstructions", qs={
+                    "t": self.store_token,
+                    "shop": self.store_url,
+                    "app": "ButtonsShopify",
+                    "install4u": "1"
                 }))
             Email.welcomeClient("ShopConnection", email, name, store,
                                 use_full_name=use_full_name,
