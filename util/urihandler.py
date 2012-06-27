@@ -90,7 +90,6 @@ class URIHandler(webapp.RequestHandler):
         logging.info("Rendering %s" % path)
         self.response.headers.add_header('P3P', P3P_HEADER)
         return render(path, merged_values)
-        #return template.render(path, merged_values)
 
     def get_app_path(self):
         module = inspect.getmodule(self).__name__

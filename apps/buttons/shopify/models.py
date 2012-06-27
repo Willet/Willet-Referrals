@@ -32,11 +32,6 @@ from util.errors          import ShopifyBillingError, ShopifyAPIError
 
 NUM_VOTE_SHARDS = 15
 
-# basic layout:
-#   client installs button app
-#       client adds buttons
-#       each button has a buttonFBAction type
-
 
 class ButtonsShopify(Buttons, AppShopify):
     # Billed users will receive weekly emails. However,

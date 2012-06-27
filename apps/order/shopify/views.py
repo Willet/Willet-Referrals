@@ -3,26 +3,24 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import os, re, urllib
+import logging
+import os
 
-from django.utils import simplejson as json
-from google.appengine.api import taskqueue
-from google.appengine.api import urlfetch, memcache
-from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
-from time import time
-from urlparse import urlparse
 
+from apps.app.models import App
 from apps.client.shopify.models import ClientShopify
+from apps.order.shopify.models import OrderShopify
 from apps.user.models import User
 
 from util.consts import SECURE_URL
 from util.urihandler import URIHandler
 
+
 class OrderJSLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
+       for sharing information about a purchase just made by one of our clients
+    """
 
     def get(self):
         user = User.get_by_cookie(self)
@@ -50,3 +48,14 @@ class OrderJSLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
 
         return
+
+
+class SkypeCallTestingService(URIHandler):
+    """Hello! Welcome to Skype call testing service.
+
+    After the beep please record a message
+    Afterwards your message will be played back to you.
+    """
+    def get(self):
+        app = App.get('07ecfa970ce943af')
+        self.response.out.write(app.client.lead_score)

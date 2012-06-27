@@ -1,32 +1,43 @@
 #!/usr/bin/python
 
-# A subclass of Order Model
-# Specific to Shopify
-# Stores information about a purchase / point of conversion
+"""The OrderShopify model."""
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
+import datetime
 import logging
 
+from urllib import urlencode
+
 from google.appengine.ext import db
+
+from apps.app.shopify.models import AppShopify
 from apps.order.models import Order
-from util.model import Model
+from apps.user.models import User
+
 from util.helpers import generate_uuid
+from util.model import Model
 
-# ------------------------------------------------------------------------------
-# OrderShopify Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class OrderShopify(Order):
-    """Model storing shopify_order data"""
-    order_token = db.StringProperty(indexed = True)
-    order_id = db.StringProperty(indexed = True)
-    order_number = db.StringProperty(indexed = False)
+    """A subclass of Order Model specific to Shopify.
 
-    store_name = db.StringProperty(indexed = False)
-    store_url = db.StringProperty(indexed = False, required=False, default=None)
+    Stores information about a purchase / point of conversion.
 
-    referring_site = db.StringProperty(indexed = False, required=False, default=None) # might be useful
+    Orders in the datastore may or may not be attributed to us (i.e.
+    you can't say order 123 is by the help of ReEngage just because we
+    have it in our database.)
+    """
+    order_token = db.StringProperty(indexed=True)
+    order_id = db.StringProperty(indexed=True)
+    order_number = db.StringProperty(indexed=False)
+
+    store_name = db.StringProperty(indexed=False)
+    store_url = db.StringProperty(indexed=False, required=False, default=None)
+
+    referring_site = db.StringProperty(indexed=False, required=False,
+                                       default=None) # might be useful
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""
@@ -35,11 +46,71 @@ class OrderShopify(Order):
     def _validate_self(self):
         return True
 
+    @classmethod
+    def fetch(cls, app=None, app_uuid=None, save=True):
+        """Obtains a list of orders for a client from Shopify.
+
+        The reason an app is needed is because a client's token is incorrect
+        if he/she installs more than one of our products. We must use the
+        app's store_token instead. (also, AppShopify has the methods)
+
+        If save is False, returns a list of OrderShopify objects that are
+        only in memory.
+
+        Max count is limited to 250.
+
+        All parameters must be supplied as kwargs.
+
+        Default: []
+        """
+        orders = []
+
+        if not app:
+            app = AppShopify.get(app_uuid)
+
+        if not app:
+            raise ValueError('Missing app/app_uuid')
+
+        result = app._call_Shopify_API("GET", "orders.json?count=250")
+        if not result:
+            logging.error("Shopify API failed here", exc_info=True)
+            return []  # what can you do?
+
+        orders_json = result.get("orders")
+        if not orders_json:
+            logging.error("Shopify API failed here", exc_info=True)
+            return []  # what can you do?
+
+        logging.debug('orders_json = %r' % orders_json)
+        for order_json in orders_json:
+            logging.debug('making order %s' % order_json['subtotal_price'])
+            if save:
+                logging.debug('making db-bound order')
+                orders.append(cls.create(client=app.client,
+                                         order_token=order_json['token'],
+                                         order_id=str(order_json['id']),
+                                         order_num=str(order_json['number']),
+                                         subtotal=float(order_json['subtotal_price'])))
+            else:
+                logging.debug('making memory-bound order %s' % order_json['subtotal_price'])
+                orders.append(cls(order_token=order_json['token'],
+                                  order_id=str(order_json['id']),
+                                  client=app.client,
+                                  store_name=app.client.name,
+                                  store_url=app.client.url,
+                                  order_number=str(order_json['number']),
+                                  subtotal_price=float(order_json['subtotal_price'])
+                ))
+                logging.debug('finish making memory-bound order %s' % order_json['subtotal_price'])
+
+        logging.debug('fetched %d orders' % len(orders))
+        return orders
+
     # Constructor
     @staticmethod
-    def create(user, client, order_token, order_id = "",
-               order_num = "", subtotal = 0.0, referrer = ""):
-        """ Create an Order for a Shopify store """
+    def create(user, client, order_token, order_id="", order_num="",
+               subtotal=0.0, referrer=""):
+        """Create an Order for a Shopify store."""
 
         # Don't duplicate orders!
         o = OrderShopify.get_by_token(order_token)
@@ -60,18 +131,18 @@ class OrderShopify(Order):
                          store_url=client.url,
                          order_number=str(order_num),
                          subtotal_price=float(subtotal),
-                         referring_site=referrer,
-                         user=user)
+                         referring_site=referrer)
+        if user:
+            o.user = user
+
         o.put()
 
-        return o # return incase the caller wants it
+        return o
 
-    # Accessors
     @staticmethod
-    def get_by_id(id):
-        return OrderShopify.all().filter('order_id =', str(id)).get()
+    def get_by_id(oid):
+        return OrderShopify.all().filter('order_id =', str(oid)).get()
 
     @staticmethod
     def get_by_token(t):
         return OrderShopify.all().filter('order_token =', t).get()
-
