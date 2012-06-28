@@ -32,11 +32,6 @@ from util.errors          import ShopifyBillingError, ShopifyAPIError
 
 NUM_VOTE_SHARDS = 15
 
-# basic layout:
-#   client installs button app
-#       client adds buttons
-#       each button has a buttonFBAction type
-
 
 class ButtonsShopify(Buttons, AppShopify):
     # Billed users will receive weekly emails. However,
@@ -208,10 +203,11 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Email DevTeam
         Email.emailDevTeam(
-            'ButtonsShopify Install: %s %s %s' % (
+            'ButtonsShopify Install: %s %s %s (lead score: %s)' % (
                 self.uuid,
                 self.client.name,
-                self.client.url
+                self.client.url,
+                unicode(self.lead_score)
             ),
             subject='App installed'
         )

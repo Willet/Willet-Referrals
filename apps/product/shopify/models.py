@@ -8,6 +8,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
+from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
 from util.errors import ShopifyAPIError
@@ -74,7 +75,7 @@ class ProductShopifyCollection(ProductCollection):
         collections = []
 
         if not app:
-            app = App.get(app_uuid)
+            app = AppShopify.get(app_uuid)
 
         if not app:
             raise ValueError('Missing app/app_uuid')
@@ -130,7 +131,7 @@ class ProductShopifyCollection(ProductCollection):
         collections = []
 
         if not app:
-            app = App.get(app_uuid)
+            app = AppShopify.get(app_uuid)
 
         if not app:
             raise ValueError('Missing app/app_uuid')
@@ -151,7 +152,7 @@ class ProductShopifyCollection(ProductCollection):
         products = []
 
         if not app:
-            app = App.get(app_uuid)
+            app = AppShopify.get(app_uuid)
 
         if not app:
             raise ValueError('Missing app/app_uuid')

@@ -55,6 +55,9 @@ class AppShopify(Model):
 
         Note: only 1 recurring billing plan can exist for each store for each app.
         Create a new recurring billing plan will overwrite any existing ones.
+
+        * not inheriting from App probably because classes cannot be both
+        Expando and PolyModel.
     """
     store_id = db.StringProperty(indexed=True) # Shopify's ID for the store
     store_token = db.StringProperty(indexed=True) # Shopify token for the store
@@ -62,27 +65,27 @@ class AppShopify(Model):
     billing_enabled = db.BooleanProperty(indexed=True, default=False)
 
     # Recurring billing information
-    recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
-    recurring_billing_id         = db.IntegerProperty(indexed = False)
-    recurring_billing_name       = db.StringProperty(indexed = False)
-    recurring_billing_price      = db.StringProperty(indexed = False)
-    recurring_billing_created    = db.DateTimeProperty(indexed = False)
-    recurring_billing_trial_days = db.IntegerProperty(indexed = False)
-    recurring_billing_trial_ends = db.DateTimeProperty(indexed = False)
+    recurring_billing_status     = db.StringProperty(indexed=False) # none, test, pending, accepted, denied
+    recurring_billing_id         = db.IntegerProperty(indexed=False)
+    recurring_billing_name       = db.StringProperty(indexed=False)
+    recurring_billing_price      = db.StringProperty(indexed=False)
+    recurring_billing_created    = db.DateTimeProperty(indexed=False)
+    recurring_billing_trial_days = db.IntegerProperty(indexed=False)
+    recurring_billing_trial_ends = db.DateTimeProperty(indexed=False)
 
     # One-time charge information
-    charge_ids = db.ListProperty(float, indexed = False)
-    charge_names = db.ListProperty(str, indexed = False)
-    charge_prices = db.ListProperty(str, indexed = False)
-    charge_createds = db.ListProperty(datetime.datetime, indexed = False)
-    charge_statuses = db.ListProperty(str, indexed = False)
+    charge_ids = db.ListProperty(float, indexed=False)
+    charge_names = db.ListProperty(str, indexed=False)
+    charge_prices = db.ListProperty(str, indexed=False)
+    charge_createds = db.ListProperty(datetime.datetime, indexed=False)
+    charge_statuses = db.ListProperty(str, indexed=False)
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
         self.get_settings()
 
     def _validate_self(self):
-        if not re.match("https?://[\w\-~]+.myshopify.com", self.store_url):
+        if not re.match("https?://[~\w\-]+.myshopify.com", self.store_url):
             err_msg = "<%s.%s> has malformated store url '%s'"
             raise ValueError(err_msg % (self.__class__.__module__,
                                         self.__class__.__name__,
@@ -694,4 +697,10 @@ class AppShopify(Model):
 
         # All callbacks finished
         return
-# end class
+
+    @property
+    def lead_score(self):
+        """Well, an app's lead score is the client's lead score."""
+        if self.client:
+            return self.client.lead_score
+        return 0  # orphan App? the problem is larger than it looks...

@@ -210,7 +210,7 @@ class MemcacheReferenceProperty(db.Property):
             A valid value.
 
         Raises:
-            BadValueError for the following reasons:
+            ValueError for the following reasons:
                 - Value is not saved.
                 - Object not of correct model type for reference.
         """
@@ -218,7 +218,7 @@ class MemcacheReferenceProperty(db.Property):
             return value
 
         if value is not None and not value.has_key():
-            raise BadValueError(
+            raise ValueError(
                     '%s instance must have a complete key before it can be stored as a '
                     'reference' % self.reference_class.kind())
 

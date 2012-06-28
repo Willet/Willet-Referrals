@@ -6,7 +6,7 @@ from apps.order.shopify.processes import *
 urlpatterns = [
     (r'/o/shopify/order.js',            OrderJSLoader),
     (r'/o/shopify/create.js',           CreateShopifyOrder),
-    
+
     # processes
     (r'/o/shopify/webhook/create',      OrderWebhookNotification),
     (r'/o/shopify/webhook/create/',     OrderWebhookNotification),
