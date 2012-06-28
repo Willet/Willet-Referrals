@@ -922,13 +922,6 @@
             throw new Error("Attempt to use stub function 'storeAnalytics'");
         };
 
-        // Initiates an instance of your app on the server
-        // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-        var startPartialInstance = function () {
-            // Stub function!
-            throw new Error("Attempt to use stub function 'startPartialInstance'");
-        };
-
         // Sends information to server to ask friends & handles response
         var sendMessages = function () {
             // Stub function!
@@ -982,7 +975,6 @@
         // Open up the FB dialog. Does not do a FB connect with us.
         var postOnWall = function () {
             try { // detect adblock
-                // startPartialInstance() ...
                 FB.ui({
                     method:  'feed',
                     display: 'popup',

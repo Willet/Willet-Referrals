@@ -109,16 +109,11 @@ def get_target_url(referrer):
 
 
 def generate_uuid(digits):
-    """Generate a 'digits'-character hex endcoded string as
-    a random identifier, with collision detection"""
-    while True:
-        tmp = min(digits, 32)
-        uid = uuid.uuid4().hex[:tmp]
-        digits -= 32
-        if digits <= 32:
-            break
+    """I am guessing this is a wrapper for uuid4."""
+    if digits > 32:
+        raise ValueError('max UUID length is 32')
 
-    return uid
+    return uuid.uuid4().hex[:digits]
 
 
 def encode_base62(num):
@@ -300,6 +295,8 @@ def url(view, *args, **kwargs):
     looks up a url for a view
         - view is a string, name of the view (such as ShowRoutes)
         - args are optional parameters for that view
+            for handlers with wildcards (capture groups), args is used to
+            fill in those groups.
         - **kwargs takes a named argument qs. qs is passed to
             urllib.urlencode and tacked on to the end of the url
             Basically, use this to pass a dict of arguments

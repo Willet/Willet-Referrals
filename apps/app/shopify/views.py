@@ -18,7 +18,7 @@ from util.helpers import *
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
-# The "Shows" -----------------------------------------------------------------
+
 class ShopifyRedirect(URIHandler):
     # Renders a app page
     def get(self):
@@ -82,7 +82,7 @@ class ShopifyRedirect(URIHandler):
         logging.info("redirecting app %s to %s" % (app, redirect_url))
         self.redirect(redirect_url)
 
-# The "Dos" -------------------------------------------------------------------
+
 class DoDeleteApp(URIHandler):
     def post(self):
         client = self.get_client()

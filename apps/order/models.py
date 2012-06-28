@@ -5,7 +5,7 @@
 # Will be subclassed
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 from google.appengine.ext import db
@@ -15,9 +15,7 @@ from util.model import Model
 from util.helpers import generate_uuid
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
-# -----------------------------------------------------------------------------
-# Order Class Definition ------------------------------------------------------
-# -----------------------------------------------------------------------------
+
 class Order(Model, polymodel.PolyModel):
     """Model storing purchase order data"""
 
@@ -25,15 +23,14 @@ class Order(Model, polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
 
     # User who completed this Order (ie. buyer)
-    user = MemcacheReferenceProperty(db.Model,
-                                     default=None,
-                                     collection_name="purchases")
+    # if no buyer (i.e. if we did not lead to the order, leave null.)
+    user = db.ReferenceProperty(db.Model, collection_name="purchases")
 
     # Person who is selling the wareZ (ie. seller)
     client = db.ReferenceProperty(db.Model, collection_name="orders")
 
     # Total price of this Order (taxes not incl)
-    subtotal_price = db.FloatProperty(indexed = False) # no taxes
+    subtotal_price = db.FloatProperty(indexed=False) # no taxes
 
     # Products that were purchased in this order
     products = db.ListProperty(db.Key)
@@ -48,6 +45,5 @@ class Order(Model, polymodel.PolyModel):
         return True
 
 
-# Accessors -------------------------------------------------------------------
 def get_order_by_uuid(uuid):
     return Order.all().filter('uuid =', uuid).get()

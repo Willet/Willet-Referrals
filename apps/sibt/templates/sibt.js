@@ -17,6 +17,7 @@
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
     {% include "js/willet.loader.js" %}
+    {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
     {# include "js/willet.colorbox.js" #} /* we aren't using this, are we? */
     {% include "js/willet.sibt.js" %}
@@ -110,7 +111,8 @@
     try {
         // set up a list of scripts to load asynchronously.
         var scripts_to_load = [
-            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js', // Google analytics
+            '//{{ DOMAIN }}/static/js/localstorage/storage.min.js'
         ];
 
         // turns out we need at least 1.4 for the $(<tag>,{props}) notation

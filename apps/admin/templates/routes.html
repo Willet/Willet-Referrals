@@ -23,11 +23,10 @@
                         </span>
                     </td>
                     <td style="text-align:justify;border-bottom:1px #999 solid">
-                        <pre style="font-size:11px;">{{ route.doc }}</pre>
+                        <div style="font-size:11px;">{{ route.doc|linebreaksbr }}</div>
                     </td>
                 </tr>
             {% endfor %}
         </table>
     </div>
 {% endblock bottom_content %}
-
