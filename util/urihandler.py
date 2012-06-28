@@ -89,6 +89,7 @@ class URIHandler(webapp.RequestHandler):
 
         logging.info("Rendering %s" % path)
         self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers.add_header('X-Powered-By', 'Beer')
         return render(path, merged_values)
 
     def get_app_path(self):
