@@ -21,7 +21,6 @@ class OrderJSLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients
     """
-
     def get(self):
         user = User.get_by_cookie(self)
 
@@ -48,14 +47,3 @@ class OrderJSLoader(URIHandler):
         self.response.out.write(template.render(path, template_values))
 
         return
-
-
-class SkypeCallTestingService(URIHandler):
-    """Hello! Welcome to Skype call testing service.
-
-    After the beep please record a message
-    Afterwards your message will be played back to you.
-    """
-    def get(self):
-        app = App.get('07ecfa970ce943af')
-        self.response.out.write(app.client.lead_score)

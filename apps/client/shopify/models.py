@@ -173,14 +173,12 @@ class ClientShopify(Client):
         orders = []
 
         try:
-            # try to get the first Shopify app for this client
+            # try to get the first Shopify app for this client for a token
             app = [a for a in self.apps if hasattr(a, '_call_Shopify_API')][0]
-
             if app:
-                logging.debug('got app; loading fresh orders')
                 orders = OrderShopify.fetch(app=app, save=False)
                 logging.debug('got app; orders = %r' % orders)
-        except Exception, err:
+        except AttributeError, err:
             logging.error(err, exc_info=True)
 
         orders = orders or self.orders  # prioritise fresh orders
@@ -189,9 +187,14 @@ class ClientShopify(Client):
                 logging.debug('got order %r' % order)
                 base_score += order.subtotal_price
 
+            # give higher score to retailers who sell TONS of cheap stuff
+            # (i.e. high traffic)
+            base_score = base_score * len(orders)
+
+
         logging.debug('base_score = %r' % base_score)
         if base_score:  # i.e. !0
-            return round(max(1, min(10, math.log(base_score, 5))),2)  # 1~10
+            return round(max(1, min(10, math.log(base_score, 6))),2)  # 1~10
         else:
             return 1  # minimum is 1
 

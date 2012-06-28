@@ -195,10 +195,11 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Email DevTeam
         Email.emailDevTeam(
-            'ButtonsShopify Install: %s %s %s' % (
+            'ButtonsShopify Install: %s %s %s (lead score: %f)' % (
                 self.uuid,
                 self.client.name,
-                self.client.url
+                self.client.url,
+                self.lead_score
             ),
             subject='App installed'
         )

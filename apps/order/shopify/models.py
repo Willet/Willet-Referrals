@@ -16,6 +16,7 @@ from apps.app.shopify.models import AppShopify
 from apps.order.models import Order
 from apps.user.models import User
 
+from util.errors import ShopifyAPIError
 from util.helpers import generate_uuid
 from util.model import Model
 
@@ -55,7 +56,9 @@ class OrderShopify(Order):
         app's store_token instead. (also, AppShopify has the methods)
 
         If save is False, returns a list of OrderShopify objects that are
-        only in memory.
+        only in memory. In the case that you are querying the store for
+        orders information, you should not save the orders you get. Only
+        when we are responsible for the order should we save the order model.
 
         Max count is limited to 250.
 
@@ -71,37 +74,29 @@ class OrderShopify(Order):
         if not app:
             raise ValueError('Missing app/app_uuid')
 
-        result = app._call_Shopify_API("GET", "orders.json?count=250")
-        if not result:
-            logging.error("Shopify API failed here", exc_info=True)
+        try:
+            result = app._call_Shopify_API("GET", "orders.json?count=250")
+            orders_json = result.get("orders")
+        except (ShopifyAPIError, ValueError, AttributeError), err:
+            logging.error("Shopify API failed: %s" % err, exc_info=True)
             return []  # what can you do?
 
-        orders_json = result.get("orders")
-        if not orders_json:
-            logging.error("Shopify API failed here", exc_info=True)
-            return []  # what can you do?
-
-        logging.debug('orders_json = %r' % orders_json)
         for order_json in orders_json:
-            logging.debug('making order %s' % order_json['subtotal_price'])
             if save:
-                logging.debug('making db-bound order')
+                # OrderShopify.create is actually get_or_create
                 orders.append(cls.create(client=app.client,
                                          order_token=order_json['token'],
                                          order_id=str(order_json['id']),
                                          order_num=str(order_json['number']),
                                          subtotal=float(order_json['subtotal_price'])))
             else:
-                logging.debug('making memory-bound order %s' % order_json['subtotal_price'])
                 orders.append(cls(order_token=order_json['token'],
                                   order_id=str(order_json['id']),
                                   client=app.client,
                                   store_name=app.client.name,
                                   store_url=app.client.url,
                                   order_number=str(order_json['number']),
-                                  subtotal_price=float(order_json['subtotal_price'])
-                ))
-                logging.debug('finish making memory-bound order %s' % order_json['subtotal_price'])
+                                  subtotal_price=float(order_json['subtotal_price'])))
 
         logging.debug('fetched %d orders' % len(orders))
         return orders
