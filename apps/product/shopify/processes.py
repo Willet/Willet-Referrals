@@ -4,7 +4,7 @@ import logging
 
 from django.utils import simplejson as json
 
-from apps.app.models import App
+from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.product.models import Product
@@ -119,11 +119,11 @@ class FetchShopifyCollections(URIHandler):
         app_uuid = self.request.get('app_uuid', '')
         force = self.request.get('force', False)
 
-        app = App.get(app_uuid)
+        app = AppShopify.get(app_uuid)
 
         if not app:
             store_url = self.request.get('store_url', '')
-            app = App.get_by_url(store_url)
+            app = AppShopify.get_by_url(store_url)
 
         if app:
             if bool(force) == True:
