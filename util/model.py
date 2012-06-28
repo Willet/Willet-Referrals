@@ -217,7 +217,7 @@ class Model(db.Model):
         # Save in the memcache when you pull it - it may never be saved
         if obj:
             # method = 'datastore'
-            logging.debug('%s.get via %s --> %r' % (cls.__name__, method, obj))
+            logging.debug('%s.get via %s --> %s' % (cls.__name__, method, obj))
             obj._memcache() # update memcache
         else:
             logging.warn('%s.get DB miss for %s' % (cls.__name__, identifier))
@@ -269,6 +269,7 @@ class Model(db.Model):
                                    self._memcache_fields),
                            exc_info=True)
 # end class
+
 
 class ObjectListProperty(db.ListProperty):
     """A property that stores a list of serializable class instances.
@@ -325,12 +326,12 @@ class ObjectListProperty(db.ListProperty):
             The validated list.
 
         Raises:
-            BadValueError if the list has items are not instances of the
+            ValueError if the list has items are not instances of the
             cls given to the constructor.
         """
         for item in value:
             if not isinstance(item, self._cls):
-                raise db.BadValueError('%s Items in %s must all be of type %r' % (debug_info(), self.name, self._cls))
+                raise ValueError('%s Items in %s must all be of type %r' % (debug_info(), self.name, self._cls))
         return value
 
     def get_value_for_datastore(self, model_instance):
@@ -396,4 +397,32 @@ class ObjectListProperty(db.ListProperty):
             return [ string_to_item(value) for value in db_list ]
         else:
             return []
-# end class
+
+
+class ObjectListReferenceProperty(db.ListProperty):
+    """Seeing ObjectListProperty's failure to store objects of >500 bytes,
+    and the fact that JSON does not do anything to strings, Brian decided to
+    make a ObjectListReferenceProperty instead.
+
+    ObjectListReferenceProperty accepts a list of "db.Model"s, storing them
+    internally as "db.Key"s. This means, at the time of writing, all objects
+    in the list must already be in the datastore. For more info, see
+    http://developers.google.com/appengine/docs/python/datastore/keyclass#Key
+
+    If a stored Key fails to resolve on read time, a None will be substituted
+    in place of the lost object.
+    """
+    def __init__(self, verbose_name=None, default=None, **kwargs):
+        """Relay to parent class."""
+        super(ObjectListReferenceProperty, self).__init__(
+            basestring, verbose_name=verbose_name, default=default, **kwargs)
+
+    def get_value_for_datastore(self, model_instance):
+        """Called by App Engine. Model => Key"""
+        return [str(model.key()) for model in model_instance]
+
+    def make_value_from_datastore(self, value):
+        """Called by App Engine. Key => Model"""
+
+        # value is ['key', 'key', 'key']
+        return [db.get(db.Key(key_str)) or None for key_str in value]

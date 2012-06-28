@@ -65,7 +65,7 @@ class Email():
 
     @staticmethod
     def welcomeClient(app_name, to_addr, name, store_name,
-                      use_full_name=False):
+                      use_full_name=False, custom_install_url=""):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
@@ -80,7 +80,12 @@ class Email():
         body += "<p>Hi %s,</p>" % (name,)
 
         if app_name == 'ShopConnection':
-            body += """<p>Thanks for installing! Please lets us know if you have any suggestion to improve ShopConnection.</p>"""
+            body += """
+                        <p>Thanks for installing ShopConnection! We can align
+                        the buttons for you as part of a <a href="%s">custom
+                        installation</a>.</p>
+                        <p>Please lets us know if you have any suggestion to
+                        improve ShopConnection.</p>""" % custom_install_url
 
         elif app_name == 'Should I Buy This':
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>

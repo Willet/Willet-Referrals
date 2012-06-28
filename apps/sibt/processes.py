@@ -22,7 +22,7 @@ from apps.link.models import Link
 from apps.product.models import Product
 from apps.sibt.actions import SIBTShowAction, SIBTUserAction, SIBTVoteAction
 from apps.sibt.models import SIBT
-from apps.sibt.models import SIBTInstance, PartialSIBTInstance
+from apps.sibt.models import SIBTInstance
 from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
@@ -286,57 +286,6 @@ class TrackSIBTUserAction(URIHandler):
         return
 
 
-class StartPartialSIBTInstance(URIHandler):
-    """A Partial(.*)Instance differs from a formal Instance in that
-    they auto-expire after an hour.
-    """
-    def post(self):
-        """Starts a PartialSIBTInstance.
-
-        This controller does NOT check if the product UUIDs supplied
-        corresponds to a DB Product (because it costs reads).
-        """
-        msg = None # error (a non-None value will invoke logging)
-
-        app = App.get(self.request.get('app_uuid'))
-        if not app:
-            msg = "Not sure which App for which to create partial instance"
-
-        link = Link.get_by_code(self.request.get('willt_code'))
-        if not link:
-            msg = "willt_code does not correspond to working link"
-
-        # product_uuids: ['uuid','uuid','uuid'] or [''] edge case
-        # product_uuid (singular, deprecated) is used only if
-        # product_uuids is missing.
-        logging.debug('products = %s' % self.request.get('products'))
-        product_uuids = self.request.get('products', '').split(',')
-        logging.debug('product_uuids = %r' % product_uuids)
-        if not product_uuids[0]:  # ? '' evals to False; [''] evals to True.
-            product_uuids = [self.request.get('product_uuid')]
-
-        if not product_uuids[0]:
-            msg = "Cannot get products"
-
-        user = User.get(self.request.get('user_uuid'))
-        if not user:
-            msg = "User %s not found in DB" % self.request.get('user_uuid')
-
-        try:
-            PartialSIBTInstance.create(user=user,
-                                       app=app,
-                                       link=link,
-                                       products=product_uuids)
-        except Exception, err: # if it fails for god-knows-what, report it too
-            msg = "%s" % err
-
-        if msg:
-            logging.error('Cannot create PartialSIBTInstance: %s (%r)' % (
-                           msg, [app, link, product_uuids, user]))
-            self.response.out.write(msg)  # this is for humans to read
-        return
-
-
 class SendFriendAsks(URIHandler):
     """Sends messages to email & FB friends."""
     def post(self):
@@ -353,7 +302,7 @@ class SendFriendAsks(URIHandler):
             app_uuid: <string> a SIBT app uuid
             product_uuid: <string> a <Product> uuid
             products: <string> a CSV of <Product> uuids
-            willt_code: <string> willt_code corresponding to a PartialSIBTInstance
+            willt_code: <string> willt_code corresponding to a SIBTInstance
             user_uuid: <string> a <User> uuid
             fb_access_token: <string> a Facebook API access token for this user
             fb_id: <string> a Facebook user id for this user
@@ -741,7 +690,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
                        'shop_owner': client.merchant.name,
                        'client': client,
                        'sibt_version': app.version,
-                       'new_order_code': True}
+                       'new_order_code': False}
 
     return (True, request_handler.render_page('templates/vendor_include.js',
                                               template_values))

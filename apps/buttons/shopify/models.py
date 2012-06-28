@@ -26,16 +26,11 @@ from apps.link.models import Link
 
 from util.model import Model, ObjectListProperty
 from util.consts import *
-from util.helpers import generate_uuid
+from util.helpers import generate_uuid, url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.errors          import ShopifyBillingError, ShopifyAPIError
 
 NUM_VOTE_SHARDS = 15
-
-# basic layout:
-#   client installs button app
-#       client adds buttons
-#       each button has a buttonFBAction type
 
 
 class ButtonsShopify(Buttons, AppShopify):
@@ -195,15 +190,24 @@ class ButtonsShopify(Buttons, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
+            custom_install_url = "%s%s" % (URL, \
+                build_url("ButtonsShopifyInstructions", qs={
+                    "t": self.store_token,
+                    "shop": self.store_url,
+                    "app": "ButtonsShopify",
+                    "install4u": "1"
+                }))
             Email.welcomeClient("ShopConnection", email, name, store,
-                                use_full_name=use_full_name)
+                                use_full_name=use_full_name,
+                                custom_install_url=custom_install_url)
 
         # Email DevTeam
         Email.emailDevTeam(
-            'ButtonsShopify Install: %s %s %s' % (
+            'ButtonsShopify Install: %s %s %s (lead score: %s)' % (
                 self.uuid,
                 self.client.name,
-                self.client.url
+                self.client.url,
+                unicode(self.lead_score)
             ),
             subject='App installed'
         )
@@ -513,6 +517,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     logging.error('encountered error with reinstall', exc_info=True)
         return app, created
 
+
 class SharedItem():
     """An object that contains information about a share"""
     def __init__(self, name, network, url, img_url=None, created=None):
@@ -529,6 +534,7 @@ class SharedItem():
         self.url     = url
         self.img_url = img_url
         self.created = created if created else time()
+
 
 class SharePeriod(Model):
     """Model that manages shares for an application over some period"""

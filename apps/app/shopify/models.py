@@ -55,6 +55,9 @@ class AppShopify(Model):
 
         Note: only 1 recurring billing plan can exist for each store for each app.
         Create a new recurring billing plan will overwrite any existing ones.
+
+        * not inheriting from App probably because classes cannot be both
+        Expando and PolyModel.
     """
     store_id = db.StringProperty(indexed=True) # Shopify's ID for the store
     store_token = db.StringProperty(indexed=True) # Shopify token for the store
@@ -62,27 +65,27 @@ class AppShopify(Model):
     billing_enabled = db.BooleanProperty(indexed=True, default=False)
 
     # Recurring billing information
-    recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
-    recurring_billing_id         = db.IntegerProperty(indexed = False)
-    recurring_billing_name       = db.StringProperty(indexed = False)
-    recurring_billing_price      = db.StringProperty(indexed = False)
-    recurring_billing_created    = db.DateTimeProperty(indexed = False)
-    recurring_billing_trial_days = db.IntegerProperty(indexed = False)
-    recurring_billing_trial_ends = db.DateTimeProperty(indexed = False)
+    recurring_billing_status     = db.StringProperty(indexed=False) # none, test, pending, accepted, denied
+    recurring_billing_id         = db.IntegerProperty(indexed=False)
+    recurring_billing_name       = db.StringProperty(indexed=False)
+    recurring_billing_price      = db.StringProperty(indexed=False)
+    recurring_billing_created    = db.DateTimeProperty(indexed=False)
+    recurring_billing_trial_days = db.IntegerProperty(indexed=False)
+    recurring_billing_trial_ends = db.DateTimeProperty(indexed=False)
 
     # One-time charge information
-    charge_ids = db.ListProperty(float, indexed = False)
-    charge_names = db.ListProperty(str, indexed = False)
-    charge_prices = db.ListProperty(str, indexed = False)
-    charge_createds = db.ListProperty(datetime.datetime, indexed = False)
-    charge_statuses = db.ListProperty(str, indexed = False)
+    charge_ids = db.ListProperty(float, indexed=False)
+    charge_names = db.ListProperty(str, indexed=False)
+    charge_prices = db.ListProperty(str, indexed=False)
+    charge_createds = db.ListProperty(datetime.datetime, indexed=False)
+    charge_statuses = db.ListProperty(str, indexed=False)
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
         self.get_settings()
 
     def _validate_self(self):
-        if not re.match("https?://[\w\-~]+.myshopify.com", self.store_url):
+        if not re.match("https?://[~\w\-]+.myshopify.com", self.store_url):
             err_msg = "<%s.%s> has malformated store url '%s'"
             raise ValueError(err_msg % (self.__class__.__module__,
                                         self.__class__.__name__,
@@ -135,15 +138,16 @@ class AppShopify(Model):
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
-    
+
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
-                          suppress_errors = False):
+                          suppress_errors=False, prefix='admin/'):
         """ Calls Shopify API
 
         Inputs:
             verb - <String> one of GET, POST, PUT, DELETE
-            call - <String> api call
+            call - <String> api call (e.g. 'themes.json')
+                prefix - defaults to to 'admin/'.
             payload - <Object> Data to send with request
             suppress_errors - <Boolean> Quietly proceed if call errors
                               NOTE: Only use this if you expect errors from this call
@@ -158,7 +162,7 @@ class AppShopify(Model):
                     'PUT', 'put', 'DELETE', 'delete']:
             raise ValueError('verb must be one of GET, POST, PUT, DELETE')
 
-        url      = '%s/admin/%s' % (self.store_url, call)
+        url      = '%s/%s%s' % (self.store_url, prefix, call)
         username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -693,4 +697,10 @@ class AppShopify(Model):
 
         # All callbacks finished
         return
-# end class
+
+    @property
+    def lead_score(self):
+        """Well, an app's lead score is the client's lead score."""
+        if self.client:
+            return self.client.lead_score
+        return 0  # orphan App? the problem is larger than it looks...

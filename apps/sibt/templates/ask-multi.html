@@ -99,28 +99,6 @@
         fbIdentity    = userId;
     };
 
-    var startPartialInstance = function() {
-        storeAnalytics('SIBTStartPartialInstanceOnAskMulti');
-        if (getSelectedObjects ()) {
-            var payload = {
-                app_uuid: "{{app_uuid}}",
-                user_uuid: "{{user_uuid}}",
-              //product_uuid: "{{ product_uuid }}", // single-product mode only
-                products: getSelectedObjects(),
-                willt_code: "{{willt_code}}"
-            };
-            $.ajax({
-                url: "{{ URL }}{% url StartPartialSIBTInstance %}",
-                type: 'post',
-                dataType: 'json',
-                data: payload
-            });
-            return true;
-        } else {
-            return false;
-        }
-    };
-
     // Sends information to server to ask friends & handles response
     var sendMessages = function() {
         var payload, friend_info, asker_info,
