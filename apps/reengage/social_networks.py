@@ -97,7 +97,7 @@ class Facebook(SocialNetwork):
         final_url = "%s?%s" % (cls.__fql_url, query)
         success, content = cls._request(final_url)
 
-        reach = None
+        reach = {}
 
         if success:
             data = content.get("data")

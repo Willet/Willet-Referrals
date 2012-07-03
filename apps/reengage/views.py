@@ -2,13 +2,13 @@ import logging
 from django.utils import simplejson as json
 from google.appengine.ext import db
 from apps.client.shopify.models import ClientShopify
+from apps.reengage.social_networks import Facebook
 from util.consts import SHOPIFY_APPS
 from util.urihandler import URIHandler
 from util.helpers import to_dict, generate_uuid, url as build_url
 from apps.reengage.models import *
 
 #TODO: How to avoid stupid `if json else` construct`
-#TODO: How to return json response
 #TODO: Error handling
 
 def get_queue(request):
@@ -73,6 +73,7 @@ class ReEngageQueueHandler(URIHandler):
             self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
             self.response.out.write(json_response)
         else:
+            #TODO: Replace with HTML view
             page = self.render_page('index.html', {})
             self.response.out.write(page)
 
@@ -123,8 +124,15 @@ class ReEngagePostHandler(URIHandler):
             self.respond(404)
             return
 
-        json_response = post.to_json()
-        self.response.out.write(json_response)
+        if self.is_json():
+            json_response = post.to_json()
+            self.response.out.write(json_response)
+        else:
+            #TODO: Replace with HTML view
+            page = self.render_page('post.html', {})
+            self.response.out.write(page)
+
+
 
     def put(self, uuid):
         """Update the details of a post"""
@@ -151,14 +159,16 @@ class ReEngageProductSourceHandler(URIHandler):
     """
     def get(self):
         """Obtains information about a given ProductSource."""
-        #self.request.get()
+        url = self.request.get("url")
 
         if self.is_json():
-            pass
+            data = Facebook.get_reach(url)
+            self.response.out.write(json.dumps(data))
         else:
+            #TODO: Replace with HTML view
             page = self.render_page('product.html', {})
             self.response.out.write(page)
 
     def post(self):
         """Posts to the ProductSource."""
-        self.respond(201)
+        self.respond(204)
