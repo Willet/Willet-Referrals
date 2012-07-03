@@ -213,10 +213,10 @@ class ReEngageQueue(Model):
         """Get products associated with this queue
 
         Note: since queues are only associated with an app, at the moment,
-        we can only get all products associated with a particular client"""
+        we can only get all products associated with a particular client."""
         logging.info("Client: %s" % self.owner.client)
 
-        products = Product.all().filter('client =', self.owner.client).fetch(None)
+        products = self.owner.client.products
 
         if products:
             return products
