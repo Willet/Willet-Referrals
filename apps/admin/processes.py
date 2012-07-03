@@ -15,7 +15,6 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models import *
-from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
 from apps.buttons.shopify.models import ButtonsShopify
 from apps.email.models import Email
 from apps.link.models import Link
@@ -298,93 +297,6 @@ class SIBTReset (URIHandler):
         self.response.out.write("Done")
 
 
-class GenerateOlderHourPeriods(URIHandler):
-    def get(self):
-        if self.request.get('reset'):
-            memcache.delete_multi(['day', 'hour', 'day_global', 'hour_global'])
-        else:
-            ensure = self.request.get('ensure')
-
-            oldest_global = GlobalAnalyticsHourSlice.all().order('start').get()
-            hour_global = oldest_global.start - datetime.timedelta(hours=1)
-            memcache.set('hour_global', hour_global)
-
-            global_day = GlobalAnalyticsDaySlice.all().order('start').get()
-            day_global = global_day.start - datetime.timedelta(days=1)
-            memcache.set('day_global', day_global.date())
-
-            oldest_app = AppAnalyticsHourSlice.all().order('start').get()
-            hour = oldest_app.start - datetime.timedelta(hours=1)
-            memcache.set('hour', hour)
-
-            oldest_day = AppAnalyticsDaySlice.all().order('start').get()
-            day = oldest_day.start - datetime.timedelta(days=1)
-            memcache.set('day', day.date())
-
-            if ensure in ['day', 'hour', 'day_global', 'hour_global']:
-                urlfetch.fetch('%s/bea/ensure/%s/' % (URL, ensure))
-
-        self.response.out.write(json.dumps({'success':True}))
-
-
-class AnalyticsRPC(URIHandler):
-    #@admin_required
-    #def get(self, admin):
-    def get(self):
-        limit = self.request.get('limit') or 3
-        offset = self.request.get('offset') or 0
-
-        day_slices = GlobalAnalyticsDaySlice.all()\
-                .order('-start')\
-                .fetch(int(limit), offset=int(offset))
-        data = []
-        for ds in day_slices:
-            obj = {}
-
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-
-            for action in actions_to_count:
-                obj[action] = ds.get_attr(action)
-            data.append(obj)
-
-        response = {
-            'success': True,
-            'data': data
-        }
-
-        self.response.out.write(json.dumps(response))
-
-
-class AppAnalyticsRPC(URIHandler):
-    def get(self, app_uuid):
-        app = App.get(app_uuid)
-        limit = self.request.get('limit') or 3
-        offset = self.request.get('offset') or 0
-
-        day_slices = AppAnalyticsDaySlice.all()\
-                .filter('app_ =', app)\
-                .order('-start')\
-                .fetch(int(limit), offset=int(offset))
-        data = []
-        for ds in day_slices:
-            obj = {}
-
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-
-            for action in actions_to_count:
-                obj[action] = ds.get_attr(action)
-            data.append(obj)
-
-        response = {
-            'success': True,
-            'data': data
-        }
-
-        self.response.out.write(json.dumps(response))
-
-
 class ClientSideMessage(URIHandler):
     """Handler for receiving a (debug/error) message sent by a client.
 
@@ -644,10 +556,10 @@ class CleanOldActions(URIHandler):
 
         a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
         actions_deleted = 0
-        batch_size = 50
+        batch_size = int(self.request.get('batch_size', 50))
         keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
                      'sibtclickaction']
-        offset = 0
+        offset = int(self.request.get('offset', 0))
 
         while actions_deleted < 100:
             # keep fetching until we get 100 things to delete.

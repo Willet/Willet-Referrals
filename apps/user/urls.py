@@ -4,7 +4,6 @@ from apps.user.views import *
 
 urlpatterns = [
     # Views
-    #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
     (r'/user/get/(.*)/', ShowProfileJSON),
     (r'/user/(.*)/(.*)/', ShowProfilePage),
     (r'/user/safariCookiePatch', UserCookieSafariHack),

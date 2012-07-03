@@ -7,7 +7,9 @@
         <tr>
             <td valign="top">
                 <div style="font-size:120%; line-height: 46px; margin-bottom: 20px;">
-                    {% if asker_img %}<img alt="{{ from_first_name }}'s picture" src="{{ asker_img }}" style="height: 40px; width: 40px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />{% endif %}
+                    <img alt="{{ from_first_name }}'s picture"
+                         src='{{ asker_img|default:"https://social-referral.appspot.com/static/imgs/happy_face.png" }}'
+                         style="height: 40px; width: 40px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />
                     {{ from_name }} asks:
                 </div>
                 {% if products.1 %}

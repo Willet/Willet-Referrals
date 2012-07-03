@@ -17,22 +17,18 @@
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
     {% include "js/willet.loader.js" %}
+    {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
-    {% include "js/willet.colorbox.js" %}
+    {# include "js/willet.colorbox.js" #} /* we aren't using this, are we? */
     {% include "js/willet.sibt.js" %}
 
     // Load CSS onto the page.
-    var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
-    var topbar_css = '{% spaceless %}{% include "../../plugin/templates/css/topbar.css" %}{% endspaceless %}';
+    var colorbox_css = '{% spaceless %}{# include "../../plugin/templates/css/colorbox.css" #}{% endspaceless %}'; /* we aren't using this, are we? */
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 
     // load CSS for colorbox as soon as possible!!
-    var styles = [app_css, colorbox_css, topbar_css, popup_css];
-    for (var i = 0; i < styles.length; i++) {
-        _willet.mediator.fire('loadCSSText', styles[i]);
-    }
-
+    _willet.mediator.fire('loadCSSText', app_css + colorbox_css + popup_css);
 
     // Stores user_uuid for all browsers - differently for Safari.
     var setCookieStorageFlag = function () {
@@ -115,7 +111,8 @@
     try {
         // set up a list of scripts to load asynchronously.
         var scripts_to_load = [
-            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js', // Google analytics
+            '//{{ DOMAIN }}/static/js/localstorage/storage.min.js'
         ];
 
         // turns out we need at least 1.4 for the $(<tag>,{props}) notation

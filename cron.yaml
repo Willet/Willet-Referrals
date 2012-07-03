@@ -15,34 +15,6 @@ cron:
 #  url: /gae_bingo/persist
 #  schedule: every 5 minutes
 
-# ######################
-# RUN ANALYTICS
-# ######################
-
-#- description: Generate analytics per app per hour
-#  url: /bea/run/hour/
-#  schedule: every day 07:00
-
-# ######################
-# ENSURE WE HAVE OBJECTS
-# ######################
-
-#- description: Creating hourly TimeSlice entities for analytics
-#  url: /bea/ensure/hour/
-#  schedule: every 30 minutes
-
-#- description: Ensures we have hourly time slices for global analytics
-#  url: /bea/ensure/hour_global/
-#  schedule: every 30 minutes
-
-#- description: Generate analytics per app per hour
-#  url: /bea/ensure/day/
-#  schedule: every 12 hours
-
-#- description: Generate analytics per app per hour
-#  url: /bea/ensure/day_global/
-#  schedule: every 12 hours
-
 # SOME SIBT SHIT WE DONT CARE ABOUT
 - description: scan for expired SIBT votes
   url: /s/getExpired

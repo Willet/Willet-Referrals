@@ -14,29 +14,43 @@
 
 {% block right_screens %}
     <div id="product_screen" class="wosib center">
-        {% if is_asker %}
-            <h2>Select products to show in your vote</h2>
-            <div id="selection_box_container" style="margin: 60px 0 30px 0;">
-                <div id="selection_box"><!-- JS --></div>
-            </div>
-            <p style="text-align:center;">
-                <button id="set_products">Select products</button>
-            </p>
-        {% else %}
-            {% for product in products|slice:":2" %}
-                {% if forloop.last %}
-                    <img alt="or" src="/static/imgs/or-150.png"
-                         style="margin: 88px -47px;
-                                float: left;
-                                line-height: 300px;
-                                vertical-align: middle;" />
+        {% for product in products|slice:":2" %}
+            {% if forloop.last %}
+                <img alt="or" src="/static/imgs/or-150.png"
+                        style="margin: 88px -47px;
+                            float: left;
+                            line-height: 300px;
+                            vertical-align: middle;" />
+            {% endif %}
+            <div class="product info_launch" data-uuid="{{ product.uuid }}">
+                <!-- thumbnail -->
+                <img alt="product image"
+                     src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                    {% if forloop.last %}
+                     id="second_product_src_drop_target"
+                    {% endif %}
+                    class="product-image center" />
+                <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
+                {% if not user_voted %}
+                    <button class="button vote"
+                            style="position:absolute;bottom:10px;left:34%"
+                            data-uuid="{{ product.uuid }}">
+                        Vote
+                    </button>
                 {% endif %}
-                <div class="product info_launch" data-uuid="{{ product.uuid }}">
-                    <!-- thumbnail -->
-                    <img alt="product image"
-                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                        class="product-image center" />
-                    <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
+                <div id="success_screen">
+                    <h2>Thank you for helping {{asker_name}}!</h2>
+                </div>
+            </div>
+            <div id="product_info_{{ product.uuid }}"
+                class="product_info group1" rel="group1">
+                <!-- details -->
+                <div style="float:left; width: 400px;">
+                    <a>
+                        <img alt="product image"
+                            src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                            class="product-image center"/>
+                    </a>
                     <p style="text-align: center;">
                         {% if not user_voted %}
                             <button class="button vote"
@@ -45,40 +59,13 @@
                             </button>
                         {% endif %}
                     </p>
-                    <div id="success_screen">
-                        <h2>Thank you for helping {{asker_name}}!</h2>
-                        {% if store_url %}
-                            <p style="margin-top:24px;">
-                                <a href="{{ store_url }}">Continue Shopping</a>
-                            </p>
-                        {% endif %}
-                    </div>
                 </div>
-                <div id="product_info_{{ product.uuid }}"
-                    class="product_info group1" rel="group1">
-                    <!-- details -->
-                    <div style="float:left; width: 400px;">
-                        <a>
-                            <img alt="product image"
-                                src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                                class="product-image center"/>
-                        </a>
-                        <p style="text-align: center;">
-                            {% if not user_voted %}
-                                <button class="button vote"
-                                        data-uuid="{{ product.uuid }}">
-                                    Vote
-                                </button>
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div style="float:right; width: 400px;">
-                        <h2 class="title">{{ product.title }}</h2>
-                        {{ product.description|linebreaksbr|striptags }}
-                    </div>
+                <div style="float:right; width: 400px;">
+                    <h2 class="title">{{ product.title }}</h2>
+                    {{ product.description|linebreaksbr|striptags }}
                 </div>
-            {% endfor %}
-        {% endif %}
+            </div>
+        {% endfor %}
     </div>
 {% endblock right_screens %}
 

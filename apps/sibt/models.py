@@ -146,7 +146,7 @@ class SIBT(App):
         user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
-        act = SIBTClickAction.create(user, self, link)
+        # act = SIBTClickAction.create(user, self, link)
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -190,29 +190,26 @@ class SIBT(App):
         instance.put()
 
         # Now, make an action
-        SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
+        # SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
 
         # "if it is a non-admin share on live server"
         if not user.is_admin() and not USING_DEV_SERVER:
             try:
                 Email.emailDevTeam("""
-                    SIBT INSTANCE:<br />
+                    %s (%s) created an SIBT instance (%s) on %s
+                    (http://rf.rs/%s).<br />
+                    <br />
                     dialog = %s <br />
-                    uuid= %s<br />
-                    user.key= %s<br />
-                    page= %s<br />
-                    link= http://rf.rs/%s<br />
-                    name= %s<br />
                     fb_uuid= %s<br />
                     fb_access_token= %s <br />
                     <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
                     """ % (
-                        dialog,
+                        user.name or "Someone",
+                        user.get_attr('email'),
                         uuid,
-                        user.key(),
                         link.target_url,
                         link.willt_url_code,
-                        user.get_full_name(),
+                        dialog,
                         user.get_attr('fb_identity'),
                         user.get_attr('fb_access_token'),
                         user.get_attr('fb_identity'),
@@ -281,10 +278,6 @@ class SIBTInstance(Model):
         if len(self.sharing_message) > 1000:
             raise ValueError('Sharing message is too long')
         return True
-
-    @staticmethod
-    def _get_from_datastore(uuid):
-        return db.Query(SIBTInstance).filter('uuid =', uuid).get()
 
     def get_products(self):
         """Returns this instance's products as objects."""
@@ -369,10 +362,6 @@ class SIBTInstance(Model):
         """Correct, the user field is called asker for SIBTInstances."""
         return cls.all().filter('asker =', user).get()
 
-    @staticmethod
-    def get_by_uuid(uuid):
-        return SIBTInstance.get(uuid)
-
     def get_votes_count(self, user=None):
         """Count this instance's total number of votes.
 
@@ -385,7 +374,9 @@ class SIBTInstance(Model):
         * Vote counts are sharded; Actual votes are not.
         """
         if user and isinstance(user, User):
-            return SIBTVoteAction.all().filter('user =', user).count()
+            return SIBTVoteAction.all()\
+                                 .filter('user =', user)\
+                                 .filter('sibt_instance =', self).count()
 
         total = self.get_yesses_count() + self.get_nos_count()
         return total
@@ -446,82 +437,11 @@ class SIBTInstance(Model):
 
 
 class PartialSIBTInstance(Model):
-    """http://goo.gl/SWi1P
+    """Originally SIBTInstances that are meant to self-delete after 1 hour.
 
-    Whenever someone doesn't FB connect, we start a PartialInstance and open up
-    a FB dialog. We don't know if they actually pushed the message to FB or not,
-    right? This is why it's only a Partial Instance. When the User is redirected
-    to our "Thanks" screen, we complete the partialinstance and make a full one
-    and delete the partial one. If the person cancels, the PartialInstance is
-    deleted. If the person closes the window, the PartialInstance stays, but
-    ... "expires".
-
-    Each User can have at most 1 PartialInstance.
+    DEPRECATED; there was no sense in using this.
     """
-    # User is the only index.
-    user = MemcacheReferenceProperty(db.Model,
-                                     collection_name='partial_sibt_instances',
-                                     indexed=True)
-    link = db.ReferenceProperty(db.Model,
-                                collection_name='link_partial_sibt_instances',
-                                indexed=False)
-    # deprecated (SIBT now should accept 2 or more products)
-    product = db.ReferenceProperty(db.Model,
-                                   collection_name='product_partial_sibt_instances',
-                                   indexed=False)
-
-    # use self.get_products() to get products as objects
-    products = db.StringListProperty(db.Text, indexed=True)
-
-    app_ = db.ReferenceProperty(db.Model,
-                                collection_name='app_partial_sibt_instances',
-                                indexed=False)
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        self._memcache_key = kwargs['uuid']
-        super(PartialSIBTInstance, self).__init__(*args, **kwargs)
-
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        return db.Query(cls).filter('uuid =', uuid).get()
-
-    def _validate_self(self):
-        return True
-
-    def get_products(self):
-        """Returns this instance's products as objects."""
-        return [Product.get(product_uuid) for product_uuid in self.products]
-
-    @classmethod
-    def create(cls, user, app, link, product=None, products=None):
-        """Users can only have 1 of these ever.
-
-        If they already have one, update it.
-        Otherwise, make a new one.
-        """
-        instance = cls.get_by_user(user)
-        if instance:
-            instance.link = link
-            instance.product = product
-            instance.products = products
-            instance.app_ = app
-        else:
-            uuid = generate_uuid(16)
-
-            instance = cls(key_name=uuid,
-                           uuid=uuid,
-                           user=user,
-                           link=link,
-                           product=product,
-                           products=products,
-                           app_=app)
-        instance.put()
-        return instance
-
-    @classmethod
-    def get_by_user(cls, user):
-        return cls.all().filter('user =', user).get()
+    pass
 
 
 # retrieval helpers
@@ -662,20 +582,21 @@ def get_instance_event(**kwargs):
 
     instance = None
     link = None
-    target = get_target_url(req.get('url', ''))
 
     # stage 1: by uuid
     instance_uuid = req.get('instance_uuid')
     instance = SIBTInstance.get(instance_uuid)
     if instance:
+        logging.info('Found instance by uuid: %s' % instance.uuid)
         return (instance, 'SIBTShowingVote')
 
     # stage 2: by user and page combo
-    page_url = req.get('page_url', '')
-    user = get_user(urihandler=urihandler)
+    page_url = req.get('page_url', get_target_url(req.get('url', '')))
+    user = kwargs.get('user', get_user(urihandler=urihandler))
     if user and page_url:
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
     if instance:
+        logging.info('Found instance by user/page: %s' % instance.uuid)
         return (instance, 'SIBTShowingResults')
 
     # stage 3: by willet code (not memcached)
@@ -685,36 +606,8 @@ def get_instance_event(**kwargs):
         if link:
             instance = link.sibt_instance.get()
         if instance:
+            logging.info('Found instance by code: %s' % willet_code)
             return (instance, 'SIBTShowingResults')
-
-    app = get_app(urihandler=urihandler)
-    if user and app:
-        instances = SIBTInstance.all(keys_only=True)\
-                                .filter('url =', page_url)\
-                                .fetch(100)
-        key_list = [key.id_or_name() for key in instances]
-        action = SIBTClickAction.get_for_instance(app, user, page_url,
-                                                  key_list)
-        if action:
-            instance = action.sibt_instance
-
-        if instance:
-            return (instance, 'SIBTShowingVote')
-
-        if not link:
-            link = Link.all()\
-                       .filter('user =', user)\
-                       .filter('target_url =', target)\
-                       .filter('app_ =', app)\
-                       .get()
-        if link:
-            instance = link.sibt_instance.get()
-        if instance:
-            return (instance, 'SIBTShowingVote')
-
-    if user and target:
-        instance = SIBTInstance.get_by_asker_for_url(user, target)
-        return (instance, 'SIBTShowingVote') # could be none
 
     return (None, '')
 
@@ -738,14 +631,17 @@ def get_user(urihandler, **kwargs):
 
     user = User.get(req.get('user_uuid'))
     if user:
+        logging.info('Found user by uuid: %s (%s)' % (user.uuid, user.name))
         return user
 
     user = User.get_by_cookie(urihandler)
     if user:
+        logging.info('Found user by cookie: %s (%s)' % (user.uuid, user.name))
         return user
 
     user = User.get_by_email(req.get('email'))
     if user:
+        logging.info('Found user by email: %s <%s>' % (user.name, req.get('email')))
         return user
 
     app = get_app(urihandler=urihandler)  # None

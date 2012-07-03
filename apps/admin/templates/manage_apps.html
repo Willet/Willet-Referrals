@@ -28,7 +28,7 @@
                 <tr>
                     <th scope='row'>{{ forloop.counter }}</th>
                     <td>
-                        <a href="{{ URL }}/admin/analytics/{{ a.uuid }}/">{{ a.client_name }}</a> 
+                        {{ a.client_name }}
                     </td>
                     {% ifequal a.class_name "SIBTShopify" %}
                         <td>
@@ -67,7 +67,7 @@
                             <form method="post" action="?" class="mini_form">
                                 <input type="hidden" name="app_id" value="{{ a.uuid }}">
                                 <input type="hidden" name="action" value="reset_style" />
-                                <a href="{{ URL }}/s/shopify/{{ a.uuid }}/edit">Edit style</a>, or 
+                                <a href="{{ URL }}/s/shopify/{{ a.uuid }}/edit">Edit style</a>, or
                                 <input type="submit" value="reset it" />
                             </form>
                         </td>

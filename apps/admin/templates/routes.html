@@ -11,19 +11,22 @@
 {% block bottom_content %}
     <div class="span-24 prepend-top append-bottom">
         <h1 class="prepend-top center">Routes</h1>
-        {% for route in routes %}
-        <div class="span-24" style="border-bottom: 1px solid rgba(0, 0, 0, 0.1)">
-            <div class="prepend-3 span-6">
-                <a href="{{ route.route }}"> {{route.route}}</a>
-            </div>
-            <div class="span-6">
-                {{ route.obj }}
-            </div>
-            <div class="span-6 append-3 last">
-                {{ route.module }}
-            </div>
-        </div>
-        {% endfor %}
+        <p> <b>Be careful</b> - don't click what you don't know!</p>
+        <table>
+            {% for route in routes %}
+                <tr>
+                    <td style="text-align:left;border-bottom:1px #999 solid">
+                        <a href="{{ route.route }}"> {{route.route}}</a>
+                        <br/>
+                        <span style="font:11px monospace;">
+                            {{ route.module }}.{{ route.obj }}
+                        </span>
+                    </td>
+                    <td style="text-align:justify;border-bottom:1px #999 solid">
+                        <div style="font-size:11px;">{{ route.doc|linebreaksbr }}</div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
     </div>
 {% endblock bottom_content %}
-

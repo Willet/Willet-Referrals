@@ -58,11 +58,6 @@ class Charge(Model, polymodel.PolyModel):
         return True
 
     @classmethod
-    def _get_from_datastore(cls, uuid):
-        """Datastore retrieval using memcache_key"""
-        return cls.all().filter('uuid =', uuid).get()
-
-    @classmethod
     def create(cls, **kwargs):
         """Creates a Charge in the datastore using kwargs.
 

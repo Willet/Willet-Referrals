@@ -35,16 +35,6 @@ class Code(Model):
         return True
 
     @classmethod
-    def _get_memcache_key(cls, uuid):
-        """."""
-        return '%s:%s' % (cls.__name__.lower(), unicode(uuid))
-
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        """Datastore retrieval using memcache_key"""
-        return db.Query(cls).filter('uuid =', uuid).get()
-
-    @classmethod
     def create(cls, **kwargs):
         """Creates a code in the datastore using kwargs.
 

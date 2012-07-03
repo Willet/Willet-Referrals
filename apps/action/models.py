@@ -13,6 +13,7 @@ import logging
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
+from util.errors import deprecated
 from util.helpers import generate_uuid
 from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
@@ -28,13 +29,13 @@ class Action(Model, polymodel.PolyModel):
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)
     # Length of time a compound action had persisted prior to its creation
-    duration = db.FloatProperty(default = 0.0)
+    duration = db.FloatProperty(default=0.0)
     # Person who did the action
     user = MemcacheReferenceProperty(db.Model, collection_name='user_actions')
     # True iff this Action's User is an admin
     is_admin = db.BooleanProperty(default=False)
     # The App that this Action is for
-    app_ = db.ReferenceProperty(db.Model, collection_name = 'app_actions')
+    app_ = db.ReferenceProperty(db.Model, collection_name='app_actions')
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -53,11 +54,6 @@ class Action(Model, polymodel.PolyModel):
         return self.__class__.__name__
     name = property(get_class_name)
 
-    @classmethod
-    def _get_from_datastore(cls, uuid):
-        """Datastore retrieval using memcache_key"""
-        return Action.all().filter('uuid =', uuid).get()
-
     def _validate_self(self):
         return True
 
@@ -66,42 +62,7 @@ class Action(Model, polymodel.PolyModel):
 
     def __str__(self):
         # Subclasses should override this
-        pass
-
-    ## Accessors
-    @staticmethod
-    def count(admins_too = False):
-        if admins_too:
-            return Action.all().count()
-        else:
-            return Action.all().filter('is_admin =', False).count()
-
-    @staticmethod
-    def get_all(admins_too = False):
-        if admins_too:
-            return Action.all()
-        else:
-            return Action.all().filter('is_admin =', False)
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return Action.get(uuid)
-
-    @staticmethod
-    def get_by_user(user):
-        return Action.all().filter('user =', user).get()
-
-    @staticmethod
-    def get_by_app(app, admins_too = False):
-        app_actions = Action.all().filter('app_ =', app)
-        if admins_too:
-            return app_actions.get()
-        else:
-            return app_actions.filter('is_admin =', False).get()
-
-    @staticmethod
-    def get_by_user_and_app(user, app):
-        return Action.all().filter('user =', user).filter('app_ =', app).get()
+        return "%s %s" % (self.__class__.__name__, self.uuid)
 
 
 class ClickAction(Action):
@@ -148,41 +109,18 @@ class VoteAction(Action):
     def _validate_self(self):
         return True
 
-    @classmethod
-    def get_by_vote(cls, vote):
-        return cls.all().filter('vote =', vote)
-
-    @classmethod
-    def get_all_yesses(cls):
-        return cls.get_by_vote('yes')
-
-    @classmethod
-    def get_all_nos(cls):
-        return cls.get_by_vote('no')
-
 
 class LoadAction(Action):
-    """ Parent class for Load actions.
-        ie. ScriptLoad, ButtonLoad """
+    pass
 
-    url = db.LinkProperty(indexed = True, default=True)
-
-    def __str__(self):
-        return 'LoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-    @staticmethod
-    def get_by_url(url):
-        return LoadAction.all().filter('url =', url)
-
-    @staticmethod
-    def get_by_user_and_url(user, url):
-        return LoadAction.all().filter('user = ', user).filter('url =', url)
 
 class ScriptLoadAction(LoadAction):
     pass
 
+
 class ButtonLoadAction(LoadAction):
     pass
+
 
 class ShowAction(Action):
     """We are showing something ..."""
@@ -191,7 +129,7 @@ class ShowAction(Action):
     what = db.StringProperty()
 
     # url/page this was shown on
-    url = db.LinkProperty(indexed=True)
+    url = db.LinkProperty(indexed=False)
 
     @staticmethod
     def create(user, app, what, url):
@@ -216,29 +154,4 @@ class ShowAction(Action):
 
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
-
-    # what did they do
-    what = db.StringProperty()
-
-    # url/page this was acted on
-    url = db.LinkProperty(indexed = True)
-
-    @staticmethod
-    def create(user, app, what, url):
-        uuid = generate_uuid(16)
-        action = UserAction(
-            key_name=uuid,
-            uuid=uuid,
-            user=user,
-            app_=app,
-            what=what,
-            url=url
-        )
-
-        action.put()
-        return action
-
-    def __str__(self):
-        return 'User %s did %s on %s' % (self.user.get_first_name(),
-                                         self.what,
-                                         self.url)
+    pass

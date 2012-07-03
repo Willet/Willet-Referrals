@@ -6,39 +6,33 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import hashlib, logging, urllib, urllib2
+import hashlib
+import logging
+import math
 
-from decimal import *
 from django.utils import simplejson as json
-from google.appengine.api import memcache
-from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
-from google.appengine.ext.db import polymodel
 
 from apps.client.models import Client
-from apps.link.models import Link
+from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.user.models import User
 
 from util import httplib2
-from util.consts import *
-from util.errors import *
+from util.consts import SHOPIFY_APPS
 from util.helpers import generate_uuid
 from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
-from util.memcache_ref_prop import MemcacheReferenceProperty
 
-# -----------------------------------------------------------------------------
-# ClientShopify Class Definition ----------------------------------------------
-# -----------------------------------------------------------------------------
+
 class ClientShopify(Client):
     """A Client of a Shopify website.
 
     ClientShopify models are meant for Shopify shops only - use Client to
     store information about stores without a specific platform.
     """
-    token = db.StringProperty(default = '')
+    token = db.StringProperty(default='')
     id = db.StringProperty(indexed = True)
 
     def __init__(self, *args, **kwargs):
@@ -115,10 +109,6 @@ class ClientShopify(Client):
         return ClientShopify.all().filter('id =', id).get()
 
     @staticmethod
-    def get_by_uuid(uuid):
-        return ClientShopify.all().filter('uuid =', uuid).get()
-
-    @staticmethod
     def get_or_create(store_url, store_token='',
                       request_handler=None, app_type=""):
         store = ClientShopify.get_by_url(store_url)
@@ -171,8 +161,46 @@ class ClientShopify(Client):
         for p in products:
             ProductShopify.create_from_json(self, p)
 
-# Shopify API Calls  ----------------------------------------------------------
+    @property
+    def lead_score(self):
+        """Returns a float (1 ~ 10) denoting the "lead" (whatever that is)
+        of the store.
+
+        Currently supports Shopify only. To expand to other services, move
+        this function to the parent class.
+        """
+        base_score = 0
+        orders = []
+
+        try:
+            # try to get the first Shopify app for this client for a token
+            app = [a for a in self.apps if hasattr(a, '_call_Shopify_API')][0]
+            if app:
+                orders = OrderShopify.fetch(app=app, save=False)
+                logging.debug('got app; orders = %r' % orders)
+        except AttributeError, err:
+            logging.error(err, exc_info=True)
+
+        orders = orders or self.orders  # prioritise fresh orders
+        if orders:
+            for order in orders:
+                logging.debug('got order %r' % order)
+                base_score += order.subtotal_price
+
+            # give higher score to retailers who sell TONS of cheap stuff
+            # (i.e. high traffic)
+            base_score = base_score * len(orders)
+
+
+        logging.debug('base_score = %r' % base_score)
+        if base_score:  # i.e. !0
+            return round(max(1, min(10, math.log(base_score, 6))),2)  # 1~10
+        else:
+            return 1  # minimum is 1
+
+
 def get_store_info(store_url, store_token, app_type):
+    """Shopify API Calls"""
 
     # Fix inputs (legacy)
     if app_type == "sibt":
@@ -202,4 +230,3 @@ def get_store_info(store_url, store_token, app_type):
     logging.info('shop: %s' % (shop))
 
     return shop
-

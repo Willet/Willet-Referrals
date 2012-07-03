@@ -207,7 +207,7 @@ class ButtonsShopifyTailoredInstall(URIHandler):
     @catch_error
     def get(self):
         """Begin the upgrade process."""
-        price = 20.0  # "we're charging people 20 bucks to install it for em"
+        price = 35.0  # "we're charging people 35 bucks to install it for em"
 
         app = ButtonsShopify.get_by_url(self.request.get('store_url', ''))
         if not app:
@@ -344,7 +344,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
         """Activate the billing charges after Shopify has setup the charge."""
 
         app_uuid = self.request.get('app_uuid')
-        app = ButtonsShopify.get_by_uuid(app_uuid)
+        app = ButtonsShopify.get(app_uuid)
 
         # Fetch the client
         # Since we cannot get the client until we have the app, in this case,

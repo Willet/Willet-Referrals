@@ -18,7 +18,7 @@ from util.helpers import *
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
-# The "Shows" -----------------------------------------------------------------
+
 class ShopifyRedirect(URIHandler):
     # Renders a app page
     def get(self):
@@ -30,6 +30,11 @@ class ShopifyRedirect(URIHandler):
         shopify_sig = self.request.get('signature')
         store_token = self.request.get('t')
         shopify_timestamp = self.request.get('timestamp')
+
+        if not (app and shopify_url and store_token):
+            self.response.out.write('You are doing it wrong')
+            logging.error('/a/shopify called incorrectly', exc_info=True)
+            return
 
         # Get the store or create a new one
         client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
@@ -79,14 +84,14 @@ class ShopifyRedirect(URIHandler):
         logging.info("redirecting app %s to %s" % (app, redirect_url))
         self.redirect(redirect_url)
 
-# The "Dos" -------------------------------------------------------------------
+
 class DoDeleteApp(URIHandler):
     def post(self):
         client = self.get_client()
         app_uuid = self.request.get('app_uuid')
 
         logging.info('app id: %s' % app_uuid)
-        app = App.get_by_uuid(app_uuid)
+        app = App.get(app_uuid)
         if app.client.key() == client.key():
             logging.info('deleting')
             app.delete()

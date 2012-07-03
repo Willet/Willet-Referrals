@@ -372,3 +372,6 @@ button:active { }
     display: block;
     margin: auto;
 }
+.info_launch {
+    position: relative;
+}
