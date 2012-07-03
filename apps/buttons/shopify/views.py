@@ -207,7 +207,7 @@ class ButtonsShopifyTailoredInstall(URIHandler):
     @catch_error
     def get(self):
         """Begin the upgrade process."""
-        price = 50.0  # "we're charging people 50 bucks to install it for em"
+        price = 35.0  # "we're charging people 35 bucks to install it for em"
 
         app = ButtonsShopify.get_by_url(self.request.get('store_url', ''))
         if not app:
