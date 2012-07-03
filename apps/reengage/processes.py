@@ -32,10 +32,9 @@ class ReEngageCron(URIHandler):
 
             try:
                 logging.info("Preparing post...")
-                f = Facebook()
                 for product in products:
                     logging.info("Sending content for %s..." % product)
-                    f.post(db.get(post_key), product=product)
+                    Facebook.post(db.get(post_key), product=product)
             except Exception, e:
                 logging.error(e)
                 continue # Don't continue...
