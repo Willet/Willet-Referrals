@@ -142,3 +142,23 @@ class ReEngagePostHandler(URIHandler):
         # TODO: What about Keys that reference this post?
         post.delete()
         self.respond(204)
+
+
+class ReEngageProductSourceHandler(URIHandler):
+    """Handles ProductSource requests.
+
+    A product source is any category, product, or store
+    """
+    def get(self):
+        """Obtains information about a given ProductSource."""
+        #self.request.get()
+
+        if self.is_json():
+            pass
+        else:
+            page = self.render_page('product.html', {})
+            self.response.out.write(page)
+
+    def post(self):
+        """Posts to the ProductSource."""
+        self.respond(201)

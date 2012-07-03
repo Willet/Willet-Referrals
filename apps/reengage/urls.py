@@ -14,6 +14,7 @@ urlpatterns = [
     (r'/r/shopify/?'            , ReEngageLanding),
     (r'/r/shopify/welcome/?$'   , ReEngageWelcome),
     (r'/r/shopify/queue/?$'     , ReEngageQueueHandler),
+    (r'/r/shopify/product/?$'   , ReEngageProductSourceHandler),
     (r'/r/shopify/post/(\w+)/?$', ReEngagePostHandler),
 
     # Re-engage processes (beta)

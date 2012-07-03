@@ -45,8 +45,9 @@ class SocialNetwork():
 
 class Facebook(SocialNetwork):
     __graph_url        = "https://graph.facebook.com/"
-    __destination_url  = "https://graph.facebook.com/feed"
-    __access_token_url = "https://graph.facebook.com/oauth/access_token"
+    __fql_url          = self.__graph_url + "fql"
+    __destination_url  = self.__graph_url + "feed"
+    __access_token_url = self.__graph_url + "oauth/access_token"
 
     def post(self, post, **kwargs):
         """Posts to Facebook.
@@ -78,6 +79,26 @@ class Facebook(SocialNetwork):
             logging.error("FB Post Error: %s" % content)
 
         return success
+
+    def get_reach(self, url):
+        query = "SELECT url, normalized_url, share_count, like_count, "\
+                "comment_count, total_count, commentsbox_count, "\
+                "comments_fbid, click_count "\
+                "FROM link_stat "\
+                "WHERE url='%s'" % url
+        final_url = "%s?%s" % (self.__fql_url, query)
+        success, content = self._request(final_url)
+
+        reach = None
+
+        if success:
+            data = content.get("data")
+            if data:
+                reach = data[0]
+        else:
+            logging.error("FB Page Error: %s", content)
+
+        return reach
 
     def _get_access_token(self):
         success, content = self._request(self.__access_token_url, "POST", {
