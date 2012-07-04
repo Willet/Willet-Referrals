@@ -10,6 +10,7 @@ __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 
+from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
@@ -65,7 +66,54 @@ class Action(Model, polymodel.PolyModel):
         return "%s %s" % (self.__class__.__name__, self.uuid)
 
 
-class ClickAction(Action):
+class ActionTally(Action):
+    """An ActionTally (if there isn't a better name) is an Action
+    object that isn't written until the end of the hour, and within it
+    is a "count" property that describes how many creation attempts
+    were done to this action.
+
+    Say if two ActionTally.create()s were called over the past time period,
+    the ActionTally object of the hour will contain a count of 2.
+
+    The frequency of persistence is controlled by a cron job.
+    Default: 5 mins
+    """
+    what = db.StringProperty(indexed=True)
+    count = db.IntegerProperty(indexed=False, default=0)
+
+    @classmethod
+    def create(cls, **kwargs):
+        """If superclass does not have one of those..."""
+        uuid = generate_uuid(16)
+
+        kwargs.update({'key_name': uuid,
+                       'uuid': uuid,
+                       'what': kwargs.get('what', cls.__name__)})
+
+        action = cls(**kwargs)
+        action.put()  # defaults to delay put
+
+    def put(self):
+        """a tally does not write itself, merely incrementing its
+        memcache value.
+        """
+        # update the list of actions the cron needs to write next hour.
+        actions_to_persist = (memcache.get('actions_to_persist') or '')\
+                             .split(',')
+        actions_to_persist.append(self.what or self.__class__.__name__)
+        actions_to_persist = list(frozenset(actions_to_persist))
+        memcache.set('actions_to_persist', ','.join(actions_to_persist))
+
+        # increment the count for this action.
+        memcache.incr(self.what or self.__class__.__name__,
+                      initial_value=0)
+
+    def persist(self):
+        """writes this class into the db. Sometimes called hard_put()."""
+        super(self.__class__, self).put()
+
+
+class ClickAction(ActionTally):
     """ Designates a 'click' action for a User.
         Currently used for 'SIBT' and 'WOSIB' Apps
     """
@@ -87,7 +135,7 @@ class ClickAction(Action):
         )
 
 
-class VoteAction(Action):
+class VoteAction(ActionTally):
     """Designates a 'vote' action for a User.
 
     Primarily used for 'SIBT' App.
@@ -110,7 +158,7 @@ class VoteAction(Action):
         return True
 
 
-class LoadAction(Action):
+class LoadAction(ActionTally):
     pass
 
 
@@ -122,11 +170,8 @@ class ButtonLoadAction(LoadAction):
     pass
 
 
-class ShowAction(Action):
+class ShowAction(ActionTally):
     """We are showing something ..."""
-
-    # what we are showing... dumb but true!
-    what = db.StringProperty()
 
     # url/page this was shown on
     url = db.LinkProperty(indexed=False)
@@ -152,6 +197,6 @@ class ShowAction(Action):
         )
 
 
-class UserAction(Action):
+class UserAction(ActionTally):
     """A user action, such as clicking on a button or something like that"""
     pass
