@@ -256,36 +256,6 @@ class RemoveExpiredSIBTInstance(URIHandler):
         logging.info('done expiring')
 
 
-class TrackSIBTShowAction(URIHandler):
-    """DB Action tracking is *being* replaced by Google Analytics.
-
-    DEPRECATED.
-    """
-    def get(self):
-        """Compatibility with iframe scheisse."""
-        self.post()
-
-    def post(self):
-        """So javascript can track a sibt specific show actions"""
-        self.response.out.write('')
-        return
-
-
-class TrackSIBTUserAction(URIHandler):
-    """ For actions WITH AN INSTANCE
-
-    DEPRECATED.
-    """
-    def get(self):
-        """Compatibility with iframe scheisse"""
-        self.post()
-
-    def post(self):
-        """So javascript can track a sibt specific show actions"""
-        self.response.out.write('')
-        return
-
-
 class SendFriendAsks(URIHandler):
     """Sends messages to email & FB friends."""
     def post(self):
