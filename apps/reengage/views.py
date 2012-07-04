@@ -126,6 +126,7 @@ class ReEngagePostHandler(URIHandler):
 
         if self.is_json():
             json_response = post.to_json()
+            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
             self.response.out.write(json_response)
         else:
             #TODO: Replace with HTML view
@@ -163,6 +164,7 @@ class ReEngageProductSourceHandler(URIHandler):
 
         if self.is_json():
             data = Facebook.get_reach(url)
+            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
             self.response.out.write(json.dumps(data))
         else:
             #TODO: Replace with HTML view
