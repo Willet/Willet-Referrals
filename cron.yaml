@@ -32,6 +32,10 @@ cron:
   schedule: every monday 09:00
   timezone: America/Toronto
 
+- description: hourly action tallying
+  url: /a/tally
+  schedule: every 1 hours
+
 # enable this cron to kill old actions. intensive!
 #- description: Clean old actions
 #  url: /admin/clean_old_actions

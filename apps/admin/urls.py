@@ -8,7 +8,7 @@ urlpatterns = [
     # Views
     (r'/admin',                     ShowRoutes),
     (r'/admin/apps',                ManageApps),
-    (r'/admin/actions',             ShowActions),
+    (r'/admin/actions',             ActionTallyDynamicLoader),
     (r'/admin/actions/since',       GetActionsSince),
     (r'/admin/reload_uris',         ReloadURIS),
     (r'/admin/memcache_console',    ShowMemcacheConsole),

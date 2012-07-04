@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
-from .processes import TrackShowAction
+from apps.action.processes import TallyActions
 
-urlpatterns = []
+urlpatterns = [
+    (r'/a/tally', TallyActions),
+]
