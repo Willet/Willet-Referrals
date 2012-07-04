@@ -76,7 +76,7 @@ class ActionTally(Action):
     the ActionTally object of the hour will contain a count of 2.
 
     The frequency of persistence is controlled by a cron job.
-    Default: 1 hour
+    Default: 5 mins
     """
     what = db.StringProperty(indexed=True)
     count = db.IntegerProperty(indexed=False, default=0)
@@ -88,7 +88,7 @@ class ActionTally(Action):
 
         kwargs.update({'key_name': uuid,
                        'uuid': uuid,
-                       'what': cls.__name__})
+                       'what': kwargs.get('what', cls.__name__)})
 
         action = cls(**kwargs)
         action.put()  # defaults to delay put
@@ -100,24 +100,20 @@ class ActionTally(Action):
         # update the list of actions the cron needs to write next hour.
         actions_to_persist = (memcache.get('actions_to_persist') or '')\
                              .split(',')
-        actions_to_persist.append(self.__class__.__name__)
+        actions_to_persist.append(self.what or self.__class__.__name__)
         actions_to_persist = list(frozenset(actions_to_persist))
         memcache.set('actions_to_persist', ','.join(actions_to_persist))
 
         # increment the count for this action.
-        memcache.incr(self.__class__.__name__, initial_value=0)
+        memcache.incr(self.what or self.__class__.__name__,
+                      initial_value=0)
 
     def persist(self):
         """writes this class into the db. Sometimes called hard_put()."""
         super(self.__class__, self).put()
 
 
-class ActionTallySubclass(ActionTally):
-    """Do stuff"""
-    pass
-
-
-class ClickAction(Action):
+class ClickAction(ActionTally):
     """ Designates a 'click' action for a User.
         Currently used for 'SIBT' and 'WOSIB' Apps
     """
@@ -139,7 +135,7 @@ class ClickAction(Action):
         )
 
 
-class VoteAction(Action):
+class VoteAction(ActionTally):
     """Designates a 'vote' action for a User.
 
     Primarily used for 'SIBT' App.
@@ -162,7 +158,7 @@ class VoteAction(Action):
         return True
 
 
-class LoadAction(Action):
+class LoadAction(ActionTally):
     pass
 
 
@@ -174,11 +170,8 @@ class ButtonLoadAction(LoadAction):
     pass
 
 
-class ShowAction(Action):
+class ShowAction(ActionTally):
     """We are showing something ..."""
-
-    # what we are showing... dumb but true!
-    what = db.StringProperty()
 
     # url/page this was shown on
     url = db.LinkProperty(indexed=False)
@@ -204,6 +197,6 @@ class ShowAction(Action):
         )
 
 
-class UserAction(Action):
+class UserAction(ActionTally):
     """A user action, such as clicking on a button or something like that"""
     pass

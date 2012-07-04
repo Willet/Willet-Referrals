@@ -723,11 +723,13 @@ _willet.sibt = (function (me) {
     me.getVisitLength = me.getVisitLength || function () {
         // analytics to record the amount of time this script has been loaded
         // this must be an iframe to time it + send synchronous requests
+        /* deprecated (for now)
         $('<iframe />', {
             css: {'display': 'none'},
             src: "{{URL}}{% url ShowOnUnloadHook %}?" +
                  me.metadata({'evnt': 'SIBTVisitLength'})
         }).appendTo("body");
+        */
     };
 
     me.changeUIStatus = me.changeUIStatus || function (cb) {

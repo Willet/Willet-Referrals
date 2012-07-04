@@ -11,6 +11,26 @@ from util.helpers import generate_uuid
 from util.urihandler import obtain, URIHandler
 
 
+class TrackTallyAction(URIHandler):
+    """Increments action counts.
+
+    In theory, also works with non-tally actions.
+    """
+    def get(self):
+        """Let iframes/img tags track too."""
+        self.post()
+
+    def post(self):
+        """Required parameter: evnt (backwards-compatible)"""
+        evnt = self.request.get('evnt', '')
+        if evnt:
+            user = User.get_or_create_by_cookie(self)
+            ActionTally.create(what=evnt, user=user)
+
+        self.response.headers['Content-Type'] = 'image/gif'
+        return
+
+
 class TallyActions(URIHandler):
     """Saves memcached action tallies to the datastore."""
     def get(self):

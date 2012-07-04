@@ -36,6 +36,9 @@ _willet.analytics = (function (me) {
             wm.fire('log', "This was not sent to Google Analytics because " +
                            "you are debugging: " + message);
         {% else %}
+            // in-house memcache logging
+            (new Image).src = "{{ URL }}{% url TrackTallyAction %}?evnt=" +
+                              encodeURIComponent(message);
             try {
                 // async
                 me.gaq.push([

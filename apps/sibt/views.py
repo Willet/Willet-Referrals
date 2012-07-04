@@ -15,7 +15,6 @@ from urlparse import urlparse, urlunsplit
 from django.utils import simplejson as json
 from google.appengine.ext.webapp import template
 
-from apps.action.models import ActionTallySubclass
 from apps.app.models import App
 from apps.client.models import Client
 from apps.link.models import Link
@@ -33,13 +32,6 @@ from util.helpers import get_target_url, url
 from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
-
-
-class SkypeCallTestingService(URIHandler):
-    """Testing. If committed, delete."""
-    def get(self):
-        user = get_user(urihandler=self)
-        ActionTallySubclass.create(user=user)
 
 
 class ShowBetaPage(URIHandler):

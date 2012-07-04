@@ -34,7 +34,7 @@ cron:
 
 - description: hourly action tallying
   url: /a/tally
-  schedule: every 1 hours
+  schedule: every 5 minutes
 
 # enable this cron to kill old actions. intensive!
 #- description: Clean old actions

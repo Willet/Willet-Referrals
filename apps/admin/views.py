@@ -385,7 +385,7 @@ class ActionTallyDynamicLoader(URIHandler):
         tallies_dict = {}
         last_week = datetime.datetime.now() - datetime.timedelta(days=7)
         tallies = ActionTally.all().filter('created >', last_week)\
-                                   .fetch(limit=168)
+                                   .fetch(limit=2016)
         if tallies:
             for tally in tallies:
                 try:

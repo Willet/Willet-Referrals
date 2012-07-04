@@ -16,7 +16,6 @@ urlpatterns = [
     (r'/s/beta',                    ShowBetaPage),
     (r'/s/beta/signup',             SIBTSignUp),
     (r'/s/instances/status',        SIBTInstanceStatusChecker),
-    (r'/SkypeCallTestingService',   SkypeCallTestingService),
 
     # Processes
     (r'/s/doVote',                  DoVote),
