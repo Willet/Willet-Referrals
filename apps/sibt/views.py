@@ -396,10 +396,11 @@ class VoteDynamicLoader(URIHandler):
                                  'product_uuid': product.uuid,
                                  'page_url': target,
                                  'store_url': app.store_url,
-                                 'embed': 1})
+                                 'embed': 1}),
+            'wosib_mode': bool(len(products) > 1),
         }
 
-        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
+        filename = 'vote.html'
         path = os.path.join('apps/sibt/templates', vendor, filename)
         if not os.path.exists(path):
             path = os.path.join('apps/sibt/templates', filename)

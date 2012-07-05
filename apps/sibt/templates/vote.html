@@ -13,88 +13,270 @@
 {% endblock left_screens %}
 
 {% block right_screens %}
-    <div id="product_screen">
-        <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
-        <img id="product_img" class="slight-highlight product-image" src="{{ product_img|default:"/static/imgs/noimage-willet.png" }}" />
-        <div class="description">
-            {{ product.description|striptags }}
-        </div>
-        {% if not user_voted %}
-            <div class="choice blob"
-                style="text-align:center; margin: 18px;">
-                <div class="title">
-                    Should <b>{{asker_name}}</b> get this?
-                </div>
-                <div id="success_pending" class="center">
-                    <button class="button" id="yes">Yes</button>
-                    <button class="button" id="no">No</button>
-                </div>
-                <div id="success_screen">
-                    <h2>Thank you for helping {{asker_name}}!</h2>
-                    {% if store_url %}
-                        <p style="margin-top:24px;">
-                            <a href="{{ store_url }}">Continue Shopping</a>
-                        </p>
+    {% if wosib_mode %}
+        <div id="product_screen" class="wosib center">
+            {% for product in products|slice:":2" %}
+                {% if forloop.last %}
+                    <img alt="or" src="/static/imgs/or-150.png"
+                            style="margin: 88px -47px;
+                                float: left;
+                                line-height: 300px;
+                                vertical-align: middle;" />
+                {% endif %}
+                <div class="product info_launch" data-uuid="{{ product.uuid }}">
+                    <!-- thumbnail -->
+                    <img alt="product image"
+                        src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                        {% if forloop.last %}
+                        id="second_product_src_drop_target"
+                        {% endif %}
+                        class="product-image center" />
+                    <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
+                    {% if not user_voted %}
+                        <button class="button vote"
+                                style="position:absolute;bottom:10px;left:34%"
+                                data-uuid="{{ product.uuid }}">
+                            Vote
+                        </button>
                     {% endif %}
+                    <div id="success_screen">
+                        <h2>Thank you for helping {{asker_name}}!</h2>
+                    </div>
                 </div>
+                <div id="product_info_{{ product.uuid }}"
+                    class="product_info group1" rel="group1">
+                    <!-- details -->
+                    <div style="float:left; width: 400px;">
+                        <a>
+                            <img alt="product image"
+                                src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                                class="product-image center"/>
+                        </a>
+                        <p style="text-align: center;">
+                            {% if not user_voted %}
+                                <button class="button vote"
+                                        data-uuid="{{ product.uuid }}">
+                                    Vote
+                                </button>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div style="float:right; width: 400px;">
+                        <h2 class="title">{{ product.title }}</h2>
+                        {{ product.description|linebreaksbr|striptags }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div id="product_screen">
+            <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
+            <img id="product_img" class="slight-highlight product-image" src="{{ product_img|default:"/static/imgs/noimage-willet.png" }}" />
+            <div class="description">
+                {{ product.description|striptags }}
             </div>
-        {% endif %}
-    </div>
+            {% if not user_voted %}
+                <div class="choice blob"
+                    style="text-align:center; margin: 18px;">
+                    <div class="title">
+                        Should <b>{{asker_name}}</b> get this?
+                    </div>
+                    <div id="success_pending" class="center">
+                        <button class="button" id="yes">Yes</button>
+                        <button class="button" id="no">No</button>
+                    </div>
+                    <div id="success_screen">
+                        <h2>Thank you for helping {{asker_name}}!</h2>
+                        {% if store_url %}
+                            <p style="margin-top:24px;">
+                                <a href="{{ store_url }}">Continue Shopping</a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock right_screens %}
 
 {% block body_script %}
     $(document).ready(function () {
-        {% if not user_voted %}
-            var getDiscount = function () {
-                // get the discount code.
+        var getDiscount = function () {
+            // get the discount code.
+            $.ajax({
+                url: "{% url DispenseClientDiscountCode %}",
+                data: {
+                    'client_uuid': "{{ client_uuid }}",
+                    'store_url': "{{ store_url }}"
+                },
+                type: 'post',
+                dataType: 'text',
+                success: function (data) {
+                    if (data) {
+                        $("#discount_gettest").show();
+                    }
+                    $("#discount_code").val(data || "We're out!");
+                }
+            });
+        };
+
+        {% if wosib_mode %}
+            {% if not user_voted %}
+                var vote = function (ctl) {
+                    var product_uuid = $(ctl).data('uuid');
+                    if (product_uuid) {
+                        var payload = {
+                            "user_uuid" : "{{ user_uuid }}",
+                            "instance_uuid" : "{{ instance_uuid }}",
+                            "product_uuid" : product_uuid
+                        };
+                        $.ajax({
+                            url: "{{ URL }}{% url DoVote %}",
+                            type: 'post',
+                            data: payload,
+                            success: function () {
+                                {% if discount_enabled %}
+                                    {# discount_enabled is undefined on purpose #}
+                                    // discount code thing is temporarily "discouraged"
+                                    $(".choice, #product_screen").hide();
+                                    $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+                                    getDiscount();
+                                {% else %}
+                                    $("#success_pending").hide();
+                                    $("#success_screen").show();
+                                {% endif %}
+                                $(ctl).text('Voted').attr('disabled', 'disabled');
+                            },
+                            error: function () {
+                                $("#error_message").show();
+                            }
+                        });
+                    }
+                };
+
+                $('.vote').click(function (event) {
+                    event.stopPropagation();
+                    vote(event.target || event.currentTarget);
+                });
+            {% endif %}
+
+            $('.info_launch').click(function () {
+                var iid = '#product_info_' + $(this).data('uuid'),
+                    ctl = $(iid);
+                $.colorbox({
+                    inline: true,
+                    fixed: true,
+                    href: ctl,
+                    rel: 'product_info',
+                    'transition': 'fade',
+                    'onOpen': function () {
+                        ctl.show();
+                    },
+                    'onClosed': function () {
+                        ctl.hide();
+                    }
+                });
+            });
+
+
+            /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+                if there are 0 products, this script is not loaded at all.
+            */
+            var cart_products = [ {% for product in products %}
+                {   "id": "{{ product.shopify_id }}",
+                    "title": "{{ product.title }}",
+                    "image": "{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}",
+                    "uuid": "{{ product.uuid }}"
+                },
+            {% endfor %} {}];
+            cart_products.pop(); // remove trailing element... IE7 trailing comma patch
+
+            var $selection_box_container = $('#selection_box_container');
+            var $selection_box = $('#selection_box');
+            for (var i = 1; i < cart_products.length; i++) {
+                $selection_box
+                    .append($('<img />', { // 2nd image onwards are in a dropdown
+                        'src': cart_products[i].image,
+                        'alt': cart_products[i].uuid
+                    }));
+            }
+            $selection_box_container
+                .append($('<img />', { // 1st image is just a tag
+                    'src': cart_products[0].image,
+                    'alt': cart_products[0].uuid,
+                    'css': {
+                        'max-width': '150px',
+                        'max-height': '150px'
+                    }
+                }))
+                .append($('<img />', {
+                    'src': '/static/imgs/or-150.png'
+                }))
+                .append($selection_box);
+            $selection_box
+                .imageDropdown();
+
+            var getSelectedObjects = function () {
+                // returns a comma-separated string of product uuids "id,id,id"
+                var uuids = [];
+                uuids.push($('#selection_box_container>img').prop('alt'));
+                uuids.push($('#selection_box>img').prop('alt'));
+                return uuids.join(',');
+            };
+
+            $('#set_products').click(function () {
+                // after creating the instance, allow user to change that products
+                // are chosen.
                 $.ajax({
-                    url: "{% url DispenseClientDiscountCode %}",
+                    url: "{% url SaveProductsToInstance %}",
                     data: {
-                        'client_uuid': "{{ client_uuid }}",
-                        'store_url': "{{ store_url }}"
+                        'instance_uuid': "{{ instance_uuid }}",
+                        'products': getSelectedObjects(),
+                        'unshift': '1'
                     },
                     type: 'post',
                     dataType: 'text',
-                    success: function (data) {
-                        if (data) {
-                            $("#discount_gettest").show();
-                        }
-                        $("#discount_code").val(data || "We're out!");
+                    success: function () {
+                        $('#set_products').text('Saved').attr('disabled', 'disabled');
                     }
                 });
-            };
-
-            var vote = function (which) {
-                $.ajax({
-                    url: "{% url DoVote %}",
-                    type: 'post',
-                    data: {
-                        instance_uuid : "{{instance.uuid}}",
-                        which : which
-                    },
-                    success: function (tr) {
-                        {% if discount_enabled %}
-                            {# discount_enabled is undefined on purpose #}
-                            $(".choice, #product_screen").hide();
-                            $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
-                            // get the discount code.
-                            getDiscount();
-                        {% else %}
-                            $("#success_pending").hide();
-                            $("#success_screen").show();
-                        {% endif %}
-                    },
-                    error: function () {
-                        $(".choice").hide();
-                        $("#error_message").show();
-                    }
-                });
-            };
-            $('.choice button').click(function () {
-                vote(this.id); // click button = vote
             });
-        {% endif %}
 
-        fbinit (document, 'script', 'facebook-jssdk');
+            fbinit (document, 'script', 'facebook-jssdk');
+        {% else %}
+            {% if not user_voted %}
+                var vote = function (which) {
+                    $.ajax({
+                        url: "{% url DoVote %}",
+                        type: 'post',
+                        data: {
+                            instance_uuid : "{{instance.uuid}}",
+                            which : which
+                        },
+                        success: function (tr) {
+                            {% if discount_enabled %}
+                                {# discount_enabled is undefined on purpose #}
+                                $(".choice, #product_screen").hide();
+                                $("#discount_screen, #success_message, #success_message h4." + which + ", #FOO").show();
+                                // get the discount code.
+                                getDiscount();
+                            {% else %}
+                                $("#success_pending").hide();
+                                $("#success_screen").show();
+                            {% endif %}
+                        },
+                        error: function () {
+                            $(".choice").hide();
+                            $("#error_message").show();
+                        }
+                    });
+                };
+                $('.choice button').click(function () {
+                    vote(this.id); // click button = vote
+                });
+            {% endif %}
+
+            fbinit (document, 'script', 'facebook-jssdk');
+        {% endif %}
     });
 {% endblock body_script %}
