@@ -94,7 +94,7 @@ class Facebook(SocialNetwork):
                 "comments_fbid, click_count "\
                 "FROM link_stat "\
                 "WHERE url='%s'" % url
-        final_url = "%s?%s" % (cls.__fql_url, query)
+        final_url = "%s?q=%s" % (cls.__fql_url, query)
         success, content = cls._request(final_url)
 
         reach = {}
