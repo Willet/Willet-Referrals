@@ -136,7 +136,7 @@ ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '216.16.232.86'       # TenantWifi
             ]
 
-# the apps we are using
+# the apps we are using (that we hope to have handlers implemented)
 INSTALLED_APPS = [
     'action',
     'admin',

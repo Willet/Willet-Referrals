@@ -2,32 +2,37 @@
 <html lang='en'>
     <head>
         <title>Willet Vote</title>
-        <link rel='icon' type='image/vnd.microsoft.icon'
-              href='/static/imgs/favicon.ico' />
 
         <!-- Blueprint CSS must be first -->
-        <link rel="stylesheet" href="/static/css/screen.css"
-              type="text/css" media="screen, projection" />
-        <link rel="stylesheet" href="/static/css/print.css"
-              type="text/css" media="print" />
+        <link rel="stylesheet" href="/static/css/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/print.css" type="text/css" media="print" />
         <!--[if IE]>
-            <link rel="stylesheet" href="/static/css/ie.css"
-                  type="text/css" media="screen, projection" />
+            <link rel="stylesheet" href="/static/css/ie.css" type="text/css" media="screen, projection" />
         <![endif]-->
-
         <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
-        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
-        <link rel="stylesheet" href="/static/css/colorbox.css" />
-        <link rel="stylesheet" href="/static/css/facebook.css" />
+        <link rel="stylesheet" href="/static/css/colorbox.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/facebook.css" type="text/css" />
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.roundabout.js"></script>
         <script type="text/javascript" src="/static/js/jquery.tinycarousel.min.js"></script>
         <script type="text/javascript" src="/static/js/jquery.imagedropdown.js"></script>
-        <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
+        <script type="text/javascript" src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.mailcheck.js"></script>
+
         <script type="text/javascript">
+            "use strict";  // what? \o/
+
+            {% include "../../sibt/templates/js/willet.mediator.js" %}
+            {% include "../../sibt/templates/js/willet.debug.js" %}
+            {% include "../../sibt/templates/js/willet.loader.js" %}
+            {% include "../../sibt/templates/js/willet.analytics.js" %}
+
             if (typeof jQuery == 'undefined') {
                 var script= document.createElement('script');
                 script.type= 'text/javascript';
@@ -35,46 +40,662 @@
                 document.appendChild(script);
             }
 
-            {% block head_script %}{% endblock %}
+            /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
+            var JSON;if(!JSON){JSON={};}
+            (function(){'use strict';function f(n){return n<10?'0'+n:n;}
+            if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
+            f(this.getUTCMonth()+1)+'-'+
+            f(this.getUTCDate())+'T'+
+            f(this.getUTCHours())+':'+
+            f(this.getUTCMinutes())+':'+
+            f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
+            var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
+            function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
+            if(typeof rep==='function'){value=rep.call(holder,key,value);}
+            switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
+            gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
+            v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
+            if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
+            v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
+            if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
+            rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
+            return str('',{'':value});};}
+            if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
+            return reviver.call(holder,key,value);}
+            text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
+            ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
+            if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
+            throw new SyntaxError('JSON.parse');};}}());
 
-            $(document).ready(function () {
-                // "show invitation dialog"
+            /* jQuery.ScrollTo Ariel Flesler MIT/GPL */
+            ;(function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
+            /* jQuery postMessage Ben Alman MIT/GPL */
+            ;(function($){var g,d,j=1,a,b=window,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
+            // jQuery cookie
+            jQuery.cookie=function(a,b,c){if(arguments.length>1&&String(b)!=="[object Object]"){c=jQuery.extend({},c);if(b===null||b===undefined){c.expires=-1}if(typeof c.expires==="number"){var d=c.expires,e=c.expires=new Date;e.setDate(e.getDate()+d)}b=String(b);return document.cookie=[encodeURIComponent(a),"=",c.raw?b:encodeURIComponent(b),c.expires?"; expires="+c.expires.toUTCString():"",c.path?"; path="+c.path:"",c.domain?"; domain="+c.domain:"",c.secure?"; secure":""].join("")}c=b||{};var f,g=c.raw?function(a){return a}:decodeURIComponent;return(f=(new RegExp("(?:^|; )"+encodeURIComponent(a)+"=([^;]*)")).exec(document.cookie))?g(f[1]):null};
+            // got more jQuery plugins?
+            {% block jquery_plugins %}{% endblock jquery_plugins %}
 
-                var resizeCloud = function (px, instant) {
-                    if (instant) {
-                        $('#white').css({'height': (px + 'px')});
-                    } else {
-                        $('#white').delay(500).animate({'height': (px + 'px')});
+            // Any global variables you want
+            {% block js_globals %}{% endblock js_globals %}
+
+            var console = ( typeof(window.console) === 'object'
+                && typeof(window.console.log) === 'function'
+                && typeof(window.console.error) ==='function' )
+                ? window.console : { log: function () {}, error: function () {} };
+
+            var asker; // Asker info
+            var friends        = []; // List of Friend instances in Choose Friend screen
+            var fb_friends     = []; // List of { id, name } from FB
+            var sorted_friend_names = []; // List of names to use in autocomplete (sorted)
+            var friendNames    = []; // List of names to use in autocomplete (sorted)
+            var selectionCount = 0;  // Number of friends selected to msg
+            var fbAccessToken  = "";
+            var fbIdentity     = "";
+
+            var ENTER_KEY = 13;
+
+            // Widget class
+            // Base widget, same basic functionality
+            var Widget = function (tag, name) {
+                var elem = this.elem = document.createElement(tag);
+                elem.id = elem.name = name || '';
+            };
+            Widget.prototype = {
+                getElement: function () {
+                // Returns HTML element
+                    return this.elem;
+                },
+                getName: function () {
+                // Returns widget name
+                    return this.name;
+                },
+                setVisible: function (i) {
+                // sets widget HTML element display
+                // true - visible, false - invisible
+                    if (i) {
+                        this.elem.style.display = ''; // returns to default
                     }
-                };
+                    else {
+                        this.elem.style.display = 'none';
+                    }
+                }
+            };
 
-                // genius "tabs" functionality
-                var showPage = function (page) {
-                    // tabs sit on top of pages
-                    // tabs must contain a hashtag link
-                    // pages must have class "page" and unique id
-                    $(".page").animate({'opacity': '0'}, {'queue': false})
-                              .css('display', 'none');  // hide all tabs
-                    $('#' + page + '_page').css('opacity', '0')
-                           .css('display', 'block')
-                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
-                };
+            // A Friend entry in Choose Friends
+            // Friend elements are complicated beasts, with much
+            // functionality & states. For ease, we contain it in
+            // this class
+            //
+            // A Friend has 4 states:
+            //  - 1: no input, FB not logged in
+            //  - 2: no input, FB logged in
+            //  - 3: email chosen (+ error state)
+            //  - 4: Facebook chosen (+ error state)
+            //
+            // and 3 state changes:
+            //  - 1 + FB log in -> 2
+            //  - 1 || 2 + email input -> 3
+            //  - 2 + FB input -> 4
+            //
+            // Inputs:
+            //      name (opt) - <string> name & id of containing elem
+            //      update_callback (opt) - <function> callback when Friend
+            //                              updates stored info
+            //
+            var Friend = function (name, update_callback) {
+                Widget.call(this, 'li', name);
+                this.selected = 'none';
+                // When friend is updated, fire this callback
+                this.update_callback = update_callback || function () {};
 
-                $('#window_location').val(window.location.href);
+                var that = this,
+                    $elem = $(this.elem);
 
-                {% if is_asker %}
-                    showPage('friends_selector');
-                    resizeCloud(255);  // init the page
-                {% else %}
-                    showPage('friends_selectee');
-                    resizeCloud(150);  // init the page
-                {% endif %}
-            });
+                // Set up DOM in No Input state
+                $elem.addClass('friend').append(" \
+                    <div> \
+                        <div class='portrait'> \
+                            <img src='/static/plugin/imgs/choose_friends.png' /> \
+                        </div> \
+                        <div class='friend_options'> \
+                            <div class='fb_option'></div> \
+                            <div class='or'>or</div> \
+                            <div class='email_option'> \
+                                <div class='helpful'>Enter a friend's email address</div> \
+                                <input></input> \
+                            </div> \
+                        </div> \
+                    </div> \
+                ")
+                .find('.email_option input')
+                .blur(function () {
+                    that._chooseEmailFriendSelect();
+                })
+                .keypress(function (e) {
+                    if (e.which === ENTER_KEY) {
+                        that._chooseEmailFriendSelect();
+                    }
+                });
+
+                $('.email_option input').blur(function () {
+                    that._chooseEmailFriendSelect();
+                })
+                .keypress(function (e) {
+                    if (e.which === ENTER_KEY) {
+                        that._chooseEmailFriendSelect();
+                    }
+                });
+
+                // Handle two Facebook cases: logged in & not logged in
+                var $fb_option = $elem.find('.fb_option');
+                if (fbAccessToken !== "" && fbIdentity !== "") {
+                    // Logged into Facebook, set up state 2
+                    $fb_option.append(" \
+                        <div class='helpful'>Find a friend using Facebook</div> \
+                        <input></input> \
+                        <div class='error'>Oops, are you sure that's right?</div> \
+                    ")
+                    .children('input')
+                    .autocomplete({
+                        source: sorted_friend_names,
+                        select: this._selectFBFriend,
+                        // Must use function scope, or else this becomes input element
+                        close: function () {
+                            that._chooseFBFriendSelect();
+                        }
+                    })
+                    .keypress(function (e) {
+                        if (e.which === ENTER_KEY) {
+                            that._chooseFBFriendSelect();
+                        }
+                    });
+                } else {
+                    // Not logged into Facebook, set up state 1
+                    $fb_option.append(" \
+                        <div class='helpful'>The best way to get advice</div> \
+                        <div class='fb_connect' alt='Connect with Facebook'></div> \
+                    ").find('.fb_connect').click( function () {
+                        storeAnalytics('SIBTFBStartConnect');
+                        runFBConnect(fetchFBFriends);
+                    });
+                }
+            };
+            Friend.prototype = new Widget();
+            // Private functions
+            // Validation functions are strictly checks, have no
+            // side-effects
+            Friend.prototype._validateFriendEmail = function (el) {
+                // Validates email address at input element 'el'
+                // Returns: <boolean> true = valid, false = invalid, null = empty
+                var email = el.value || "";
+                var trimmedEmail = $.trim(email);
+                var emailRegex = /^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/;
+
+                if (trimmedEmail === "") {
+                    return null;
+                } else {
+                    return emailRegex.test(trimmedEmail);
+                }
+            };
+            Friend.prototype._validateFriendName = function (el) {
+                // Validates name at input element 'el'
+                // Returns: <boolean> true = valid, false = invalid, null = empty
+                if (/^[A-Za-z. '-]+$/.test(el.value)) {
+                    return true;
+                } else if (el.value === '') {
+                    return null;
+                } else {
+                    return false;
+                }
+            };
+            Friend.prototype._validateFriendFB = function (el) {
+                // Validates FB friend at input element 'el'
+                // Returns: <boolean> true = valid, false = invalid, null = empty
+                if ($.inArray(el.value, sorted_friend_names) !== -1) {
+                    return true;
+                } else if (el.value === '') {
+                    return null;
+                } else {
+                    return false;
+                }
+            };
+            Friend.prototype._validateFriendInput = function(el) {
+                // Validates input element 'el'
+                // Returns: <boolean> true = valid, false = invalid
+                if (el.name === 'email') {
+                    return this._validateFriendEmail(el);
+                } else if (el.name === 'name') {
+                    return this._validateFriendName(el);
+                } else if (el.name === 'fb') {
+                    return this._validateFriendFB(el);
+                } else {
+                    // This should never fire
+                    throw new Error("Friend._validateFriendInput: input element with no valid name");
+                }
+            };
+            // Review functions will change the element to indicate
+            // to the user if inputted friend information is good
+            Friend.prototype._reviewFriendNameAndEmail = function () {
+                // Provides feedback to user if friend with email
+                // selected is invalid
+                // Returns: <boolen> true = valid, false = invalid
+                var $elem = $(this.elem),
+                    that = this,
+                    error = false;
+
+                // Validate each input and set sad face if any are in error
+                $elem.find('input').each(function () {
+                    if (that._validateFriendInput(this)) {
+                        // No error
+                        $(this).css('color','black').siblings('.error').hide();
+                    } else {
+                        $(this).css('color','red').siblings('.error').show();
+                        error = true;
+                    }
+                });
+
+                if (error) {
+                    // Error! Set sad face on portrait
+                    $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
+                    return false;
+                } else {
+                    // Set happy face on portrait
+                    $elem.find('.portrait>img').attr('src','/static/plugin/imgs/happy_face.png');
+                    return true;
+                }
+            };
+            Friend.prototype._reviewFriendFB = function () {
+                // Provides feedback to user if friend with FB
+                // selected is invalid
+                // Returns: <boolean> true = valid, false = invalid
+                var $elem = $(this.elem),
+                    $input = $elem.find('input'),
+                    name, i, fb_id;
+
+                if (this._validateFriendFB($input[0])) {
+                    // No error
+                    name = $input.val();
+                    i = $.inArray(name, sorted_friend_names);
+                    fb_id = fbFriends[i].id;
+
+                    $elem.find('input').css('color','black').siblings('.error').hide();
+                    $elem.find('.portrait>img')
+                        .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
+                        .attr( 'title', name )
+                        .attr( 'alt', name );
+                    return true;
+                } else {
+                    // Not a friend
+                    $elem.find('input').css('color','red').siblings('.error').show();
+                    $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
+                    return false;
+                }
+            };
+            Friend.prototype._selectFBFriend = function(event, ui) {
+                // Save autocomplete selection and change portrait to person
+                // ui.item is object containing data
+                // *** this = input element when called by autocomplete ***
+                var name = ui.item.value,
+                    i = $.inArray(name, sorted_friend_names),
+                    fb_id = fbFriends[i].id;
+
+                $(this).parents('.friend').find('.portrait>img')
+                    .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
+                    .attr( 'title', name )
+                    .attr( 'alt', name );
+            };
+            Friend.prototype._chooseEmailFriendSelect = function () {
+                // ### STATE CHANGE ###
+                // 1 || 2 -> 3
+                // When someone has used the email input, change friend
+                // select to Email specific in Choose Friend's screen
+                // Returns: n/a
+                var that = this,
+                    $elem = $(this.elem),
+                    email = $elem.find('.email_option input').val(),
+                    splitCharactersRegex = /[\+\.\_]/;
+
+                var cleanEmail = $.trim(email) //remove any leading / trailing whitespace
+                    .split('@')[0] //remove anything after @ symbol
+                    .split('+')[0]; //remove anything after + (if anything exists)
+
+                var name = $.map(cleanEmail.split(splitCharactersRegex), function(i) {
+                    // Capitalize 1st letter
+                    return i.charAt(0).toUpperCase() + i.slice(1);
+                }).join(' ');
+
+                // Only do something if there is something in the input field
+                if (email !== '') {
+                    this.selected = 'email';
+
+                    $elem.find('.friend_options').remove();
+                    $elem.children('div').append("\
+                        <div class='email_friend'> \
+                            <div> \
+                                <label>Name:</label> \
+                                <input class='name' name='name' type='text' value='"+name+"' /> \
+                                <div class='error'>Try to stick with the alphabet</div> \
+                            </div> \
+                            <div> \
+                                <label>Email:</label> \
+                                <input class='email' name='email' type='text' value='"+email+"' /> \
+                                <div class='error'>This email doesn't look right</div> \
+                            </div> \
+                        </div> \
+                    ").find('input')
+                    .blur(function () {
+                        that._reviewFriendNameAndEmail();
+                        that.update_callback(); // Alert page that friend is updated
+                    })
+                    .keypress(function (e) {
+                        if (e.which === ENTER_KEY) {
+                            that._reviewFriendNameAndEmail();
+                            that.update_callback(); // Alert page that friend is updated
+                        }
+                    })
+                    .each(function () {
+                        // review right now
+                        that._reviewFriendNameAndEmail();
+                        that.update_callback(); // Alert page that friend is updated
+                    });
+                }
+            };
+            Friend.prototype._chooseFBFriendSelect = function () {
+                // ### STATE CHANGE ###
+                // 2 -> 4
+                // When someone has used the email input, change friend
+                // select to FB specific in Choose Friend's screen
+                // Returns: n/a
+                var that = this,
+                    $elem = $(this.elem),
+                    name = $elem.find('.fb_option input').val();
+
+                // Only do something if there is something in the input field
+                if (name !== '') {
+                    this.selected = 'fb';
+
+                    $elem.find('.friend_options').remove();
+                    $elem.children('div').append("\
+                        <div class='fb_friend'> \
+                            <div> \
+                                <label>Name:</label> \
+                                <input name='fb' type='text' value='"+name+"'></input> \
+                                <div class='error'>We don't recognize this friend</div> \
+                            </div> \
+                        </div> \
+                    ")
+                    .find('input')
+                    .blur(function () {
+                        that._reviewFriendFB();
+                        that.update_callback(); // Alert page that friend is updated
+                    })
+                    .autocomplete({
+                        source: sorted_friend_names,
+                        select: this._selectFriendFB,
+                        close: function () {
+                            that._reviewFriendFB();
+                            that.update_callback(); // Alert page that friend is updated
+                        }
+                    })
+                    .each(function () {
+                        // review right now
+                        that._reviewFriendFB();
+                        that.update_callback(); // Alert page that friend is updated
+                    });
+                }
+            };
+            // Public functions
+            Friend.prototype.validateFriend = function () {
+                // Validate data friend contains
+                // Returns: <boolean> true = valid, false = invalid
+                // Note: An empty friend is true
+                var $elem = $(this.elem),
+                    selected = this.selected;
+                if (selected === 'fb') {
+                    return this._validateFriendFB($elem.find('input')[0]);
+                } else if (selected === 'email') {
+                    return this._validateFriendName($elem.find('input.name')[0])
+                        && this._validateFriendEmail($elem.find('input.email')[0]);
+                } else {
+                    // Empty friend
+                    return true;
+                }
+            };
+            Friend.prototype.reviewFriend = function () {
+                // Provides feedback to user if friend invalid
+                // Returns: <boolen> true = valid, false = invalid
+                var $elem = $(this.elem),
+                    selected = this.selected;
+                if (selected === 'fb') {
+                    return this._reviewFriendFB();
+                } else if (selected === 'email') {
+                    return this._reviewFriendNameAndEmail();
+                } else {
+                    return true;
+                }
+            };
+            Friend.prototype.getFriendInfo = function () {
+                // Gets the stored friend info if valid
+                // Returns:
+                //      - valid: [ <string> 'email', <string> name, <string> email address ] | [ <string> 'fb', <string> name, <string> fb id ]
+                //      - empty: []
+                //      - invalid: null
+                var $elem = $(this.elem),
+                    name;
+                if (this.reviewFriend()) {
+                    if (this.selected === 'fb') {
+                        // return name & fb_id
+                        name = $elem.find('.fb_friend input').val();
+                        return [ 'fb',
+                                name,
+                                fbFriends[ $.inArray(name, sorted_friend_names) ].id ];
+                    } else if (this.selected === 'email') {
+                        // return name & email
+                        return [ 'email',
+                                $elem.find('.email_friend input.name').val(),
+                                $elem.find('.email_friend input.email').val() ];
+                    } else {
+                        return []; // empty friend
+                    }
+                } else {
+                    return null;
+                }
+            };
+            Friend.prototype.FBLoggedIn = function () {
+                // ### STATE CHANGE ###
+                // 1 -> 2
+                // After FB connect success, enable choosing FB friends
+                // with autocomplete
+                // Returns: n/a
+                var that = this,
+                    $fb_option = $(this.elem).find('.fb_option');
+                $fb_option.children().remove();
+                $fb_option.append(" \
+                    <div class='helpful'>Find friends using Facebook</div> \
+                    <input></input> \
+                ")
+                .children('input')
+                .autocomplete({
+                    source: sorted_friend_names,
+                    select: this._selectFBFriend,
+                    close: function () {
+                        that._chooseFBFriendSelect();
+                    }
+                })
+                .keypress(function (e) {
+                    if (e.which === ENTER_KEY) {
+                        that._chooseFBFriendSelect();
+                    }
+                });
+            };
+
+
+            // Asker gets & stores required information from the user
+            //
+            // Inputs:
+            //      name (opt) - <string> name & id of containing elem
+            //      update_callback (opt) - <function> callback when Friend
+            //                              updates stored info
+            //
+            var Asker = function (name, update_callback) {
+                Widget.call(this, 'li', name);
+                // When asker is updated, fire this callback
+                this.update_callback = update_callback || function () {};
+
+                var that = this,
+                    $elem = $(this.elem);
+
+                this.name  = ''; // Name of asker
+                this.pic   = ''; // Picture of asker
+                this.email = ''; // Email of asker
+
+                // Set up DOM
+                $elem.addClass('asker').append("\
+                    <div> \
+                        <div class='portrait'> \
+                            <img src='/static/plugin/imgs/choose_friends.png' width=40 height=40 /> \
+                        </div> \
+                        <div class='email_asker'> \
+                            <div> \
+                                <label>Your name:</label> \
+                                <input class='name' name='name' type='text' value='" + this.name + "' /> \
+                                <div class='error'>Try to stick with the alphabet</div> \
+                            </div> \
+                            <div> \
+                                <label>Your email:</label> \
+                                <input class='email' name='email' type='text' value='" + this.email + "' /> \
+                                <div class='error'>This email doesn't look right</div> \
+                            </div> \
+                        </div> \
+                    </div> \
+                ").find('input')
+                .blur(function () {
+                    that.reviewAsker();
+                    that.update_callback(); // Update next button
+                })
+                .keypress(function (e) {
+                    if (e.which === ENTER_KEY) {
+                        that.reviewAsker();
+                        that.update_callback(); // Update next button
+                    }
+                });
+            };
+            Asker.prototype = new Widget();
+            // Private methods
+            // Validation functions are strictly checks, have no
+            // side-effects
+            Asker.prototype._validateEmail = Friend.prototype._validateFriendEmail;
+            Asker.prototype._validateName = Friend.prototype._validateFriendName;
+            Asker.prototype._validateInput = function (el) {
+                // Validates input element 'el'
+                // Returns: <boolean> true = valid, false = invalid
+                if (el.name === 'email') {
+                    return this._validateEmail(el);
+                } else if (el.name === 'name') {
+                    return this._validateName(el);
+                } else {
+                    return false;
+                }
+            };
+            // Public methods
+            Asker.prototype.validateAsker = function () {
+                // Validate data asker contains
+                // Returns: <boolean> true = valid, false = invalid
+                var $elem = $(this.elem);
+                return this._validateName($elem.find('input.name')[0])
+                    && this._validateEmail($elem.find('input.email')[0]);
+            };
+            // Review functions will change the element to indicate
+            // to the user if inputted friend information is good
+            Asker.prototype.reviewAsker = function () {
+                // Provides feedback to asker if info is valid
+                // Returns: <boolen> true = valid, false = invalid
+                var $elem = $(this.elem),
+                    that = this,
+                    error = false,
+                    good_face = (this.pic !== '') ? this.pic : '/static/plugin/imgs/happy_face.png';
+
+                // Validate each input and set sad face if any are in error
+                $elem.find('input').each(function () {
+                    var i = that._validateInput(this);
+                    if (i) {
+                        // No error
+                        $(this).css('color','black').siblings('.error').hide();
+                    } else if (i === false ) {
+                        $(this).css('color','red').siblings('.error').show();
+                        error = true;
+                    } else {
+                        // Input is empty, don't show error message, but don't let submit
+                        $(this).css('color','black').siblings('.error').hide();
+                        error = true;
+                    }
+                });
+
+                if (error) {
+                    // Error! Set sad face on portrait
+                    $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
+                    return false;
+                } else {
+                    // Set asker face or happy face on portrait
+                    $elem.find('.portrait>img').attr('src',good_face);
+
+                    // Save data to asker
+                    this.name = $elem.find('input.name').val();
+                    this.email = $elem.find('input.email').val();
+                    return true;
+                }
+            };
+            Asker.prototype.getAskerInfo = function () {
+                // Gets the stored asker info if valid
+                // Returns:
+                //      - valid: [ <string> name, <string> email address, [<string> picture url] ]
+                //      - invalid: null
+                var info,
+                    $elem = $(this.elem);
+                if (this.reviewAsker()) {
+                    info = [
+                        $elem.find('input.name').val(),
+                        $elem.find('input.email').val() ];
+                    if (this.pic !== '') {
+                        info.push(this.pic);
+                    }
+                    return info;
+                } else {
+                    return null;
+                }
+            };
+            Asker.prototype.updateView = function () {
+                // Takes stored asker values and updates view based on them
+                var $elem = $(this.elem);
+
+                $elem.find('input.name').val(this.name);
+                $elem.find('input.email').val(this.email);
+
+                this.reviewAsker();
+                this.update_callback(); // Alert page that asker is updated
+            }
+            Asker.prototype.FBLoggedIn = function (name, email, pic) {
+                // After FB connect success, show user inputted data
+                // Returns: n/a
+                var $elem = $(this.elem);
+
+                this.name = name;
+                this.email = email;
+                this.pic = pic;
+
+                this.updateView();
+            };
+
+            {% block head_script %}{% endblock %}
+            {% block js_classes %}{% endblock js_classes %}
         </script>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        {% block styles %}
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
 
+        {% block styles %}
+            <style></style>
         {% endblock styles %}
     </head>
     <body>
@@ -99,7 +720,82 @@
                                            height: 224px;
                                            box-shadow: 0px 1px 5px 0px #777 inset;
                                            border-radius: 15px;">
-                                {% include "ask.html" %}
+                                <div class="wrapper" id="wrapper">
+
+                                <!-- Add your screens here.  Use Choose Friends as template-->
+                                {% block top_screens %}{% endblock top_screens %}
+
+                                <!--                   Choose Friends Screen                    -->
+                                <div id="choose">
+                                    <ul class="friends" id="friends">
+                                        <!-- Friends appended when document ready -->
+                                    </ul>
+                                    <div class="holder" id="addFriend">
+                                        <div class="grey_bar">
+                                            <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
+                                            Add Another Friend
+                                        </div>
+                                    </div>
+                                    <div id="chosenButton" class="button inactive corner" style="z-index:1000;">
+                                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                                        <div class="title">Ask Chosen Friends</div>
+                                        <div class="subtitle">Giving advice is fun</div>
+                                    </div>
+                                </div>
+
+                                <!--                   Asker Info Screen                        -->
+
+                                <div id="asker_info">
+                                    <div class="center_col" style="margin-top: 35px;">
+                                        <p class="centered">We will email you when a friend provides advice.</p>
+                                    </div>
+                                    <ul class="askers" id="askers">
+                                        <!-- Asker appended when document ready -->
+                                    </ul>
+                                    <div id="askButton" class="button inactive corner">
+                                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                                        <div class="title">Ask Chosen Friends</div>
+                                        <div class="subtitle">Giving advice is fun</div>
+                                    </div>
+                                </div>
+                                <div id="asking">
+                                    <div class="content narrow">
+                                        <div class="middled">
+                                            <div>Asking...</div>
+                                            <img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="success">
+                                    <div class="content narrow">
+                                        <div class="center_col">
+                                            {% if incentive_enabled %}
+
+                                                <p>Your friends have been asked to help by <b>voting</b> on the product(s).</p>
+                                                <label for="email-field">PayPal Email:</label>
+                                                <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
+
+                                                <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
+
+                                            {% else %}
+                                                <p>Your friends have been asked to help by <b>voting</b> on the product(s).</p>
+                                                <p>You will receive an email when one of your trusted friends gives advice!</p>
+                                            {% endif %}
+                                        </div>
+                                        <div onclick="closeIframe();" class="button close">
+                                            <div class="simpletitle">Save</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="narrow_screen" id="failure">
+                                    <div class="content narrow"
+                                        <div class="center_col">
+                                            <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
+                                            <p class='error_message'>An error happened.</p>
+                                            <p>You were so excited to get advice and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -195,13 +891,378 @@
             {% block screens %}{% endblock %}
         </div>
         <script type="text/javascript">
+            // Store FB data on server
+            var updateServerUser = function( accessToken, userId ) {
+                var payload = {
+                    user_uuid   : "{{user_uuid}}",
+                    accessToken : accessToken,
+                    fbUserId    : userId
+                };
+
+                $.ajax({
+                    url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+                    type     : 'post',
+                    dataType : 'json',
+                    data     : payload,
+                    success  : function () {
+                        return;
+                    }
+                });
+
+                fbAccessToken = accessToken;
+                fbIdentity    = userId;
+            };
+
+            var updateEmailAddress = function() {
+                var addr = asker.email,
+                    name = asker.name || '';
+
+                if (asker.email !== '') {
+                    $.ajax({
+                        url: "{{ URL }}{% url UpdateEmailAddress %}",
+                        type: 'post',
+                        data: {
+                            'email': addr,
+                            'name': name
+                        }
+                    });
+                }
+            };
+
+            // Add AJAX methods here.
+            {% block ajax_methods %}
+                // Sends analytic data point to server
+                var storeAnalytics = function (evnt) {
+                    // Stub function!
+                    throw new Error("Attempt to use stub function 'storeAnalytics'");
+                };
+                // Sends information to server to ask friends & handles response
+                var sendMessages = function () {
+                    // Stub function!
+                    throw new Error("Attempt to use stub function 'sendMessages'");
+                };
+            {% endblock ajax_methods %}
+
+            {% block page_methods %}
+                // Show screen with given id
+                // Screens must be children of #wrapper
+                var showScreen = function (id) {
+                    $('#wrapper').children().hide();
+                    $('#wrapper>#'+id).show();
+                };
+
+                // Closes iframe
+                var closeIframe = function (action) {
+                    if (action){
+                        storeAnalytics(action);
+                    }
+
+                    if (window.parent) {
+                        window.parent.location = "{{ share_url }}";
+                    }
+                };
+
+                var refreshParentFrame = function () {
+                    window.parent.location.reload();
+                };
+
+                // Post to parent page that we are hosted in
+                var doPostMessage = function(message) {
+                    var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                    if ( message === "close" ) {
+                        target.postMessage(
+                            message,
+                            '{{ page_url }}'
+                        );
+                    } else {
+                        $.postMessage( message, '{{ page_url }}', parent );
+                    }
+                };
+
+                // Open up the FB dialog. Does not do a FB connect with us.
+                var postOnWall = function () {
+                    try { // detect adblock
+                        FB.ui({
+                            method:  'feed',
+                            display: 'popup',
+                            link:    '{{ link.target_url }}',
+                            picture: '{{ product_image }}' || "{{ image }}",
+                            name:    "{{ product_title|escape }}" || "{{ title|escape }}",
+                            caption: '{{ store_domain }}',
+                            description: "{{ product_desc|striptags|escape }}" || $('#shareText').val(),
+                            redirect_uri: '{{ fb_redirect }}'
+                        });
+                    } catch (e) {
+                        if ($) {  // if FB is lagging, then chances are $ is also lagging
+                            // disables the posting button.
+                            $('#postOnWall').unbind('click').addClass('inactive');
+                            $('#postOnWall .title').text('AdBlock detected!');
+                        }
+                    }
+
+                    storeAnalytics('SIBTNoConnectFBDialog');
+                };
+
+                // Add blank friend entry to Choose Friend's screen
+                var addFriend = function () {
+                    var friend = new Friend('', updateChooseFriendsView);
+                    friends.push(friend);
+                    $('#friends').append(friend.getElement())
+                        .scrollTo('max', 200, { axis: 'y' });
+                };
+
+                // Connect with FB and fetch FB friends, on Choose Friends screen
+                var runFBConnect = function (success_callback) {
+                    storeAnalytics('SIBTConnectFBDialog');
+
+                    FB.login( function(response) {
+                        var authResp = response.authResponse;
+
+                        if (!authResp) {
+                            // We weren't given permission, do nothing
+                            return;
+                        } else {
+                            storeAnalytics('SIBTFBConnected');
+
+                            // Store FB data in the server
+                            updateServerUser(authResp.accessToken, authResp.userID);
+
+                            // Get user info & then run callback
+                            FB.api('/me', function (r) {
+                                var name = r.name;
+                                var email = r.email;
+                                var userId = r.username || r.id;
+
+                                asker.FBLoggedIn(name, email, '//graph.facebook.com/'+userId+'/picture');
+
+                                // Good to go!
+                                if (success_callback) {
+                                    success_callback();
+                                }
+                            });
+                        }
+                    }, {scope: 'publish_stream, offline_access, user_about_me, email'});
+                };
+
+                // Query FB api to grab logged-in user's friends
+                var fetchFBFriends = function () {
+                    FB.api( '/me/friends', function (response) {
+                        fbFriends = response.data;
+                        fbFriends.sort();
+
+                        $.each( response.data, function (i) {
+                            sorted_friend_names.push(fbFriends[i].name);
+                        });
+
+                        // Code here changes all FB Connect options into FB Friend Select options
+                        var i = friends.length;
+                        while ( i-- ) {
+                            friends[i].FBLoggedIn();
+                        }
+                });
+                };
+
+                // Gather friends info into array
+                var getFriendsInfo = function () {
+                    // Returns:
+                    //   No invalid friends: [ [...], [...] ], see
+                    //                  Friend.prototype.getFriendInfo
+                    //                  for array entries
+                    //   No friends: []
+                    //   Invalid friends: null
+                    var i = friends.length, j,
+                        friend_info = [],
+                        error = false;
+
+                    // Gather up friend info, recording if a friend has an error
+                    while (i--) {
+                        j = friends[i].getFriendInfo(); // Can be [...], [] or null
+                        if (j === null) {
+                            error = true; // Don't submit
+                            break;
+                        } else if (j && j.length && j.length === 3) { // Valid friend is 3 valued array
+                            friend_info.push(j);
+                        } else {
+                            continue; // Don't add []
+                        }
+                    }
+
+                    return error ? null : friend_info;
+                };
+
+                // Toggles next button from active / inactive for Choose Friends screen
+                var updateChooseFriendsView = function () {
+                    var i = getFriendsInfo(),
+                        $chosenButton = $('#chosenButton');
+
+                    if (i && i.length !== 0) {
+                        $chosenButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
+                    } else {
+                        $chosenButton.addClass('inactive').children('img').attr('src','/static/plugin/imgs/grey_outline_logo_40x40.png');
+                    }
+                };
+
+                // Toggles next button from active / inactive for Asker Info screen
+                var updateAskerInfoView = function () {
+                    var $askButton = $('#askButton');
+
+                    if (asker.validateAsker()) {
+                        $askButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
+                    } else {
+                        $askButton.addClass('inactive').children('img').attr('src','/static/plugin/imgs/grey_outline_logo_40x40.png');
+                    }
+                };
+
+                // Ensures we have all information before asking friends
+                var reviewFriendsThenGetInfo = function () {
+                    // Ensure no errors & at least 1 friend entered
+                    var i = getFriendsInfo(); // either null or [...]
+
+                    console.log("reviewFriendsThenGetInfo friends: "+JSON.stringify(i));
+                    if (i && i.length > 0) {
+                        // Proceed to verifying name
+                        showScreen('asker_info');
+                    } else {
+                        // TODO: Add feedback why button didn't work
+                    }
+                };
+
+                // Review askers inputed name & email address before asking friends
+                var reviewThenAsk = function () {
+                    var i = asker.reviewAsker();
+                    console.log("reviewAsker asker: "+JSON.stringify(i));
+                    if (i) {
+                        // Good to go!
+                        $.cookie('asker_name', asker.name);
+                        $.cookie('asker_email', asker.email);
+                        sendMessages();
+                    } else {
+                        // TODO: Add feedback why button didn't work
+                    }
+                };
+
+                // Add global js functions here
+                {% block js_functions %}{% endblock js_functions %}
+            {% endblock page_methods %}
+
+            $(document).ready(function () {
+                // "show invitation dialog"
+                asker = new Asker('ask_user', updateAskerInfoView);
+
+                asker.name = $.cookie('asker_name');
+                asker.email = $.cookie('asker_email');
+
+                // this line will be "None" if user_name is None on the server!
+                {% if user_name %}asker.name = "{{ user_name|escape }}"{% endif %}
+                {% if user_pic %}asker.pic = "{{ user_pic|escape }}";{% endif %}
+                {% if user_email %}asker.email = "{{ user_email|escape }}";{% endif %}
+                if (asker.name || asker.pic || asker.email) {
+                    asker.updateView();
+                }
+
+                /**********************  ATTACH EVENTS TO DOM HERE  **************************/
+
+                $('#cancelButton').click(function() {
+                    doPostMessage('close');
+                });
+
+                $('#postOnWall').click(function () {
+                    storeAnalytics('SIBTAskUserClickedPostOnWall');
+                    postOnWall();
+                });
+
+                $('#showChooseScreen').click(function () {
+                    storeAnalytics('SIBTAskUserClickedChooseFriends');
+                    showScreen('choose');
+                });
+
+                $('#addFriend>div').click(function () {
+                    storeAnalytics('SIBTAskUserClickedAddFriend');
+                    addFriend();
+                });
+
+                $('#chosenButton').click(function () {
+                    storeAnalytics('SIBTAskUserClickedChosenButton');
+                    reviewFriendsThenGetInfo();
+                });
+
+                $('#askButton').click(function () {
+                    storeAnalytics('SIBTAskUserClickedAskButton');
+                    reviewThenAsk();
+                });
+
+                $('#askers').append(asker.getElement());
+
+                // Add two Friend instances to Choose Friends screen
+                (function () {
+                    var friend1 = new Friend('', updateChooseFriendsView),
+                        friend2 = new Friend('', updateChooseFriendsView);
+                    friends.push(friend1, friend2);
+                    $('#friends').append(friend1.getElement(), friend2.getElement());
+                })();
+
+                $('.email, .email_option input').live('blur', function() {
+                    $(this).mailcheck({
+                        suggested: function (element, suggestion) {
+                            element.val(suggestion.full);
+                        }
+                    });
+                });
+
+                $('.asker .name').live('keyup', function () {
+                    try {  // mask lengthy variable checks
+                        window.parent.$('.asker_name_target').text($(this).val());
+                    } catch (e) {}
+                });
+
+                $('#shareText').keyup(function () {
+                    try {  // mask lengthy variable checks
+                        window.parent.$('.sharing_message_target').text($('#shareText').val());
+                    } catch (e) {}
+                });
+
+                var resizeCloud = function (px, instant) {
+                    if (instant) {
+                        $('#white').css({'height': (px + 'px')});
+                    } else {
+                        $('#white').delay(500).animate({'height': (px + 'px')});
+                    }
+                };
+
+                // genius "tabs" functionality
+                var showPage = function (page) {
+                    // tabs sit on top of pages
+                    // tabs must contain a hashtag link
+                    // pages must have class "page" and unique id
+                    $(".page").animate({'opacity': '0'}, {'queue': false})
+                              .css('display', 'none');  // hide all tabs
+                    $('#' + page + '_page').css('opacity', '0')
+                           .css('display', 'block')
+                           .animate({'opacity': '1'}, {'queue': false});  // show the relevant page
+                };
+
+                $('#window_location').val(window.location.href);
+
+                {% if is_asker %}
+                    showPage('friends_selector');
+                    resizeCloud(255);  // init the page
+                {% else %}
+                    showPage('friends_selectee');
+                    resizeCloud(150);  // init the page
+                {% endif %}
+
+                // Add your js initialization code here!
+                // Example: showScreen('splash');
+                {% block js_init %}{% endblock js_init %}
+            });
+
             {% block body_script %}{% endblock %}
 
             window.fbAsyncInit = function() {
                 // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
                 FB.init({
                     appId: '{{FACEBOOK_APP_ID}}', // App ID
-                    //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                    channelUrl: '{{ URL }}/static/plugin/html/FBChannel.html', // Channel File
                     status: true, // check login status
                     cookie: true, // enable cookies to allow the server to access the session
                     oauth: true, // enable OAuth 2.0
@@ -220,6 +1281,16 @@
                 js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
                 fjs.parentNode.insertBefore(js, fjs);
             };
+
+            (function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) {return;}
+                js = d.createElement(s);
+                js.id = id;
+                js.async = true;
+                js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
         </script>
         <!-- Google Analytics -->
         <script type="text/javascript">

@@ -124,6 +124,7 @@ class SIBTUnifiedDynamicLoader(URIHandler):
         except (NameError, AttributeError):
             pass  # not a vendor
 
+        is_asker = bool(user.key() == instance.asker.key())
         user_voted = bool(instance.get_votes_count(user=user) > 0)
         link = instance.link
         sharing_message = instance.sharing_message
@@ -133,7 +134,7 @@ class SIBTUnifiedDynamicLoader(URIHandler):
             'title': "Ask a Friend",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingVote' if instance else 'SIBTShowingAsk',
-            'embed': bool(self.request.get('embed', '0') == '1'),
+            'embed': False,  # bool(self.request.get('embed', '0') == '1'),
 
             'app': app,
             'app_uuid': app.uuid,
@@ -148,6 +149,7 @@ class SIBTUnifiedDynamicLoader(URIHandler):
             """
             'instance': instance,
             'asker': instance.asker,
+            'is_asker': is_asker,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
