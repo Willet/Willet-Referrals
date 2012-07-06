@@ -167,7 +167,7 @@ _willet.sibt = (function (me) {
         }
 
         return wm.fire('showColorbox', {
-            href: "{{URL}}{% url AskDynamicLoader %}" +
+            href: "{{URL}}{% url SIBTUnifiedDynamicLoader %}" +
                 // do not merge with metadata(): it escapes commas
                 "?products=" + me.getProductUUIDs().join(',') +
                 "&shopify_ids=" + shopify_ids.join(',') +
@@ -189,7 +189,7 @@ _willet.sibt = (function (me) {
         }
 
         return me.showPopupWindow(
-            "{{URL}}{% url VoteDynamicLoader %}" +
+            "{{URL}}{% url SIBTUnifiedDynamicLoader %}" +
             // do not merge with metadata(): it escapes commas
             "?products=" + me.getProductUUIDs().join(',') +
             // if instance exists, it will be shown, not made!

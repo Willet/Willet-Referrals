@@ -40,7 +40,7 @@
                         </button>
                     {% endif %}
                     <div id="success_screen">
-                        <h2>Thank you for helping {{asker_name}}!</h2>
+                        <h2>Thank you for helping {{ asker.name }}!</h2>
                     </div>
                 </div>
                 <div id="product_info_{{ product.uuid }}"
@@ -71,7 +71,7 @@
     {% else %}
         <div id="product_screen">
             <h2><a href="{{ product_url }}">{{ product.title|striptags|escape }}</a></h2>
-            <img id="product_img" class="slight-highlight product-image" src="{{ product_img|default:"/static/imgs/noimage-willet.png" }}" />
+            <img id="product_img" class="slight-highlight product-image" src="{{ product_image|default:"/static/imgs/noimage-willet.png" }}" />
             <div class="description">
                 {{ product.description|striptags }}
             </div>
@@ -79,14 +79,14 @@
                 <div class="choice blob"
                     style="text-align:center; margin: 18px;">
                     <div class="title">
-                        Should <b>{{asker_name}}</b> get this?
+                        Should <b>{{ asker.name }}</b> get this?
                     </div>
                     <div id="success_pending" class="center">
                         <button class="button" id="yes">Yes</button>
                         <button class="button" id="no">No</button>
                     </div>
                     <div id="success_screen">
-                        <h2>Thank you for helping {{asker_name}}!</h2>
+                        <h2>Thank you for helping {{ asker.name }}!</h2>
                         {% if store_url %}
                             <p style="margin-top:24px;">
                                 <a href="{{ store_url }}">Continue Shopping</a>
@@ -179,7 +179,7 @@
             });
 
 
-            /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+            /*  server guarantees there to be > 0 products;
                 if there are 0 products, this script is not loaded at all.
             */
             var cart_products = [ {% for product in products %}

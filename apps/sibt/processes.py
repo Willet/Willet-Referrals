@@ -471,7 +471,7 @@ class SendFriendAsks(URIHandler):
                                       to_name=fname,
                                       to_addr=femail,
                                       message=msg,
-                                      vote_url=link.get_willt_url(),
+                                      vote_url=link.willet_url,
                                       product=product or None,
                                       products=products or [],
                                       asker_img=a['pic'])
@@ -504,11 +504,9 @@ class SendFriendAsks(URIHandler):
                     logging.debug('updating existing instance')
 
                 # change link to reflect to the vote page.
-                link.target_url = urlparse.urlunsplit([PROTOCOL,
-                                                       DOMAIN,
-                                                       url('VoteDynamicLoader'),
-                                                       ('instance_uuid=%s' % instance.uuid),
-                                                       ''])
+                link.target_url = "%s://%s%s?instance_uuid=%s" (
+                    PROTOCOL, DOMAIN, url('SIBTUnifiedDynamicLoader'),
+                    instance.uuid)
 
                 logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
                 link.put()
@@ -552,7 +550,7 @@ class SendFriendAsks(URIHandler):
                                '<p>Instance: %s</p>'
                                '<p>Link: %s</p>' % (asker, friends, fb_share_counter,
                                                     email_share_counter, msg, iuid,
-                                                    link.get_willt_url()),
+                                                    link.willet_url),
                                subject='SIBT share detected')
 
         logging.info('response: %s' % response)

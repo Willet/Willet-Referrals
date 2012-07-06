@@ -21,7 +21,7 @@
             -->
             <div class="message" id="message">
                 {% if not embed %}
-                    <img alt="product" src="{{ product_images|first }}" />
+                    <img alt="product" src="{{ product_image }}" />
                 {% endif %}
                 <textarea id='shareText' name='shareText' maxlength='1000'>I like this - what do you think?</textarea>
             </div>
@@ -55,7 +55,7 @@
         // Could use template here
         {
             title: "Should I buy this?",
-            text: "{{ AB_share_text|escape }}"
+            text: "Should I buy this? Let me know!"
         },
         {
             title: "Does anyone own this?",
@@ -100,8 +100,8 @@
                 friends: JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                 asker: JSON.stringify(asker_info),
                 msg: msg,
-                default_msg: "{{AB_share_text|escape}}",
-                instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
+                default_msg: "Should I buy this? Let me know!",
+                instance_uuid: "{{ instance.uuid }}",  // if not empty, no new instance will be created
                 willt_code: "{{willt_code}}"
             };
 

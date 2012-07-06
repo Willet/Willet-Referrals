@@ -95,11 +95,12 @@
                             <img src="/static/sibt/imgs/happy-people-245x120.png" />
                         </div>
                         <div class="span-16">
-                            <iframe src="{{ URL }}{% url AskDynamicLoader %}?{{ ask_qs }}"
-                                    style="width: 600px;
+                            <div style="width: 600px;
                                            height: 224px;
                                            box-shadow: 0px 1px 5px 0px #777 inset;
-                                           border-radius: 15px;"></iframe>
+                                           border-radius: 15px;">
+                                {% include "ask.html" %}
+                            </div>
                         </div>
                     </div>
                 {% else %}
@@ -108,7 +109,7 @@
                             <img src="/static/sibt/imgs/happy-people-245x120.png" />
                         </div>
                         <div class="span-18 title">
-                            Help {{ asker_name }} shop by giving advice
+                            Help {{ asker.name }} shop by giving advice
                             <img alt="Look under here"
                                  class="look_under_arrow"
                                  src="/static/sibt/imgs/arrow-42x42.png" />
@@ -135,8 +136,8 @@
                 <div class="mini-highlight blob-disabled">
                     <p>
                         <img class="profile_pic"
-                                src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
-                        <span class="fbName asker_name_target">{{ asker_name }}</span>
+                                src='{{ asker.pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
+                        <span class="fbName asker_name_target">{{ asker.name }}</span>
                         <br />
                         <span class="fbPost sharing_message_target">
                             {{ sharing_message|escape|default:"I like this - what do you think?" }}
@@ -157,7 +158,7 @@
                     Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
                 <div id="discount_screen" class="hidden">
-                    <h2>Thank you for helping {{asker_name}}.</h2>
+                    <h2>Thank you for helping {{asker.name}}.</h2>
                     <div id="discount_gettest">
                         <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
                         <input id="discount_code" type="text" />
@@ -166,10 +167,10 @@
                     <!-- great massages -->
                     <div id="success_message">
                         <h4 class="yes">
-                            Tell {{ asker_name }} why you voted YES.
+                            Tell {{ asker.name }} why you voted YES.
                         </h4>
                         <h4 class="no">
-                            Tell {{ asker_name }} why you voted NO.
+                            Tell {{ asker.name }} why you voted NO.
                         </h4>
                     </div>
 
@@ -186,7 +187,7 @@
                 on behalf of <a href="{{ client.url }}">{{ client.name }}</a>
                 {% if debug %}
                     <br/>
-                    <b>DEBUG</b>: instance_uuid {{ instance_uuid }},
+                    <b>DEBUG</b>: instance.uuid {{ instance.uuid }},
                                   user.uuid {{ user.uuid }},
                                   asker.uuid {{ instance.asker.uuid }}
                 {% endif %}

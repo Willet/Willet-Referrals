@@ -46,6 +46,14 @@ def default(*args):
             pass  # fail? do not return this one
 
 
+def get_list_item(list_obj, idx, default_value=None):
+    """gets list_obj[idx] if available. Otherwise, default_value."""
+    try:
+        return list_obj[idx]
+    except IndexError:
+        return default_value
+
+
 def quoted_join(lst):
     """Returns "1","2","3"."""
     return '"%s"' % '","'.join(lst)
@@ -337,6 +345,7 @@ def create_hash(*args):
         keys.append (SALT)
     key = "".join(list(('%s$' % str(k)) for k in keys))
     return hashlib.sha224(key).hexdigest()
+
 
 def unhashable_object_unique_filter(objects, attr='uuid'):
     """Supply objects, returns objects whose attributes reflect uniqueness.

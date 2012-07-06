@@ -571,7 +571,7 @@ class User(db.Expando):
             params = {
                 'access_token' : self.fb_access_token,
                 'picture'      : img,
-                'link'         : link.get_willt_url(),
+                'link'         : link.willet_url,
                 'description'  : desc.encode('utf8'),
                 'name'         : name.encode('utf8'),
                 'caption'      : store_domain.encode('utf8')
@@ -602,7 +602,7 @@ class User(db.Expando):
             params = {
                 'access_token' : self.fb_access_token,
                 'picture'      : img,
-                'link'         : link.get_willt_url(),
+                'link'         : link.willet_url,
                 'description'  : desc,
                 'name'         : name,
                 'caption'      : caption

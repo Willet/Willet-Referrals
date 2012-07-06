@@ -149,7 +149,7 @@
         });
 
 
-        /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+        /*  server guarantees there to be > 0 products;
             if there are 0 products, this script is not loaded at all.
         */
         var cart_products = [ {% for product in products %}

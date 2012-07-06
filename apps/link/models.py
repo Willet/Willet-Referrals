@@ -135,6 +135,7 @@ class Link(Model):
         else:
             # if testing, just output the testing domain
             return 'http://' + DOMAIN + '/' + self.willt_url_code
+    willet_url = property(get_willt_url)
 
     def count_retweets(self):
         return len(self.retweets)

@@ -965,10 +965,10 @@
             if ( message === "close" ) {
                 target.postMessage(
                     message,
-                    '{{target_url}}'
+                    '{{ page_url }}'
                 );
             } else {
-                $.postMessage( message, '{{target_url}}', parent );
+                $.postMessage( message, '{{ page_url }}', parent );
             }
         };
 
@@ -979,7 +979,7 @@
                     method:  'feed',
                     display: 'popup',
                     link:    '{{ link.target_url }}',
-                    picture: '{{ product_images|first }}' || "{{ image }}",
+                    picture: '{{ product_image }}' || "{{ image }}",
                     name:    "{{ product_title|escape }}" || "{{ title|escape }}",
                     caption: '{{ store_domain }}',
                     description: "{{ product_desc|striptags|escape }}" || $('#shareText').val(),

@@ -127,8 +127,8 @@
                 asker: JSON.stringify(asker_info),
                 products: getSelectedObjects(),  // str
                 msg: msg,
-                default_msg: "{{AB_share_text|escape}}",
-                instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
+                default_msg: "Should I buy this? Let me know!",
+                instance_uuid: "{{ instance.uuid }}",  // if not empty, no new instance will be created
                 willt_code: "{{willt_code}}"
             };
 
@@ -208,14 +208,14 @@
 
 
 {% block js_init %}
-    /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+    /*  server guarantees there to be > 0 products;
         if there are 0 products, this script is not loaded at all.
     */
     var cart_products = [ {% for product in products %}
-        {   "id": "{{product.id}}",
-            "title": "{{product.title}}",
-            "image": "{{product.image}}",
-            "uuid": "{{product.product_uuid}}"
+        {   "id": "{{ product.shopify_id }}",
+            "title": "{{ product.title }}",
+            "image": "{{ product.images.0|default:product.image }}",
+            "uuid": "{{ product.uuid }}"
         },
     {% endfor %} {}];
     cart_products.pop(); // remove trailing element... IE7 trailing comma patch
