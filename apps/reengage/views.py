@@ -100,7 +100,9 @@ class ReEngageQueueHandler(URIHandler):
         else:
             queue.prepend(post)
 
-        self.respond(201)
+        json_response = queue.to_json()
+        self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
+        self.response.out.write(json_response)
 
     def delete(self):
         """Delete all post elements in this queue"""
