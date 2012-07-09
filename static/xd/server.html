@@ -9,9 +9,20 @@
         var actions,
             handleRequest,
             verifyOrigin,
-            whitelist = ["runte-huel6127.myshopify.com"];
+            whitelist;
 
-        //TODO: Replace with cookies or localstorage
+        // How do we get more elements onto the whitelist?
+        whitelist = [
+            /^[\w-]\.myshopify\.com/ // Shopify customers
+        ];
+
+
+        //In the event that localStorage doesn't exist, don't do anything
+        window.localStorage = window.localStorage || {
+            "getItem": function() {},
+            "setItem": function() {}
+        };
+
         actions = {
             "store": function (data, domain) {
                 var json_values,
@@ -43,7 +54,7 @@
                     len = whitelist.length;
 
             while(i < len){
-                if (whitelist[i] === domain){
+                if (whitelist[i].test(domain)){
                     return true;
                 }
                 i++;
