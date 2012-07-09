@@ -504,6 +504,7 @@ _willet.messaging = (function (willet) {
     };
 
     me.xd = (function(){
+        // We do not support cross-domain communication in IE 7 and below
         var xd = {};
 
         var PAYLOAD_IDENTIFIER = "willet";
@@ -579,18 +580,6 @@ _willet.messaging = (function (willet) {
                             window.detachEvent('onmessage', listener); //IE
                          }
                     }
-                } else {
-                    // Set up window.location.hash polling
-                    // Expects hash messages of the form:
-                    //  #willet?message=____
-                    var interval = setInterval(function () {
-                        var hash = window.location.hash;
-                        callback(parseMessage(hash));
-                    }, 1000);
-
-                    stopCommunication = function () {
-                        clearInterval(interval);
-                    };
                 }
 
                 //create the iframe
@@ -606,6 +595,43 @@ _willet.messaging = (function (willet) {
                    "type": "Willet.CrossDomainError"
                 });
             }
+        };
+
+        var getOrCreateIFrame = function (domain, path, listener) {
+            var id = "willet.xd:" + domain + path;
+            var iFrame = document.getElementById(id);
+
+            if (!iFrame) {
+                iFrame = document.createElement("iframe")
+                iFrame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;";
+                document.body.appendChild(iFrame);
+
+                iFrame.src = "//" + domain + path;
+                iFrame.id  = id;
+            }
+
+            if (listener) {
+                if (window.addEventListener) {
+                    window.addEventListener("message", listener, false);
+                } else if (window.attachEvent) {
+                    window.attachEvent("onmessage", listener);
+                }
+            }
+
+            return iFrame;
+        };
+
+        xd.receive = function (domain, path, callback) {
+            getOrCreateIFrame(domain, path, callback);
+        };
+
+        // TODO: It really makes sense to have a stateful xd object...
+        xd.send = function (domain, path, data) {
+            // assume that data is a dictionary
+            var iFrame = getOrCreateIFrame(domain, path);
+            var msg    = JSON.stringify(data);
+            var origin = window.location.protocol + "//" + domain;
+            iFrame.contentWindow.postMessage(msg, origin);
         };
 
         return xd;

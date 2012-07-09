@@ -1,0 +1,84 @@
+<!doctype html>
+<!-- Copyright 2010 Nicholas C. Zakas. All rights reserved. BSD Licensed. -->
+<!-- http://www.nczonline.net/blog/2010/09/07/learning-from-xauth-cross-domain-localstorage/ -->
+<!-- Modified from original implementation by Nicholas Terwoord, 2012 -->
+<html>
+<body>
+<script type="text/javascript">
+    (function(window){
+        var actions,
+            handleRequest,
+            verifyOrigin,
+            whitelist = ["runte-huel6127.myshopify.com"];
+
+        //TODO: Replace with cookies or localstorage
+        actions = {
+            "store": function (data, domain) {
+                var json_values,
+                    values = window.localStorage.getItem(domain);
+
+                if (!values) {
+                    values = "{}";
+                }
+
+                json_values = JSON.parse(values);
+                json_values[data.key] = data.value;
+                window.localStorage.setItem(domain, JSON.stringify(json_values));
+            },
+            "get": function (data, domain) {
+                var json_values,
+                    values = window.localStorage.getItem(domain);
+                if (!values) {
+                    return;
+                }
+
+                json_values = JSON.parse(values);
+                return json_values[data.key];
+            }
+        };
+
+        verifyOrigin = function (origin) {
+            var domain = origin.replace(/^https?:\/\/|:\d{1,4}$/g, "").toLowerCase(),
+                    i = 0,
+                    len = whitelist.length;
+
+            while(i < len){
+                if (whitelist[i] === domain){
+                    return true;
+                }
+                i++;
+            }
+
+            return false;
+        }
+
+        handleRequest = function(event) {
+            var data,
+                name,
+                params,
+                result,
+                value;
+
+            if (verifyOrigin(event.origin)){
+                // turn string into data
+                data  = JSON.parse(event.data);
+
+                // take some action
+                name   = data.action;
+                params = data.params;
+                result = actions[name](params, event.origin)
+
+                // send a response
+                event.source.postMessage(JSON.stringify(result), event.origin);
+            }
+        }
+
+        if(window.addEventListener){
+            window.addEventListener("message", handleRequest, false);
+        } else if (window.attachEvent){
+            window.attachEvent("onmessage", handleRequest);
+        }
+    })(window);
+</script>
+</body>
+</html>
