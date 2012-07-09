@@ -15,7 +15,6 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from apps.action.models import Action
-from apps.app.models import App
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
@@ -27,6 +26,7 @@ from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
+from util.shopify_helpers import get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -107,14 +107,19 @@ class SIBTSignUp(URIHandler):
 
 
 class StartSIBTInstance(URIHandler):
+    """Create a SIBT instance."""
     def post(self):
-        app = App.get(self.request.get('app_uuid'))
-        user = User.get_or_create_by_cookie(self, app)
-        link = Link.get_by_code(self.request.get('willt_code'))
-        img = self.request.get('product_img')
+        """Given:
+        - app_uuid,
+        - page_url (one of the products' url), and
+        - products (a CSV of product UUIDs),
+        create a SIBTInstance.for the current (cookied) user.
 
-        logging.info("Starting SIBT instance for %s" % link.target_url)
+        If [link]code is supplied, that link will be reused.
 
+        The resultant JSON will contain the instance uuid if successful:
+        {data:{instance_uuid:abc}}
+        """
         # defaults
         response = {
             'success': False,
@@ -123,6 +128,46 @@ class StartSIBTInstance(URIHandler):
                 'message': None
             }
         }
+        user = User.get_or_create_by_cookie(self, app)
+
+        app = SIBT.get(self.request.get('app_uuid'))
+        if not (app and app.client):
+            response['data']['message'] = "App not found"
+            self.response.out.write(json.dumps(response))
+
+        page_url = self.request.get('page_url')
+        if not page_url:
+            response['data']['message'] = "page_url not found"
+            self.response.out.write(json.dumps(response))
+
+        products = self.request.get('products').split(',')
+        if not (products and len(products)):
+            response['data']['message'] = "products not found"
+            self.response.out.write(json.dumps(response))
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.get_by_code(self.request.get('code'))
+        if not link:
+            link = Link.create(targetURL=page_url,
+                               app=app,
+                               domain=get_shopify_url(page_url),
+                               user=user)
+
+        instance = app.create_instance(user=user, end=None, link=link,
+                                       dialog="", img="",
+                                       motivation=self.request.get('motivation', None),
+                                       sharing_message="", products=products)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
 
         try:
             # Make the Instance!

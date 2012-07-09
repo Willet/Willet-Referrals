@@ -6,98 +6,19 @@
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="/static/sibt/css/ask_page.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/button.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
 
         <script type="text/javascript">
-            {% include "../../sibt/templates/js/willet.mediator.js" %}
-            {% include "../../sibt/templates/js/willet.debug.js" %}
-            {% include "../../sibt/templates/js/willet.loader.js" %}
-            {% include "../../sibt/templates/js/willet.analytics.js" %}
+            {% include "js/willet.mediator.js" %}
+            {% include "js/willet.debug.js" %}
+            {% include "js/willet.loader.js" %}
+            {% include "js/willet.analytics.js" %}
+            {% include "js/willet.sibtShareMethods.js" %}
         </script>
         <style>
-            /* please use hierarchical indentation. */
-            .ask_page {
-                font-family: Helvetica, Arial, sans-serif;
-                }
-                .ask_page body {
-                    background: #f0f0f0 url("/static/imgs/tiles/diagonal.png");
-                    color: #444;
-                    margin: 0;
-                    padding: 0;
-                }
-                .ask_page .product {
-                    border-radius: 3px;
-                }
-                .ask_page .width {
-                    width: 960px !important; /* override id selectors */
-                    margin: 0 auto;
-                }
-                .ask_page header, .ask_page .header {
-                    background: #94B7CF url(/static/imgs/tiles/noise.png);
-                    border-bottom: 1px #1C537A solid;
-                    box-shadow: 0 8px 11px 0px #DDD;
-                    height: 150px;
-                    overflow: hidden;
-                    padding: 0 0 0 30px;
-                    width: 100%;
-                }
-                .ask_page #oem_panel {
-                        color: #fff;
-                        text-shadow: 1px 2px 5px #666;
-                    }
-                    .ask_page #oem_panel>h1 {
-                        color: #fff;
-                        font-size: 30px;
-                        font-weight: bold;
-                        margin: 32px 0 16px 0;
-                        text-shadow: 1px 2px 5px #666;
-                }
-                .ask_page #main_content {
-                    text-align: center;
-                }
-                .ask_page #selected_products {
-                    margin: 48px 0;
-                    }
-                    .ask_page #selected_products span {
-                        display: inline-block;
-                }
-                .ask_page #button_container {
-                    display: inline-block;
-                    margin: 80px 0 0 20px;
-                    text-align: left;
-                    vertical-align: top;
-                }
-                .ask_page .selected.product {
-                    background-image: url('/static/imgs/dragdrop-here-150x150.png');
-                    border: 1px #666 dashed;
-                    display: inline-block;
-                    margin: 20px;
-                    width: 150px;
-                    height: 150px;
-                }
-                .ask_page #available_products {
-                    background-color: rgba(120, 120, 120, 0.1);
-                    border-radius: 12px;
-                    box-shadow: 0px 1px 5px 0px #777777 inset;
-                    margin: 0 24px 0;
-                    }
-                    .ask_page #available_products .product {
-                        border: 1px #666 solid;
-                        cursor: move;
-                        display: inline-block;
-                        margin: 18px;
-
-                        width: 120px;
-                        height: 120px;
-                }
-                .ask_page footer, .ask_page .footer {
-                    color: #999;
-                    font-size: 10px;
-                    margin: 24px 0 0 0;
-                    text-align: center;
-            }
             .invisible {
                 display: none;
             }
@@ -133,7 +54,7 @@
                 </div>
             </header>
             <div id="main_content" class="width">
-                <h2>Choose two products.</h2>
+                <h2>Choose two products to compare.</h2>
                 <div class="invisible error">Please select two products :)</div>
                 <section id="selected_products">
                     <span>
@@ -153,9 +74,11 @@
                 <section id="available_products">
                     <!-- JS -->
                 </section>
+                <p>Can't find a product here? Find it in the shop, then
+                   click on the "Ask Trusted Friends" button again.</p>
             </div>
             <footer class="footer">
-                &copy; Willet
+                &copy; Willet, on behalf of {{ app.client.name }}
             </footer>
         </div>
 
@@ -168,7 +91,7 @@
                                 "&script=" + encodeURIComponent(file + ':' + line) +
                                 "&st=" + encodeURIComponent(message);
                     (new Image).src = "//{{ DOMAIN }}{% url ClientSideMessage %}?" + params;
-                } catch (err) { /* then it's the end of the world :'( */ }
+                } catch (err) { /* then all hope is lost :'( */ }
             };
 
             {# var products = [] #}{% include "products_include.js" %}
@@ -187,6 +110,17 @@
                     );
                 };
 
+                var getSelectedProducts = function () {
+                    var sels = [],
+                        products = $('.selected.product');
+                    for (var i = 0; i < products.length; ++i) {
+                        if ($(products[i]).data('uuid')) {
+                            sels.push($(products[i]));
+                        }
+                    }
+                    return sels;
+                };
+
                 var getSelectedProductCount = function () {
                     var count = 0,
                         products = $('.selected.product');
@@ -196,6 +130,26 @@
                         }
                     }
                     return count;
+                };
+
+                var createSIBTInstance = function (callback) {
+                    // warning: function finishes before ajax completes.
+                    var product_uuids = [],
+                        selectedProducts = getSelectedProducts();
+                    for (var i = 0; i < selectedProducts.length; ++i) {
+                        product_uuids.push(selectedProducts[i].data('uuid'));
+                    }
+                    var url = '//{{ DOMAIN }}{% url StartSIBTInstance %}';
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            'app_uuid': '{{ app.uuid }}',
+                            'page_url': '{{ page_url }}',
+                            'products': product_uuids.join(',')
+                        },
+                        success: callback
+                    });
                 };
 
                 // generate a list of available product thingies.
@@ -255,27 +209,29 @@
 
                     switch ($(this).attr('id')) {
                         case 'postOnWall':
-
+                            var objective = 'postOnWall';
                             break;
                         case 'chooseFriends':
-
+                            var objective = 'sendToFriends';
                             break;
                     }
+                    // first make the instance, then send or post it.
+                    createSIBTInstance(function () {
+                        _willet.mediator.fire(objective, {
+                            'title': 'Not sure which one I should buy!',
+                            'link': '{{ share_url }}',
+                            'caption': 'Not sure which one I should buy!',
+                            'description': '{{ AB_share_text }}',
+                            'picture': getSelectedProducts()[0].attr('src'),
+                            'redirect_uri': '{{ fb_redirect }}'
+                        });
+                    });
                 });
+
+                _willet.mediator.fire('fbInit');
             });
         </script>
         {% endblock body_script %}
-
-        <!-- Google Analytics -->
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-23764505-9']);
-            _gaq.push(['_trackPageview']);
-            (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
+        {% include "google_analytics_snippet.html" %}
     </body>
 </html>

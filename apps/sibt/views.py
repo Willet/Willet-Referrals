@@ -278,7 +278,6 @@ class AskPageDynamicLoader(URIHandler):
         product = None
         product_images = []
         store_url = ''
-        template_products = []
         vendor = self.request.get('vendor', '')  # changes template used
 
         # We should absolutely have a user here, but they could have blocked their cookies
@@ -349,42 +348,6 @@ class AskPageDynamicLoader(URIHandler):
             self.response.out.write("Products requested are not in our database yet.")
             return
 
-        # have store_url, app, products; build template products
-        for product in products:
-            if product:  # could be None of Product is somehow not in DB
-                if len(product.images) > 0:
-                    image = product.images[0] # can't catch LIOOR w/try
-                else:
-                    image = '/static/imgs/noimage-willet.png'
-
-                template_products.append({
-                    'id': shopify_id,
-                    'uuid': product.uuid,
-                    'image': image,
-                    'title': product.title,
-                    'shopify_id': shopify_id,
-                    'product_uuid': product.uuid,
-                    'product_desc': strip_html(product.description),
-                })
-            else:
-                logging.warning("Product not found in DB")
-
-        if not template_products:
-            """do not raise ValueError - "UnboundLocalError:
-            local variable 'ValueError' referenced before assignment"
-            """
-            raise Exception('UUIDs did not correspond to products')
-
-        # compile list of product images (one image from each product)
-        product_images = [prod['image'] for prod in template_products]
-        logging.debug("product images: %r" % product_images)
-
-        # have store_url, app, products, template_products, product_images
-        random_product = random.choice(template_products)
-        random_image = random_product['image']
-        if not page_url: # if somehow it's still missing, fix the missing url
-            page_url = products[0].resource_url
-
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
@@ -396,6 +359,7 @@ class AskPageDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
@@ -405,13 +369,7 @@ class AskPageDynamicLoader(URIHandler):
             'app_uuid': app_uuid,
             'incentive_enabled': incentive_enabled,
 
-            'user_email': user.get_attr('email') if user_found else None,
-            'user_has_fb_token': 1 if user_found else 0,
-            'user_name': user.get_full_name() if user_found else None,
-            'user_pic': user.get_attr('pic') if user_found else None,
-            'user_uuid': self.request.get('user_uuid'),
-
-            'AB_share_text': "Should I buy this? Please let me know!",
+            'AB_share_text': "Which one should I buy? Please let me know!",
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
@@ -421,16 +379,8 @@ class AskPageDynamicLoader(URIHandler):
             'willt_code': link.willt_url_code, # used to create full instances
             'share_url': link.get_willt_url(), # page_url
 
-            'store_domain': store_url,
             'target_url': page_url,
 
-            'image': random_image,
-           # random_product will be THE product on single-product mode.
-            'product_desc': random_product['product_desc'],
-            'product_images': product_images,
-            'product_title': products[0].title or "",
-            'product_uuid': products[0].uuid,  # deprecated
-            #'products': quoted_join(product_uuids),
             'products': products,
         }
 
