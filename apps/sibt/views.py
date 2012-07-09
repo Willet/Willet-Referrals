@@ -245,6 +245,206 @@ class AskDynamicLoader(URIHandler):
         return
 
 
+class AskPageDynamicLoader(URIHandler):
+    """Serves a plugin that will contain various functionality
+
+    for sharing information about a purchase just made by one of our clients
+    """
+    @obtain('app_uuid', 'instance_uuid', 'user_uuid')
+    def get(self, app_uuid, instance_uuid, user_uuid):
+        """Shows the SIBT Ask page. Also used by SIBTShopify.
+
+        params:
+            url (required): the product URL; typically window.location.href
+                v11: page_url may be vote page url.
+            products (required): UUIDs of all products to be included
+                                 (first UUID will be primary product)
+
+            store_url (optional): helps pinpoint the store
+            user_uuid (optional)
+            embed (optional): reduces size of window and removes some elements.
+            instance_uuid (optional): if supplied, ask.html will not create
+                                      a new instance. asks will be sent with
+                                      this instance.
+        """
+        incentive_enabled = False
+        instance = SIBTInstance.get(instance_uuid)  # None
+        link = None
+        origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
+        page_url = self.request.get('url', '') or \
+                   self.request.get('page_url', '') or \
+                   self.request.get('target_url', '') or \
+                   self.request.headers.get('referer', '')  # NOT page url!
+        product = None
+        product_images = []
+        store_url = ''
+        template_products = []
+        vendor = self.request.get('vendor', '')  # changes template used
+
+        # We should absolutely have a user here, but they could have blocked their cookies
+        user = User.get(user_uuid)
+        user_found = hasattr(user, 'fb_access_token')
+
+        # Store registration url (with backup options if it's missing)
+        store_url = self.request.get('store_url', '') or page_url
+
+        if not store_url:
+            msg = "store_url not found in ask.html query string!"
+            logging.error(msg)
+            self.response.out.write(msg)
+            return
+
+        # have page_url, store_url
+        app = get_app(urihandler=self)
+
+        if not app:
+            logging.error("Could not find SIBT app for %s" % store_url)
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        elif not hasattr(app, 'client'):
+            logging.error("SIBT app has no client. Probably uninstall.")
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        logging.debug("app = %r" % app)
+
+        # if both are present and extra_url needs to be filled...
+        if store_url and page_url and not hasattr(app, 'extra_url'):
+            """Checks if page_url (almost always window.location.href)
+            has the same domain as store url
+            If true, save the alternative URL so it can be called back later.
+
+            Example: http://social-referral.appspot.com/s/ask.html?
+                     store_url=http://thegoodhousewife.myshopify.com
+                    &page_url=http://thegoodhousewife.co.nz/cart&...
+            """
+            try:
+                url_parts = urlparse(page_url)
+                if url_parts.scheme and url_parts.netloc:
+                    # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                    if url_parts.netloc not in urllib2.unquote(store_url):
+                        logging.info("[SIBT] associating a new URL, %s, "
+                                    "with the original, %s" % (app.extra_url,
+                                                                app.store_url))
+                        app.extra_url = "%s://%s" % (url_parts.scheme,
+                                                    url_parts.netloc)
+                        app.put()
+            except:
+                logging.error("Could not save app extra_url", exc_info=True)
+                pass  # failure is, in fact, an option.
+
+        incentive_enabled = getattr(app, 'incentive_enabled', False)
+        shopify_id = getattr(product, 'shopify_id', '')
+
+        # see which template we should we using.
+        try:
+            if app.client and app.client.is_vendor:
+                vendor = app.client.name
+        except (NameError, AttributeError):
+            pass  # not a vendor
+
+        # successive steps to obtain the product(s) using any way possible
+        products = get_products(urihandler=self)
+        if not products[0]:  # we failed to find a single product!
+            logging.error("Could not find products; quitting")
+            self.response.out.write("Products requested are not in our database yet.")
+            return
+
+        # have store_url, app, products; build template products
+        for product in products:
+            if product:  # could be None of Product is somehow not in DB
+                if len(product.images) > 0:
+                    image = product.images[0] # can't catch LIOOR w/try
+                else:
+                    image = '/static/imgs/noimage-willet.png'
+
+                template_products.append({
+                    'id': shopify_id,
+                    'uuid': product.uuid,
+                    'image': image,
+                    'title': product.title,
+                    'shopify_id': shopify_id,
+                    'product_uuid': product.uuid,
+                    'product_desc': strip_html(product.description),
+                })
+            else:
+                logging.warning("Product not found in DB")
+
+        if not template_products:
+            """do not raise ValueError - "UnboundLocalError:
+            local variable 'ValueError' referenced before assignment"
+            """
+            raise Exception('UUIDs did not correspond to products')
+
+        # compile list of product images (one image from each product)
+        product_images = [prod['image'] for prod in template_products]
+        logging.debug("product images: %r" % product_images)
+
+        # have store_url, app, products, template_products, product_images
+        random_product = random.choice(template_products)
+        random_image = random_product['image']
+        if not page_url: # if somehow it's still missing, fix the missing url
+            page_url = products[0].resource_url
+
+        # Make a new Link.
+        # we will be replacing this target url with the vote page url once
+        # we get an instance.
+        if instance:
+            link = instance.link  # re-use old link to get to this instance!
+            logging.info("Reusing the link of an existing instance.")
+        else:
+            link = Link.create(page_url, app, origin_domain, user)
+
+        template_values = {
+            'URL': URL,
+            'title': "Which One ... Should I Buy This?",
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'evnt': 'SIBTShowingAsk',
+            'embed': bool(self.request.get('embed', '0') == '1'),
+
+            'app': app,
+            'app_uuid': app_uuid,
+            'incentive_enabled': incentive_enabled,
+
+            'user_email': user.get_attr('email') if user_found else None,
+            'user_has_fb_token': 1 if user_found else 0,
+            'user_name': user.get_full_name() if user_found else None,
+            'user_pic': user.get_attr('pic') if user_found else None,
+            'user_uuid': self.request.get('user_uuid'),
+
+            'AB_share_text': "Should I buy this? Please let me know!",
+            'instance_uuid': instance_uuid,
+            'evnt': self.request.get('evnt'),
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
+
+            'link': link,
+            'willt_code': link.willt_url_code, # used to create full instances
+            'share_url': link.get_willt_url(), # page_url
+
+            'store_domain': store_url,
+            'target_url': page_url,
+
+            'image': random_image,
+           # random_product will be THE product on single-product mode.
+            'product_desc': random_product['product_desc'],
+            'product_images': product_images,
+            'product_title': products[0].title or "",
+            'product_uuid': products[0].uuid,  # deprecated
+            #'products': quoted_join(product_uuids),
+            'products': products,
+        }
+
+        # render SIBT/WOSIB
+        filename = 'ask-page.html'
+        path = os.path.join('apps/sibt/templates', vendor, filename)
+        if not os.path.exists(path):
+            path = os.path.join('apps/sibt/templates', filename)
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+
+
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on one or more products.
 
@@ -967,8 +1167,8 @@ class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
         """Does everything SIBTServeScript does."""
-        self.redirect("%s%s?%s" % (SECURE_URL,
-                                   url('SIBTServeScript'),
-                                   self.request.query_string),
+        self.redirect("//%s%s?%s" % (DOMAIN,
+                                     url('SIBTServeScript'),
+                                     self.request.query_string),
                       permanent=True)
         return
