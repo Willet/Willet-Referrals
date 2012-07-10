@@ -53,6 +53,7 @@ html.ask_page {
     html.ask_page .selected.product {
         background-image: url('/static/imgs/dragdrop-here-150x150.png');
         border: 1px #666 dashed;
+        cursor: move;
         display: inline-block;
         margin: 20px;
         width: 150px;
@@ -62,6 +63,7 @@ html.ask_page {
         background-color: rgba(120, 120, 120, 0.1);
         border-radius: 12px;
         box-shadow: 0px 1px 5px 0px #777777 inset;
+        height: 158px;
         margin: 0 24px 0;
         }
         html.ask_page #available_products .product {

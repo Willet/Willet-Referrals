@@ -51,8 +51,9 @@
                     <img id="sibt_people" alt="Hippie faces"
                          src="/static/sibt/imgs/happy-people-245x120.png"
                          style="float: right; margin: -20px 40px 0 0" />
-                    <h1>{{ client.name|default:"Ask a Friend" }}</h1>
-                    Undecided? Choose two products to start a vote!
+                    <h1>{{ client.name|default:"Ask Trusted Friends" }}</h1>
+                    Ask your trusted friends for advice!
+                    Choose two products for them to vote on:
                 </div>
             </header>
             <div id="main_content" class="width">
@@ -78,11 +79,14 @@
                 </section>
                 <section id="available_products">
                     <!-- JS -->
-                    <p style="padding-bottom: 24px">
-                        Can't find a product here? Find it in the shop, then
-                        click on the "Ask Trusted Friends" button again.
-                    </p>
                 </section>
+                <p>
+                    These are the products you have seen.
+                    {% if app.client.domain %}
+                        To find more products, visit more product pages at
+                        <a href="{{ app.client.domain }}">{{ app.client.name }}</a>.
+                    {% endif %}
+                </p>
             </div>
             <footer class="footer">
                 &copy; Willet, on behalf of {{ app.client.name }}
@@ -127,6 +131,24 @@
                     );
                 };
 
+                var addSelectedProduct = function (elem) {
+                    // move one of the available product elements to the
+                    // first free selected product box. If no box is free,
+                    // the second item will be replaced.
+                    var $elem = $(elem);
+                    $('.selected.product')
+                        // choose either selected[0] or selected[1].
+                        .eq(Math.min(getSelectedProductCount(), 1))
+                        .attr({
+                            'src': $elem.attr('src'),
+                            'title': $elem.attr('title')
+                        })
+                        .data('uuid', $elem.data('uuid'));
+
+                    // remove the thing.
+                    $elem.remove();
+                };
+
                 var getSelectedProducts = function () {
                     var sels = [],
                         products = $('.selected.product');
@@ -167,6 +189,14 @@
                     });
                 };
 
+                var toggleButtons = function () {
+                    if (getSelectedProductCount() >= 2) {
+                        $('#postOnWall, #chooseFriends').show();
+                    } else {
+                        $('#postOnWall, #chooseFriends').hide();
+                    }
+                };
+
                 // generate a list of available product thingies.
                 for (var i = 0; i < products.length; ++i) {
                     addAvailableProduct(products[i].image, products[i].uuid,
@@ -181,32 +211,29 @@
                     'drop': function (event, ui) {
                         var draggedImage = ui.draggable;
 
+                        // dragging from selected to selected
                         if (draggedImage.hasClass('selected')) {
-                            // dragging from selected to selected
                             swapNodes(draggedImage.get(0), this);
-                        } else {
-                            if ($(this).data('uuid')) {
-                                // if dropped into selected product box with
-                                // a product already in it, put existing product
-                                // back into available products box.
-                                addAvailableProduct($(this).attr('src'),
-                                                    $(this).data('uuid'),
-                                                    $(this).attr('title'));
-                            }
-                            $(this).attr({
-                                'src': draggedImage.attr('src'),
-                                'title': draggedImage.attr('title')
-                            }).data('uuid', draggedImage.data('uuid'));
-
-                            // visual cue that you can't add the same product again
-                            draggedImage.remove();
-
-                            if (getSelectedProductCount() >= 2) {
-                                $('#postOnWall, #chooseFriends').show();
-                            } else {
-                                $('#postOnWall, #chooseFriends').hide();
-                            }
+                            return;
                         }
+
+                        // dragging from selected back to available
+                        if ($(this).data('uuid')) {
+                            // if dropped into selected product box with
+                            // a product already in it, put existing product
+                            // back into available products box.
+                            addAvailableProduct($(this).attr('src'),
+                                                $(this).data('uuid'),
+                                                $(this).attr('title'));
+                        }
+                        $(this).attr({
+                            'src': draggedImage.attr('src'),
+                            'title': draggedImage.attr('title')
+                        }).data('uuid', draggedImage.data('uuid'));
+
+                        // visual cue that you can't add the same product again
+                        draggedImage.remove();
+                        toggleButtons();
                     }
                 });
                 $('.selected.product').draggable({revert: true});
@@ -234,14 +261,9 @@
                         // visual cue that you can't add the same product again
                         // draggedImage.remove();
 
-                        if (getSelectedProductCount() >= 2) {
-                            $('#postOnWall, #chooseFriends').show();
-                        } else {
-                            $('#postOnWall, #chooseFriends').hide();
-                        }
+                        toggleButtons();
                     }
                 });
-
 
                 $('#postOnWall, #chooseFriends').click(function () {
                     if (getSelectedProductCount() < 2) {
@@ -287,10 +309,17 @@
                                 'description': '{{ AB_share_text }}',
                                 'picture': getSelectedProducts()[0].attr('src'),
                                 'redirect_uri': '{{ fb_redirect }}'
-                            }).fire('redirectWindow');
+                            }).fire('redirectWindow');  // fire remainders
                         });
                     }
                 });
+
+                if (products.length >= 2) {
+                    var product_elems = $('#available_products .product');
+                    addSelectedProduct(product_elems.get(0));
+                    addSelectedProduct(product_elems.get(1));
+                    toggleButtons();
+                }
 
                 _willet.mediator.fire('hasjQuery', $); // load colorbox
                 _willet.mediator.fire('fbInit'); // load the FB thing
