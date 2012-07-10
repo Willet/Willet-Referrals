@@ -50,11 +50,10 @@
                          src="/static/sibt/imgs/happy-people-245x120.png"
                          style="float: right; margin: -20px 40px 0 0" />
                     <h1>{{ client.name|default:"Ask a Friend" }}</h1>
-                    Which one should you buy? Get your friends' help!
+                    Undecided? Choose two products to start a vote!
                 </div>
             </header>
             <div id="main_content" class="width">
-                <h2>Choose two products to compare.</h2>
                 <div class="invisible error">Please select two products :)</div>
                 <section id="selected_products">
                     <span>
@@ -66,16 +65,22 @@
                         <img class="selected product" />
                     </span>
                     <span id="button_container">
-                        <button id="postOnWall" style="display: none">Post vote on Facebook</button>
+                        <button id="postOnWall" style="display: none">
+                            Post vote on Facebook
+                        </button>
                         <br/>
-                        <button id="chooseFriends" style="display: none">Choose friends to vote</button>
+                        <button id="chooseFriends" style="display: none">
+                            Choose friends to vote
+                        </button>
                     </span>
                 </section>
                 <section id="available_products">
                     <!-- JS -->
+                    <p style="padding-bottom: 24px">
+                        Can't find a product here? Find it in the shop, then
+                        click on the "Ask Trusted Friends" button again.
+                    </p>
                 </section>
-                <p>Can't find a product here? Find it in the shop, then
-                   click on the "Ask Trusted Friends" button again.</p>
             </div>
             <footer class="footer">
                 &copy; Willet, on behalf of {{ app.client.name }}
@@ -90,13 +95,23 @@
                     var params  = "error=SIBT%20Error" + error +
                                 "&script=" + encodeURIComponent(file + ':' + line) +
                                 "&st=" + encodeURIComponent(message);
-                    (new Image).src = "//{{ DOMAIN }}{% url ClientSideMessage %}?" + params;
+                    (new Image).src = "//{{ DOMAIN }}{% url ClientSideMessage %}?" +
+                                      params;
                 } catch (err) { /* then all hope is lost :'( */ }
             };
 
             {# var products = [] #}{% include "products_include.js" %}
 
             $(document).ready(function () {
+                var swapNodes = function (a, b) {
+                    // according to http://stackoverflow.com/questions/698301,
+                    // swaps the position of two elements.
+                    var aparent= a.parentNode;
+                    var asibling= a.nextSibling===b? a : a.nextSibling;
+                    b.parentNode.insertBefore(a, b);
+                    aparent.insertBefore(b, asibling);
+                };
+
                 var addAvailableProduct = function (src, uuid, title) {
                     // put a product in the basket of things you can add.
                     var product_elem = $('<img />', {
@@ -122,17 +137,10 @@
                 };
 
                 var getSelectedProductCount = function () {
-                    var count = 0,
-                        products = $('.selected.product');
-                    for (var i = 0; i < products.length; ++i) {
-                        if ($(products[i]).data('uuid')) {
-                            count++;
-                        }
-                    }
-                    return count;
+                    return getSelectedProducts().length;
                 };
 
-                var createSIBTInstance = function (callback) {
+                var createSIBTInstance = function (callback, params) {
                     // warning: function finishes before ajax completes.
                     var product_uuids = [],
                         selectedProducts = getSelectedProducts();
@@ -148,7 +156,9 @@
                             'page_url': '{{ page_url }}',
                             'products': product_uuids.join(',')
                         },
-                        success: callback
+                        success: function () {
+                            callback(params);
+                        }
                     });
                 };
 
@@ -160,31 +170,73 @@
 
                 // set drop targets
                 $('.selected.product').droppable({
-                    drop: function (event, ui) {
+                    // drag from available to selected
+                    // also allow product position swapping <nt3rp>
+                    'accept': '#available_products .product, .selected.product',
+                    'drop': function (event, ui) {
                         var draggedImage = ui.draggable;
 
-                        if ($(this).data('uuid')) {
-                            // if dropped into selected product box with
-                            // a product already in it, put existing product
-                            // back into available products box.
-                            addAvailableProduct($(this).attr('src'),
-                                                $(this).data('uuid'),
-                                                $(this).attr('title'));
-                        }
+                        if (draggedImage.hasClass('selected')) {
+                            // dragging from selected to selected
+                            swapNodes(draggedImage.get(0), this);
+                        } else {
+                            if ($(this).data('uuid')) {
+                                // if dropped into selected product box with
+                                // a product already in it, put existing product
+                                // back into available products box.
+                                addAvailableProduct($(this).attr('src'),
+                                                    $(this).data('uuid'),
+                                                    $(this).attr('title'));
+                            }
+                            $(this).attr({
+                                'src': draggedImage.attr('src'),
+                                'title': draggedImage.attr('title')
+                            }).data('uuid', draggedImage.data('uuid'));
 
-                        $(this).attr({
-                            'src': draggedImage.attr('src'),
-                            'title': draggedImage.attr('title')
-                        }).data('uuid', draggedImage.data('uuid'));
+                            // visual cue that you can't add the same product again
+                            draggedImage.remove();
 
-                        // visual cue that you can't add the same product again
-                        draggedImage.remove();
-
-                        if (getSelectedProductCount() >= 2) {
-                            $('#postOnWall, #chooseFriends').show();
+                            if (getSelectedProductCount() >= 2) {
+                                $('#postOnWall, #chooseFriends').show();
+                            } else {
+                                $('#postOnWall, #chooseFriends').hide();
+                            }
                         }
                     }
                 });
+                $('.selected.product').draggable({revert: true});
+                $('#available_products').droppable({
+                    // drag back from selected to available <nt3rp>
+                    'accept': '.selected.product',
+                    'drop': function (event, ui) {
+                        var draggedImage = ui.draggable;
+
+                        if (ui.draggable.data('uuid')) {
+                            // if dropped into selected product box with
+                            // a product already in it, put existing product
+                            // back into available products box.
+                            addAvailableProduct(ui.draggable.attr('src'),
+                                                ui.draggable.data('uuid'),
+                                                ui.draggable.attr('title'));
+                        }
+
+                        // force background-image to show up again
+                        draggedImage.attr({
+                            'src': '/static/imgs/noimage.png',
+                            'title': ''
+                        }).data('uuid', '');
+
+                        // visual cue that you can't add the same product again
+                        // draggedImage.remove();
+
+                        if (getSelectedProductCount() >= 2) {
+                            $('#postOnWall, #chooseFriends').show();
+                        } else {
+                            $('#postOnWall, #chooseFriends').hide();
+                        }
+                    }
+                });
+
 
                 $('#postOnWall, #chooseFriends').click(function () {
                     if (getSelectedProductCount() < 2) {
@@ -216,19 +268,26 @@
                             break;
                     }
                     // first make the instance, then send or post it.
-                    createSIBTInstance(function () {
-                        _willet.mediator.fire(objective, {
-                            'title': 'Not sure which one I should buy!',
-                            'link': '{{ share_url }}',
-                            'caption': 'Not sure which one I should buy!',
-                            'description': '{{ AB_share_text }}',
-                            'picture': getSelectedProducts()[0].attr('src'),
-                            'redirect_uri': '{{ fb_redirect }}'
+                    if (objective) {
+                        // Wub wub wub wub wub wub (V)(;,,;)(V)
+                        var button = $(this);
+                        var oldButtonText = button.text();
+                        button.text('Please wait...');
+                        createSIBTInstance(function () {
+                            button.text(oldButtonText);
+                            _willet.mediator.fire(objective, {
+                                'name': 'Not sure which one I should buy!',
+                                'link': '{{ share_url }}',
+                                'caption': 'Not sure which one I should buy!',
+                                'description': '{{ AB_share_text }}',
+                                'picture': getSelectedProducts()[0].attr('src'),
+                                'redirect_uri': '{{ fb_redirect }}'
+                            });
                         });
-                    });
+                    }
                 });
 
-                _willet.mediator.fire('fbInit');
+                _willet.mediator.fire('fbInit'); // load the FB thing
             });
         </script>
         {% endblock body_script %}

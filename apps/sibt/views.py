@@ -360,6 +360,8 @@ class AskPageDynamicLoader(URIHandler):
         template_values = {
             'URL': URL,
             'DOMAIN': DOMAIN,
+
+            'page_url': page_url,
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
@@ -378,8 +380,6 @@ class AskPageDynamicLoader(URIHandler):
             'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
             'share_url': link.get_willt_url(), # page_url
-
-            'target_url': page_url,
 
             'products': products,
         }

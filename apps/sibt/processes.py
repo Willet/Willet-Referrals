@@ -26,7 +26,7 @@ from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
-from util.shopify_helpers import get_shopify_url
+from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -128,7 +128,6 @@ class StartSIBTInstance(URIHandler):
                 'message': None
             }
         }
-        user = User.get_or_create_by_cookie(self, app)
 
         app = SIBT.get(self.request.get('app_uuid'))
         if not (app and app.client):
@@ -144,6 +143,8 @@ class StartSIBTInstance(URIHandler):
         if not (products and len(products)):
             response['data']['message'] = "products not found"
             self.response.out.write(json.dumps(response))
+
+        user = User.get_or_create_by_cookie(self, app)
 
         logging.debug('domain = %r' % get_domain(page_url))
         # the href will change as soon as the instance is done being created!
@@ -161,29 +162,16 @@ class StartSIBTInstance(URIHandler):
 
         # after creating the instance, switch the link's URL right back to the
         # instance's vote page
-        link.target_url = urlunsplit([PROTOCOL,
-                                      DOMAIN,
-                                      url('VoteDynamicLoader'),
-                                      ('instance_uuid=%s' % instance.uuid),
-                                      ''])
+        link.target_url = urlparse.urlunsplit([PROTOCOL,
+                                               DOMAIN,
+                                               url('VoteDynamicLoader'),
+                                               ('instance_uuid=%s' % instance.uuid),
+                                               ''])
         logging.info("link.target_url changed to %s" % link.target_url)
         link.put()
 
-        try:
-            # Make the Instance!
-            instance = app.create_instance(user=user,
-                                           end=None,
-                                           link=link,
-                                           dialog="ConnectFB",
-                                           img=img,
-                                           motivation=None,
-                                           sharing_message="",
-                                           products=[])
-            response['success'] = True
-            response['data']['instance_uuid'] = instance.uuid
-        except Exception, e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error creating the instance', exc_info=True)
+        response['success'] = True
+        response['data']['instance_uuid'] = instance.uuid
 
         self.response.out.write(json.dumps(response))
 

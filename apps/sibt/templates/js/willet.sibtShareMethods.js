@@ -38,14 +38,14 @@ _willet.sibtShareMethods = (function (me) {
         // see simple code below to check what the params object requires.
         try { // detect adblock
             FB.ui({method: 'feed',
-                   name: params.title || '(no title)',
+                   name: params.name || '(no title)',
                    link: params.link || window.location.href,
-                   picture: params.image || '{{ URL }}/static/imgs/noimage-willet.png',
+                   picture: params.picture || '{{ URL }}/static/imgs/noimage-willet.png',
 
                    display: params.display || 'popup',  // 'iframe'
                    caption: params.caption || '(no caption)',
                    description: params.description || '(no description)',
-                   redirect_uri: params.redirect || window.location.href});
+                   redirect_uri: params.redirect_uri || window.location.href});
         } catch (e) {
             wm.fire('log', 'FB not loaded (adblock? remember to run init() first.)');
         }
@@ -57,14 +57,14 @@ _willet.sibtShareMethods = (function (me) {
         // see simple code below to check what the params object requires.
         try { // detect adblock
             FB.ui({method: 'send',
-                   name: params.title || '(no title)',
+                   name: params.name || '(no title)',
                    link: params.link || window.location.href,
-                   picture: params.image || '{{ URL }}/static/imgs/noimage-willet.png',
+                   picture: params.picture || '{{ URL }}/static/imgs/noimage-willet.png',
 
                    display: params.display || 'popup',  // 'iframe'
                    caption: params.caption || '(no caption)',
                    description: params.description || '(no description)',
-                   redirect_uri: params.redirect || window.location.href});
+                   redirect_uri: params.redirect_uri || window.location.href});
         } catch (e) {
             wm.fire('log', 'FB not loaded (adblock? remember to run init() first.)');
         }
