@@ -28,7 +28,14 @@ _willet.storage = (function (me) {
 
     me.set = me.set || function (name, value) {
         if (me.localStorage) {
-            me.localStorage.setItem(name, value);
+            try {
+                // why: http://stackoverflow.com/questions/2603682
+                me.del(name);
+
+                me.localStorage.setItem(name, value);
+            } catch (err) {  // 95% QUOTA_EXCEEDED_ERR
+                me.reportError('localStorage failed to set something: ' + err);
+            }
         } else {
             me.reportError();
         }
@@ -46,7 +53,7 @@ _willet.storage = (function (me) {
     me.reportError = me.reportError || function (msg) {
         // fire off a harshly-worded letter to the dev team about how
         // the browser is misbehaving.
-        wm.fire('error', "localStorage could not be found on this browser!");
+        wm.fire('error', msg || 'localStorage could not be found on this browser!');
     };
 
     // set up your module hooks
