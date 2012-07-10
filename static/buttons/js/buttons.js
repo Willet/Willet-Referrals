@@ -1029,7 +1029,7 @@ _willet = (function (me, config) {
         supportedNetworks = me.networks,
         util = me.util;
 
-    // Private variables
+    // Constants
     var MY_APP_URL = "http://willet-nterwoord.appspot.com",
         WILLET_APP_URL = "http://social-referral.appspot.com",
         APP_URL = WILLET_APP_URL,
@@ -1062,7 +1062,7 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring
+            // How this regex works: replaces .../products/ or a trailing / with empty string
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";

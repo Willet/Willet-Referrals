@@ -236,6 +236,40 @@ _willet.util = {
             }
         }
         return template;
+    },
+    "parseQS": function(src) {
+        var qs = src.indexOf('?') ? src.substr(src.indexOf('?')+1) : null,
+            params = {};
+
+        if (qs) {
+            // A little hack - convert the query string into JSON format and parse it
+            // '&' -> ',' and '=' -> ':'
+            try {
+                params = JSON.parse('{"' + decodeURIComponent(qs.replace(/(&amp;|&)/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+            } catch(e) {
+                _willet.debug.error("Couldn't parse query string")
+            }
+        }
+
+        return params;
+    },
+    "getConfigFromQS": function() {
+        // Find ourself
+        var i,
+            regex = /\.appspot\.com\/.*\/(smart-)?buttons\.js/,
+            scripts = document.getElementsByTagName("script"),
+            src;
+
+        for (i = 0; i < scripts.length; i++) {
+            if (regex.test(scripts[i].src)) {
+                src = scripts[i].src;
+                break;
+            }
+        }
+
+
+        // get the config
+        return _willet.util.parseQS(src);
     }
 };
 
