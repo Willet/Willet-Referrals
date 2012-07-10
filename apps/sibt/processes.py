@@ -149,7 +149,10 @@ class StartSIBTInstance(URIHandler):
         logging.debug('domain = %r' % get_domain(page_url))
         # the href will change as soon as the instance is done being created!
         link = Link.get_by_code(self.request.get('code'))
-        if not link:
+        if link:
+            logging.info('using existing link %s' % self.request.get('code'))
+        else:
+            logging.info('no code supplied; creating link')
             link = Link.create(targetURL=page_url,
                                app=app,
                                domain=get_shopify_url(page_url),
