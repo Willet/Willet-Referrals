@@ -58,8 +58,8 @@ _willet.storage = (function (me) {
 
     // set up your module hooks
     if (_willet.mediator) {
-        // mediator.fire() does not return a value... you're out of luck
-        // _willet.mediator.on('storageGet', me.get);
+        // use mediator.getResult('storageGet', ...) to get a return value.
+        _willet.mediator.on('storageGet', me.get);
         _willet.mediator.on('storageSet', me.set);
         _willet.mediator.on('storageDel', me.del);
     }

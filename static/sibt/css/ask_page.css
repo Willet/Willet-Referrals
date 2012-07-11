@@ -60,6 +60,7 @@ html.ask_page {
         height: 150px;
     }
     html.ask_page #available_products {
+        background-color: #eee; /* IE8 and older browsers without RGBA */
         background-color: rgba(120, 120, 120, 0.1);
         border-radius: 12px;
         box-shadow: 0px 1px 5px 0px #777777 inset;

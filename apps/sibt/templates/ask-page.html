@@ -4,8 +4,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
 
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+        <!--[if lt IE 9]><script src="/static/js/html5shiv.js"></script><![endif]-->
         <link rel="stylesheet" href="/static/sibt/css/ask_page.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/button.css" type="text/css" />
         <link rel="stylesheet" href="/static/css/colorbox.css" type="text/css" />
@@ -16,6 +17,7 @@
             {% include "js/willet.mediator.js" %}
             {% include "js/willet.debug.js" %}
             {% include "js/willet.loader.js" %}
+            {% include "js/willet.storage.js" %}
             {% include "js/willet.colorbox.js" %}
             {% include "js/willet.analytics.js" %}
             {% include "js/willet.sibtShareMethods.js" %}
@@ -67,14 +69,17 @@
                         Choice B <br/>
                         <img class="selected product" />
                     </span>
-                    <span id="button_container">
-                        <button id="postOnWall" style="display: none">
+                    <span id="button_container" style="display: none">
+                        <button id="postOnWall">
                             Post vote on Facebook
                         </button>
                         <br/>
-                        <button id="chooseFriends" style="display: none">
+                        <button id="chooseFriends">
                             Choose friends to vote
                         </button>
+                        <p>
+                          <a href="">See an example vote</a>
+                        </p>
                     </span>
                 </section>
                 <section id="available_products">
@@ -96,7 +101,7 @@
         {% block body_script %}
         <script type="text/javascript">
             window.onerror = function (message, file, line) {
-                // improvised error reporting snippet.
+                // improvised page-wide error reporting snippet.
                 try {
                     var params  = "error=SIBT%20Error" + error +
                                 "&script=" + encodeURIComponent(file + ':' + line) +
@@ -146,7 +151,11 @@
                         .data('uuid', $elem.data('uuid'));
 
                     // remove the thing.
-                    $elem.remove();
+                    try {
+                        $elem.remove();
+                    } catch (e) {
+                        alert('1');
+                    }
                 };
 
                 var getSelectedProducts = function () {
@@ -165,7 +174,7 @@
                 };
 
                 var createSIBTInstance = function (callback, params) {
-                    // warning: function finishes before ajax completes.
+                    // either creates or updates a SIBT instance (server decides)
                     var product_uuids = [],
                         selectedProducts = getSelectedProducts();
                     for (var i = 0; i < selectedProducts.length; ++i) {
@@ -179,21 +188,24 @@
                             'app_uuid': '{{ app.uuid }}',
                             'page_url': '{{ page_url }}',
 
+                            // if provided, use existing instance
+                            'instance_uuid': '{{ instance.uuid }}',
+
                             // if provided, use existing link
                             'code': '{{ willt_code }}',
                             'products': product_uuids.join(',')
                         },
                         success: function () {
-                            callback(params);
+                            return callback(params);
                         }
                     });
                 };
 
                 var toggleButtons = function () {
                     if (getSelectedProductCount() >= 2) {
-                        $('#postOnWall, #chooseFriends').show();
+                        $('#button_container').show();
                     } else {
-                        $('#postOnWall, #chooseFriends').hide();
+                        $('#button_container').hide();
                     }
                 };
 
@@ -232,7 +244,12 @@
                         }).data('uuid', draggedImage.data('uuid'));
 
                         // visual cue that you can't add the same product again
-                        draggedImage.remove();
+                        try {
+                            draggedImage.remove();
+                        } catch (e) {
+                            alert('2');
+                        }
+
                         toggleButtons();
                     }
                 });
@@ -257,9 +274,6 @@
                             'src': '/static/imgs/noimage.png',
                             'title': ''
                         }).data('uuid', '');
-
-                        // visual cue that you can't add the same product again
-                        // draggedImage.remove();
 
                         toggleButtons();
                     }
@@ -300,17 +314,30 @@
                         var button = $(this);
                         var oldButtonText = button.text();
                         button.text('Please wait...');
-                        createSIBTInstance(function () {
+
+                        var fbInstanceCallback = function () {
                             button.text(oldButtonText);
                             _willet.mediator.fire(objective, {
                                 'name': 'Not sure which one I should buy!',
                                 'link': '{{ share_url }}',
                                 'caption': 'Not sure which one I should buy!',
                                 'description': '{{ AB_share_text }}',
-                                'picture': getSelectedProducts()[0].attr('src'),
+                                'picture': getSelectedProducts()[0].attr('src') ||
+                                           '//{{ DOMAIN }}/static/imgs/noimage.png',
                                 'redirect_uri': '{{ fb_redirect }}'
                             }).fire('redirectWindow');  // fire remainders
-                        });
+                        };
+
+                        // determine if we should show the FB popup right now
+                        // or after creating an instance.
+                        if ('{{ instance.uuid }}') {  // '' if instance didn't exist
+                            // run callback while creating
+                            createSIBTInstance();
+                            fbInstanceCallback();
+                        } else {
+                            // run callback after creating
+                            createSIBTInstance(fbInstanceCallback);
+                        }
                     }
                 });
 

@@ -348,6 +348,12 @@ class AskPageDynamicLoader(URIHandler):
             self.response.out.write("Products requested are not in our database yet.")
             return
 
+        # generate an Instance ahead of time.
+        instance = self.create_instance(app=app, page_url=page_url,
+                                        product_uuids=[x.uuid for x in products],
+                                        sharing_message="",
+                                        user=user)
+
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
@@ -370,6 +376,7 @@ class AskPageDynamicLoader(URIHandler):
             'app': app,
             'app_uuid': app_uuid,
             'incentive_enabled': incentive_enabled,
+            'instance': instance,
 
             'AB_share_text': "Which one should I buy? Please let me know!",
             'instance_uuid': instance_uuid,
@@ -393,6 +400,46 @@ class AskPageDynamicLoader(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message="", user=None):
+        """Helper to create an instance without question."""
+        if not user:
+            User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
 
 
 class VoteDynamicLoader(URIHandler):

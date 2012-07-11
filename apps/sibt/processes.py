@@ -107,7 +107,7 @@ class SIBTSignUp(URIHandler):
 
 
 class StartSIBTInstance(URIHandler):
-    """Create a SIBT instance."""
+    """Create OR edit a SIBT instance."""
     def post(self):
         """Given:
         - app_uuid,
@@ -115,7 +115,8 @@ class StartSIBTInstance(URIHandler):
         - products (a CSV of product UUIDs),
         create a SIBTInstance.for the current (cookied) user.
 
-        If [link]code is supplied, that link will be reused.
+        If [link]code is supplied (and valid), that link will be reused.
+        If instance_uuid is supplied (and valid), no new instance will be made.
 
         The resultant JSON will contain the instance uuid if successful:
         {data:{instance_uuid:abc}}
@@ -158,10 +159,18 @@ class StartSIBTInstance(URIHandler):
                                domain=get_shopify_url(page_url),
                                user=user)
 
-        instance = app.create_instance(user=user, end=None, link=link,
-                                       dialog="", img="",
-                                       motivation=self.request.get('motivation', None),
-                                       sharing_message="", products=products)
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+        if instance:  # instance created ahead of time
+            logging.info('using existing instance %s' % instance.uuid)
+            instance.link = link
+            instance.products = products
+            instance.put()
+        else:  # instance to be created
+            logging.info('no uuid supplied; creating instance')
+            instance = app.create_instance(user=user, end=None, link=link,
+                                           dialog="", img="",
+                                           motivation=self.request.get('motivation', None),
+                                           sharing_message="", products=products)
 
         # after creating the instance, switch the link's URL right back to the
         # instance's vote page

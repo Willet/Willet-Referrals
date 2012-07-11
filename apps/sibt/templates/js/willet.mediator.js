@@ -83,6 +83,22 @@ _willet.mediator = (function (me) {
         }
     };
 
+    me.getResult = me.getResult || function (event, params) {
+        // call the last function registered to an event.
+        // returns the function return (main reason why you'd use getResult())
+        // params is optional.
+        var eventHooks = me.hooks[event] || [];
+
+        try {
+            var lastFunction = eventHooks[eventHooks.length - 1][0],
+                lastParams = eventHooks[eventHooks.length - 1][1];
+
+            return lastFunction(params || lastParams);
+        } catch (e) {
+            // oh well
+        }
+    };
+
     // subscribing to an event - fire a function when it happens. (FIFO)
     // params is optional.
     me.on = me.on || function (event, func, params) {
