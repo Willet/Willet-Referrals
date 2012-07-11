@@ -61,13 +61,17 @@
             <div id="main_content" class="width">
                 <div class="invisible error">Please select two products :)</div>
                 <section id="selected_products">
-                    <span>
+                    <span class="selected item">
                         Choice A <br/>
-                        <img class="selected product" />
+                        <span class="selected target">
+                            <img class="selected product" />
+                        </span>
                     </span>
-                    <span>
+                    <span class="selected item">
                         Choice B <br/>
-                        <img class="selected product" />
+                        <span class="selected target">
+                            <img class="selected product" />
+                        </span>
                     </span>
                     <span id="button_container" style="display: none">
                         <button id="postOnWall">
@@ -83,6 +87,10 @@
                     </span>
                 </section>
                 <section id="available_products">
+                    <img alt="drag" src="/static/imgs/drag-and-drop-upward-120x75.png"
+                         style="position: absolute;
+                                top: -70px;;
+                                left: 50px;" />
                     <!-- JS -->
                 </section>
                 <p>

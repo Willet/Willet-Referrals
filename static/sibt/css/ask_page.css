@@ -50,22 +50,36 @@ html.ask_page {
         text-align: left;
         vertical-align: top;
     }
-    html.ask_page .selected.product {
-        background-image: url('/static/imgs/dragdrop-here-150x150.png');
-        border: 1px #666 dashed;
-        cursor: move;
+    html.ask_page .selected.item {
         display: inline-block;
         margin: 20px;
+    }
+    html.ask_page .selected.target {
+        background-image: url('/static/imgs/dragdrop-here-150x150.png');
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        border: 1px #666 dashed;
+
+        display: inline-block;
         width: 150px;
         height: 150px;
     }
+    html.ask_page .selected.product {
+        cursor: move;
+        display: inline-block;
+        /*margin: 20px;*/
+        width: 150px;
+        height: 150px;
+        z-index: 15;
+    }
     html.ask_page #available_products {
-        background-color: #eee; /* IE8 and older browsers without RGBA */
+        background-color: #e5e5e5; /* IE8 and older browsers without RGBA */
         background-color: rgba(120, 120, 120, 0.1);
         border-radius: 12px;
         box-shadow: 0px 1px 5px 0px #777777 inset;
         height: 158px;
         margin: 0 24px 0;
+        position: relative;
         }
         html.ask_page #available_products .product {
             border: 1px #666 solid;
@@ -75,6 +89,7 @@ html.ask_page {
 
             width: 120px;
             height: 120px;
+            z-index: 20;
     }
     html.ask_page footer, html.ask_page .footer {
         color: #999;
