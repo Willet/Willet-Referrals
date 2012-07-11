@@ -18,6 +18,9 @@ class ReEngageAppPage(URIHandler):
 
 class ReEngageLanding(URIHandler):
     def get(self):
+        session = get_current_session()
+        logging.info("Session ID: %r" % session.sid)
+
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
         client = ClientShopify.get_by_url(shop)
@@ -28,17 +31,20 @@ class ReEngageLanding(URIHandler):
         if not app:
             pass  # TODO: Error
 
-        session = get_current_session()
+
         qs_params = {
             "t"   : app.store_token,
             "shop": app.store_url,
         }
 
         if created:
+            logging.info("Recently created, loading instructions...")
             page = build_url("ReEngageInstructions", qs=qs_params)
-        elif session.is_active():
+        elif session.is_active() and session.get('logged_in'):
+            logging.info("Session is active, going to main page...")
             page = build_url("ReEngageQueueHandler", qs=qs_params)
         else:
+            logging.info("No active session, going to login page...")
             page = build_url("ReEngageLogin", qs=qs_params)
 
         self.redirect(page)
@@ -80,8 +86,9 @@ class ReEngageLogin(URIHandler):
             session = get_current_session()
             session.regenerate_id()
 
-            session['t']    = token
-            session['shop'] = shop
+            session['logged_in'] = True
+            session['t']         = token
+            session['shop']      = shop
 
             page = build_url("ReEngageQueueHandler", qs={})
         else:
@@ -94,11 +101,20 @@ class ReEngageLogin(URIHandler):
 
 class ReEngageLogout(URIHandler):
     def get(self):
-        # Redirect to previous URL
+        # TODO: Redirect to previous URL
         pass
 
     def post(self):
         """Display the 'logged out' page"""
         session = get_current_session()
+        token = session.get("t")
+        shop  = session.get("shop")
+
+        page = build_url("ReEngageLogin", qs={
+            "t": token,
+            "shop" : shop
+        })
+
         session.terminate()
-        pass
+        logging.info("Session ID: %r" % session.sid)
+        self.redirect(page)

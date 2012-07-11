@@ -3,11 +3,29 @@ import django.utils.simplejson as json
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
 from util.gaesessions import get_current_session
-from util.helpers import generate_uuid
+from util.helpers import generate_uuid, url as build_url
 from util.urihandler import URIHandler
 
 #TODO: How to avoid stupid `if json else` construct`
 #TODO: Error handling
+
+def session_active(fn):
+    def wrapped(*args, **kwargs):
+        session = get_current_session()
+
+        if session.is_active() and session.get("logged_in"):
+            logging.info("Session is active: Allow user to access resource.")
+            fn(*args, **kwargs)
+        else:
+            logging.info("Session is inactive: Redirect user.")
+            self = args[0] # Assume that self is the first arg
+            page = build_url("ReEngageLogin", qs={
+                "t"   : session.get("token"),
+                "shop": session.get("shop")
+            })
+            self.redirect(page)
+
+    return wrapped
 
 def get_queue(request):
     store_url = request.get("shop")
@@ -30,6 +48,7 @@ def get_post(uuid):
     return post
 
 class ReEngageQueueHandler(URIHandler):
+    @session_active
     def get(self):
         """Get all queued elements for a shop"""
         session = get_current_session()
@@ -50,9 +69,11 @@ class ReEngageQueueHandler(URIHandler):
             page = self.render_page('queue.html', {
                 "t": session.get("t"),
                 "shop": session.get("shop"),
+                "host" : self.request.host_url
             })
             self.response.out.write(page)
 
+    @session_active
     def post(self):
         """Create a new post element in the queue"""
         queue = get_queue(self.request)
@@ -80,6 +101,7 @@ class ReEngageQueueHandler(URIHandler):
         self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
         self.response.out.write(json_response)
 
+    @session_active
     def delete(self):
         """Delete all post elements in this queue"""
         queue = get_queue(self.request)
@@ -94,6 +116,7 @@ class ReEngageQueueHandler(URIHandler):
 
 
 class ReEngagePostHandler(URIHandler):
+    @session_active
     def get(self, uuid):
         """Get all details for a given post"""
         post = get_post(uuid)
@@ -111,13 +134,13 @@ class ReEngagePostHandler(URIHandler):
             page = self.render_page('post.html', {})
             self.response.out.write(page)
 
-
-
+    @session_active
     def put(self, uuid):
         """Update the details of a post"""
         # Unused, for now
         self.respond(204)
 
+    @session_active
     def delete(self, uuid):
         """Delete an individual post"""
         post = get_post(uuid)
@@ -136,6 +159,7 @@ class ReEngageProductSourceHandler(URIHandler):
 
     A product source is any category, product, or store
     """
+    @session_active
     def get(self):
         """Obtains information about a given ProductSource."""
         url = self.request.get("url")
@@ -149,6 +173,7 @@ class ReEngageProductSourceHandler(URIHandler):
             page = self.render_page('product.html', {})
             self.response.out.write(page)
 
+    @session_active
     def post(self):
         """Posts to the ProductSource."""
         self.respond(204)

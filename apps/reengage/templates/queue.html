@@ -4,6 +4,9 @@
     <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 </head>
     {{ t }}<br/>{{ shop }}
+    <form action="{{ host }}{% url ReEngageLogout %}" method="POST">
+        <input type="submit" value="Log out"/>
+    </form>
 <body>
 </body>
 </html>
