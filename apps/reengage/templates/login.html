@@ -1,0 +1,12 @@
+<html>
+<body>
+<form action="{{ host }}{% url ReEngageLogin %}" method="POST">
+    <input type="text" name="username" />
+    <input type="password" name="password" />
+
+    <input type="hidden" name="t" value="{{ t }}" />
+    <input type="hidden" name="shop"  value="{{ shop }}" />
+    <input type="submit" value="Submit"/>
+</form>
+</body>
+</html>
