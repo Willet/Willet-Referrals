@@ -245,6 +245,203 @@ class AskDynamicLoader(URIHandler):
         return
 
 
+class AskPageDynamicLoader(URIHandler):
+    """Serves a plugin that will contain various functionality
+
+    for sharing information about a purchase just made by one of our clients
+    """
+    @obtain('app_uuid', 'instance_uuid', 'user_uuid')
+    def get(self, app_uuid, instance_uuid, user_uuid):
+        """Shows the SIBT Ask page. Also used by SIBTShopify.
+
+        params:
+            url (required): the product URL; typically window.location.href
+                v11: page_url may be vote page url.
+            products (required): UUIDs of all products to be included
+                                 (first UUID will be primary product)
+
+            store_url (optional): helps pinpoint the store
+            user_uuid (optional)
+            embed (optional): reduces size of window and removes some elements.
+            instance_uuid (optional): if supplied, ask.html will not create
+                                      a new instance. asks will be sent with
+                                      this instance.
+        """
+        incentive_enabled = False
+        instance = SIBTInstance.get(instance_uuid)  # None
+        link = None
+        origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
+        page_url = self.request.get('url', '') or \
+                   self.request.get('page_url', '') or \
+                   self.request.get('target_url', '') or \
+                   self.request.headers.get('referer', '')  # NOT page url!
+        product = None
+        product_images = []
+        store_url = ''
+        vendor = self.request.get('vendor', '')  # changes template used
+
+        # We should absolutely have a user here, but they could have blocked their cookies
+        user = User.get(user_uuid)
+        user_found = hasattr(user, 'fb_access_token')
+
+        # Store registration url (with backup options if it's missing)
+        store_url = self.request.get('store_url', '') or page_url
+
+        if not store_url:
+            msg = "store_url not found in ask.html query string!"
+            logging.error(msg)
+            self.response.out.write(msg)
+            return
+
+        # have page_url, store_url
+        app = get_app(urihandler=self)
+
+        if not app:
+            logging.error("Could not find SIBT app for %s" % store_url)
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        elif not hasattr(app, 'client'):
+            logging.error("SIBT app has no client. Probably uninstall.")
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        logging.debug("app = %r" % app)
+
+        # if both are present and extra_url needs to be filled...
+        if store_url and page_url and not hasattr(app, 'extra_url'):
+            """Checks if page_url (almost always window.location.href)
+            has the same domain as store url
+            If true, save the alternative URL so it can be called back later.
+
+            Example: http://social-referral.appspot.com/s/ask.html?
+                     store_url=http://thegoodhousewife.myshopify.com
+                    &page_url=http://thegoodhousewife.co.nz/cart&...
+            """
+            try:
+                url_parts = urlparse(page_url)
+                if url_parts.scheme and url_parts.netloc:
+                    # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                    if url_parts.netloc not in urllib2.unquote(store_url):
+                        logging.info("[SIBT] associating a new URL, %s, "
+                                    "with the original, %s" % (app.extra_url,
+                                                                app.store_url))
+                        app.extra_url = "%s://%s" % (url_parts.scheme,
+                                                    url_parts.netloc)
+                        app.put()
+            except:
+                logging.error("Could not save app extra_url", exc_info=True)
+                pass  # failure is, in fact, an option.
+
+        incentive_enabled = getattr(app, 'incentive_enabled', False)
+        shopify_id = getattr(product, 'shopify_id', '')
+
+        # see which template we should we using.
+        try:
+            if app.client and app.client.is_vendor:
+                vendor = app.client.name
+        except (NameError, AttributeError):
+            pass  # not a vendor
+
+        # successive steps to obtain the product(s) using any way possible
+        products = get_products(urihandler=self)
+        if not products[0]:  # we failed to find a single product!
+            logging.error("Could not find products; quitting")
+            self.response.out.write("Products requested are not in our database yet.")
+            return
+
+        # generate an Instance ahead of time.
+        instance = self.create_instance(app=app, page_url=page_url,
+                                        product_uuids=[x.uuid for x in products],
+                                        sharing_message="",
+                                        user=user)
+
+        # Make a new Link.
+        # we will be replacing this target url with the vote page url once
+        # we get an instance.
+        if instance:
+            link = instance.link  # re-use old link to get to this instance!
+            logging.info("Reusing the link of an existing instance.")
+        else:
+            link = Link.create(page_url, app, origin_domain, user)
+
+        template_values = {
+            'URL': URL,
+            'DOMAIN': DOMAIN,
+
+            'page_url': page_url,
+            'title': "Which One ... Should I Buy This?",
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'evnt': 'SIBTShowingAsk',
+            'embed': bool(self.request.get('embed', '0') == '1'),
+
+            'app': app,
+            'app_uuid': app_uuid,
+            'incentive_enabled': incentive_enabled,
+            'instance': instance,
+
+            'AB_share_text': "Which one should I buy? Please let me know!",
+            'instance_uuid': instance_uuid,
+            'evnt': self.request.get('evnt'),
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
+
+            'link': link,
+            'willt_code': link.willt_url_code, # used to create full instances
+            'share_url': link.get_willt_url(), # page_url
+
+            'products': products,
+        }
+
+        # render SIBT/WOSIB
+        filename = 'ask-page.html'
+        path = os.path.join('apps/sibt/templates', vendor, filename)
+        if not os.path.exists(path):
+            path = os.path.join('apps/sibt/templates', filename)
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message="", user=None):
+        """Helper to create an instance without question."""
+        if not user:
+            User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
+
+
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on one or more products.
 
@@ -356,6 +553,16 @@ class VoteDynamicLoader(URIHandler):
             product = products[0]
         elif not products:
             products = [product]
+
+        # append vote counts for each product onto the product (for now)
+        # .votes will disappear from the product object on function exit.
+        votes_dict = instance.get_product_votes()
+        if votes_dict:
+            for product in products:
+                try:
+                    product.votes = votes_dict[product.uuid]
+                except IndexError:
+                    product.votes = 0
 
         try:
             product_img = product.images[0]
@@ -967,8 +1174,8 @@ class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
         """Does everything SIBTServeScript does."""
-        self.redirect("%s%s?%s" % (SECURE_URL,
-                                   url('SIBTServeScript'),
-                                   self.request.query_string),
+        self.redirect("//%s%s?%s" % (DOMAIN,
+                                     url('SIBTServeScript'),
+                                     self.request.query_string),
                       permanent=True)
         return

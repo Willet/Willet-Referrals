@@ -19,11 +19,11 @@
     {% include "js/willet.loader.js" %}
     {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
-    {# include "js/willet.colorbox.js" #} /* we aren't using this, are we? */
+    {% include "js/willet.colorbox.js" %}
     {% include "js/willet.sibt.js" %}
 
     // Load CSS onto the page.
-    var colorbox_css = '{% spaceless %}{# include "../../plugin/templates/css/colorbox.css" #}{% endspaceless %}'; /* we aren't using this, are we? */
+    var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 

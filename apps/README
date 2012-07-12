@@ -84,7 +84,3 @@ this README will be kept up-to-date after I leave!
          Caveats: User is an Expando class - every User object has different
          properties attached to it and we can create/assign new properties.
          http://code.google.com/appengine/docs/python/datastore/expandoclass.html
-
-         However, this means that anytime you want to fetch a value of property
-         from a User object, you have to call user.get_attr('prop_name').
-         THIS IS KEY!
