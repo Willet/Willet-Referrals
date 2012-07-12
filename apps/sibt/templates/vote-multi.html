@@ -143,6 +143,9 @@
                             {% else %}
                                 $("#success_pending").hide();
                                 $("#success_screen").show();
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 1000);
                             {% endif %}
                             $(ctl).text('Voted').attr('disabled', 'disabled');
                         },
