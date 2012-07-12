@@ -135,7 +135,7 @@ class ClickAction(ActionTally):
         )
 
 
-class VoteAction(ActionTally):
+class VoteAction(Action):
     """Designates a 'vote' action for a User.
 
     Primarily used for 'SIBT' App.

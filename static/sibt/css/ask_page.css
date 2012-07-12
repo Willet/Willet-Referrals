@@ -1,0 +1,99 @@
+/* please use hierarchical indentation. HTML tag is namespaced ask_page. */
+html.ask_page {
+    font-family: Helvetica, Arial, sans-serif;
+    }
+    html.ask_page body {
+        background: #f0f0f0 url("/static/imgs/tiles/diagonal.png");
+        color: #444;
+        margin: 0;
+        padding: 0;
+    }
+    html.ask_page .product {
+        border-radius: 6px;
+    }
+    html.ask_page .width {
+        width: 960px !important; /* override id selectors */
+        margin: 0 auto;
+    }
+    html.ask_page header, html.ask_page .header {
+        background: #94B7CF url(/static/imgs/tiles/noise.png);
+        border-bottom: 1px #1C537A solid;
+        box-shadow: 0 8px 11px 0px #DDD;
+        height: 150px;
+        overflow: hidden;
+        padding: 0 0 0 30px;
+        width: 100%;
+    }
+    html.ask_page #oem_panel {
+            color: #fff;
+            text-shadow: 1px 2px 5px #666;
+        }
+        html.ask_page #oem_panel>h1 {
+            color: #fff;
+            font-size: 30px;
+            font-weight: bold;
+            margin: 32px 0 16px 0;
+            text-shadow: 1px 2px 5px #666;
+    }
+    html.ask_page #main_content {
+        text-align: center;
+    }
+    html.ask_page #selected_products {
+        margin: 48px 0;
+        }
+        html.ask_page #selected_products span {
+            display: inline-block;
+    }
+    html.ask_page #button_container {
+        display: inline-block;
+        margin: 80px 0 0 20px;
+        text-align: left;
+        vertical-align: top;
+    }
+    html.ask_page .selected.item {
+        display: inline-block;
+        margin: 20px;
+    }
+    html.ask_page .selected.target {
+        background-image: url('/static/imgs/dragdrop-here-150x150.png');
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        border: 1px #666 dashed;
+
+        display: inline-block;
+        width: 150px;
+        height: 150px;
+    }
+    html.ask_page .selected.product {
+        cursor: move;
+        display: inline-block;
+        /*margin: 20px;*/
+        width: 150px;
+        height: 150px;
+        z-index: 15;
+    }
+    html.ask_page #available_products {
+        background-color: #e5e5e5; /* IE8 and older browsers without RGBA */
+        background-color: rgba(120, 120, 120, 0.1);
+        border-radius: 12px;
+        box-shadow: 0px 1px 5px 0px #777777 inset;
+        height: 158px;
+        margin: 0 24px 0;
+        position: relative;
+        }
+        html.ask_page #available_products .product {
+            border: 1px #666 solid;
+            cursor: move;
+            display: inline-block;
+            margin: 18px;
+
+            width: 120px;
+            height: 120px;
+            z-index: 20;
+    }
+    html.ask_page footer, html.ask_page .footer {
+        color: #999;
+        font-size: 10px;
+        margin: 24px 0 0 0;
+        text-align: center;
+}

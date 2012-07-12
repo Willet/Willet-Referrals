@@ -398,6 +398,8 @@ class ActionTallyDynamicLoader(URIHandler):
             }
             self.response.out.write(self.render_page('action_tally.html',
                                     template_values))
+        else:
+            self.response.out.write('No tallies found.')
 
 
 class RealFetch(URIHandler):
