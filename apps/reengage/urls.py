@@ -15,9 +15,13 @@ urlpatterns = [
     # Re-engage handlers (beta)
     (r'/r/shopify/?'              , ReEngageAppPage),
     (r'/r/shopify/welcome/?$'     , ReEngageLanding),
+    (r'/r/shopify/instructions/?$', ReEngageInstructions),
+
+    # Re-engage account handlers
     (r'/r/shopify/login/?$'       , ReEngageLogin),
     (r'/r/shopify/logout/?$'      , ReEngageLogout),
-    (r'/r/shopify/instructions/?$', ReEngageInstructions),
+    (r'/r/shopify/account/create$', ReEngageCreateAccount),
+    (r'/r/shopify/account/reset$' , ReEngageResetAccount),
 
     # Re-engage Pseudo-resources
     (r'/r/shopify/queue/?$'       , ReEngageQueueHandler),

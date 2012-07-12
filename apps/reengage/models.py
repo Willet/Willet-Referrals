@@ -1,6 +1,8 @@
 import logging
 import datetime
 from google.appengine.ext import db
+import hashlib
+import os
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from django.utils import simplejson as json
@@ -36,6 +38,7 @@ class TwitterAssociation(Model):
         result.put()
 
         return result, True
+
 
 class ReEngageShopify(App, AppShopify):
     def __init__(self, *args, **kwargs):
@@ -265,3 +268,35 @@ class ReEngagePost(Model):
 
     def to_json(self):
         return json.dumps(to_dict(self))
+
+
+class ReEngageAccount(Model):
+    email = db.EmailProperty()
+    salt = db.StringProperty()
+    hash = db.StringProperty()
+    # Sessions?
+
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+
+        if all(field in kwargs for field in ["email", "password"]):
+            self.salt = os.urandom(64)
+            self.hash = hashlib.sha512(self.salt + kwargs["password"])
+            self._memcache_key = kwargs['email']
+            super(ReEngagePost, self).__init__(*args, **kwargs)
+        else:
+            # TODO: Exception
+            pass
+
+    def _validate_self(self):
+        return True
+
+    def reset(self):
+        """Reset an account's password"""
+        # Generate single use token that expires within some time period
+        # Make sure to expire these tokens when someone logs in
+        # Make sure to expire the token when a new token is requested
+        pass
+
+    pass

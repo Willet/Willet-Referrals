@@ -5,6 +5,8 @@ from util.urihandler import URIHandler
 from util.helpers import   url as build_url
 from apps.reengage.models import *
 
+# TODO: Consider moving some of this to a Context Processor
+
 class ReEngageAppPage(URIHandler):
     """Display the default 'welcome' page."""
     def get(self):
@@ -18,9 +20,6 @@ class ReEngageAppPage(URIHandler):
 
 class ReEngageLanding(URIHandler):
     def get(self):
-        session = get_current_session()
-        logging.info("Session ID: %r" % session.sid)
-
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
         client = ClientShopify.get_by_url(shop)
@@ -31,21 +30,19 @@ class ReEngageLanding(URIHandler):
         if not app:
             pass  # TODO: Error
 
-
-        qs_params = {
-            "t"   : app.store_token,
-            "shop": app.store_url,
-        }
+        session         = get_current_session()
+        session["t"]    = token
+        session["shop"] = shop
 
         if created:
             logging.info("Recently created, loading instructions...")
-            page = build_url("ReEngageInstructions", qs=qs_params)
+            page = build_url("ReEngageInstructions", qs={})
         elif session.is_active() and session.get('logged_in'):
             logging.info("Session is active, going to main page...")
-            page = build_url("ReEngageQueueHandler", qs=qs_params)
+            page = build_url("ReEngageQueueHandler", qs={})
         else:
             logging.info("No active session, going to login page...")
-            page = build_url("ReEngageLogin", qs=qs_params)
+            page = build_url("ReEngageLogin", qs={})
 
         self.redirect(page)
 
@@ -57,8 +54,9 @@ class ReEngageInstructions(URIHandler):
 class ReEngageLogin(URIHandler):
     def get(self):
         """Display the login page"""
-        token  = self.request.get( 't' )
-        shop   = self.request.get("shop")
+        session = get_current_session()
+        token  = session.get( 't' )
+        shop   = session.get("shop")
         client = ClientShopify.get_by_url(shop)
 
         # Fetch or create the app
@@ -76,8 +74,9 @@ class ReEngageLogin(URIHandler):
         }))
 
     def post(self):
-        token    = self.request.get("t")
-        shop     = self.request.get("shop")
+        session  = get_current_session()
+        token    = session.get("t")
+        shop     = session.get("shop")
 
         username = self.request.get("username")
         password = self.request.get("password")
@@ -107,14 +106,29 @@ class ReEngageLogout(URIHandler):
     def post(self):
         """Display the 'logged out' page"""
         session = get_current_session()
-        token = session.get("t")
-        shop  = session.get("shop")
+        token   = session.get("t")
+        shop    = session.get("shop")
 
-        page = build_url("ReEngageLogin", qs={
-            "t": token,
-            "shop" : shop
-        })
+        page    = build_url("ReEngageLogin", qs={})
 
         session.terminate()
-        logging.info("Session ID: %r" % session.sid)
+
+        session["t"]    = token
+        session["shop"] = shop
+
         self.redirect(page)
+
+
+class ReEngageCreateAccount(URIHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        pass
+
+class ReEngageResetAccount(URIHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        pass
