@@ -554,6 +554,16 @@ class VoteDynamicLoader(URIHandler):
         elif not products:
             products = [product]
 
+        # append vote counts for each product onto the product (for now)
+        # .votes will disappear from the product object on function exit.
+        votes_dict = instance.get_product_votes()
+        if votes_dict:
+            for product in products:
+                try:
+                    product.votes = votes_dict[product.uuid]
+                except IndexError:
+                    product.votes = 0
+
         try:
             product_img = product.images[0]
         except:
