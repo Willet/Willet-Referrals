@@ -8,9 +8,11 @@ from apps.app.shopify.models import AppShopify
 from django.utils import simplejson as json
 from apps.email.models import Email
 from apps.product.models import Product
+from apps.user.models import User
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
+from base64 import urlsafe_b64encode
 
 #TODO: How to automatically remove keys that no longer have models?
 
@@ -271,23 +273,34 @@ class ReEngagePost(Model):
 
 
 class ReEngageAccount(Model):
-    email = db.EmailProperty()
-    salt = db.StringProperty()
-    hash = db.StringProperty()
-    # Sessions?
+    email    = db.EmailProperty(indexed=True)
+    salt     = db.StringProperty()
+    hash     = db.StringProperty()
+    verified = db.BooleanProperty(default=False)
 
+    # Used for one-time tokens
+    token    = db.StringProperty(default="")
+    token_exp= db.DateTimeProperty()
+    # Sessions?
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageAccount, self).__init__(*args, **kwargs)
 
-        if all(field in kwargs for field in ["email", "password"]):
-            self.salt = os.urandom(64)
-            self.hash = hashlib.sha512(self.salt + kwargs["password"])
-            self._memcache_key = kwargs['email']
-            super(ReEngagePost, self).__init__(*args, **kwargs)
-        else:
+    @classmethod
+    def create(cls, *args, **kwargs):
+        if not all(field in kwargs for field in ["email", "password"]):
             # TODO: Exception
             pass
+
+        salt = urlsafe_b64encode(os.urandom(64))
+        hash = hashlib.sha512(salt + kwargs.get("password")).hexdigest()
+        return cls(
+            email=kwargs.get("email"),
+            salt=salt,
+            hash=hash
+        )
 
     def _validate_self(self):
         return True
@@ -299,4 +312,30 @@ class ReEngageAccount(Model):
         # Make sure to expire the token when a new token is requested
         pass
 
-    pass
+    @classmethod
+    def get_or_create(cls, username, password, verify):
+        logging.info("Obtaining user...")
+
+        user = cls.all().filter('email = ', username).get()
+
+        # User already exists
+        if user:
+            return user, False
+
+        # TODO: Validate username
+        if username and password and verify and password == verify:
+            # Create user
+            logging.info("Creating new user")
+            user  = cls.create(email=username, password=password)
+            token = urlsafe_b64encode(os.urandom(32))
+
+            user.token     = token
+            user.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
+
+            user.put()
+
+            # Send verification email
+            Email.verify_reengage_token_email(username, token)
+            return user, True
+        else:
+            return None, False

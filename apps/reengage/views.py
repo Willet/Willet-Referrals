@@ -68,9 +68,7 @@ class ReEngageLogin(URIHandler):
         # TODO: if session is already active
 
         self.response.out.write(self.render_page('login.html', {
-            "host" : self.request.host_url,
-            "t": token,
-            "shop" : shop
+            "host" : self.request.host_url
         }))
 
     def post(self):
@@ -91,10 +89,7 @@ class ReEngageLogin(URIHandler):
 
             page = build_url("ReEngageQueueHandler", qs={})
         else:
-            page = build_url("ReEngageLogin", qs={
-                "t": token,
-                "shop" : shop
-            })
+            page = build_url("ReEngageLogin", qs={})
 
         self.redirect(page)
 
@@ -121,14 +116,67 @@ class ReEngageLogout(URIHandler):
 
 class ReEngageCreateAccount(URIHandler):
     def get(self):
+        self.response.out.write(self.render_page('create.html', {
+            "host" : self.request.host_url,
+        }))
+
+    def post(self):
+        username = self.request.get("username")
+        password = self.request.get("password")
+        verify   = self.request.get("password2")
+
+        user, created = ReEngageAccount.get_or_create(username, password, verify)
+
+        if user and created:  # Activate account
+            logging.info("User was created")
+            self.response.out.write(self.render_page('verify.html', {
+                "msg": "You have been sent an email to verify your account.",
+            }))
+        elif user:  # Account already exists
+            logging.info("User already exists")
+            self.response.out.write(self.render_page('create.html', {
+                "username": username,
+                "msg": "Username already exists"
+            }))
+            pass
+        else:  # Some mistake
+            logging.info("Password doesn't match")
+            self.response.out.write(self.render_page('create.html', {
+                "username": username,
+                "msg": "Password doesn't match"
+            }))
+
+
+class ReEngageResetAccount(URIHandler):
+    def get(self):
         pass
 
     def post(self):
         pass
 
-class ReEngageResetAccount(URIHandler):
+class ReEngageVerify(URIHandler):
     def get(self):
-        pass
+        email = self.request.get("email")
+        token = self.request.get("token")
+
+        user = ReEngageAccount.all().filter(" email = ", email).get()
+        logging.info(token)
+        logging.info(user.token)
+        if user and user.token == token:
+            context = {
+                "msg": "Verification successful. You should be able to log in now."
+            }
+            user.token     = None
+            user.token_exp = None
+            user.verified  = True
+
+            user.put()
+        else:
+            context = {
+                "msg": "There was a problem verifying."
+            }
+
+        self.response.out.write(self.render_page('verify.html', context))
 
     def post(self):
         pass

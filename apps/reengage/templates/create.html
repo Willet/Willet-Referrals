@@ -1,0 +1,18 @@
+<html>
+<body>
+<form action="{{ host }}{% url ReEngageCreateAccount %}" method="POST">
+    <h1>Create</h1>
+    {{ msg }}<br/>
+    <label for="username">Email</label>
+    <input id="username" type="text"name="username" value="{{ username }}"/>
+
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" />
+
+    <label for="password2">Password Again</label>
+    <input id="password2" type="password" name="password2" />
+
+    <input type="submit" value="Submit"/>
+</form>
+</body>
+</html>

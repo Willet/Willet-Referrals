@@ -22,6 +22,7 @@ urlpatterns = [
     (r'/r/shopify/logout/?$'      , ReEngageLogout),
     (r'/r/shopify/account/create$', ReEngageCreateAccount),
     (r'/r/shopify/account/reset$' , ReEngageResetAccount),
+    (r'/r/shopify/account/verify$', ReEngageVerify),
 
     # Re-engage Pseudo-resources
     (r'/r/shopify/queue/?$'       , ReEngageQueueHandler),

@@ -165,6 +165,30 @@ class Email():
                          replyto_address=FRASER)
 
     @staticmethod
+    def verify_reengage_token_email(email, token):
+        link = url("ReEngageVerify", qs={
+            "email": email,
+            "token": token
+        })
+
+        subject = "ReEngage Account Activation"
+        body = """
+                <p>Hi</p>
+                <p>Please click this link to activate your new ReEngage
+                account.</p>
+                <p>
+                    <a href="%s%s">%s</a>
+                </p>""" % ("http://willet-nterwoord.appspot.com/", link, link)
+
+        Email.send_email(
+            from_address=FROM_ADDR,
+            to_address=email,
+            #to_name=email,
+            subject=subject,
+            body=body
+        )
+
+    @staticmethod
     def report_smart_buttons(email="info@getwillet.com", items={},
                              networks={}, shop_name=None, client_name=None,
                              uuid=None):
