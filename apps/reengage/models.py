@@ -180,8 +180,11 @@ class ReEngageQueue(Model):
 
     def remove_all(self):
         """Remove all posts from a queue"""
-        for post in self.queued:
-            db.get(post).delete()
+        logging.info("Queued items: %s" % self.queued)
+        for post_key in self.queued:
+            post = db.get(post_key)
+            logging.info("Deleting post: %s" % post.content)
+            post.delete()
 
         self.queued = []
         self.put()
@@ -256,7 +259,7 @@ class ReEngageQueue(Model):
 
 class ReEngagePost(Model):
     """Represents an individual piece of content in the queue"""
-    # TODO: Some unique identifier?
+    title   = db.StringProperty()
     network = db.StringProperty()
     content = db.StringProperty()
 
@@ -272,7 +275,7 @@ class ReEngagePost(Model):
         return json.dumps(to_dict(self))
 
 
-class ReEngageAccount(Model):
+class ReEngageAccount(User):
     email    = db.EmailProperty(indexed=True)
     salt     = db.StringProperty()
     hash     = db.StringProperty()
@@ -299,11 +302,17 @@ class ReEngageAccount(Model):
         return cls(
             email=kwargs.get("email"),
             salt=salt,
-            hash=hash
+            hash=hash,
+            uuid=generate_uuid(16)
         )
 
     def _validate_self(self):
         return True
+
+    def verify(self, password):
+        hash = hashlib.sha512(self.salt + password).hexdigest()
+        return hash == self.hash
+
 
     def reset(self):
         """Reset an account's password"""

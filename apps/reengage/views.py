@@ -79,7 +79,14 @@ class ReEngageLogin(URIHandler):
         username = self.request.get("username")
         password = self.request.get("password")
 
-        if username == "username" and password == "password":
+        user = ReEngageAccount.all().filter(" email = ", username).get()
+        logging.info("User: %s" % user)
+
+        if not user:
+            # TODO: Exception
+            pass
+
+        if user.verify(password):
             session = get_current_session()
             session.regenerate_id()
 

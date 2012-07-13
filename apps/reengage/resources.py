@@ -27,8 +27,9 @@ def session_active(fn):
 
     return wrapped
 
-def get_queue(request):
-    store_url = request.get("shop")
+def get_queue():
+    session = get_current_session()
+    store_url = session.get("shop")
     if not store_url:
         return None
 
@@ -54,10 +55,10 @@ class ReEngageQueueHandler(URIHandler):
         session = get_current_session()
 
         if self.is_json():
-            queue = get_queue(self.request)
+            queue = get_queue()
             if not queue:
                 logging.error("Could not find queue. Store URL: %s" %
-                             self.request.get("shop"))
+                             session.get("shop"))
                 self.respond(404)
                 return
 
@@ -76,18 +77,22 @@ class ReEngageQueueHandler(URIHandler):
     @session_active
     def post(self):
         """Create a new post element in the queue"""
-        queue = get_queue(self.request)
+        session = get_current_session()
+
+        queue = get_queue()
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
-                         self.request.get("shop"))
+                         session.get("shop"))
             self.respond(404)
             return
 
         # TODO: Validate the arguments
+        title   = self.request.get("title")
         content = self.request.get("content")
         method  = self.request.get("method", "append")
 
-        post = ReEngagePost(content=content,
+        post = ReEngagePost(title=title,
+                            content=content,
                             network="facebook",
                             uuid=generate_uuid(16))
         post.put()
@@ -104,10 +109,12 @@ class ReEngageQueueHandler(URIHandler):
     @session_active
     def delete(self):
         """Delete all post elements in this queue"""
-        queue = get_queue(self.request)
+        session = get_current_session()
+
+        queue = get_queue()
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
-                         self.request.get("shop"))
+                         session.get("shop"))
             self.respond(404)
             return
 
