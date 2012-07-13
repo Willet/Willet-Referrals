@@ -1,5 +1,4 @@
 import logging
-import django.utils.simplejson as json
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
 from util.gaesessions import get_current_session
@@ -62,9 +61,8 @@ class ReEngageQueueHandler(URIHandler):
                 self.respond(404)
                 return
 
-            json_response = queue.to_json()
-            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
-            self.response.out.write(json_response)
+            response = queue.to_obj()
+            self.json(response.get("value"), response.get("key"))
         else:
             #TODO: Replace with HTML view
             page = self.render_page('queue.html', {
@@ -102,9 +100,8 @@ class ReEngageQueueHandler(URIHandler):
         else:
             queue.prepend(post)
 
-        json_response = queue.to_json()
-        self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
-        self.response.out.write(json_response)
+        response = queue.to_obj()
+        self.json(response.get("value"), response.get("key"))
 
     @session_active
     def delete(self):
@@ -133,9 +130,8 @@ class ReEngagePostHandler(URIHandler):
             return
 
         if self.is_json():
-            json_response = post.to_json()
-            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
-            self.response.out.write(json_response)
+            response = post.to_obj()
+            self.json(response.get("value"), response.get("key"))
         else:
             #TODO: Replace with HTML view
             page = self.render_page('post.html', {})
@@ -173,8 +169,7 @@ class ReEngageProductSourceHandler(URIHandler):
 
         if self.is_json():
             data = Facebook.get_reach(url)
-            self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
-            self.response.out.write(json.dumps(data))
+            self.json(data, "reach")
         else:
             #TODO: Replace with HTML view
             page = self.render_page('product.html', {})

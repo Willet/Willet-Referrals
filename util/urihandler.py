@@ -8,6 +8,7 @@ import inspect
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+import django.utils.simplejson as json
 
 from apps.client.models import Client
 from apps.user.models import User
@@ -16,6 +17,7 @@ from util.cookies import LilCookies
 from util.gaesessions import get_current_session
 from util.helpers import read_user_cookie
 from util.templates import render
+
 
 
 class URIHandler(webapp.RequestHandler):
@@ -127,6 +129,34 @@ class URIHandler(webapp.RequestHandler):
         # So, we just rename the method to 'respond' even it doesn't change
         # that fact.
         self.error(code)
+
+    def json(self, content, response_key="response", code=200, message="OK"):
+        """Responds with JSON content.
+
+        Specifically, sets all the necessary headers, and wraps the response
+        in an envelope.
+
+        code    : HTTP status code to respond with
+        message : Response message
+        response: The actual content. Assumed to be a JSON-serializable object.
+        """
+        obj = {
+            "status": {
+                "code"   : code,
+                "message": message
+            },
+            response_key: content
+        }
+
+        try:
+            json_obj = json.dumps(obj)
+        except Exception, e:
+            logging.info(e)
+            pass
+
+        self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
+        self.response.set_status(code, message)
+        self.response.out.write(json_obj)
 
 # end class
 

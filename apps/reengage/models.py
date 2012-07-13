@@ -202,20 +202,32 @@ class ReEngageQueue(Model):
 
         self.put()
 
-    def to_json(self):
-        """Converts the queue to JSON.
-
-        Note that it only converts queued items to JSON, not expired, etc."""
+    def to_obj(self):
         self._remove_expired()
 
-        objects = []
+        posts = []
         for obj in self.queued:
             try:
-                objects.append(to_dict(db.get(obj)))
+                posts.append(to_dict(db.get(obj)))
             except:
                 continue
 
-        return json.dumps(objects)
+        expired = []
+        for obj in self.expired:
+            try:
+                expired.append(to_dict(db.get(obj)))
+            except:
+                continue
+
+        return {
+            "key": "queue",
+            "value": {
+                "uuid"         : self.uuid,
+                "app"          : self.owner.uuid,
+                "activePosts"  : posts,
+                "expiredPosts" : expired
+            }
+        }
 
     def get_products(self):
         """Get products associated with this queue
@@ -271,8 +283,11 @@ class ReEngagePost(Model):
     def _validate_self(self):
         return True
 
-    def to_json(self):
-        return json.dumps(to_dict(self))
+    def to_obj(self):
+        return {
+            "key": "post",
+            "value": to_dict(self)
+        }
 
 
 class ReEngageAccount(User):
