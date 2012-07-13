@@ -189,7 +189,10 @@ class ClientShopify(Client):
 
             # give higher score to retailers who sell TONS of cheap stuff
             # (i.e. high traffic)
-            base_score = base_score * len(orders)
+
+            # Workaround until we find out why orders is sometimes a Query obj.
+            if hasattr(orders, "len"):
+                base_score = base_score * len(orders)
 
 
         logging.debug('base_score = %r' % base_score)
