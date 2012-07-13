@@ -25,9 +25,9 @@ urlpatterns = [
     (r'/r/shopify/account/verify$', ReEngageVerify),
 
     # Re-engage Pseudo-resources
-    (r'/r/shopify/queue/?$'       , ReEngageQueueHandler),
-    (r'/r/shopify/product/?$'     , ReEngageProductSourceHandler),
-    (r'/r/shopify/post/(\w+)/?$'  , ReEngagePostHandler),
+    (r'/r/shopify/queue(.json)?$'       , ReEngageQueueHandler),
+    (r'/r/shopify/product(.json)?$'     , ReEngageProductSourceHandler),
+    (r'/r/shopify/post/(\w+)(.json)?$'  , ReEngagePostHandler),
 
     # Re-engage processes (beta)
     (r'/r/shopify/cron/?'         , ReEngageCron),

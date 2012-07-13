@@ -49,11 +49,11 @@ def get_post(uuid):
 
 class ReEngageQueueHandler(URIHandler):
     @session_active
-    def get(self):
+    def get(self, json):
         """Get all queued elements for a shop"""
         session = get_current_session()
 
-        if self.is_json():
+        if json:
             queue = get_queue()
             if not queue:
                 logging.error("Could not find queue. Store URL: %s" %
@@ -73,7 +73,7 @@ class ReEngageQueueHandler(URIHandler):
             self.response.out.write(page)
 
     @session_active
-    def post(self):
+    def post(self, json):
         """Create a new post element in the queue"""
         session = get_current_session()
 
@@ -104,7 +104,7 @@ class ReEngageQueueHandler(URIHandler):
         self.json(response.get("value"), response.get("key"))
 
     @session_active
-    def delete(self):
+    def delete(self, json):
         """Delete all post elements in this queue"""
         session = get_current_session()
 
@@ -121,7 +121,7 @@ class ReEngageQueueHandler(URIHandler):
 
 class ReEngagePostHandler(URIHandler):
     @session_active
-    def get(self, uuid):
+    def get(self, uuid, json):
         """Get all details for a given post"""
         post = get_post(uuid)
         if not post:
@@ -129,7 +129,7 @@ class ReEngagePostHandler(URIHandler):
             self.respond(404)
             return
 
-        if self.is_json():
+        if json:
             response = post.to_obj()
             self.json(response.get("value"), response.get("key"))
         else:
@@ -138,13 +138,13 @@ class ReEngagePostHandler(URIHandler):
             self.response.out.write(page)
 
     @session_active
-    def put(self, uuid):
+    def put(self, uuid, json):
         """Update the details of a post"""
         # Unused, for now
         self.respond(204)
 
     @session_active
-    def delete(self, uuid):
+    def delete(self, uuid, json):
         """Delete an individual post"""
         post = get_post(uuid)
         if not post:
@@ -163,11 +163,11 @@ class ReEngageProductSourceHandler(URIHandler):
     A product source is any category, product, or store
     """
     @session_active
-    def get(self):
+    def get(self, json):
         """Obtains information about a given ProductSource."""
         url = self.request.get("url")
 
-        if self.is_json():
+        if json:
             data = Facebook.get_reach(url)
             self.json(data, "reach")
         else:
@@ -176,6 +176,6 @@ class ReEngageProductSourceHandler(URIHandler):
             self.response.out.write(page)
 
     @session_active
-    def post(self):
+    def post(self, json):
         """Posts to the ProductSource."""
         self.respond(204)
