@@ -1,21 +1,19 @@
 #!/usr/bin/env python
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
+import logging
 
-from apps.app.models import *
-from apps.client.models import Client
+from django.utils import simplejson as json
 
-from util.helpers import *
+from apps.app.models import App
+
 from util.urihandler import URIHandler
-from util.consts import *
 
-# The "Dos" --------------------------------------------------------------------
+
 class DoDeleteApp(URIHandler):
+    """Why is this thing in views.py? TODO move to processes.py."""
     def post(self):
         client = self.get_client()
         app_uuid = self.request.get('app_uuid')
@@ -28,3 +26,21 @@ class DoDeleteApp(URIHandler):
 
         self.redirect('/client/account')
 
+
+class AppJSONDynamicLoader(URIHandler):
+    """Return a JSON object for an app given a app_uuid if found,
+    HTTP 404 otherwise.
+    """
+    def get(self):
+        """See class docstring."""
+        app = App.get(self.request.get('app_uuid'))
+        if not app:
+            self.error(404)
+            return
+
+        self.response.write(json.dumps({
+            'uuid': app.uuid,
+            'client_uuid': app.client.uuid,
+            'url': getattr(app, 'store_url'),
+            'name': getattr(app, 'name'),
+        }))
