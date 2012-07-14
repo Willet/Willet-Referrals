@@ -129,10 +129,8 @@ class ReEngageCreateAccount(URIHandler):
 
     def post(self):
         username = self.request.get("username")
-        password = self.request.get("password")
-        verify   = self.request.get("password2")
 
-        user, created = ReEngageAccount.get_or_create(username, password, verify)
+        user, created = ReEngageAccount.get_or_create(username)
 
         if user and created:  # Activate account
             logging.info("User was created")
@@ -147,10 +145,9 @@ class ReEngageCreateAccount(URIHandler):
             }))
             pass
         else:  # Some mistake
-            logging.info("Password doesn't match")
             self.response.out.write(self.render_page('create.html', {
                 "username": username,
-                "msg": "Password doesn't match"
+                "msg": "There was a problem :("
             }))
 
 
@@ -166,24 +163,40 @@ class ReEngageVerify(URIHandler):
         email = self.request.get("email")
         token = self.request.get("token")
 
-        user = ReEngageAccount.all().filter(" email = ", email).get()
-        logging.info(token)
-        logging.info(user.token)
-        if user and user.token == token:
-            context = {
-                "msg": "Verification successful. You should be able to log in now."
-            }
-            user.token     = None
-            user.token_exp = None
-            user.verified  = True
-
-            user.put()
-        else:
-            context = {
-                "msg": "There was a problem verifying."
-            }
+        context = {
+            "set_password": True,
+            "email"       : email,
+            "token"       : token
+        }
 
         self.response.out.write(self.render_page('verify.html', context))
 
     def post(self):
-        pass
+        email    = self.request.get("email")
+        token    = self.request.get("token")
+        password = self.request.get("password")
+        verify   = self.request.get("password2")
+
+        user = ReEngageAccount.all().filter(" email = ", email).get()
+
+        if password and verify and password != verify:
+            context = {
+                "msg": "Passwords don't match."
+            }
+        elif not (user and user.token == token):
+            context = {
+                "msg": "There was a problem verifying your account."
+            }
+        else:
+            user.token     = None
+            user.token_exp = None
+            user.verified  = True
+            user.set_password(password)
+
+            user.put()
+            context = {
+                "msg": "Successfully set password. "
+                       "Please log in."
+            }
+
+        self.response.out.write(self.render_page('verify.html', context))
