@@ -23,8 +23,8 @@ class ClientJSONDynamicLoader(URIHandler):
             self.error(404)
             return
 
-        self.response.write(json.dumps({
+        self.response.out.write(json.dumps({
             'uuid': client.uuid,
-            'url': getattr(client, 'url') or getattr(client, 'domain', ''),
+            'url': getattr(client, 'url', getattr(client, 'domain', '')),
             'name': getattr(client, 'name', getattr(client, 'store_name', '')),
         }))

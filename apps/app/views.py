@@ -38,9 +38,9 @@ class AppJSONDynamicLoader(URIHandler):
             self.error(404)
             return
 
-        self.response.write(json.dumps({
+        self.response.out.write(json.dumps({
             'uuid': app.uuid,
             'client_uuid': app.client.uuid,
-            'url': getattr(app, 'store_url'),
-            'name': getattr(app, 'name'),
+            'url': getattr(app, 'store_url', ''),
+            'name': getattr(app, 'name', ''),
         }))
