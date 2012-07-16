@@ -163,11 +163,33 @@ class ReEngageVerify(URIHandler):
         email = self.request.get("email")
         token = self.request.get("token")
 
-        context = {
-            "set_password": True,
-            "email"       : email,
-            "token"       : token
-        }
+        user = ReEngageAccount.all().filter(" email = ", email).get()
+
+        if not user:
+            # Nothing to verify
+            context = {
+                "msg": "No user found :("
+            }
+        elif user.token != token:
+            # Token is invalid
+            context = {
+                "msg": "Tokens do not match. Please try the link from the "
+                       "email again."
+            }
+        elif user.token_exp < datetime.datetime.now():
+            # Token has expired. Send a new token?
+            context = {
+                "msg": "Your verification token has expired. You should be "
+                       "receiving a new one in an email shortly :)"
+            }
+            user.forgot_password()
+        else:
+            # All is well
+            context = {
+                "set_password": True,
+                "email"       : email,
+                "token"       : token
+            }
 
         self.response.out.write(self.render_page('verify.html', context))
 

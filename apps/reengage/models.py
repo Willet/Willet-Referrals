@@ -324,6 +324,17 @@ class ReEngageAccount(User):
         self.hash = hash
         self.put()
 
+    def forgot_password(self):
+        token = urlsafe_b64encode(os.urandom(32))
+
+        self.token     = token
+        self.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
+
+        self.put()
+
+        # Send verification email
+        Email.verify_reengage_token_email(self.email, self.token)
+
     @classmethod
     def get_or_create(cls, username):
         logging.info("Obtaining user...")
@@ -338,15 +349,8 @@ class ReEngageAccount(User):
             # Create user
             logging.info("Creating new user")
             user  = cls(email=username, uuid=generate_uuid(16))
-            token = urlsafe_b64encode(os.urandom(32))
+            user.forgot_password()
 
-            user.token     = token
-            user.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
-
-            user.put()
-
-            # Send verification email
-            Email.verify_reengage_token_email(username, token)
             return user, True
         else:
             return None, False
