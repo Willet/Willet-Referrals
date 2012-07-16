@@ -153,10 +153,29 @@ class ReEngageCreateAccount(URIHandler):
 
 class ReEngageResetAccount(URIHandler):
     def get(self):
-        pass
+        self.response.out.write(self.render_page('reset.html', {
+            "host" : self.request.host_url,
+            "show_form": True
+        }))
 
     def post(self):
-        pass
+        email = self.request.get("username")
+
+        user = ReEngageAccount.all().filter(" email = ", email).get()
+
+        if not user:
+            context = {
+                "msg": "No user found :("
+            }
+        else:
+            user.forgot_password()
+            context = {
+                "msg": "An email has been sent to your account with details "
+                       "to reset your password."
+            }
+
+        self.response.out.write(self.render_page('reset.html', context))
+
 
 class ReEngageVerify(URIHandler):
     def get(self):
@@ -218,7 +237,8 @@ class ReEngageVerify(URIHandler):
             user.put()
             context = {
                 "msg": "Successfully set password. "
-                       "Please log in."
+                       "Please log in.",
+                "success": True
             }
 
         self.response.out.write(self.render_page('verify.html', context))

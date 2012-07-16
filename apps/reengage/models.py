@@ -327,6 +327,9 @@ class ReEngageAccount(User):
     def forgot_password(self):
         token = urlsafe_b64encode(os.urandom(32))
 
+        self.hash      = ""
+        self.salt      = ""
+        self.verified  = False
         self.token     = token
         self.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
 

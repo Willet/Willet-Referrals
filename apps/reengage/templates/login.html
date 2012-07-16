@@ -1,5 +1,6 @@
 <html>
 <body>
+<a href="{{ host }}{% url ReEngageResetAccount %}">Forgot password?</a>
 <form action="{{ host }}{% url ReEngageLogin %}" method="POST">
     <input type="text" name="username" />
     <input type="password" name="password" />
