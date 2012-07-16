@@ -77,11 +77,15 @@
                     </span>
                     <span id="button_container" style="display: none">
                         <button id="postOnWall">
-                            Post vote on Facebook
+                            <img src="/static/imgs/sb-facebook.png"
+                                 class="fb_icon" />
+                            Post to wall
                         </button>
                         <br/>
                         <button id="chooseFriends">
-                            Choose friends to vote
+                            <img src="/static/imgs/sb-facebook.png"
+                                 class="fb_icon" />
+                            Message to friends
                         </button>
                         <p style="text-align: center">
                           <a id="show_example_vote" href="#">See an example vote</a>
@@ -325,11 +329,11 @@
                     if (objective) {
                         // Wub wub wub wub wub wub (V)(;,,;)(V)
                         var button = $(this);
-                        var oldButtonText = button.text();
+                        var oldButtonText = button.html();
                         button.text('Please wait...');
 
                         var fbInstanceCallback = function () {
-                            button.text(oldButtonText);
+                            button.html(oldButtonText);
                             _willet.mediator.fire(objective, {
                                 'name': 'Not sure which one I should buy!',
                                 'link': '{{ share_url }}',

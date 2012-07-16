@@ -50,6 +50,9 @@ html.ask_page {
         text-align: left;
         vertical-align: top;
     }
+    html.ask_page .fb_icon {
+        margin: 0 6px 0 -7px;
+    }
     html.ask_page .selected.item {
         display: inline-block;
         margin: 20px;
