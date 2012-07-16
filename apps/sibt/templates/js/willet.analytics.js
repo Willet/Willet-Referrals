@@ -36,6 +36,9 @@ _willet.analytics = (function (me) {
             wm.fire('log', "This was not sent to Google Analytics because " +
                            "you are debugging: " + message);
         {% else %}
+            // in-house memcache logging
+            (new Image).src = "{{ URL }}{% url TrackTallyAction %}?evnt=" +
+                              encodeURIComponent(message);
             try {
                 // async
                 me.gaq.push([
@@ -46,11 +49,13 @@ _willet.analytics = (function (me) {
                 ]);
                 me.gat = me.gat || window._gat || document._gat || [];
                 me.pageTracker = me.pageTracker || me.gat._getTracker(me.ANALYTICS_ID);
-                me.pageTracker._trackEvent(
-                    'TrackSIBTAction',
-                    encodeURIComponent(message),
-                    encodeURIComponent(extras)
-                );
+                if (me.pageTracker) {
+                    me.pageTracker._trackEvent(
+                        'TrackSIBTAction',
+                        encodeURIComponent(message),
+                        encodeURIComponent(extras)
+                    );
+                }
                 wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
             } catch (e) { // log() is {} on live.
                 wm.fire('error', "We have DROPPED the enemy intelligence: " + e);
