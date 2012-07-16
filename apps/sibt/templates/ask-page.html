@@ -36,9 +36,9 @@
             #sibt_people {
                 border: none;
                 display: block;
-                background-image: url('/static/sibt/imgs/happy-people-245x120.png');
-                width: 245px;
-                height: 120px;
+                /* background-image: url('/static/sibt/imgs/happy-people-245x120.png'); */
+                width: 180px;
+                height: 88px;
             }
         </style>
 
@@ -52,24 +52,26 @@
                 <div id="oem_panel" class="width">
                     <img id="sibt_people" alt="Hippie faces"
                          src="/static/sibt/imgs/happy-people-245x120.png"
-                         style="float: right; margin: -20px 40px 0 0" />
+                         style="float: right; margin: -25px 40px 0 0" />
                     <h1>{{ client.name|default:"Ask Trusted Friends" }}</h1>
-                    Ask your trusted friends for advice!
-                    Choose two products for them to vote on:
                 </div>
             </header>
             <div id="main_content" class="width">
+                <p style="margin: 36px 0 -24px 0">
+                    Ask your trusted friends for advice!
+                    Choose two products for them to vote on:
+                </p>
                 <div class="invisible error">Please select two products :)</div>
                 <section id="selected_products">
-                    <span class="selected item">
-                        Choice A <br/>
-                        <span class="selected target">
+                    <span class="static selected item">
+                        <span class="selected target"
+                              style="background-image:url('/static/sibt/imgs/choice-a.png');">
                             <img class="selected product" />
                         </span>
                     </span>
-                    <span class="selected item">
-                        Choice B <br/>
-                        <span class="selected target">
+                    <span class="static selected item">
+                        <span class="selected target"
+                              style="background-image:url('/static/sibt/imgs/choice-b.png');">
                             <img class="selected product" />
                         </span>
                     </span>
@@ -89,11 +91,12 @@
                 <section id="available_products">
                     <img alt="drag" src="/static/imgs/drag-and-drop-upward-120x75.png"
                          style="position: absolute;
-                                top: -70px;;
-                                left: 50px;" />
+                                top: -70px;
+                                left: 150px;
+                                width: 80px;" />
                     <!-- JS -->
                 </section>
-                <p>
+                <p style="margin-top:36px;">
                     These are the products you have visited.
                     {% if app.client.domain %}
                         To add other products, visit more product pages at
@@ -212,8 +215,10 @@
                 var toggleButtons = function () {
                     if (getSelectedProductCount() >= 2) {
                         $('#button_container').show();
+                        $('#selected_products').css('margin', '48px 0 48px 223px');
                     } else {
                         $('#button_container').hide();
+                        $('#selected_products').css('margin', '48px 0');
                     }
                 };
 
@@ -357,13 +362,6 @@
                         'transition': 'fade'
                     });
                 });
-
-                if (products.length >= 2) {
-                    var product_elems = $('#available_products .product');
-                    addSelectedProduct(product_elems.get(0));
-                    addSelectedProduct(product_elems.get(1));
-                    toggleButtons();
-                }
 
                 _willet.mediator.fire('hasjQuery', $); // load colorbox
                 _willet.mediator.fire('fbInit'); // load the FB thing

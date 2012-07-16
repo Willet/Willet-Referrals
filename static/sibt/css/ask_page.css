@@ -19,7 +19,7 @@ html.ask_page {
         background: #94B7CF url(/static/imgs/tiles/noise.png);
         border-bottom: 1px #1C537A solid;
         box-shadow: 0 8px 11px 0px #DDD;
-        height: 150px;
+        height: 115px;
         overflow: hidden;
         padding: 0 0 0 30px;
         width: 100%;
@@ -32,7 +32,7 @@ html.ask_page {
             color: #fff;
             font-size: 30px;
             font-weight: bold;
-            margin: 32px 0 16px 0;
+            margin: 38px 0 16px 0;
             text-shadow: 1px 2px 5px #666;
     }
     html.ask_page #main_content {
@@ -46,7 +46,7 @@ html.ask_page {
     }
     html.ask_page #button_container {
         display: inline-block;
-        margin: 80px 0 0 20px;
+        margin: 65px 0 0 20px;
         text-align: left;
         vertical-align: top;
     }
@@ -55,7 +55,7 @@ html.ask_page {
         margin: 20px;
     }
     html.ask_page .selected.target {
-        background-image: url('/static/imgs/dragdrop-here-150x150.png');
+        /* background-image: url('/static/imgs/dragdrop-here-150x150.png'); */
         background-position: center bottom;
         background-repeat: no-repeat;
         border: 1px #666 dashed;
@@ -77,7 +77,7 @@ html.ask_page {
         background-color: rgba(120, 120, 120, 0.1);
         border-radius: 12px;
         box-shadow: 0px 1px 5px 0px #777777 inset;
-        height: 158px;
+        min-height: 158px;
         margin: 0 24px 0;
         position: relative;
         }
