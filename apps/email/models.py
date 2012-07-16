@@ -171,19 +171,21 @@ class Email():
             "token": token
         })
 
+        full_url = "https://%s%s" % (APP_DOMAIN, link)
+
         subject = "ReEngage Account Activation"
         body = """
                 <p>Hi</p>
                 <p>Please click this link to activate your new ReEngage
                 account.</p>
                 <p>
-                    <a href="%s%s">%s</a>
-                </p>""" % ("http://willet-nterwoord.appspot.com/", link, link)
+                    <a href="%s">Activate your account</a>
+                </p>""" % full_url
 
         Email.send_email(
             from_address=FROM_ADDR,
             to_address=email,
-            #to_name=email,
+            to_name=email,
             subject=subject,
             body=body
         )
