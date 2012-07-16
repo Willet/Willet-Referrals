@@ -58,7 +58,6 @@ html.ask_page {
         margin: 20px;
     }
     html.ask_page .selected.target {
-        /* background-image: url('/static/imgs/dragdrop-here-150x150.png'); */
         background-position: center bottom;
         background-repeat: no-repeat;
         border: 1px #666 dashed;
