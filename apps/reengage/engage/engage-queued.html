@@ -1,7 +1,12 @@
 <html>
 
 <head>
-<link href="engageStyles.css" rel="stylesheet" type="text/css">
+<link href="engageStyles-test.css" rel="stylesheet" type="text/css">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript">
+</script>
+<script src="engageFunctionality-test.js">
+</script>
 </head>
 
 <body>
@@ -24,23 +29,23 @@
 <div id="body"> 
 	
 	<div id="break">
-		<a href="#"><div class="button" id="newPost">
-			+ New Post
-		</div></a>
+		<div class="button" id="newPost">
+			<a href="#">+ New Post</a>
+		</div>
 		<div id="breakNav">
 			<ul class="breakNav" style="text-align: center">
-				<li class="selected roundedTops"><b>Facebook</b></li>
-				<a href="#"><li class="comingSoon roundedTops">Twitter</li></a>
-				<a href="#"><li class="comingSoon roundedTops">Pinterest</li></a>
-				<a href="#"><li class="comingSoon roundedTops">Email</li></a>
+				<li class="selected"><b>Facebook</b></li>
+				<li class="comingSoon"><a href="#">Twitter</a></li>
+				<li class="comingSoon"><a href="#">Pinterest</a></li>
+				<li class="comingSoon"><a href="#">Email</a></li>
 			</ul>
 		</div>
 	</div>
 	
 	<!-- Divided into sections of: 180px, 330px, 490px -->
-	<div id="box" class="roundedTops roundedBL roundedBR">
+	<div id="box">
 	
-		<div id="boxTop" class="roundedTops">
+		<div id="boxTop">
 			<div class="boxTopNav">
 				<ul class="boxTopNav">
 					<li><b>Queued Posts</b></li>
@@ -50,7 +55,7 @@
 			<div id="boxTopRight">
 				<p id="boxTopSchedule"><i>
 					Posting schedule: Mondays, Wednesdays, and Fridays at 8:00 EST 
-					(<a href="#" onclick="alert('Coming soon!')">change</a>)
+					(<a href="#" class="comingSoon">change</a>)
 				</i></p>
 			</div>
 		</div>
@@ -73,12 +78,18 @@
 				</div>
 			</div>
 			<div id="postContentBar">
-				<div id="selectedTitle">Post Title Here</div>
+				<div id="selectedTitle">
+					<!-- Value changes depending on which post is selected -->
+					<span id="selectedTitleContent">Post Title Here</span>
+					
+					<!-- Hidden initially, shown when postQueue.length > 0 -->
+					<span id='editTitle'>(<a href='#'>edit</a>)</span>
+				</div>
 			</div>
 		</div>
 		
 		<div id="mainBox">
-			<div id="categoryBox" class="roundedBL">
+			<div id="categoryBox">
 				<div class="category">Category 1</div>
 				<div class="category">Category 2</div>
 				<div class="category">Category 3</div>
@@ -92,10 +103,42 @@
 					Make a new Facebook post by clicking the 'New Post' button!<br><br>
 					The posts you create here will be seen by any of your visitors who 'liked' a product.
 				</p></div>
+				
+				<div id="replaceHiddenPost">
+					<div class="post hidden"><div class="postDate"></div><div class="postTitle"></div>
+					<div class="postDelete"><img src='imgs/delete-norm-15x15.png'></div></div>
+				</div>
 			</div>
 			
-			<div id="replaceWithPostContent" class="roundedBR">
+			<div id="replaceWithPostContent">
+			
+				<!-- Shown initially, hidden when postQueue.length > 0 -->
 				<div id="replaceTextWithPostContent"><p>Selected Facebook post contents will appear here</p></div>
+				
+				<!-- Hidden initially, shown when postQueue.length > 0 -->
+				<div id='postContentContainer'>
+					<div id='postKind'>
+						<!-- No back end for 'typeofcontent' for current version
+						What kind of content is this?
+						<select id='postKind'>
+							<option value='type1' [[ ifType1 ]]>Type 1</option>
+							<option value='type2' [[ ifType2 ]]>Type 2</option>
+							<option value='type3' [[ ifType3 ]]>Type 3</option>
+						</select>
+						<br><br> -->
+						Facebook post content:
+					</div>
+					<div id='postGuts'>
+						<textarea width='100%' rows='4' id='postContent'></textarea>
+					</div>
+					<div id='postEmbed'>
+						<input type='button' value='Embed a photo or video' />
+					</div><br><br>
+					<div id='postSave'><div class='button'>
+						<a href='#'>Save Changes</a>
+					</div></div>
+				</div>
+				
 			</div>
 		</div>
 		
@@ -113,21 +156,31 @@
 			New post name: <br><br>
 				<input type="text" id="newPostTitle" value=""/><br><br>
 			Should this post be added to the end or the beginning of the queue? <br><br>
-				<input type="radio" name="first" value="Last" checked="true"/>End<br>
-				<input type="radio" name="first" value="First" />Beginning<br><br>
-			<a href="#"><div id="newPostCancel" class="button">Cancel</div></a>
-			<a href="#"><div id="newPostOk" class="button">Ok</div></a>
+				<input type="radio" name="first" value="last" checked="true"/>End<br>
+				<input type="radio" name="first" value="first" />Beginning<br><br>
+			<div id="newPostCancel" class="button"><a href="#">Cancel</a></div>
+			<div id="newPostOk" class="button"><a href="#">Ok</a></div>
 		</div>
 	</div>
 
 <!-- End "New Post" Lightbox -->
 
+<!-- Popups -->
+<!--
+    <div id="popupBack">
+        <div id="popup">
+            <div id="popupTop">
+            	<span id="popupTitle"></span>
+            </div>
+            <div id="popupContent">
+            </div>
+            <div id="popupButtons">
+            </div>
+        </div>
+    </div>
+-->
+<!-- End popups -->
+
 </body>
-
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-<script src="engageFunctionality.js">
-<script type="text/javascript" charset="utf-8">
-</script>
 
 </html>
