@@ -62,7 +62,7 @@
 
                 $('#window_location').val(window.location.href);
 
-                {% if is_asker %}
+                {% if DISABLED_is_asker %}
                     showPage('friends_selector');
                     resizeCloud(255);  // init the page
                 {% else %}
@@ -83,7 +83,7 @@
         {% endblock %}
         <div id='header'>
             <div id="white">
-                {% if is_asker %}
+                {% if DISABLED_is_asker %}
                     <div id="friends_selector_page" class="page">
                         <div class="span-9 text-center">
                             <h2 style="margin-top: 25px;
@@ -119,7 +119,7 @@
         </div>
 
         <div id="wrapper">
-            {% if is_asker %}
+            {% if DISABLED_is_asker %}
                 <h2 class="text-center"
                     style="font-style: italic;
                            color: #666;
@@ -136,7 +136,7 @@
                     <p>
                         <img class="profile_pic"
                                 src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
-                        <span class="fbName asker_name_target">{{ asker_name }}</span>
+                        <span class="fbName asker_name_target">{{ asker_name|capfirst }}</span>
                         <br />
                         <span class="fbPost sharing_message_target">
                             {{ sharing_message|escape|default:"I like this - what do you think?" }}
