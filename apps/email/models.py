@@ -171,19 +171,21 @@ class Email():
             "token": token
         })
 
+        full_url = "https://%s%s" % (APP_DOMAIN, link)
+
         subject = "ReEngage Account Activation"
         body = """
                 <p>Hi</p>
                 <p>Please click this link to activate your new ReEngage
                 account.</p>
                 <p>
-                    <a href="%s%s">%s</a>
-                </p>""" % ("http://willet-nterwoord.appspot.com/", link, link)
+                    <a href="%s">Activate your account</a>
+                </p>""" % full_url
 
         Email.send_email(
             from_address=FROM_ADDR,
             to_address=email,
-            #to_name=email,
+            to_name=email,
             subject=subject,
             body=body
         )
@@ -371,8 +373,8 @@ class Email():
             }
         )
 
-        logging.error('Going to send a SIBT email... '
-                      '(not actually an error, but worth looking at)')
+        logging.error('Going to send a SIBT email to %s... '
+                      '(not actually an error, but worth looking at)' % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -417,8 +419,8 @@ class Email():
                 'buy_it': buy_it,
                 'buy_it_percentage': buy_it_percentage})
 
-        logging.error('Going to send a SIBT email... '
-                      '(not actually an error, but worth looking at)')
+        logging.error('Going to send a SIBT email to %s... '
+                      '(not actually an error, but worth looking at)' % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -493,8 +495,8 @@ class Email():
                 'client_domain': client.domain
             })
 
-        logging.error('Going to send a WOSIB email... '
-                      '(not actually an error, but worth looking at)')
+        logging.error('Going to send a WOSIB email to %s... '
+                      '(not actually an error, but worth looking at)' % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,

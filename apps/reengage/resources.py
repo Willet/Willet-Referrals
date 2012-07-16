@@ -5,8 +5,8 @@ from util.gaesessions import get_current_session
 from util.helpers import generate_uuid, url as build_url
 from util.urihandler import URIHandler
 
-#TODO: How to avoid stupid `if json else` construct`
 #TODO: Error handling
+#TODO: It is stupid duplicating logic between JSON and non-JSON handlers. Fix this
 
 def session_active(fn):
     def wrapped(*args, **kwargs):
@@ -47,33 +47,85 @@ def get_post(uuid):
     post = ReEngagePost.all().filter(" uuid = ", uuid).get()
     return post
 
-class ReEngageQueueHandler(URIHandler):
+class ReEngageQueueJSONHandler(URIHandler):
     @session_active
-    def get(self, json):
+    def get(self):
         """Get all queued elements for a shop"""
         session = get_current_session()
 
-        if json:
-            queue = get_queue()
-            if not queue:
-                logging.error("Could not find queue. Store URL: %s" %
-                             session.get("shop"))
-                self.respond(404)
-                return
+        queue = get_queue()
+        if not queue:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.respond(404)
+            return
 
-            response = queue.to_obj()
-            self.json(response.get("value"), response.get("key"))
-        else:
-            #TODO: Replace with HTML view
-            page = self.render_page('queue.html', {
-                "t": session.get("t"),
-                "shop": session.get("shop"),
-                "host" : self.request.host_url
-            })
-            self.response.out.write(page)
+        response = queue.to_obj()
+        self.json(response.get("value"), response.get("key"))
 
     @session_active
-    def post(self, json):
+    def post(self):
+        """Create a new post element in the queue"""
+        session = get_current_session()
+
+        queue = get_queue()
+        if not queue:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.respond(404)
+            return
+
+        # TODO: Validate the arguments
+        title   = self.request.get("title")
+        content = self.request.get("content")
+        method  = self.request.get("method", "append")
+
+        post = ReEngagePost(title=title,
+                            content=content,
+                            network="facebook",
+                            uuid=generate_uuid(16))
+        post.put()
+
+        if method == "append":
+            queue.append(post)
+        else:
+            queue.prepend(post)
+
+        response = queue.to_obj()
+        self.json(response.get("value"), response.get("key"))
+
+    @session_active
+    def delete(self):
+        """Delete all post elements in this queue"""
+        session = get_current_session()
+
+        queue = get_queue()
+        if not queue:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.respond(404)
+            return
+
+        queue.remove_all()
+        self.respond(204)
+
+
+class ReEngageQueueHandler(URIHandler):
+    @session_active
+    def get(self):
+        """Get all queued elements for a shop"""
+        session = get_current_session()
+
+        #TODO: Replace with HTML view
+        page = self.render_page('queue.html', {
+            "t": session.get("t"),
+            "shop": session.get("shop"),
+            "host" : self.request.host_url
+        })
+        self.response.out.write(page)
+
+    @session_active
+    def post(self):
         """Create a new post element in the queue"""
         session = get_current_session()
 
@@ -104,7 +156,7 @@ class ReEngageQueueHandler(URIHandler):
         self.json(response.get("value"), response.get("key"))
 
     @session_active
-    def delete(self, json):
+    def delete(self):
         """Delete all post elements in this queue"""
         session = get_current_session()
 
@@ -119,9 +171,9 @@ class ReEngageQueueHandler(URIHandler):
         self.respond(204)
 
 
-class ReEngagePostHandler(URIHandler):
+class ReEngagePostJSONHandler(URIHandler):
     @session_active
-    def get(self, uuid, json):
+    def get(self, uuid):
         """Get all details for a given post"""
         post = get_post(uuid)
         if not post:
@@ -129,22 +181,17 @@ class ReEngagePostHandler(URIHandler):
             self.respond(404)
             return
 
-        if json:
-            response = post.to_obj()
-            self.json(response.get("value"), response.get("key"))
-        else:
-            #TODO: Replace with HTML view
-            page = self.render_page('post.html', {})
-            self.response.out.write(page)
+        response = post.to_obj()
+        self.json(response.get("value"), response.get("key"))
 
     @session_active
-    def put(self, uuid, json):
+    def put(self, uuid):
         """Update the details of a post"""
         # Unused, for now
         self.respond(204)
 
     @session_active
-    def delete(self, uuid, json):
+    def delete(self, uuid):
         """Delete an individual post"""
         post = get_post(uuid)
         if not post:
@@ -157,25 +204,74 @@ class ReEngagePostHandler(URIHandler):
         self.respond(204)
 
 
+class ReEngagePostHandler(URIHandler):
+    @session_active
+    def get(self, uuid):
+        """Get all details for a given post"""
+        post = get_post(uuid)
+        if not post:
+            logging.error("Could not find post. UUID: %s" % uuid)
+            self.respond(404)
+            return
+
+        #TODO: Replace with HTML view
+        page = self.render_page('post.html', {})
+        self.response.out.write(page)
+
+    @session_active
+    def put(self, uuid):
+        """Update the details of a post"""
+        # Unused, for now
+        self.respond(204)
+
+    @session_active
+    def delete(self, uuid):
+        """Delete an individual post"""
+        post = get_post(uuid)
+        if not post:
+            logging.error("Could not find post. UUID: %s" % uuid)
+            self.respond(404)
+            return
+
+        # TODO: What about Keys that reference this post?
+        post.delete()
+        self.respond(204)
+
+
+class ReEngageProductSourceJSONHandler(URIHandler):
+    """Handles ProductSource requests.
+
+    A product source is any category, product, or store
+    """
+    @session_active
+    def get(self):
+        """Obtains information about a given ProductSource."""
+        url = self.request.get("url")
+
+        data = Facebook.get_reach(url)
+        self.json(data, "reach")
+
+    @session_active
+    def post(self):
+        """Posts to the ProductSource."""
+        self.respond(204)
+
+
 class ReEngageProductSourceHandler(URIHandler):
     """Handles ProductSource requests.
 
     A product source is any category, product, or store
     """
     @session_active
-    def get(self, json):
+    def get(self):
         """Obtains information about a given ProductSource."""
         url = self.request.get("url")
 
-        if json:
-            data = Facebook.get_reach(url)
-            self.json(data, "reach")
-        else:
-            #TODO: Replace with HTML view
-            page = self.render_page('product.html', {})
-            self.response.out.write(page)
+        #TODO: Replace with HTML view
+        page = self.render_page('product.html', {})
+        self.response.out.write(page)
 
     @session_active
-    def post(self, json):
+    def post(self):
         """Posts to the ProductSource."""
         self.respond(204)

@@ -1,5 +1,6 @@
 import logging
 import datetime
+from django.core.validators import email_re
 from google.appengine.ext import db
 import hashlib
 import os
@@ -306,21 +307,6 @@ class ReEngageAccount(User):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(ReEngageAccount, self).__init__(*args, **kwargs)
 
-    @classmethod
-    def create(cls, *args, **kwargs):
-        if not all(field in kwargs for field in ["email", "password"]):
-            # TODO: Exception
-            pass
-
-        salt = urlsafe_b64encode(os.urandom(64))
-        hash = hashlib.sha512(salt + kwargs.get("password")).hexdigest()
-        return cls(
-            email=kwargs.get("email"),
-            salt=salt,
-            hash=hash,
-            uuid=generate_uuid(16)
-        )
-
     def _validate_self(self):
         return True
 
@@ -329,15 +315,28 @@ class ReEngageAccount(User):
         return hash == self.hash
 
 
-    def reset(self):
+    def set_password(self, password):
         """Reset an account's password"""
-        # Generate single use token that expires within some time period
-        # Make sure to expire these tokens when someone logs in
-        # Make sure to expire the token when a new token is requested
-        pass
+        salt = urlsafe_b64encode(os.urandom(64))
+        hash = hashlib.sha512(salt + password).hexdigest()
+
+        self.salt = salt
+        self.hash = hash
+        self.put()
+
+    def forgot_password(self):
+        token = urlsafe_b64encode(os.urandom(32))
+
+        self.token     = token
+        self.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
+
+        self.put()
+
+        # Send verification email
+        Email.verify_reengage_token_email(self.email, self.token)
 
     @classmethod
-    def get_or_create(cls, username, password, verify):
+    def get_or_create(cls, username):
         logging.info("Obtaining user...")
 
         user = cls.all().filter('email = ', username).get()
@@ -346,20 +345,12 @@ class ReEngageAccount(User):
         if user:
             return user, False
 
-        # TODO: Validate username
-        if username and password and verify and password == verify:
+        if username and email_re.match(username):
             # Create user
             logging.info("Creating new user")
-            user  = cls.create(email=username, password=password)
-            token = urlsafe_b64encode(os.urandom(32))
+            user  = cls(email=username, uuid=generate_uuid(16))
+            user.forgot_password()
 
-            user.token     = token
-            user.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
-
-            user.put()
-
-            # Send verification email
-            Email.verify_reengage_token_email(username, token)
             return user, True
         else:
             return None, False
