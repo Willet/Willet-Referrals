@@ -1,5 +1,6 @@
 import logging
 import datetime
+from django.core.validators import email_re
 from google.appengine.ext import db
 import hashlib
 import os
@@ -333,8 +334,7 @@ class ReEngageAccount(User):
         if user:
             return user, False
 
-        # TODO: Validate username
-        if username:
+        if username and email_re.match(username):
             # Create user
             logging.info("Creating new user")
             user  = cls(email=username, uuid=generate_uuid(16))
