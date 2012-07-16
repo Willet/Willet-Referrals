@@ -1,0 +1,375 @@
+<html class="WOSIB ask_page">
+    <head>
+        <title>{% block title %}Ask a Friend{% endblock title %}</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+
+        <link rel="stylesheet" href="/static/sibt/css/ask_page.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/button.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/colorbox.css" type="text/css" />
+        <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+        <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
+        <!--[if lt IE 9]><script src="/static/js/html5shiv.js"></script><![endif]-->
+        <script type="text/javascript">
+            {% include "js/willet.mediator.js" %}
+            {% include "js/willet.debug.js" %}
+            {% include "js/willet.loader.js" %}
+            {% include "js/willet.storage.js" %}
+            {% include "js/willet.analytics.js" %}
+            {% include "js/willet.sibtShareMethods.js" %}
+        </script>
+        <style type="text/css">
+            .invisible {
+                display: none;
+            }
+            .error {
+                color: #f00;
+                background-color: #fb9;
+                border: 1px #ea8 solid;
+                border-radius: 6px;
+                padding: 10px;
+            }
+            #sibt_people {
+                border: none;
+                display: block;
+                background-image: url('/static/sibt/imgs/happy-people-245x120.png');
+                width: 245px;
+                height: 120px;
+            }
+        </style>
+
+        <!-- Add styles here! Try to reuse as much of ask.css as possible -->
+        {% block styles %}{% endblock styles %}
+    </head>
+    <body>
+
+        <div id="body_wrapper">
+            <header class="header">
+                <div id="oem_panel" class="width">
+                    <img id="sibt_people" alt="Hippie faces"
+                         src="/static/sibt/imgs/happy-people-245x120.png"
+                         style="float: right; margin: -20px 40px 0 0" />
+                    <h1>{{ client.name|default:"Ask Trusted Friends" }}</h1>
+                    Ask your trusted friends for advice!
+                    Choose two products for them to vote on:
+                </div>
+            </header>
+            <div id="main_content" class="width">
+                <div class="invisible error">Please select two products :)</div>
+                <section id="selected_products">
+                    <span class="selected item">
+                        Choice A <br/>
+                        <span class="selected target">
+                            <img class="selected product" />
+                        </span>
+                    </span>
+                    <span class="selected item">
+                        Choice B <br/>
+                        <span class="selected target">
+                            <img class="selected product" />
+                        </span>
+                    </span>
+                    <span id="button_container" style="display: none">
+                        <button id="postOnWall">
+                            Post vote on Facebook
+                        </button>
+                        <br/>
+                        <button id="chooseFriends">
+                            Choose friends to vote
+                        </button>
+                        <p style="text-align: center">
+                          <a id="show_example_vote" href="#">See an example vote</a>
+                        </p>
+                    </span>
+                </section>
+                <section id="available_products">
+                    <img alt="drag" src="/static/imgs/drag-and-drop-upward-120x75.png"
+                         style="position: absolute;
+                                top: -70px;;
+                                left: 50px;" />
+                    <!-- JS -->
+                </section>
+                <p>
+                    These are the products you have seen.
+                    {% if app.client.domain %}
+                        To find more products, visit more product pages at
+                        <a href="{{ app.client.domain }}">{{ app.client.name }}</a>.
+                    {% endif %}
+                </p>
+            </div>
+            <footer class="footer">
+                &copy; Willet, on behalf of {{ app.client.name }}
+            </footer>
+        </div>
+
+        {% block body_script %}
+        <script type="text/javascript">
+            window.onerror = function (message, file, line) {
+                // improvised page-wide error reporting snippet.
+                try {
+                    var params  = "error=SIBT%20Error" + error +
+                                "&script=" + encodeURIComponent(file + ':' + line) +
+                                "&st=" + encodeURIComponent(message);
+                    (new Image).src = "//{{ DOMAIN }}{% url ClientSideMessage %}?" +
+                                      params;
+                } catch (err) { /* then all hope is lost :'( */ }
+            };
+
+            {# var products = [] #}{% include "products_include.js" %}
+
+            $(document).ready(function () {
+                var swapNodes = function (a, b) {
+                    // according to http://stackoverflow.com/questions/698301,
+                    // swaps the position of two elements.
+                    var aparent= a.parentNode;
+                    var asibling= a.nextSibling===b? a : a.nextSibling;
+                    b.parentNode.insertBefore(a, b);
+                    aparent.insertBefore(b, asibling);
+                };
+
+                var addAvailableProduct = function (src, uuid, title) {
+                    // put a product in the basket of things you can add.
+                    var product_elem = $('<img />', {
+                        'src': src,
+                        'title': title  // mouseover
+                    });
+                    $('#available_products').prepend(
+                        product_elem.addClass('product')
+                                    .data('uuid', uuid)
+                                    .draggable({revert: true})
+                    );
+                };
+
+                var addSelectedProduct = function (elem) {
+                    // move one of the available product elements to the
+                    // first free selected product box. If no box is free,
+                    // the second item will be replaced.
+                    var $elem = $(elem);
+                    $('.selected.product')
+                        // choose either selected[0] or selected[1].
+                        .eq(Math.min(getSelectedProductCount(), 1))
+                        .attr({
+                            'src': $elem.attr('src'),
+                            'title': $elem.attr('title')
+                        })
+                        .data('uuid', $elem.data('uuid'));
+
+                    // remove the thing.
+                    try {
+                        $elem.remove();
+                    } catch (e) {
+                        alert('1');
+                    }
+                };
+
+                var getSelectedProducts = function () {
+                    var sels = [],
+                        products = $('.selected.product');
+                    for (var i = 0; i < products.length; ++i) {
+                        if ($(products[i]).data('uuid')) {
+                            sels.push($(products[i]));
+                        }
+                    }
+                    return sels;
+                };
+
+                var getSelectedProductCount = function () {
+                    return getSelectedProducts().length;
+                };
+
+                var createSIBTInstance = function (callback, params) {
+                    // either creates or updates a SIBT instance (server decides)
+                    var product_uuids = [],
+                        selectedProducts = getSelectedProducts();
+                    for (var i = 0; i < selectedProducts.length; ++i) {
+                        product_uuids.push(selectedProducts[i].data('uuid'));
+                    }
+                    var url = '//{{ DOMAIN }}{% url StartSIBTInstance %}';
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            'app_uuid': '{{ app.uuid }}',
+                            'page_url': '{{ page_url }}',
+
+                            // if provided, use existing instance
+                            'instance_uuid': '{{ instance.uuid }}',
+
+                            // if provided, use existing link
+                            'code': '{{ willt_code }}',
+                            'products': product_uuids.join(',')
+                        },
+                        success: function () {
+                            return callback(params);
+                        }
+                    });
+                };
+
+                var toggleButtons = function () {
+                    if (getSelectedProductCount() >= 2) {
+                        $('#button_container').show();
+                    } else {
+                        $('#button_container').hide();
+                    }
+                };
+
+                // generate a list of available product thingies.
+                for (var i = 0; i < products.length; ++i) {
+                    addAvailableProduct(products[i].image, products[i].uuid,
+                                        products[i].title);
+                }
+
+                // set drop targets
+                $('.selected.product').droppable({
+                    // drag from available to selected
+                    // also allow product position swapping <nt3rp>
+                    'accept': '#available_products .product, .selected.product',
+                    'drop': function (event, ui) {
+                        var draggedImage = ui.draggable;
+
+                        // dragging from selected to selected
+                        if (draggedImage.hasClass('selected')) {
+                            swapNodes(draggedImage.get(0), this);
+                            return;
+                        }
+
+                        // dragging from selected back to available
+                        if ($(this).data('uuid')) {
+                            // if dropped into selected product box with
+                            // a product already in it, put existing product
+                            // back into available products box.
+                            addAvailableProduct($(this).attr('src'),
+                                                $(this).data('uuid'),
+                                                $(this).attr('title'));
+                        }
+                        $(this).attr({
+                            'src': draggedImage.attr('src'),
+                            'title': draggedImage.attr('title')
+                        }).data('uuid', draggedImage.data('uuid'));
+
+                        // visual cue that you can't add the same product again
+                        try {
+                            draggedImage.remove();
+                        } catch (e) {
+                            alert('2');
+                        }
+
+                        toggleButtons();
+                    }
+                });
+                $('.selected.product').draggable({revert: true});
+                $('#available_products').droppable({
+                    // drag back from selected to available <nt3rp>
+                    'accept': '.selected.product',
+                    'drop': function (event, ui) {
+                        var draggedImage = ui.draggable;
+
+                        if (ui.draggable.data('uuid')) {
+                            // if dropped into selected product box with
+                            // a product already in it, put existing product
+                            // back into available products box.
+                            addAvailableProduct(ui.draggable.attr('src'),
+                                                ui.draggable.data('uuid'),
+                                                ui.draggable.attr('title'));
+                        }
+
+                        // force background-image to show up again
+                        draggedImage.attr({
+                            'src': '/static/imgs/noimage.png',
+                            'title': ''
+                        }).data('uuid', '');
+
+                        toggleButtons();
+                    }
+                });
+
+                $('#postOnWall, #chooseFriends').click(function () {
+                    if (getSelectedProductCount() < 2) {
+                        // too few products selected
+                        $('.invisible.error')
+                            .removeClass('error')
+                            .removeAttr('style')  // reset jQ style defs
+                            .addClass('error')
+                            .show()
+                            .animate({
+                                'color': '#333',
+                                'background-color': '#f0f0f0',
+                                'border': '0'
+                            }, {
+                                'duration': 2500,
+                                'complete': function () {
+                                    $(this).hide();
+                                }
+                            });
+                        return;
+                    }
+
+                    switch ($(this).attr('id')) {
+                        case 'postOnWall':
+                            var objective = 'postOnWall';
+                            break;
+                        case 'chooseFriends':
+                            var objective = 'sendToFriends';
+                            break;
+                    }
+                    // first make the instance, then send or post it.
+                    if (objective) {
+                        // Wub wub wub wub wub wub (V)(;,,;)(V)
+                        var button = $(this);
+                        var oldButtonText = button.text();
+                        button.text('Please wait...');
+
+                        var fbInstanceCallback = function () {
+                            button.text(oldButtonText);
+                            _willet.mediator.fire(objective, {
+                                'name': 'Not sure which one I should buy!',
+                                'link': '{{ share_url }}',
+                                'caption': 'Not sure which one I should buy!',
+                                'description': '{{ AB_share_text }}',
+                                'picture': getSelectedProducts()[0].attr('src') ||
+                                           '//{{ DOMAIN }}/static/imgs/noimage.png',
+                                'redirect_uri': '{{ fb_redirect }}'
+                            }).fire('redirectWindow');  // fire remainders
+                        };
+
+                        // determine if we should show the FB popup right now
+                        // or after creating an instance.
+                        if ('{{ instance.uuid }}') {  // '' if instance didn't exist
+                            // run callback while creating
+                            createSIBTInstance();
+                            fbInstanceCallback();
+                        } else {
+                            // run callback after creating
+                            createSIBTInstance(fbInstanceCallback);
+                        }
+                    }
+                });
+
+                var sampleVoteImg = '/static/sibt/imgs/vote_sample.png';
+                (new Image).src = sampleVoteImg;  // prefetch to get dimensions
+                $('#show_example_vote').click(function () {
+                    $.colorbox({
+                        'html': '<img src="' + sampleVoteImg + '" />',
+                        'transition': 'fade'
+                    });
+                });
+
+                if (products.length >= 2) {
+                    var product_elems = $('#available_products .product');
+                    addSelectedProduct(product_elems.get(0));
+                    addSelectedProduct(product_elems.get(1));
+                    toggleButtons();
+                }
+
+                _willet.mediator.fire('hasjQuery', $); // load colorbox
+                _willet.mediator.fire('fbInit'); // load the FB thing
+            });
+        </script>
+        {% endblock body_script %}
+        {% include "google_analytics_snippet.html" %}
+    </body>
+</html>

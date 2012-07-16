@@ -14,58 +14,88 @@
 
 {% block right_screens %}
     <div id="product_screen" class="wosib center">
-        {% for product in products|slice:":2" %}
-            {% if forloop.last %}
-                <img alt="or" src="/static/imgs/or-150.png"
-                        style="margin: 88px -47px;
-                            float: left;
-                            line-height: 300px;
-                            vertical-align: middle;" />
-            {% endif %}
-            <div class="product info_launch" data-uuid="{{ product.uuid }}">
-                <!-- thumbnail -->
-                <img alt="product image"
-                     src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                    {% if forloop.last %}
-                     id="second_product_src_drop_target"
-                    {% endif %}
-                    class="product-image center" />
-                <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
-                {% if not user_voted %}
-                    <button class="button vote"
-                            style="position:absolute;bottom:10px;left:34%"
-                            data-uuid="{{ product.uuid }}">
-                        Vote
-                    </button>
+        <div id="success_screen">
+            <h2>Thank you for helping {{asker_name}}!</h2>
+        </div>
+
+        {% if not user_voted %}
+            {# intentionally flipped logic #}
+            {% for product in products|slice:":2" %}
+                {% if forloop.last %}
+                    <img alt="or" src="/static/imgs/or-150.png"
+                            style="margin: 88px -47px;
+                                float: left;
+                                line-height: 300px;
+                                vertical-align: middle;" />
                 {% endif %}
-                <div id="success_screen">
-                    <h2>Thank you for helping {{asker_name}}!</h2>
-                </div>
-            </div>
-            <div id="product_info_{{ product.uuid }}"
-                class="product_info group1" rel="group1">
-                <!-- details -->
-                <div style="float:left; width: 400px;">
-                    <a>
-                        <img alt="product image"
-                            src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
-                            class="product-image center"/>
-                    </a>
-                    <p style="text-align: center;">
-                        {% if not user_voted %}
-                            <button class="button vote"
-                                    data-uuid="{{ product.uuid }}">
-                                Vote
-                            </button>
+                <div class="product info_launch" data-uuid="{{ product.uuid }}">
+                    <!-- thumbnail -->
+                    <img alt="product image"
+                         src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                        {% if forloop.last %}
+                        id="second_product_src_drop_target"
                         {% endif %}
-                    </p>
+                        class="product-image center" />
+                    <h2 class="title" style="font-size: 1em">{{ product.title }}</h2>
+                    {% if not user_voted %}
+                        <button class="button vote"
+                                style="position:absolute;bottom:10px;left:34%"
+                                data-uuid="{{ product.uuid }}">
+                            Vote
+                        </button>
+                    {% endif %}
                 </div>
-                <div style="float:right; width: 400px;">
-                    <h2 class="title">{{ product.title }}</h2>
-                    {{ product.description|linebreaksbr|striptags }}
+                <div id="product_info_{{ product.uuid }}"
+                    class="product_info group1" rel="group1">
+                    <!-- details -->
+                    <div style="float:left; width: 400px;">
+                        <a>
+                            <img alt="product image"
+                                src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                                class="product-image center"/>
+                        </a>
+                        <p style="text-align: center;">
+                            {% if not user_voted %}
+                                <button class="button vote"
+                                        data-uuid="{{ product.uuid }}">
+                                    Vote
+                                </button>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div style="float:right; width: 400px;">
+                        <h2 class="title">{{ product.title }}</h2>
+                        {{ product.description|linebreaksbr|striptags }}
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <table>
+                {% for product in products|slice:":2" %}
+                    <tr>
+                        <td>
+                            <!-- thumbnail -->
+                            <img alt="product image"
+                                 src='{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}'
+                                 style='max-width:200px;max-height:200px'
+                                {% if forloop.last %}
+                                 id="second_product_src_drop_target"
+                                {% endif %}
+                                 class="product-image center" />
+                        </td>
+                        <td style="vertical-align:top">
+                            <h2 class="title" style="text-align:left">
+                                {{ product.title }}
+                            </h2>
+                            <p>Votes:
+                                {# votes is a volatile variable #}
+                                <span class="vote_bar">{{ product.votes }}</span>
+                            </p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
     </div>
 {% endblock right_screens %}
 
@@ -113,6 +143,9 @@
                             {% else %}
                                 $("#success_pending").hide();
                                 $("#success_screen").show();
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 1000);
                             {% endif %}
                             $(ctl).text('Voted').attr('disabled', 'disabled');
                         },
@@ -120,6 +153,9 @@
                             $("#error_message").show();
                         }
                     });
+
+                    // hide all vote buttons so users can't vote again.
+                    $('.vote').hide();
                 }
             };
 
@@ -127,6 +163,18 @@
                 event.stopPropagation();
                 vote(event.target || event.currentTarget);
             });
+        {% else %}
+            // user already voted, so show that "thanks for voting" msg
+            $('#success_screen').show();
+
+            // make vote bars look cool
+            $('.vote_bar').each(function () {
+                $(this).css({
+                    // make the vote bar relate to vote count (until 260px)
+                    'width': Math.min($(this).text() * 25, 260) + 'px'
+                });
+            });
+
         {% endif %}
 
 <!--                // wosib mode view product's info                       -->

@@ -132,6 +132,13 @@ img.profile_pic {
     display: none; /* js */
     text-align: center;
 }
+#success_screen h2 {
+    background: #FBF9EE;
+    border: 1px solid #FCEFA1;
+    border-radius: 4px;
+    color: #363636;
+    padding: 0.7em;
+}
 
 #left-content {
     float: left;
@@ -262,12 +269,10 @@ img.slight-highlight {
 
 .product {
     /* each small image in wosib mode. */
-    border: 1px #F0F0F0 solid;
-    box-shadow:0px 2px 3px 0px #CECECE;
     float: left;
-    height: 270px;
+    height: 240px;
     border-radius: 3px;
-    margin: 17px;
+    margin: 75px 17px;
     padding: 12px 5px;
     vertical-align:top;
     width: 200px;
@@ -352,6 +357,16 @@ button:active { }
 .button .vote {
     display: block;
     margin: 10px auto;
+}
+
+.vote_bar {
+    background-color: #BFC;
+    border: 1px #AEB solid;
+    border-radius: 6px;
+    display: inline-block;
+    font-weight: bold;
+    padding: 6px 0;
+    text-align: center;
 }
 
 .yes:before {

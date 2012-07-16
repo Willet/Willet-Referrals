@@ -13,6 +13,12 @@ indexes:
   - name: user
   - name: sibt_instance
 
+# filter ActionTally by hour/week
+- kind: Action
+  properties:
+  - name: class
+  - name: created
+
 - kind: App
   properties:
   - name: client

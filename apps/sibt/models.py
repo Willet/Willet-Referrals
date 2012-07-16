@@ -283,16 +283,18 @@ class SIBTInstance(Model):
         """Returns this instance's products as objects."""
         return [Product.get(product_uuid) for product_uuid in self.products]
 
-    def get_winning_products(self):
-        """Returns an array of products with the most votes in the instance.
+    def get_product_votes(self):
+        """returns a dictionary:
 
-        Array returned can be of one item.
+        { product_uuid: <int>vote_count,
+          product_uuid: <int>vote_count,
+          product_uuid: <int>vote_count, ... }
         """
         instance_product_votes = []
 
         if not self.products:
             logging.warn("this instance has no products!")
-            return []
+            return {}
 
         for product_uuid in self.products:
             product_votes = Action.all()\
@@ -310,6 +312,23 @@ class SIBTInstance(Model):
         # mash the list into a dict: {uuid: votes, uuid: votes, uuid: votes}
         instance_product_dict = dict(zip(self.products, instance_product_votes))
         logging.debug("instance_product_dict = %r" % instance_product_dict)
+        return instance_product_dict
+
+    def get_winning_products(self):
+        """Returns an array of products with the most votes in the instance.
+
+        Array returned can be of one item.
+        """
+        if not self.products:
+            logging.warn("this instance has no products!")
+            return []
+
+        instance_product_dict = self.get_product_votes()
+        if not instance_product_dict:
+            logging.warn("none of the products have votes!")
+            return []
+
+        instance_product_votes = instance_product_dict.values()
 
         if instance_product_votes.count(max(instance_product_votes)) > 1:
             # that is, if multiple items have the same score
