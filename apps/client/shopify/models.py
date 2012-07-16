@@ -21,6 +21,7 @@ from apps.user.models import User
 
 from util import httplib2
 from util.consts import SHOPIFY_APPS
+from util.errors import RemoteError
 from util.helpers import generate_uuid
 from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
