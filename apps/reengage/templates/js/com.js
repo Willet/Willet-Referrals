@@ -1,3 +1,9 @@
+"use strict";
+/*
+ * Willet's "ReEngage"
+ * Copyright Willet Inc, 2012
+ */
+
 var client = {},    // {props}
     apps = {},      // [{props}, {...}]; clients own apps
     products = {},  // [{props}, {...}]; clients own products
@@ -130,17 +136,19 @@ var loadPosts = function (queue, callback) {
     );
 };
 
-var init = function () {
+var __main__ = function () {
     $(document).ready(function () {
         // ...
     });
 };
 
 // fire up Mr.AJAX
-loadClient('', function () {
-    loadApps(client, function () {
-        loadQueues(apps[0], function () {
-            loadPosts(queues[0], init);
+if (window.__name__ === '__main__') {
+    loadClient('', function () {
+        loadApps(client, function () {
+            loadQueues(apps[0], function () {
+                loadPosts(queues[0], __main__);
+            })
         })
-    })
-});
+    });
+}
