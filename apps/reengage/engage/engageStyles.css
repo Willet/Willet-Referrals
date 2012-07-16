@@ -11,9 +11,7 @@ p {
 }
 
 body,
-p {
-	font-size: 13px;
-}
+p { font-size: 13px; }
 
 h1 {
 	font-size: 30px;
@@ -21,13 +19,9 @@ h1 {
 	text-shadow: 1px 1px rgba(255,255,255,0.3)
 }
 
-body {
-	background: #e4e4e4;
-}
+body { background: #e4e4e4; }
 
-a {
-	text-decoration: none;
-}
+a { text-decoration: none; }
 
 .button {
 	margin: 5px;
@@ -37,7 +31,12 @@ a {
 	float: left;
 }
 
-.roundedTops {
+.roundedTops,
+#box,
+#boxTop,
+li.selected, 
+li a,
+#popup {
 	-webkit-border-top-left-radius: 5px;
     -moz-border-radius-topleft: 5px;
     border-top-left-radius: 5px;
@@ -47,7 +46,8 @@ a {
     border-top-right-radius: 5px;
 }
 
-.roundedTL {
+.roundedTL,
+ {
 	-webkit-border-top-left-radius: 5px;
     -moz-border-radius-topleft: 5px;
     border-top-left-radius: 5px;
@@ -59,13 +59,19 @@ a {
     border-top-right-radius: 5px;
 }
 
-.roundedBR {
+.roundedBR,
+#box,
+#replaceWithPostContent,
+#popup {
 	-webkit-border-bottom-right-radius: 5px;
     -moz-border-radius-bottomright: 5px;
     border-bottom-right-radius: 5px;
 }
 
-.roundedBL {
+.roundedBL,
+#box,
+#categoryBox,
+#popup {
 	-webkit-border-bottom-left-radius: 5px;
     -moz-border-radius-bottomleft: 5px;
     border-bottom-left-radius: 5px;
@@ -84,19 +90,27 @@ a {
 	width: 1000px;
 	margin: auto;
 }
+.loginLeft { text-align: right; width: 200px; }
+.loginLeft,
+.loginRight { float: left; }
 
 .loginElem,
+.loginElemLeft,
+.loginElemRight,
 #loginAd,
 #loginButtonContainer,
 #signupButtonContainer {
-	padding: 15px 25px;
-	font-size: 18px;
+	padding: 15px 25px 5px 25px;
+	font-size: 16px;
 }
-.loginElem { height: 25px; }
+.loginElemRight { padding: 15px 0 5px 0; }
+
+.loginElem,
+.loginElemLeft,
+.loginElemRight { height: 25px; }
+
 #loginTopMessage,
-.loginHead {
-	font-size: 24px;
-}
+.loginHead { font-size: 24px; }
 
 #loginMainBox,
 #loginBox,
@@ -106,7 +120,7 @@ a {
 }
 
 #loginTopMessage { padding: 30px 25px; }
-.loginHead { background: #3b3b3b; color: #fff; font-weight: bold; padding: 15px 25px; width: 443px;}
+.loginHead { background: #3b3b3b; color: #fff; font-weight: bold; padding: 15px 25px; }
 #loginMainBox { width: 1000px; }
 #loginBox,
 #signupBox {
@@ -118,7 +132,14 @@ a {
 #signupBox { margin-right: 15px; }
 
 #loginButtonContainer, 
-#signupButtonContainer { float: right; }
+#signupButtonContainer {
+	width: 440px;
+	position: relative;
+	float: left;
+}
+
+#loginButton,
+#signupButton { float: right; }
 
 #banner {
 	background: #74bff1;
@@ -131,7 +152,7 @@ a {
 #boxTop, 
 #bannerBody, 
 #detailsBar, 
-.boxContent, 
+.boxContent,
 #box {
 	width: 1000px;
 	overflow: auto;
@@ -168,8 +189,8 @@ ul#bannerRightObj li {
 }
 
 #break {
-	margin-top: 20px;
-	height: 45px;
+	margin-top: 15px;
+	height: 55px;
 	position: relative;
 }
 
@@ -180,24 +201,28 @@ ul#bannerRightObj li {
 }
 
 ul.breakNav li {
-	padding: 12px 20px 12px 20px;
 	margin: 0 15px 0 0;
 	list-style: none;
 	float: left;
 	display: block;
 	position: relative;
 	font-size: 16;
-	background: #626262;
 	color: #fff;
 }
 
+ul.breakNav li a,
 ul.breakNav li.selected {
+	padding: 12px 20px 12px 20px;
+	background: #626262;
+	float: left;
+}
+
+ul.breakNav li.selected,
+ul.breakNav li a:hover {
 	background: #3b3b3b;
 }
 
-ul.breakNav li:hover {
-	background: #3b3b3b;
-}
+ul.breakNav li a:visited { color: #fff; }
 
 ul.boxTopNav li {
 	padding: 15px;
@@ -308,6 +333,13 @@ which has one pixel less height for the white border on top */
 	padding: 8px 15px 8px 15px;
 }
 
+#postContentContainer,
+#editTitle,
+#replaceHiddenPost
+.hidden { 
+	display: none;
+}
+
 #replaceWithPosts {
 	width: 329px;
 	background: #e4e4e4;
@@ -318,6 +350,7 @@ which has one pixel less height for the white border on top */
 
 .post {
 	width: 329px;
+	cursor: pointer;
 	border-top: 1px solid #fff;
 	border-bottom: 1px solid #3b3b3b;
 	float: left;
@@ -332,16 +365,13 @@ which has one pixel less height for the white border on top */
 	background: #cddfec;
 }
 
-.post a {
-	color: #000;
-}
-
 .post:hover {
 	background: #f3f3f3;
 }
 
 .post.selected {
 	font-weight: bold;
+	cursor: default;
 }
 
 .postDate {
@@ -356,8 +386,42 @@ which has one pixel less height for the white border on top */
 
 .postDelete {
 	float: left;
-	margin-top: 1px;
+	display: block;
+	position: relative;
+	cursor: pointer;
 }
+
+.postDeleteImg {
+	float: left;
+	display: block;
+	width: 15px;
+	height: 15px;
+	background: url('imgs/delete-15x30.png');
+	background-position: bottom;
+}
+
+.postDeleteImg:hover {
+	background-position: 0 0;
+}
+
+/*
+ul.breakNav li {
+	margin: 0 15px 0 0;
+	list-style: none;
+	float: left;
+	display: block;
+	position: relative;
+	font-size: 16;
+	color: #fff;
+}
+
+ul.breakNav li a,
+ul.breakNav li.selected {
+	padding: 12px 20px 12px 20px;
+	background: #626262;
+	float: left;
+}
+*/
 
 #replaceWithPostContent {
 	width: 490px;
@@ -398,12 +462,13 @@ which has one pixel less height for the white border on top */
 	position: fixed;
 	margin: auto;
 	top: 25%;
+	left: 35%;
 	width: 400px;
 	border-radius: 10px;
 	-mox-border-radius: 10px;
 	background-color: #fff;
 	z-index:1002;
-	box-shadow: 1px 1px 5px rgba(0,0,0, 0.5);
+	box-shadow: 0 3px 10px rgba(0,0,0, 1);
 }
 
 #lightTop {
@@ -418,6 +483,27 @@ which has one pixel less height for the white border on top */
 	padding: 10px;
 }
 
+#popupBack { 
+	display: none;
+	z-index: 1000;
+	position: fixed;
+	text-align: center; 
+	width: 100%;
+	height: 100%;
+}
+#popup {
+	display: none;
+	z-index: 1001;
+    width: 400px;
+    top: 25%;
+    margin: auto;
+    background: #fff;
+    text-align: left;
+    box-shadow: 0 0 5px rgba(0,0,0, 0.5);
+    -moz-box-shadow: 0 0 5px rgba(0,0,0, 0.5);
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0, 0.5);
+}
+
 .button,
 .button:visited,
 button,
@@ -430,7 +516,6 @@ button:visited {
     text-decoration: none;
     text-shadow: 0 1px 2px #666;
     white-space: nowrap;
-    cursor: pointer;
     vertical-align: baseline;
     -webkit-transition: all 400ms ease;
     -moz-transition: all 400ms ease;
