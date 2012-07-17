@@ -142,9 +142,15 @@ li a,
 #signupButton { float: right; }
 
 #banner {
-	background: #74bff1;
+	background-color: #74bff1;
 	background: -webkit-gradient(linear, left top, left bottom, from(#81cbfd), to(#65afe1));
 	background: -moz-linear-gradient(top,  #81cbfd,  #65afe1);
+	background: -ms-linear-gradient(top,  #81cbfd,  #65afe1);
+	background: -o-linear-gradient(top,  #81cbfd,  #65afe1);
+	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#81cbfd', endColorstr='#65afe1'); /* IE6 & IE7 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#81cbfd', endColorstr='#65afe1')"; /* IE8 */
+	background: linear-gradient(top,  #81cbfd,  #65afe1);
+	
 	border-bottom: 1px solid #3f7599;
 }
 
@@ -222,6 +228,8 @@ ul.breakNav li a:hover {
 	background: #3b3b3b;
 }
 
+ul.breakNav li.selected,
+ul.breakNav li a,
 ul.breakNav li a:visited { color: #fff; }
 
 ul.boxTopNav li {
@@ -483,26 +491,12 @@ ul.breakNav li.selected {
 	padding: 10px;
 }
 
-#popupBack { 
+#newTitleWarning {
 	display: none;
-	z-index: 1000;
-	position: fixed;
-	text-align: center; 
-	width: 100%;
-	height: 100%;
+	color: #f00;
 }
-#popup {
-	display: none;
-	z-index: 1001;
-    width: 400px;
-    top: 25%;
-    margin: auto;
-    background: #fff;
-    text-align: left;
-    box-shadow: 0 0 5px rgba(0,0,0, 0.5);
-    -moz-box-shadow: 0 0 5px rgba(0,0,0, 0.5);
-    -webkit-box-shadow: 0 0 5px rgba(0,0,0, 0.5);
-}
+
+#newPostDialog { display: none; }
 
 .button,
 .button:visited,
@@ -554,7 +548,6 @@ button:hover {
     background: -webkit-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background: -o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background: -ms-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-    background: linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background: linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
 }
 button:active { }

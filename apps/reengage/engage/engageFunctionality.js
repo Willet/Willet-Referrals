@@ -66,9 +66,7 @@ var writeQueue = function() { //Outputs post titles and dates in replaceWithPost
 };
 
 var removePost = function(uuid) { //Looks through queue for post of this uuid and deletes it
-    var yes = confirm("Are you sure you want to delete this post?");
-    
-    if (yes) {
+    var ifOk = function() {
         var x = 0;
         for (var i = 0; i < postQueue.length; i++) {
             if (postQueue[i].uuid === uuid) {
@@ -96,7 +94,9 @@ var removePost = function(uuid) { //Looks through queue for post of this uuid an
         else {
             ("#selectedTitleContent").html("Post Title Here");
         }
-    }
+    };
+    
+    confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
 };
 
 var clickPost = function(post) {
@@ -135,22 +135,107 @@ var popup = function(html, type) {
     $('body').append(lightbox);
 };
 
+var alertDialog = function(alertTitle, content) {
+    var $dialog = $("<div></div>")
+        .html(content)
+        .dialog({
+            autoOpen: false,
+            title: alertTitle,
+            buttons: {
+                "Ok": function() {
+                    $(this).dialog("destroy");
+                }
+            }
+        });
+    
+    $dialog.dialog('open');
+    return false;
+};
+
+var confirmDialog = function(confirmTitle, content, ifOk) {
+    var $dialog = $("<div></div>")
+        .html(content)
+        .dialog({
+            autoOpen: false,
+            title: confirmTitle,
+            buttons: {
+                "Cancel": function() {
+                    $(this).dialog("destroy");
+                },
+                "Ok": function() {
+                    $(this).dialog("destroy");
+                    ifOk();
+                }
+            }
+        });
+        
+    $dialog.dialog('open');
+};
+
+var newPostConfirm = function() {
+    var content = '';
+    content +=      'New post name: <br><br>';
+	content +=          '<input type="text" id="newPostTitle" value=""/><br><br>';
+    content +=      'Should this post be added to the end or the beginning of the queue? <br><br>';
+	content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
+    content +=          '<input type="radio" name="first" value="first" />Beginning<br><br>';
+    
+    $("#newPostDialog").dialog({
+        buttons: {
+                "Cancel": function() {
+                    $(this).dialog("destroy");
+                    $("#newPostTitle").val("");
+                },
+                "Ok": function() {
+                    var title = $("#newPostTitle").val();
+                    var first = $('input[name=first]:checked').val();
+                    if ($("input[name=first]:checked").val() == "first") {
+                        first = true;
+                    }
+                    else {
+                        first = false;
+                    }
+        
+                    //Make sure a title was given to the new post
+                    if (title.length === 0) {
+                        $(this).dialog("destroy");
+                        confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
+                    }
+                    else {
+                        //Create post, make lightbox disappear, update queue
+                        createNewPost(title, first);
+                        $(this).dialog("destroy");
+                        
+                        writeQueue();
+    
+                        //Write queue, select newly created post
+                        if (first) {
+                            var uuid = postQueue[0].uuid;
+                            var post = postQueue[0];
+                        }
+                        else if (!first) {
+                            var uuid = postQueue[postQueue.length - 1].uuid;
+                            var post = postQueue[postQueue.length - 1];
+                        }
+                
+                        post.typeOfContent = "type1" //This is the default value - change later
+            
+                        clickPost(post);
+                        $("#newPostTitle").val("");
+                    }
+                }
+        }
+    });
+}
+
 $(document).ready(function() {
 
-    //Debug purposes - indicates feature not made yet
+    //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function() {
-        alert("Coming soon!");
-        //popup("Coming soon!", "alert");
-        /*var lightbox = "";
-        lightbox += "<div id='popup'>";
-        lightbox += "<p>Click to close</p>";
-        lightbox += "</div>";
-
-        $('body').append(lightbox);*/
-    });
+        var title = "Coming soon!";
+        var content = "This feature will soon be available. Thank you for your patience!";
         
-    $('#popupBack').on("click", function() {
-        $('#popupBack').hide();
+        alertDialog(title, content);
     });
     
     //When 'New Post' is clicked
@@ -159,7 +244,8 @@ $(document).ready(function() {
         //also make sure changes from current post were saved
             
         if (postQueue.length === 0) {
-            $("#light").show();
+            $("#newTitleWarning").hide();
+            newPostConfirm();
         }
         else {
             var uuid = $(".post.selected").attr('id');
@@ -170,22 +256,22 @@ $(document).ready(function() {
             }
             
             if (post.content !== $("#postContent").val() || post.typeOfContent !== $("#postKind option:selected").val()) {
-                var yes = confirm("Unsaved changes. Discard changes?");
-                if (yes) {
+                var ifOk = function() {
                     $("#postContent").val(post.content);
                     if ($("#postContent").val() === "") {
-                        alert("Give your current post some content first!");
+                        alertDialog("Warning!", "Give your current post some content first!");
                     }
-                    else if (yes) {
-                        $("#light").show();
+                    else {
+                        newPostConfirm();
                     }
-                }
+                };
+                confirmDialog("Confirm", "Unsaved changes. Discard changes?", ifOk);
             }
             else if (post.content === "") {
-                alert("Give your current post some content first!");
+                alertDialog("Warning!", "Give your current post some content first!");
             }
             else {
-                $("#light").show();
+                newPostConfirm();
             }
         }
     });
@@ -204,7 +290,9 @@ $(document).ready(function() {
     });
     
     //When 'ok' in 'new post' dialog is clicked
-    $("#newPostOk").on("click", function() {
+    /*$("#newPostOk").on("click", function() {
+        newPostConfirm();
+        
         var title = $("#newPostTitle").val();
         //var first = $('input[name=first]:checked').val();
         if ($("input[name=first]:checked").val() == "first") {
@@ -216,11 +304,15 @@ $(document).ready(function() {
         
         //Make sure a title was given to the new post
         if (title === "") {
-            alert("Give your post a title!");
+            //'Warning - empty title' shows and flashes red if title field is empty
+            $("#newTitleWarning").show();
+            $("#newTitleWarning").css("color", "#f00");
+            $("#newTitleWarning").animate({color: "#000"}, 1000);
         }
         else {
             //Create post, make lightbox disappear, update queue
             createNewPost(title, first);
+            $("#newTitleWarning").hide();
             $("#light").hide();
     
             writeQueue();
@@ -239,8 +331,9 @@ $(document).ready(function() {
             
             clickPost(post);
             $("#newPostTitle").val("");
+            
         }
-    });
+    });*/
 
     //When a post is clicked, clickPost() populates post content to right, and selects the clicked post
     //First checks to make sure you've saved any changes to the right
@@ -263,19 +356,19 @@ $(document).ready(function() {
                     var typeOfContent = $("#postKind option:selected").val();
                     var content = $("#postContent").val();
                     if (oldPost.content === "" && content === "") {
-                        alert("Give your post some content!");
+                        alertDialog("Warning!", "Give your current post some content first!");
                     }
                     else if ((oldPost.typeOfContent != typeOfContent) || (oldPost.content != content)) {
-                        var yes = confirm("You have unsaved changes. Discard changes?");
-                        if (yes) {
+                        var ifOk = function() {
                             $("#postContent").val(oldPost.content);
                             if (oldPost.content !== "") {
                                 clickPost(newPost);
                             }
                             else {
-                                alert("Give your current post some content first!");
+                                alertDialog("Warning!", "Give your current post some content first!");
                             }
-                        }
+                        };
+                        confirmDialog("Confirm", "You have unsaved changes. Discard changes?", ifOk);
                     }
                     else clickPost(newPost);
                     }
@@ -287,9 +380,9 @@ $(document).ready(function() {
     //Delete post
     $(document).on("click", ".postDelete", function() {
             var uuid = $(this).attr("title");
-            var yes = confirm("Are you sure you want to delete this post?");
+            var yes = confirmDialog("Confirm", "Are you sure you want to delete this post?");
     
-            if (yes) {
+            var ifOk = function() {
                 var x = 0;
                 for (var i = 0; i < postQueue.length; i++) {
                     if (uuid == postQueue[i].uuid) {
@@ -322,12 +415,14 @@ $(document).ready(function() {
                     $("#selectedTitleContent").html("Post title here");
                 }
             }
+            
+            confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
     });
         
     //When you click 'save', contents are saved to the post
     $(document).on("click", "#postSave", function() {
         if ($("#postContent").val() === "") {
-            alert("Give your post some content!");
+            alertDialog("Warning!", "Give your current post some content first!");
         }
         else {
             var uuid = $(this).attr("title");
@@ -341,7 +436,7 @@ $(document).ready(function() {
             post.typeOfContent = $("#postKind option:selected").val();
             post.content = $("#postContent").val();
             
-            alert("Saved!");
+            alertDialog("Saved!", "");
         }
     });
     
@@ -350,7 +445,7 @@ $(document).ready(function() {
         var newTitle = prompt("Enter a new title for your post:");
         while (newTitle === "") {
             if (newTitle === "") {
-                alert("You can't give a post an empty title! Try again");
+                alertDialog("Oops!", "You can't give a post an empty title! Try again");
             }
             var newTitle = prompt("Enter a new title for your post:");
         }

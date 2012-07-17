@@ -1,11 +1,14 @@
 <html>
 
 <head>
-<link href="engageStyles-test.css" rel="stylesheet" type="text/css">
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<link href="engageStyles.css" rel="stylesheet" type="text/css">
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript">
 </script>
-<script src="engageFunctionality-test.js">
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js">
+</script>
+<script src="engageFunctionality.js">
 </script>
 </head>
 
@@ -30,7 +33,7 @@
 	
 	<div id="break">
 		<div class="button" id="newPost">
-			<a href="#">+ New Post</a>
+			+ New Post
 		</div>
 		<div id="breakNav">
 			<ul class="breakNav" style="text-align: center">
@@ -131,11 +134,14 @@
 					<div id='postGuts'>
 						<textarea width='100%' rows='4' id='postContent'></textarea>
 					</div>
+					<!--
 					<div id='postEmbed'>
 						<input type='button' value='Embed a photo or video' />
-					</div><br><br>
+					</div>
+					-->
+					<br><br>
 					<div id='postSave'><div class='button'>
-						<a href='#'>Save Changes</a>
+						Save Changes
 					</div></div>
 				</div>
 				
@@ -146,40 +152,16 @@
 	
 </div>
 
-<!-- "New Post" Lightbox -->
+<div id="newPostDialog" title="New Post">
 
-	<div id="light">
-	
-		<div id="lightTop"><h2>New Post</h2></div>
-		
-		<div id="lightBottom">
-			New post name: <br><br>
-				<input type="text" id="newPostTitle" value=""/><br><br>
-			Should this post be added to the end or the beginning of the queue? <br><br>
-				<input type="radio" name="first" value="last" checked="true"/>End<br>
-				<input type="radio" name="first" value="first" />Beginning<br><br>
-			<div id="newPostCancel" class="button"><a href="#">Cancel</a></div>
-			<div id="newPostOk" class="button"><a href="#">Ok</a></div>
-		</div>
-	</div>
+				New post name: <br><br>
+					<input type="text" id="newPostTitle" value=""/><br><br>
+				Should this post be added to the end or the beginning of the queue? <br><br>
+					<input type="radio" name="first" value="last" checked="true"/>End<br>
+					<input type="radio" name="first" value="first" />Beginning<br><br>
 
-<!-- End "New Post" Lightbox -->
+</div>
 
-<!-- Popups -->
-<!--
-    <div id="popupBack">
-        <div id="popup">
-            <div id="popupTop">
-            	<span id="popupTitle"></span>
-            </div>
-            <div id="popupContent">
-            </div>
-            <div id="popupButtons">
-            </div>
-        </div>
-    </div>
--->
-<!-- End popups -->
 
 </body>
 
