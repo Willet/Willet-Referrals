@@ -133,6 +133,8 @@ class ClientShopify(Client):
             app_type = 'SIBTShopify'
         elif app_type == 'buttons':
             app_type = "ButtonsShopify"
+        elif app_type == 'reengage':
+            app_type = "ReEngageShopify"
 
         # Grab Shopify API settings
         settings = SHOPIFY_APPS[app_type]

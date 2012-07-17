@@ -1,7 +1,9 @@
+#!/usr/bin/env python
+
+import datetime
 import os
 import hashlib
 import logging
-import datetime
 from base64 import urlsafe_b64encode
 
 from django.core.validators import email_re
@@ -10,7 +12,9 @@ from google.appengine.ext import db
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
+# from apps.reengage.shopify.models import ReEngageShopify
 from apps.user.models import User
+
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
@@ -58,7 +62,7 @@ class ReEngageShopify(ReEngage, AppShopify):
         app_name = self.__class__.__name__
 
         # Install yourself in the Shopify store
-        self.queue_webhooks(product_hooks_too=False)
+        self.queue_webhooks(product_hooks_too=True)
         #self.queue_script_tags(script_tags=tags)
         #self.queue_assets(assets=assets)
         self.install_queued()
@@ -98,7 +102,6 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         return
 
-    # Constructors ------------------------------------------------------------
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
@@ -116,7 +119,6 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         return app
 
-    # 'Retreive or Construct'ers ----------------------------------------------
     @classmethod
     def get_or_create(cls, client, token):
         """Try to retrieve the app.  If no app, create one.
@@ -152,15 +154,16 @@ class ReEngageShopify(ReEngage, AppShopify):
                     app.do_install()
                     created = True
                 except:
-                    logging.error('encountered error with reinstall', exc_info=True)
+                    logging.error('encountered error with reinstall',
+                                  exc_info=True)
         return app, created
 
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
-    app_    = db.ReferenceProperty(db.Model, collection_name='app')
-    queued   = db.ListProperty(db.StringProperty, indexed=False)
-    expired  = db.ListProperty(db.StringProperty, indexed=False)
+    app_    = db.ReferenceProperty(App, collection_name='queues')
+    queued   = db.ListProperty(unicode, indexed=False)
+    expired  = db.ListProperty(unicode, indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

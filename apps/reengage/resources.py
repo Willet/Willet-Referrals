@@ -1,6 +1,10 @@
+#!/usr/bin/env python
+
 import logging
+
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
+
 from util.gaesessions import get_current_session
 from util.helpers import generate_uuid, url as build_url
 from util.urihandler import URIHandler
@@ -68,7 +72,8 @@ class ReEngageQueueJSONHandler(URIHandler):
             return
 
         response = queue.to_obj()
-        self.respondJSON(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
 
     @session_active
     def post(self):
@@ -89,7 +94,7 @@ class ReEngageQueueJSONHandler(URIHandler):
 
         post = ReEngagePost(title=title,
                             content=content,
-                            network=Facebook.__class__.__name__,
+                            network=Facebook.__name__,
                             uuid=generate_uuid(16))
         post.put()
 
@@ -161,7 +166,8 @@ class ReEngageQueueHandler(URIHandler):
             queue.append(post)
 
         response = queue.to_obj()
-        self.respondJSON(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
 
     @session_active
     def delete(self):
@@ -191,7 +197,8 @@ class ReEngagePostJSONHandler(URIHandler):
             return
 
         response = post.to_obj()
-        self.respondJSON(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
 
     @session_active
     def put(self, uuid):
@@ -259,7 +266,7 @@ class ReEngageProductSourceJSONHandler(URIHandler):
         url = self.request.get("url")
 
         data = Facebook.get_reach(url)
-        self.respondJSON(data, "reach")
+        self.respondJSON(data, response_key="reach")
 
     @session_active
     def post(self):

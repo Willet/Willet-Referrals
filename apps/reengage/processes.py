@@ -6,7 +6,7 @@ from apps.reengage.social_networks import Facebook, SocialNetwork
 from util.urihandler import URIHandler
 
 POST_CLASSES = {
-    Facebook.__class__.__name__: Facebook,
+    Facebook.__name__: Facebook,
 }
 
 class ReEngageCron(URIHandler):

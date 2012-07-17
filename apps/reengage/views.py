@@ -25,6 +25,7 @@ class ReEngageLanding(URIHandler):
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
         client = ClientShopify.get_by_url(shop)
+        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [client, token, shop]), exc_info=True)
 
         # Fetch or create the app
         app, created = ReEngageShopify.get_or_create(client,token=token)
@@ -48,10 +49,18 @@ class ReEngageLanding(URIHandler):
 
         self.redirect(page)
 
+
+class ReEngageShopifyWelcome(URIHandler):
+    def get(self):
+        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
+        self.response.out.write(self.render_page('instructions.html', {}))
+
+
 class ReEngageInstructions(URIHandler):
     """Display the instructions page."""
     def get(self):
         self.response.out.write(self.render_page('instructions.html', {}))
+
 
 class ReEngageLogin(URIHandler):
     def get(self):
@@ -59,6 +68,7 @@ class ReEngageLogin(URIHandler):
         session = get_current_session()
         token  = session.get( 't' )
         shop   = session.get("shop")
+        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
         client = ClientShopify.get_by_url(shop)
 
         # Fetch or create the app
