@@ -19,6 +19,7 @@ class ReEngageAppPage(URIHandler):
 
 
 class ReEngageLanding(URIHandler):
+    """Acts as a router for requests from shopify"""
     def get(self):
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
@@ -72,6 +73,7 @@ class ReEngageLogin(URIHandler):
         }))
 
     def post(self):
+        """User has submitted their credentials"""
         session  = get_current_session()
         token    = session.get("t")
         shop     = session.get("shop")
@@ -123,11 +125,13 @@ class ReEngageLogout(URIHandler):
 
 class ReEngageCreateAccount(URIHandler):
     def get(self):
+        """Show the 'create an account' page"""
         self.response.out.write(self.render_page('create.html', {
             "host" : self.request.host_url,
         }))
 
     def post(self):
+        """Take the users account details and create an account"""
         username = self.request.get("username")
 
         user, created = ReEngageAccount.get_or_create(username)
@@ -153,12 +157,14 @@ class ReEngageCreateAccount(URIHandler):
 
 class ReEngageResetAccount(URIHandler):
     def get(self):
+        """Show the user the 'reset' form"""
         self.response.out.write(self.render_page('reset.html', {
             "host" : self.request.host_url,
             "show_form": True
         }))
 
     def post(self):
+        """Take the user's details and reset their account"""
         email = self.request.get("username")
 
         user = ReEngageAccount.all().filter(" email = ", email).get()
@@ -179,6 +185,7 @@ class ReEngageResetAccount(URIHandler):
 
 class ReEngageVerify(URIHandler):
     def get(self):
+        """Verify that the token provided was correct"""
         email = self.request.get("email")
         token = self.request.get("token")
 
@@ -213,6 +220,7 @@ class ReEngageVerify(URIHandler):
         self.response.out.write(self.render_page('verify.html', context))
 
     def post(self):
+        """Set the user's new password"""
         email    = self.request.get("email")
         token    = self.request.get("token")
         password = self.request.get("password")

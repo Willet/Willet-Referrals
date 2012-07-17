@@ -166,6 +166,9 @@ class Email():
 
     @staticmethod
     def verify_reengage_token_email(email, token):
+        """Sends email to a ReEngage user to activate their account.
+
+        Also used to reset their password."""
         link = url("ReEngageVerify", qs={
             "email": email,
             "token": token

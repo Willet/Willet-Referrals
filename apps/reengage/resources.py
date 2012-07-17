@@ -9,6 +9,7 @@ from util.urihandler import URIHandler
 #TODO: It is stupid duplicating logic between JSON and non-JSON handlers. Fix this
 
 def session_active(fn):
+    """Decorator for checking if a session is active and a user is logged in."""
     def wrapped(*args, **kwargs):
         session = get_current_session()
 
@@ -27,6 +28,7 @@ def session_active(fn):
     return wrapped
 
 def get_queue():
+    """Obtains a queue using the provided shop url"""
     session = get_current_session()
     store_url = session.get("shop")
     if not store_url:
@@ -41,6 +43,7 @@ def get_queue():
 
 
 def get_post(uuid):
+    """Obtains a post via the given uuid"""
     if not uuid:
         return None
 
@@ -48,6 +51,7 @@ def get_post(uuid):
     return post
 
 class ReEngageQueueJSONHandler(URIHandler):
+    """A resource for accessing queues using JSON"""
     @session_active
     def get(self):
         """Get all queued elements for a shop"""
@@ -82,7 +86,7 @@ class ReEngageQueueJSONHandler(URIHandler):
 
         post = ReEngagePost(title=title,
                             content=content,
-                            network="facebook",
+                            network=Facebook.__class__.__name__,
                             uuid=generate_uuid(16))
         post.put()
 
@@ -111,6 +115,7 @@ class ReEngageQueueJSONHandler(URIHandler):
 
 
 class ReEngageQueueHandler(URIHandler):
+    """A resource for accessing queues using HTML"""
     @session_active
     def get(self):
         """Get all queued elements for a shop"""
@@ -172,6 +177,7 @@ class ReEngageQueueHandler(URIHandler):
 
 
 class ReEngagePostJSONHandler(URIHandler):
+    """A resource for accessing posts using JSON"""
     @session_active
     def get(self, uuid):
         """Get all details for a given post"""
@@ -205,6 +211,7 @@ class ReEngagePostJSONHandler(URIHandler):
 
 
 class ReEngagePostHandler(URIHandler):
+    """A resource for accessing posts using HTML"""
     @session_active
     def get(self, uuid):
         """Get all details for a given post"""
@@ -239,7 +246,7 @@ class ReEngagePostHandler(URIHandler):
 
 
 class ReEngageProductSourceJSONHandler(URIHandler):
-    """Handles ProductSource requests.
+    """A resource for accessing products using JSON
 
     A product source is any category, product, or store
     """
@@ -258,7 +265,7 @@ class ReEngageProductSourceJSONHandler(URIHandler):
 
 
 class ReEngageProductSourceHandler(URIHandler):
-    """Handles ProductSource requests.
+    """A resource for accessing products using HTML
 
     A product source is any category, product, or store
     """

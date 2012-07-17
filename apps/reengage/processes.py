@@ -6,7 +6,7 @@ from apps.reengage.social_networks import Facebook, SocialNetwork
 from util.urihandler import URIHandler
 
 POST_CLASSES = {
-    "facebook": Facebook,
+    Facebook.__class__.__name__: Facebook,
 }
 
 class ReEngageCron(URIHandler):
@@ -16,6 +16,7 @@ class ReEngageCron(URIHandler):
     # TODO: This probably needs to use task queues...
     # TODO: How to make scheduling more flexible
     def post(self):
+        """Posts all queue content to facebook on weekdays"""
         today = datetime.datetime.today()
         if today.isoweekday() not in xrange(1,6):
             logging.info("Not a weekday; skipping.")
@@ -34,10 +35,10 @@ class ReEngageCron(URIHandler):
                 logging.info("No products!")
                 continue
 
-            post_key = queue.queued[0]
+            post_uuid = queue.queued[0]
 
             try:
-                post = db.get(post_key)
+                post = db.get(post_uuid)
                 cls  = POST_CLASSES.get(post.network, SocialNetwork)
 
                 logging.info("Preparing post...")
@@ -49,8 +50,8 @@ class ReEngageCron(URIHandler):
                 logging.error(e)
                 continue
 
-            logging.info("Post: %s" % post_key)
+            logging.info("Post: %s" % post_uuid)
 
-            queue.expired.append(post_key)
-            queue.queued.remove(post_key)
+            queue.expired.append(post_uuid)
+            queue.queued.remove(post_uuid)
             queue.put()

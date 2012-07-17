@@ -15,9 +15,6 @@ from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
 
-
-#TODO: How to automatically remove keys that no longer have models?
-
 class TwitterAssociation(Model):
     #app_uuid = db.StringProperty(indexed=True)
     url      = db.StringProperty(indexed=True)
@@ -162,8 +159,8 @@ class ReEngageShopify(ReEngage, AppShopify):
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
     app_    = db.ReferenceProperty(db.Model, collection_name='app')
-    queued   = db.ListProperty(db.Key)
-    expired  = db.ListProperty(db.Key)
+    queued   = db.ListProperty(db.StringProperty, indexed=False)
+    expired  = db.ListProperty(db.StringProperty, indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -172,19 +169,19 @@ class ReEngageQueue(Model):
 
     def prepend(self, obj):
         """Puts a post at the front of the list"""
-        self.queued.insert(0, obj.key())
+        self.queued.insert(0, obj.uuid)
         self.put()
 
     def append(self, obj):
         """Puts a post at the end of the list"""
-        self.queued.append(obj.key())
+        self.queued.append(obj.uuid)
         self.put()
 
     def remove_all(self):
         """Remove all posts from a queue"""
         logging.info("Queued items: %s" % self.queued)
-        for post_key in self.queued:
-            post = db.get(post_key)
+        for uuid in self.queued:
+            post = db.get(uuid)
             logging.info("Deleting post: %s" % post.content)
             post.delete()
 
@@ -192,32 +189,36 @@ class ReEngageQueue(Model):
         self.put()
 
     def _remove_expired(self):
-        """Remove any Keys that have expired"""
+        """Remove any objects that have been deleted"""
         expired = []
-        for obj in self.queued:
-            model_object = db.get(obj)
+        for uuid in self.queued:
+            model_object = db.get(uuid)
             if not model_object:
-                expired.append(obj)
+                expired.append(uuid)
 
-        for obj in expired:
-            self.queued.remove(obj)
+        for uuid in expired:
+            self.queued.remove(uuid)
 
         self.put()
 
     def to_obj(self):
+        """Convert a queue into a serializable object.
+
+        Mostly used as a preliminary step to convert to JSON
+        """
         self._remove_expired()
 
         posts = []
-        for obj in self.queued:
+        for uuid in self.queued:
             try:
-                posts.append(to_dict(db.get(obj)))
+                posts.append(to_dict(db.get(uuid)))
             except:
                 continue
 
         expired = []
-        for obj in self.expired:
+        for uuid in self.expired:
             try:
-                expired.append(to_dict(db.get(obj)))
+                expired.append(to_dict(db.get(uuid)))
             except:
                 continue
 
@@ -256,6 +257,7 @@ class ReEngageQueue(Model):
 
     @classmethod
     def get_or_create(cls, app):
+        """Get a queue, or create one if none is associated with app."""
         queue = cls.get_by_url(app.store_url)
 
         if queue:
@@ -286,6 +288,10 @@ class ReEngagePost(Model):
         return True
 
     def to_obj(self):
+        """Convert a post into a serializable object.
+
+        Mostly used as a preliminary step to convert to JSON
+        """
         return {
             "key": "post",
             "value": to_dict(self)
@@ -312,11 +318,12 @@ class ReEngageAccount(User):
         return True
 
     def verify(self, password):
+        """Check that a user's password is correct."""
         hash = hashlib.sha512(self.salt + password).hexdigest()
         return hash == self.hash
 
     def set_password(self, password):
-        """Reset an account's password"""
+        """Set a user's password"""
         salt = urlsafe_b64encode(os.urandom(64))
         hash = hashlib.sha512(salt + password).hexdigest()
 
@@ -325,6 +332,10 @@ class ReEngageAccount(User):
         self.put()
 
     def forgot_password(self):
+        """Creates a token to allow the user to reset their password.
+
+        User is given a token (which expires) to verify their email address
+        and set a new password. Sends an email to the user as well."""
         token = urlsafe_b64encode(os.urandom(32))
 
         self.hash      = ""
@@ -340,6 +351,7 @@ class ReEngageAccount(User):
 
     @classmethod
     def get_or_create(cls, username):
+        """Gets or creates a user account, if none exists"""
         logging.info("Obtaining user...")
 
         user = cls.all().filter('email = ', username).get()
