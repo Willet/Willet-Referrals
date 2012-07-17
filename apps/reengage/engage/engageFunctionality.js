@@ -9,7 +9,7 @@ var Post = function(title, content, typeOfContent, contentLink, uuid) {
     this.typeOfContent = typeOfContent; //User selects from a choice
     this.contentLink = contentLink;
     this.uuid = uuid; //Currently uuid is only used for deleting objects
-    
+
     //Extremely basic error checking (currently not in use)
     this.checkForErrors = function() {
         var errors = "";
@@ -22,7 +22,7 @@ var Post = function(title, content, typeOfContent, contentLink, uuid) {
         if(typeof typeOfContent === 'undefined') {
             errors += "type of content ";
         }
-            
+
         return errors;
     }
 };
@@ -31,7 +31,7 @@ var createNewPost = function(title, first) {
     var content = "";
     var typeOfContent = "";
     var contentLink = "";
-    
+
     var newPost = new Post(title, content, typeOfContent, contentLink, postuuid++);
     if (first) {
         postQueue.splice(0,0,newPost);
@@ -43,7 +43,7 @@ var createNewPost = function(title, first) {
 
 var writeQueue = function() { //Outputs post titles and dates in replaceWithPosts, aka main box area
     var out = "";
-    
+
     //If no posts in queue, suggest making a new post, else write out the posts in the queue
     if (postQueue.length > 0) {
         for (var i = 0; i < postQueue.length; i++) {
@@ -62,7 +62,7 @@ var writeQueue = function() { //Outputs post titles and dates in replaceWithPost
         $("#replaceHiddenPost").hide();
         $("#replaceTextWithPosts").show();
     }
-    
+
 };
 
 var removePost = function(uuid) { //Looks through queue for post of this uuid and deletes it
@@ -71,13 +71,13 @@ var removePost = function(uuid) { //Looks through queue for post of this uuid an
         for (var i = 0; i < postQueue.length; i++) {
             if (postQueue[i].uuid === uuid) {
                 postQueue.splice(i, 1);
-                
+
                 if (postQueue.length > 0) { //If queue isn't empty
                     if (postQueue.length === 1) { //If queue only has one post left in it
-                        x = postQueue[0].uuid; 
+                        x = postQueue[0].uuid;
                     }
                     else if (postQueue.length === i) { //If deleted post was last in queue
-                        x = postQueue[i-1].uuid; 
+                        x = postQueue[i-1].uuid;
                     }
                     else {
                         x = postQueue[i].uuid;
@@ -85,9 +85,9 @@ var removePost = function(uuid) { //Looks through queue for post of this uuid an
                 }
             }
         }
-    
+
         writeQueue();
-        
+
         if (postQueue.length > 0) {
             $("#" + x).addClass("selected");
         }
@@ -95,7 +95,7 @@ var removePost = function(uuid) { //Looks through queue for post of this uuid an
             ("#selectedTitleContent").html("Post Title Here");
         }
     };
-    
+
     confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
 };
 
@@ -103,16 +103,16 @@ var clickPost = function(post) {
     var content = post.content;
     var uuid = post.uuid;
     var typeOfContent = post.typeOfContent;
-    
+
     $(".post").removeClass("selected");  // remove active class from all posts
     $("#" + uuid).addClass("selected");      // add active class to clicked element
-    
+
     //If first post in queue, replace all contents on right
-    if (postQueue.length === 1) { 
+    if (postQueue.length === 1) {
         $("#replaceTextWithPostContent").hide();
         $("#postContentContainer").show();
         $("#editTitle").show();
-        
+
         $("#postKind option[value='type1']").attr("selected", "selected");
         $("#postContent").val(content);
     }
@@ -131,7 +131,7 @@ var popup = function(html, type) {
     lightbox += "<div id='popup'>";
     lightbox += "<p>Click to close</p>";
     lightbox += "</div>";
-    
+
     $('body').append(lightbox);
 };
 
@@ -147,7 +147,7 @@ var alertDialog = function(alertTitle, content) {
                 }
             }
         });
-    
+
     $dialog.dialog('open');
     return false;
 };
@@ -168,7 +168,7 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
                 }
             }
         });
-        
+
     $dialog.dialog('open');
 };
 
@@ -179,7 +179,7 @@ var newPostConfirm = function() {
     content +=      'Should this post be added to the end or the beginning of the queue? <br><br>';
     content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
     content +=          '<input type="radio" name="first" value="first" />Beginning<br><br>';
-    
+
     $("#newPostDialog").dialog({
         buttons: {
                 "Cancel": function() {
@@ -195,7 +195,7 @@ var newPostConfirm = function() {
                     else {
                         first = false;
                     }
-        
+
                     //Make sure a title was given to the new post
                     if (title.length === 0) {
                         $(this).dialog("destroy");
@@ -205,9 +205,9 @@ var newPostConfirm = function() {
                         //Create post, make lightbox disappear, update queue
                         createNewPost(title, first);
                         $(this).dialog("destroy");
-                        
+
                         writeQueue();
-    
+
                         //Write queue, select newly created post
                         if (first) {
                             var uuid = postQueue[0].uuid;
@@ -217,9 +217,9 @@ var newPostConfirm = function() {
                             var uuid = postQueue[postQueue.length - 1].uuid;
                             var post = postQueue[postQueue.length - 1];
                         }
-                
+
                         post.typeOfContent = "type1" //This is the default value - change later
-            
+
                         clickPost(post);
                         $("#newPostTitle").val("");
                     }
@@ -234,15 +234,15 @@ $(document).ready(function() {
     $(".comingSoon").on("click", function() {
         var title = "Coming soon!";
         var content = "This feature will soon be available. Thank you for your patience!";
-        
+
         alertDialog(title, content);
     });
-    
+
     //When 'New Post' is clicked
     $("#newPost").on("click", function() {
         //make sure that currently selected post was given content, that is, if queue.length > 0
         //also make sure changes from current post were saved
-            
+
         if (postQueue.length === 0) {
             $("#newTitleWarning").hide();
             newPostConfirm();
@@ -254,7 +254,7 @@ $(document).ready(function() {
                     var post = postQueue[i];
                 }
             }
-            
+
             if (post.content !== $("#postContent").val() || post.typeOfContent !== $("#postKind option:selected").val()) {
                 var ifOk = function() {
                     $("#postContent").val(post.content);
@@ -275,24 +275,24 @@ $(document).ready(function() {
             }
         }
     });
-    
+
     //When 'cancel' in 'new post' dialog is clicked
      $("#newPostCancel").on("click", function() {
         $("#light").hide();
         $("#newPostTitle").val("");
     });
-    
+
     //Pressing 'enter' in New Post textbox == clicking 'ok' in New Post textbox
     $("#newPostTitle").keyup(function(event) {
         if (event.keyCode === 13) {
             $("#newPostOk").click();
         }
     });
-    
+
     //When 'ok' in 'new post' dialog is clicked
     /*$("#newPostOk").on("click", function() {
         newPostConfirm();
-        
+
         var title = $("#newPostTitle").val();
         //var first = $('input[name=first]:checked').val();
         if ($("input[name=first]:checked").val() == "first") {
@@ -301,7 +301,7 @@ $(document).ready(function() {
         else {
             first = false;
         }
-        
+
         //Make sure a title was given to the new post
         if (title === "") {
             //'Warning - empty title' shows and flashes red if title field is empty
@@ -314,9 +314,9 @@ $(document).ready(function() {
             createNewPost(title, first);
             $("#newTitleWarning").hide();
             $("#light").hide();
-    
+
             writeQueue();
-    
+
             //Write queue, select newly created post
             if (first) {
                 var uuid = postQueue[0].uuid;
@@ -326,12 +326,12 @@ $(document).ready(function() {
                 var uuid = postQueue[postQueue.length - 1].uuid;
                 var post = postQueue[postQueue.length - 1];
             }
-                
+
             post.typeOfContent = "type1" //This is the default value - change later
-            
+
             clickPost(post);
             $("#newPostTitle").val("");
-            
+
         }
     });*/
 
@@ -341,17 +341,17 @@ $(document).ready(function() {
         //newuuid is uuid of post just clicked, olduuid is uuid of post previously selected
         var newuuid = $(this).attr('id');
         var olduuid = $(".post.selected").attr('id');
-        
+
         for (var i = 0; i < postQueue.length; i++) {
             if (olduuid == postQueue[i].uuid) {
                 var oldPost = postQueue[i];
             }
         }
-        
+
         for (var i = 0; i < postQueue.length; i++) {
             if (newuuid == postQueue[i].uuid) {
                 var newPost = postQueue[i];
-                
+
                 if (postQueue.length > 1) {
                     var typeOfContent = $("#postKind option:selected").val();
                     var content = $("#postContent").val();
@@ -376,24 +376,24 @@ $(document).ready(function() {
             }
         }
     });
-    
+
     //Delete post
     $(document).on("click", ".postDelete", function() {
             var uuid = $(this).attr("title");
             var yes = confirmDialog("Confirm", "Are you sure you want to delete this post?");
-    
+
             var ifOk = function() {
                 var x = 0;
                 for (var i = 0; i < postQueue.length; i++) {
                     if (uuid == postQueue[i].uuid) {
                         postQueue.splice(i, 1);
-                    
+
                         if (postQueue.length > 0) { //If queue isn't empty
                             if (postQueue.length === 1) { //If queue only has one post left in it
-                                x = 0; 
+                                x = 0;
                             }
                             else if (postQueue.length === i) { //If deleted post was last in queue
-                                x = i - 1; 
+                                x = i - 1;
                             }
                             else {
                                 x = i;
@@ -401,9 +401,9 @@ $(document).ready(function() {
                         }
                     }
                 }
-            
+
                 writeQueue();
-            
+
                 //If there are posts remaining, select post identified by var x in above looping; otherwise remove post content form
                 if (postQueue.length > 0) {
                     clickPost(postQueue[x]);
@@ -415,10 +415,10 @@ $(document).ready(function() {
                     $("#selectedTitleContent").html("Post title here");
                 }
             }
-            
+
             confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
     });
-        
+
     //When you click 'save', contents are saved to the post
     $(document).on("click", "#postSave", function() {
         if ($("#postContent").val() === "") {
@@ -432,14 +432,14 @@ $(document).ready(function() {
                     post = postQueue[i];
                 }
             }
-                
+
             post.typeOfContent = $("#postKind option:selected").val();
             post.content = $("#postContent").val();
-            
+
             alertDialog("Saved!", "");
         }
     });
-    
+
     //When you click 'edit' beside the title, prompts you to change the post title
     $(document).on("click", "#editTitle", function() {
         var newTitle = prompt("Enter a new title for your post:");
@@ -449,7 +449,7 @@ $(document).ready(function() {
             }
             var newTitle = prompt("Enter a new title for your post:");
         }
-            
+
         if (newTitle !== null) {
             var uuid = $(".post.selected").attr('id');
             for (var i = 0; i < postQueue.length; i++) {
@@ -462,12 +462,12 @@ $(document).ready(function() {
             $(".post.selected .postTitle").html(post.title);
         }
     });
-    
+
     $(document).on("mouseenter", ".postDelete", function() {
         var uuid = $(this).attr("title");
         $("#delete" + uuid).css("background-position", "0 0");
     });
-    
+
     $(document).on("mouseleave", ".postDelete", function() {
         var uuid = $(this).attr("title");
         $("#delete" + uuid).css("background-position", "bottom");
@@ -490,25 +490,25 @@ callback:  function(response) {
 
 var getDate = function(x) {
     //For now set to be every MWF
-    
+
     var month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     var monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    
-    //The days to set 
+
+    //The days to set
     var currentTime = new Date();
     var setMonth = currentTime.getMonth();
-    var setDay = currentTime.getDate(); 
+    var setDay = currentTime.getDate();
     var day = currentTime.getDay(); //Day of the week, 0 = Sunday etc - therefore posts made on 1, 3, 5
     var year = currentTime.getYear();
-    
-    
+
+
     if (day === 0 || day === 2 || day === 4) {
         incDay(1);
     }
     else if (day === 6) {
         incday(2);
     }
-    
+
     for (var i = 0; i < x; i++) { //Run for loops for x intervals of time
         if (day === 1 || day === 3) {
             incDay(2);
@@ -517,11 +517,11 @@ var getDate = function(x) {
             incDay(3);
         }
     }
-    
+
     //incDay makes sure days weeks and months are incremented appropriately (eg there's no 13th month)
     function incDay(x) {
         day = (day + x) % 7;
-        
+
         if ( (setDay + x) < monthDays[setMonth] ) {
             setDay += x;
         }
@@ -529,11 +529,11 @@ var getDate = function(x) {
             setDay = ( (setDay + x) % monthDays[setMonth] );
             if (setMonth < 11) { //If month isn't Dec, go to next month
                 setMonth++;
-            } 
+            }
             else { //If month is Dec, set to Jan
                 setMonth = 0;
                 year++;
-                
+
                 //Change days in February depending on year
                 if ( (year % 4 === 0) && (year % 100 !== 0) ) {
                     monthDays[1] = 29;
@@ -544,7 +544,7 @@ var getDate = function(x) {
             }
         }
     }
-    
+
     //returns "(Month) (Day)" eg "January 11"
     return month[setMonth] + " " + setDay;
 }
