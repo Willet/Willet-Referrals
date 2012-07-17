@@ -226,64 +226,9 @@ var newPostConfirm = function() {
                 }
         }
     });
-    
-    /*var $dialog = $("<div></div>")
-        .html(content)
-        .dialog({
-            autoOpen: false,
-            title: "New Post",
-            buttons: {
-                "Cancel": function() {
-                    $(this).dialog("destroy");
-                    $("#newPostTitle").val("");
-                },
-                "Ok": function() {
-                    var title = $("#newPostTitle").val();
-                    var first = $('input[name=first]:checked').val();
-                    if ($("input[name=first]:checked").val() == "first") {
-                        first = true;
-                    }
-                    else {
-                        first = false;
-                    }
-        
-                    //Make sure a title was given to the new post
-                    if (title.length === 0) {
-                        $(this).dialog("destroy");
-                        confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
-                    }
-                    else {
-                        //Create post, make lightbox disappear, update queue
-                        createNewPost(title, first);
-                        $(this).dialog("destroy");
-                        
-                        writeQueue();
-    
-                        //Write queue, select newly created post
-                        if (first) {
-                            var uuid = postQueue[0].uuid;
-                            var post = postQueue[0];
-                        }
-                        else if (!first) {
-                            var uuid = postQueue[postQueue.length - 1].uuid;
-                            var post = postQueue[postQueue.length - 1];
-                        }
-                
-                        post.typeOfContent = "type1" //This is the default value - change later
-            
-                        clickPost(post);
-                        $("#newPostTitle").val("");
-                    }
-                }
-            }
-        });
-    
-    $dialog.dialog('open');*/
 }
 
 $(document).ready(function() {
-
-    $("#newPostDialog").hide();
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function() {
