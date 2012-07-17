@@ -140,6 +140,7 @@ ADMIN_IPS = [ '70.83.160.171',      # Notman House
 
 # the apps we are using
 INSTALLED_APPS = [
+    'action',
     'admin',
     'app',
     'app.shopify',

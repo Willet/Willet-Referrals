@@ -1026,7 +1026,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '90px' : '57px';
+                    button.style.width = params.buttonCount ? '90px' : '60px';
 
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";

@@ -1,0 +1,21 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block bottom_content %}
+    <h1 class="prepend-top center">Action count last week</h1>
+    <table>
+        {% for tally in tallies.items %}
+            <tr>
+                <td>{{ tally.0 }}</td>
+                <td>{{ tally.1 }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock bottom_content %}

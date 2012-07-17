@@ -3,6 +3,7 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
+import datetime
 import logging
 import sys
 
@@ -12,7 +13,7 @@ from inspect import getmodule
 from google.appengine.api import memcache, taskqueue
 from google.appengine.ext import db
 
-from apps.action.models import Action
+from apps.action.models import Action, ActionTally
 from apps.app.models import App
 
 from util.consts import INSTALLED_APPS
@@ -371,6 +372,34 @@ class EmailEveryone (URIHandler):
 
         self.response.headers['Content-Type'] = 'text/plain'
         return
+
+
+class ActionTallyDynamicLoader(URIHandler):
+    """Displays 168 hourly action snapshots in table form.
+
+    This is an admin interface. Viewers wishing fancier formats
+    (e.g. graphs) should just do it in excel.
+    """
+    def get(self):
+        """Accepts no parameters (for now)."""
+        tallies_dict = {}
+        last_week = datetime.datetime.now() - datetime.timedelta(days=7)
+        tallies = ActionTally.all().filter('created >', last_week)\
+                                   .fetch(limit=2016)
+        if tallies:
+            for tally in tallies:
+                try:
+                    tallies_dict[tally.what] += tally.count
+                except KeyError:
+                    tallies_dict[tally.what] = tally.count
+
+            template_values = {
+                'tallies': tallies_dict
+            }
+            self.response.out.write(self.render_page('action_tally.html',
+                                    template_values))
+        else:
+            self.response.out.write('No tallies found.')
 
 
 class RealFetch(URIHandler):

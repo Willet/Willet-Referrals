@@ -166,6 +166,7 @@ _willet.sibt = (function (me) {
             }
         }
 
+        /*
         return wm.fire('showColorbox', {
             href: "{{URL}}{% url AskDynamicLoader %}" +
                 // do not merge with metadata(): it escapes commas
@@ -173,6 +174,17 @@ _willet.sibt = (function (me) {
                 "&shopify_ids=" + shopify_ids.join(',') +
                 "&" + me.metadata()
         });
+        */
+
+        return me.showPopupWindow(
+            "{{URL}}{% url AskPageDynamicLoader %}" +
+            // do not merge with metadata(): it escapes commas
+            "?products=" + me.getProductUUIDs().join(',') +
+            // if instance exists, it will be shown, not made!
+            "&instance_uuid={{ instance.uuid }}" +
+            "&shopify_ids=" + shopify_ids.join(',') +
+            "&" + me.metadata()
+        );
 
         // else if no products: do nothing
         wm.fire('log', "no products! cancelling dialogue.");
@@ -692,9 +704,9 @@ _willet.sibt = (function (me) {
         // if (user.is_asker || instance.show_votes) {
         //     me.showResults();
         // } else {
-        //     me.showAsk(message);
+               me.showAsk(message);
         // }
-        me.showVote(message);
+        // me.showVote(message);
     };
 
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
@@ -723,11 +735,13 @@ _willet.sibt = (function (me) {
     me.getVisitLength = me.getVisitLength || function () {
         // analytics to record the amount of time this script has been loaded
         // this must be an iframe to time it + send synchronous requests
+        /* deprecated (for now)
         $('<iframe />', {
             css: {'display': 'none'},
             src: "{{URL}}{% url ShowOnUnloadHook %}?" +
                  me.metadata({'evnt': 'SIBTVisitLength'})
         }).appendTo("body");
+        */
     };
 
     me.changeUIStatus = me.changeUIStatus || function (cb) {
@@ -847,8 +861,8 @@ _willet.sibt = (function (me) {
                     }
                 });
                 $('#willet_sibt_popup .cta').click(function () {
-                    // me.showAsk('SIBTUserClickedBottomPopupAsk');
-                    me.showVote('SIBTUserClickedBottomPopupAsk');
+                    me.showAsk('SIBTUserClickedBottomPopupAsk');
+                    // me.showVote('SIBTUserClickedBottomPopupAsk');
                     me.hideBottomPopup();
                 });
                 $('#willet_sibt_popup #anti_cta').click(function (e) {
