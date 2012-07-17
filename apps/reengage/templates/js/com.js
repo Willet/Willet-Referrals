@@ -82,8 +82,8 @@ var loadQueues = function (app, callback) {
     // overwrites existing queues object.
     // returns nothing.
     ajaxRequest(
-        '{% url QueuesJSONDynamicLoader %}',
-        {'app_uuid': app.uuid},
+        '{% url ReEngageQueueJSONHandler %}',
+        {'app_uuid': app.uuid},  // not used (one-app-one-queue MVP)
         function (response) {
             var data = response.queues;  // key
 
@@ -106,9 +106,11 @@ var loadQueues = function (app, callback) {
 var loadPosts = function (queue, callback) {
     // overwrites existing posts object.
     // returns nothing.
+    var requestURL = '{% ReEngagePostJSONHandler "__REPLACE__" %}'
+                     .replace(/__REPLACE__/g, queue.uuid);
     ajaxRequest(
-        '{% url PostsJSONDynamicLoader %}',
-        {'queue_uuid': queue.uuid},
+        requestURL,
+        {},
         function (response) {
             var data = response.posts;  // key
 

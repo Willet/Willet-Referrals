@@ -51,9 +51,12 @@ class ReEngageQueueJSONHandler(URIHandler):
     @session_active
     def get(self):
         """Get all queued elements for a shop"""
-        session = get_current_session()
+        """Unless a queue_uuid is found, in which case it will be used. You'll still need to be logged in, though"""
 
-        queue = get_queue()
+        queue = ReEngageQueue.get(self.request.get('queue_uuid'))
+        if not queue:
+            session = get_current_session()
+            queue = get_queue()
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
