@@ -1,3 +1,4 @@
+from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from util.consts import SHOPIFY_APPS
 from util.gaesessions import get_current_session, Session
@@ -222,3 +223,21 @@ class ReEngageVerify(URIHandler):
             }
 
         self.response.out.write(self.render_page('verify.html', context))
+
+
+class ReEngageCPLServeScript(URIHandler):
+    """Serve the reengage script with some template variables."""
+    def get(self):
+        """Required variable: client_uuid."""
+        client = Client.get(self.request.get('client_uuid'))
+        if not client:
+            logging.warn('client not found; exiting')
+            self.error(500)
+            return
+
+        template_values = {
+            'client': client,
+        }
+
+        self.response.out.write(self.render_page('js/com.js',
+                                                 template_values))

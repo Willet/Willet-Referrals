@@ -13,6 +13,7 @@ urlpatterns = [
     (r'/reengage/find_tweet'      , ReEngageFindTweet),
 
     # Re-engage handlers (beta)
+    (r'/r/reengage/js/com.js'     , ReEngageCPLServeScript),
     (r'/r/shopify/?'              , ReEngageAppPage),
     (r'/r/shopify/welcome/?$'     , ReEngageLanding),
     (r'/r/shopify/instructions/?$', ReEngageInstructions),
