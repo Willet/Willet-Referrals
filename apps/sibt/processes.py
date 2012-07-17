@@ -15,7 +15,6 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from apps.action.models import Action
-from apps.app.models import App
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
@@ -27,6 +26,7 @@ from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
+from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
@@ -107,14 +107,20 @@ class SIBTSignUp(URIHandler):
 
 
 class StartSIBTInstance(URIHandler):
+    """Create OR edit a SIBT instance."""
     def post(self):
-        app = App.get(self.request.get('app_uuid'))
-        user = User.get_or_create_by_cookie(self, app)
-        link = Link.get_by_code(self.request.get('willt_code'))
-        img = self.request.get('product_img')
+        """Given:
+        - app_uuid,
+        - page_url (one of the products' url), and
+        - products (a CSV of product UUIDs),
+        create a SIBTInstance.for the current (cookied) user.
 
-        logging.info("Starting SIBT instance for %s" % link.target_url)
+        If [link]code is supplied (and valid), that link will be reused.
+        If instance_uuid is supplied (and valid), no new instance will be made.
 
+        The resultant JSON will contain the instance uuid if successful:
+        {data:{instance_uuid:abc}}
+        """
         # defaults
         response = {
             'success': False,
@@ -124,21 +130,60 @@ class StartSIBTInstance(URIHandler):
             }
         }
 
-        try:
-            # Make the Instance!
-            instance = app.create_instance(user=user,
-                                           end=None,
-                                           link=link,
-                                           dialog="ConnectFB",
-                                           img=img,
-                                           motivation=None,
-                                           sharing_message="",
-                                           products=[])
-            response['success'] = True
-            response['data']['instance_uuid'] = instance.uuid
-        except Exception, e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error creating the instance', exc_info=True)
+        app = SIBT.get(self.request.get('app_uuid'))
+        if not (app and app.client):
+            response['data']['message'] = "App not found"
+            self.response.out.write(json.dumps(response))
+
+        page_url = self.request.get('page_url')
+        if not page_url:
+            response['data']['message'] = "page_url not found"
+            self.response.out.write(json.dumps(response))
+
+        products = self.request.get('products').split(',')
+        if not (products and len(products)):
+            response['data']['message'] = "products not found"
+            self.response.out.write(json.dumps(response))
+
+        user = User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.get_by_code(self.request.get('code'))
+        if link:
+            logging.info('using existing link %s' % self.request.get('code'))
+        else:
+            logging.info('no code supplied; creating link')
+            link = Link.create(targetURL=page_url,
+                               app=app,
+                               domain=get_shopify_url(page_url),
+                               user=user)
+
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+        if instance:  # instance created ahead of time
+            logging.info('using existing instance %s' % instance.uuid)
+            instance.link = link
+            instance.products = products
+            instance.put()
+        else:  # instance to be created
+            logging.info('no uuid supplied; creating instance')
+            instance = app.create_instance(user=user, end=None, link=link,
+                                           dialog="", img="",
+                                           motivation=self.request.get('motivation', None),
+                                           sharing_message="", products=products)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlparse.urlunsplit([PROTOCOL,
+                                               DOMAIN,
+                                               url('VoteDynamicLoader'),
+                                               ('instance_uuid=%s' % instance.uuid),
+                                               ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        response['success'] = True
+        response['data']['instance_uuid'] = instance.uuid
 
         self.response.out.write(json.dumps(response))
 
@@ -247,6 +292,23 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
+
+            try:
+                votes = SIBTVoteAction.all().filter('sibt_instance =', instance)\
+                                      .count()
+                if votes:
+                    logging.info('%d Votes for this instance' % votes)
+                else:
+                    logging.info('Instance has no votes. Not emailing user.')
+                    return
+            except TypeError, err:
+                logging.info('Instance has no votes: %s' % err)
+                return # votes can *sometimes* be a Query object if zero votes
+            except AttributeError, err:
+                # votes can *sometimes* be a Query object if zero votes
+                logging.error('Could not find instance votes: %s' % err,
+                              exc_info=True)
+
             products = instance.products
             if products and len(products):
                 Email.SIBTVoteCompletion(instance=instance,

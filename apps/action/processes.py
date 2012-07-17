@@ -52,8 +52,12 @@ class TallyActions(URIHandler):
         for action in actions_to_persist:
             if action:  # could be empty string for some reason
                 uuid = generate_uuid(16)
-                count = int(memcache.get(action)) or 0
+                try:
+                    count = int(memcache.get(action))
+                except TypeError:  # edgy: "None cannot become an Int"
+                    count = 0  # action will not be saved thus
                 logging.debug("count(%s) = %d" % (action, count))
+
                 if count:  # died in memcache? 0?
                     act_obj = ActionTally(key_name=uuid,
                                           uuid=uuid,

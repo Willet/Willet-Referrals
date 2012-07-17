@@ -21,6 +21,7 @@ from apps.user.models import User
 
 from util import httplib2
 from util.consts import SHOPIFY_APPS
+from util.errors import RemoteError
 from util.helpers import generate_uuid
 from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
@@ -189,7 +190,10 @@ class ClientShopify(Client):
 
             # give higher score to retailers who sell TONS of cheap stuff
             # (i.e. high traffic)
-            base_score = base_score * len(orders)
+
+            # Workaround until we find out why orders is sometimes a Query obj.
+            if hasattr(orders, "len"):
+                base_score = base_score * len(orders)
 
 
         logging.debug('base_score = %r' % base_score)

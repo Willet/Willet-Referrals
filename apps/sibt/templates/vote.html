@@ -89,6 +89,9 @@
                         $("#error_message").show();
                     }
                 });
+
+                // hide all vote buttons so users can't vote again.
+                $('.vote').hide();
             };
             $('.choice button').click(function () {
                 vote(this.id); // click button = vote
