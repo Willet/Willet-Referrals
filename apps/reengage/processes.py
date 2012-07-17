@@ -47,7 +47,7 @@ class ReEngageCron(URIHandler):
 
             except Exception, e:
                 logging.error(e)
-                continue # Don't continue...
+                continue
 
             logging.info("Post: %s" % post_key)
 

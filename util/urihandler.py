@@ -124,13 +124,7 @@ class URIHandler(webapp.RequestHandler):
             return True
         return False
 
-    def respond(self, code):
-        # It seems odd to use 'error' in our code
-        # So, we just rename the method to 'respond' even it doesn't change
-        # that fact.
-        self.error(code)
-
-    def json(self, content, response_key="response", code=200, message="OK"):
+    def respondJSON(self, content, response_key="response", code=200, message="OK"):
         """Responds with JSON content.
 
         Specifically, sets all the necessary headers, and wraps the response

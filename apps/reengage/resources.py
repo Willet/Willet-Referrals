@@ -57,11 +57,11 @@ class ReEngageQueueJSONHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
-            self.respond(404)
+            self.error(404)
             return
 
         response = queue.to_obj()
-        self.json(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"), response.get("key"))
 
     @session_active
     def post(self):
@@ -72,7 +72,7 @@ class ReEngageQueueJSONHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
-            self.respond(404)
+            self.error(404)
             return
 
         # TODO: Validate the arguments
@@ -92,7 +92,7 @@ class ReEngageQueueJSONHandler(URIHandler):
             queue.prepend(post)
 
         response = queue.to_obj()
-        self.json(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"), response.get("key"))
 
     @session_active
     def delete(self):
@@ -103,11 +103,11 @@ class ReEngageQueueJSONHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
-            self.respond(404)
+            self.error(404)
             return
 
         queue.remove_all()
-        self.respond(204)
+        self.error(204)
 
 
 class ReEngageQueueHandler(URIHandler):
@@ -133,7 +133,7 @@ class ReEngageQueueHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))
-            self.respond(404)
+            self.error(404)
             return
 
         # TODO: Validate the arguments
@@ -147,13 +147,13 @@ class ReEngageQueueHandler(URIHandler):
                             uuid=generate_uuid(16))
         post.put()
 
-        if method == "append":
-            queue.append(post)
-        else:
+        if method == "prepend":
             queue.prepend(post)
+        else:
+            queue.append(post)
 
         response = queue.to_obj()
-        self.json(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"), response.get("key"))
 
     @session_active
     def delete(self):
@@ -164,11 +164,11 @@ class ReEngageQueueHandler(URIHandler):
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))
-            self.respond(404)
+            self.error(404)
             return
 
         queue.remove_all()
-        self.respond(204)
+        self.error(204)
 
 
 class ReEngagePostJSONHandler(URIHandler):
@@ -178,17 +178,17 @@ class ReEngagePostJSONHandler(URIHandler):
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(404)
+            self.error(404)
             return
 
         response = post.to_obj()
-        self.json(response.get("value"), response.get("key"))
+        self.respondJSON(response.get("value"), response.get("key"))
 
     @session_active
     def put(self, uuid):
         """Update the details of a post"""
         # Unused, for now
-        self.respond(204)
+        self.error(204)
 
     @session_active
     def delete(self, uuid):
@@ -196,12 +196,12 @@ class ReEngagePostJSONHandler(URIHandler):
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(404)
+            self.error(404)
             return
 
         # TODO: What about Keys that reference this post?
         post.delete()
-        self.respond(204)
+        self.error(204)
 
 
 class ReEngagePostHandler(URIHandler):
@@ -211,7 +211,7 @@ class ReEngagePostHandler(URIHandler):
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(404)
+            self.error(404)
             return
 
         #TODO: Replace with HTML view
@@ -222,7 +222,7 @@ class ReEngagePostHandler(URIHandler):
     def put(self, uuid):
         """Update the details of a post"""
         # Unused, for now
-        self.respond(204)
+        self.error(204)
 
     @session_active
     def delete(self, uuid):
@@ -230,12 +230,12 @@ class ReEngagePostHandler(URIHandler):
         post = get_post(uuid)
         if not post:
             logging.error("Could not find post. UUID: %s" % uuid)
-            self.respond(404)
+            self.error(404)
             return
 
         # TODO: What about Keys that reference this post?
         post.delete()
-        self.respond(204)
+        self.error(204)
 
 
 class ReEngageProductSourceJSONHandler(URIHandler):
@@ -249,12 +249,12 @@ class ReEngageProductSourceJSONHandler(URIHandler):
         url = self.request.get("url")
 
         data = Facebook.get_reach(url)
-        self.json(data, "reach")
+        self.respondJSON(data, "reach")
 
     @session_active
     def post(self):
         """Posts to the ProductSource."""
-        self.respond(204)
+        self.error(204)
 
 
 class ReEngageProductSourceHandler(URIHandler):
@@ -274,4 +274,4 @@ class ReEngageProductSourceHandler(URIHandler):
     @session_active
     def post(self):
         """Posts to the ProductSource."""
-        self.respond(204)
+        self.error(204)

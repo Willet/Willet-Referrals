@@ -601,14 +601,18 @@ _willet.messaging = (function (willet) {
             var id = "willet.xd:" + domain + path;
             var iFrame = document.getElementById(id);
 
-            if (!iFrame) {
+            if (iFrame) {
+                iFrame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;";
+            } else {
                 iFrame = document.createElement("iframe")
                 iFrame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;";
+
                 document.body.appendChild(iFrame);
 
                 iFrame.src = "//" + domain + path;
                 iFrame.id  = id;
             }
+
 
             if (listener) {
                 if (window.addEventListener) {

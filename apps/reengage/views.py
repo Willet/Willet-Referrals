@@ -14,7 +14,7 @@ class ReEngageAppPage(URIHandler):
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ReEngageShopify']['api_key']
         }
 
-        self.response.out.write(self.render_page('app_page.html',
+        self.response.out.write(self.render_page('beta.html',
                                                  template_values))
 
 

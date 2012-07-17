@@ -175,7 +175,7 @@ class Email():
 
         subject = "ReEngage Account Activation"
         body = """
-                <p>Hi</p>
+                <p>Hi,</p>
                 <p>Please click this link to activate your new ReEngage
                 account.</p>
                 <p>

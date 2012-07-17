@@ -1,19 +1,20 @@
+import os
+import hashlib
 import logging
 import datetime
+from base64 import urlsafe_b64encode
+
 from django.core.validators import email_re
 from google.appengine.ext import db
-import hashlib
-import os
+
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
-from django.utils import simplejson as json
 from apps.email.models import Email
-from apps.product.models import Product
 from apps.user.models import User
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
-from base64 import urlsafe_b64encode
+
 
 #TODO: How to automatically remove keys that no longer have models?
 
@@ -43,17 +44,17 @@ class TwitterAssociation(Model):
         return result, True
 
 
-class ReEngageShopify(App, AppShopify):
+class ReEngage(App):
+    pass
+
+
+class ReEngageShopify(ReEngage, AppShopify):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReEngageShopify, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
         return True
-
-    @classmethod
-    def get_by_uuid( cls, uuid ):
-        return cls.all().filter( 'uuid =', uuid ).get()
 
     def do_install(self):
         """ Install ReEngage scripts and webhooks for this store """
@@ -65,7 +66,7 @@ class ReEngageShopify(App, AppShopify):
         #self.queue_assets(assets=assets)
         self.install_queued()
 
-        email = self.client.email or u''  # what sane function returns None?
+        email = self.client.email or u''
         name  = self.client.merchant.get_full_name()
         store = self.client.name
         use_full_name = False
@@ -160,7 +161,7 @@ class ReEngageShopify(App, AppShopify):
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
-    owner    = db.ReferenceProperty(db.Model, collection_name='app')
+    app_    = db.ReferenceProperty(db.Model, collection_name='app')
     queued   = db.ListProperty(db.Key)
     expired  = db.ListProperty(db.Key)
 
@@ -224,7 +225,7 @@ class ReEngageQueue(Model):
             "key": "queue",
             "value": {
                 "uuid"         : self.uuid,
-                "app"          : self.owner.uuid,
+                "app"          : self.app_.uuid,
                 "activePosts"  : posts,
                 "expiredPosts" : expired
             }
@@ -235,9 +236,9 @@ class ReEngageQueue(Model):
 
         Note: since queues are only associated with an app, at the moment,
         we can only get all products associated with a particular client."""
-        logging.info("Client: %s" % self.owner.client)
+        logging.info("Client: %s" % self.app_.client)
 
-        products = self.owner.client.products
+        products = self.app_.client.products
 
         if products:
             return products
@@ -250,7 +251,7 @@ class ReEngageQueue(Model):
         app   = ReEngageShopify.get_by_url(url)
         queue = None
         if app:
-            queue = cls.all().filter("owner = ", app).get()
+            queue = cls.all().filter("app_ = ", app).get()
         return queue
 
     @classmethod
@@ -258,13 +259,13 @@ class ReEngageQueue(Model):
         queue = cls.get_by_url(app.store_url)
 
         if queue:
-            return queue, False
+            return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, owner=app)
+        queue = cls(uuid=uuid, app_=app)
         queue.put()
 
-        return queue, True
+        return (queue, True)
 
     def _validate_self(self):
         return True
@@ -293,8 +294,8 @@ class ReEngagePost(Model):
 
 class ReEngageAccount(User):
     email    = db.EmailProperty(indexed=True)
-    salt     = db.StringProperty()
-    hash     = db.StringProperty()
+    salt     = db.StringProperty(indexed=False)
+    hash     = db.StringProperty(indexed=False)
     verified = db.BooleanProperty(default=False)
 
     # Used for one-time tokens
@@ -313,7 +314,6 @@ class ReEngageAccount(User):
     def verify(self, password):
         hash = hashlib.sha512(self.salt + password).hexdigest()
         return hash == self.hash
-
 
     def set_password(self, password):
         """Reset an account's password"""
@@ -346,7 +346,7 @@ class ReEngageAccount(User):
 
         # User already exists
         if user:
-            return user, False
+            return (user, False)
 
         if username and email_re.match(username):
             # Create user
@@ -354,6 +354,6 @@ class ReEngageAccount(User):
             user  = cls(email=username, uuid=generate_uuid(16))
             user.forgot_password()
 
-            return user, True
+            return (user, True)
         else:
-            return None, False
+            return (None, False)
