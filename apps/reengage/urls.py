@@ -6,12 +6,6 @@ from apps.reengage.resources import *
 from apps.reengage.views import *
 
 urlpatterns = [
-    # Test URLs
-    (r'/reengage/(fb|t)?'         , ReEngageControlPanel),
-    (r'/reengage/post/(fb|t)?'    , ReEngage),
-    (r'/reengage/product'         , ReEngageProduct),
-    (r'/reengage/find_tweet'      , ReEngageFindTweet),
-
     # Re-engage handlers (beta)
     (r'/r/reengage/js/com.js'     , ReEngageCPLServeScript),
     (r'/r/shopify/?'              , ReEngageAppPage),
@@ -26,8 +20,8 @@ urlpatterns = [
     (r'/r/shopify/account/verify$', ReEngageVerify),
 
     # Re-engage Pseudo-resources
-    (r'/r/shopify/queue$'           , ReEngageQueueHandler),
-    (r'/r/shopify/queue\.json$'     , ReEngageQueueJSONHandler),
+    (r'/r/shopify/queues$'           , ReEngageQueueHandler),
+    (r'/r/shopify/queues\.json$'     , ReEngageQueueJSONHandler),
     (r'/r/shopify/product?$'        , ReEngageProductSourceHandler),
     (r'/r/shopify/product\.json$'   , ReEngageProductSourceJSONHandler),
     (r'/r/shopify/post/(\w+)$'      , ReEngagePostHandler),

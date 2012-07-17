@@ -1,21 +1,19 @@
+import os
+import hashlib
 import logging
 import datetime
+from base64 import urlsafe_b64encode
+
 from django.core.validators import email_re
 from google.appengine.ext import db
-import hashlib
-import os
+
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
-from django.utils import simplejson as json
 from apps.email.models import Email
-from apps.product.models import Product
 from apps.user.models import User
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
 from util.helpers import to_dict, generate_uuid
 from util.model import Model
-from base64 import urlsafe_b64encode
-
-#TODO: How to automatically remove keys that no longer have models?
 
 class TwitterAssociation(Model):
     #app_uuid = db.StringProperty(indexed=True)
@@ -43,17 +41,17 @@ class TwitterAssociation(Model):
         return result, True
 
 
-class ReEngageShopify(App, AppShopify):
+class ReEngage(App):
+    pass
+
+
+class ReEngageShopify(ReEngage, AppShopify):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReEngageShopify, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
         return True
-
-    @classmethod
-    def get_by_uuid( cls, uuid ):
-        return cls.all().filter( 'uuid =', uuid ).get()
 
     def do_install(self):
         """ Install ReEngage scripts and webhooks for this store """
@@ -65,7 +63,7 @@ class ReEngageShopify(App, AppShopify):
         #self.queue_assets(assets=assets)
         self.install_queued()
 
-        email = self.client.email or u''  # what sane function returns None?
+        email = self.client.email or u''
         name  = self.client.merchant.get_full_name()
         store = self.client.name
         use_full_name = False
@@ -160,9 +158,9 @@ class ReEngageShopify(App, AppShopify):
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
-    owner    = db.ReferenceProperty(db.Model, collection_name='app')
-    queued   = db.ListProperty(db.Key)
-    expired  = db.ListProperty(db.Key)
+    app_    = db.ReferenceProperty(db.Model, collection_name='app')
+    queued   = db.ListProperty(db.StringProperty, indexed=False)
+    expired  = db.ListProperty(db.StringProperty, indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -171,19 +169,19 @@ class ReEngageQueue(Model):
 
     def prepend(self, obj):
         """Puts a post at the front of the list"""
-        self.queued.insert(0, obj.key())
+        self.queued.insert(0, obj.uuid)
         self.put()
 
     def append(self, obj):
         """Puts a post at the end of the list"""
-        self.queued.append(obj.key())
+        self.queued.append(obj.uuid)
         self.put()
 
     def remove_all(self):
         """Remove all posts from a queue"""
         logging.info("Queued items: %s" % self.queued)
-        for post_key in self.queued:
-            post = db.get(post_key)
+        for uuid in self.queued:
+            post = db.get(uuid)
             logging.info("Deleting post: %s" % post.content)
             post.delete()
 
@@ -191,32 +189,36 @@ class ReEngageQueue(Model):
         self.put()
 
     def _remove_expired(self):
-        """Remove any Keys that have expired"""
+        """Remove any objects that have been deleted"""
         expired = []
-        for obj in self.queued:
-            model_object = db.get(obj)
+        for uuid in self.queued:
+            model_object = db.get(uuid)
             if not model_object:
-                expired.append(obj)
+                expired.append(uuid)
 
-        for obj in expired:
-            self.queued.remove(obj)
+        for uuid in expired:
+            self.queued.remove(uuid)
 
         self.put()
 
     def to_obj(self):
+        """Convert a queue into a serializable object.
+
+        Mostly used as a preliminary step to convert to JSON
+        """
         self._remove_expired()
 
         posts = []
-        for obj in self.queued:
+        for uuid in self.queued:
             try:
-                posts.append(to_dict(db.get(obj)))
+                posts.append(to_dict(db.get(uuid)))
             except:
                 continue
 
         expired = []
-        for obj in self.expired:
+        for uuid in self.expired:
             try:
-                expired.append(to_dict(db.get(obj)))
+                expired.append(to_dict(db.get(uuid)))
             except:
                 continue
 
@@ -224,7 +226,7 @@ class ReEngageQueue(Model):
             "key": "queue",
             "value": {
                 "uuid"         : self.uuid,
-                "app"          : self.owner.uuid,
+                "app"          : self.app_.uuid,
                 "activePosts"  : posts,
                 "expiredPosts" : expired
             }
@@ -235,9 +237,9 @@ class ReEngageQueue(Model):
 
         Note: since queues are only associated with an app, at the moment,
         we can only get all products associated with a particular client."""
-        logging.info("Client: %s" % self.owner.client)
+        logging.info("Client: %s" % self.app_.client)
 
-        products = self.owner.client.products
+        products = self.app_.client.products
 
         if products:
             return products
@@ -250,21 +252,22 @@ class ReEngageQueue(Model):
         app   = ReEngageShopify.get_by_url(url)
         queue = None
         if app:
-            queue = cls.all().filter("owner = ", app).get()
+            queue = cls.all().filter("app_ = ", app).get()
         return queue
 
     @classmethod
     def get_or_create(cls, app):
+        """Get a queue, or create one if none is associated with app."""
         queue = cls.get_by_url(app.store_url)
 
         if queue:
-            return queue, False
+            return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, owner=app)
+        queue = cls(uuid=uuid, app_=app)
         queue.put()
 
-        return queue, True
+        return (queue, True)
 
     def _validate_self(self):
         return True
@@ -285,6 +288,10 @@ class ReEngagePost(Model):
         return True
 
     def to_obj(self):
+        """Convert a post into a serializable object.
+
+        Mostly used as a preliminary step to convert to JSON
+        """
         return {
             "key": "post",
             "value": to_dict(self)
@@ -293,8 +300,8 @@ class ReEngagePost(Model):
 
 class ReEngageAccount(User):
     email    = db.EmailProperty(indexed=True)
-    salt     = db.StringProperty()
-    hash     = db.StringProperty()
+    salt     = db.StringProperty(indexed=False)
+    hash     = db.StringProperty(indexed=False)
     verified = db.BooleanProperty(default=False)
 
     # Used for one-time tokens
@@ -311,12 +318,12 @@ class ReEngageAccount(User):
         return True
 
     def verify(self, password):
+        """Check that a user's password is correct."""
         hash = hashlib.sha512(self.salt + password).hexdigest()
         return hash == self.hash
 
-
     def set_password(self, password):
-        """Reset an account's password"""
+        """Set a user's password"""
         salt = urlsafe_b64encode(os.urandom(64))
         hash = hashlib.sha512(salt + password).hexdigest()
 
@@ -325,8 +332,15 @@ class ReEngageAccount(User):
         self.put()
 
     def forgot_password(self):
+        """Creates a token to allow the user to reset their password.
+
+        User is given a token (which expires) to verify their email address
+        and set a new password. Sends an email to the user as well."""
         token = urlsafe_b64encode(os.urandom(32))
 
+        self.hash      = ""
+        self.salt      = ""
+        self.verified  = False
         self.token     = token
         self.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
 
@@ -337,13 +351,14 @@ class ReEngageAccount(User):
 
     @classmethod
     def get_or_create(cls, username):
+        """Gets or creates a user account, if none exists"""
         logging.info("Obtaining user...")
 
         user = cls.all().filter('email = ', username).get()
 
         # User already exists
         if user:
-            return user, False
+            return (user, False)
 
         if username and email_re.match(username):
             # Create user
@@ -351,6 +366,6 @@ class ReEngageAccount(User):
             user  = cls(email=username, uuid=generate_uuid(16))
             user.forgot_password()
 
-            return user, True
+            return (user, True)
         else:
-            return None, False
+            return (None, False)

@@ -6,12 +6,18 @@ from util.consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 
 class SocialNetwork():
+    """A generic class for social networks.
+
+    Social networks are assumed to have a means to post a message (post)"""
     _response_types = ["text/plain", "text/javascript", "application/json"]
     _response_codes = [200, 201]
 
     @classmethod
     def post(cls, post, **kwargs):
-        pass #raise NotImplementedError("Class must implement 'post' method!")
+        """Template method for posting to a social network.
+
+        - post: a ReEngagePost object"""
+        pass  # raise NotImplementedError("Class must implement 'post' method!")
 
     @classmethod
     def _request(cls, url, verb="GET", payload=None, headers=None):
@@ -89,6 +95,7 @@ class Facebook(SocialNetwork):
 
     @classmethod
     def get_reach(cls, url):
+        """Gets a URL's 'reach' using FQL."""
         query = "SELECT url, normalized_url, share_count, like_count, "\
                 "comment_count, total_count, commentsbox_count, "\
                 "comments_fbid, click_count "\
@@ -110,6 +117,7 @@ class Facebook(SocialNetwork):
 
     @classmethod
     def _get_access_token(cls):
+        """Obtains an access token for a FB application."""
         success, content = cls._request(cls.__access_token_url, "POST", {
             "grant_type"   : "client_credentials",
             "redirect_uri" : cls.__access_token_url,
@@ -127,6 +135,7 @@ class Facebook(SocialNetwork):
 
     @classmethod
     def _get_page_id(cls, url):
+        """Obtains the FB opengraph id for a given url"""
         data      = { "id": url }
         final_url = "%s?%s" % (cls.__graph_url, urlencode(data))
 
