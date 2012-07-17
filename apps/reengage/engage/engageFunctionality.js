@@ -22,7 +22,7 @@ var Post = function(title, content, typeOfContent, contentLink, uuid) {
         if(typeof typeOfContent === 'undefined') {
             errors += "type of content ";
         }
-        
+            
         return errors;
     }
 };
@@ -175,9 +175,9 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
 var newPostConfirm = function() {
     var content = '';
     content +=      'New post name: <br><br>';
-	content +=          '<input type="text" id="newPostTitle" value=""/><br><br>';
+    content +=          '<input type="text" id="newPostTitle" value=""/><br><br>';
     content +=      'Should this post be added to the end or the beginning of the queue? <br><br>';
-	content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
+    content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
     content +=          '<input type="radio" name="first" value="first" />Beginning<br><br>';
     
     $("#newPostDialog").dialog({
