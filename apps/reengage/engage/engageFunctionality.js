@@ -143,7 +143,7 @@ var alertDialog = function(alertTitle, content) {
             title: alertTitle,
             buttons: {
                 "Ok": function() {
-                    $(this).dialog("close");
+                    $(this).dialog("destroy");
                 }
             }
         });
@@ -160,10 +160,10 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
             title: confirmTitle,
             buttons: {
                 "Cancel": function() {
-                    $(this).dialog("close");
+                    $(this).dialog("destroy");
                 },
                 "Ok": function() {
-                    $(this).dialog("close");
+                    $(this).dialog("destroy");
                     ifOk();
                 }
             }
@@ -180,18 +180,13 @@ var newPostConfirm = function() {
 	content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
     content +=          '<input type="radio" name="first" value="first" />Beginning<br><br>';
     
-    var $dialog = $("<div></div>")
-        .html(content)
-        .dialog({
-            autoOpen: false,
-            title: "New Post",
-            buttons: {
+    $("#newPostDialog").dialog({
+        buttons: {
                 "Cancel": function() {
-                    $(this).dialog("close");
+                    $(this).dialog("destroy");
                     $("#newPostTitle").val("");
                 },
                 "Ok": function() {
-                    $("#newTitleWarning").css("color", "#f00");
                     var title = $("#newPostTitle").val();
                     var first = $('input[name=first]:checked').val();
                     if ($("input[name=first]:checked").val() == "first") {
@@ -202,15 +197,65 @@ var newPostConfirm = function() {
                     }
         
                     //Make sure a title was given to the new post
-                    if (title === "") {
-                        $(this).dialog("close");
+                    if (title.length === 0) {
+                        $(this).dialog("destroy");
                         confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
                     }
                     else {
                         //Create post, make lightbox disappear, update queue
                         createNewPost(title, first);
-                        $("#newTitleWarning").hide();
-                        $(this).dialog('close');
+                        $(this).dialog("destroy");
+                        
+                        writeQueue();
+    
+                        //Write queue, select newly created post
+                        if (first) {
+                            var uuid = postQueue[0].uuid;
+                            var post = postQueue[0];
+                        }
+                        else if (!first) {
+                            var uuid = postQueue[postQueue.length - 1].uuid;
+                            var post = postQueue[postQueue.length - 1];
+                        }
+                
+                        post.typeOfContent = "type1" //This is the default value - change later
+            
+                        clickPost(post);
+                        $("#newPostTitle").val("");
+                    }
+                }
+        }
+    });
+    
+    /*var $dialog = $("<div></div>")
+        .html(content)
+        .dialog({
+            autoOpen: false,
+            title: "New Post",
+            buttons: {
+                "Cancel": function() {
+                    $(this).dialog("destroy");
+                    $("#newPostTitle").val("");
+                },
+                "Ok": function() {
+                    var title = $("#newPostTitle").val();
+                    var first = $('input[name=first]:checked').val();
+                    if ($("input[name=first]:checked").val() == "first") {
+                        first = true;
+                    }
+                    else {
+                        first = false;
+                    }
+        
+                    //Make sure a title was given to the new post
+                    if (title.length === 0) {
+                        $(this).dialog("destroy");
+                        confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
+                    }
+                    else {
+                        //Create post, make lightbox disappear, update queue
+                        createNewPost(title, first);
+                        $(this).dialog("destroy");
                         
                         writeQueue();
     
@@ -233,10 +278,12 @@ var newPostConfirm = function() {
             }
         });
     
-    $dialog.dialog('open');
+    $dialog.dialog('open');*/
 }
 
 $(document).ready(function() {
+
+    $("#newPostDialog").hide();
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function() {
