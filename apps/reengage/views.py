@@ -95,11 +95,7 @@ class ReEngageLogin(URIHandler):
         user = ReEngageAccount.all().filter(" email = ", username).get()
         logging.info("User: %s" % user)
 
-        if not user:
-            # TODO: Exception
-            pass
-
-        if user.verify(password):
+        if user and user.verify(password):
             session = get_current_session()
             session.regenerate_id()
 
@@ -267,10 +263,11 @@ class ReEngageCPLServeScript(URIHandler):
     """Serve the reengage script with some template variables."""
     def get(self):
         """Required variable: client_uuid."""
-        client = Client.get(self.request.get('client_uuid'))
+        session = get_current_session()
+        client = Client.get_by_url(session.get('shop'))
         if not client:
             logging.warn('client not found; exiting')
-            self.error(500)
+            self.error(400)
             return
 
         template_values = {

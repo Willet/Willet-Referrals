@@ -55,7 +55,7 @@ var loadApps = function (client, callback) {
     // overwrites existing apps object.
     // returns nothing.
     ajaxRequest(
-        '{% url AppsJSONDynamicLoader %}',
+        '{% url AppJSONDynamicLoader %}',
         {'client_uuid': client.uuid},
         function (response) {
             var data = response.apps;  // key
@@ -106,7 +106,7 @@ var loadQueues = function (app, callback) {
 var loadPosts = function (queue, callback) {
     // overwrites existing posts object.
     // returns nothing.
-    var requestURL = '{% ReEngagePostJSONHandler "__REPLACE__" %}'
+    var requestURL = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
                      .replace(/__REPLACE__/g, queue.uuid);
     ajaxRequest(
         requestURL,

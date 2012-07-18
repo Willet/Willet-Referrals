@@ -2,11 +2,23 @@
 <head>
     <title>Re-Engage</title>
     <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="{% url ReEngageCPLServeScript %}" type="text/javascript" charset="utf-8"></script>
 </head>
-    {{ t }}<br/>{{ shop }}
+</body>
+    <h1>Queue page // {{ shop }}</h1>
+    Token: {{ t }}<br/>
+    <p id='data'></p>
     <form action="{{ host }}{% url ReEngageLogout %}" method="POST">
         <input type="submit" value="Log out"/>
     </form>
+    <script>
+        $.ajax({
+            url: 'queues.json',
+            dataType: 'json',
+            success: function (data) {
+                $('#data').text(data.queue.uuid);
+            }
+        });
+    </script>
 <body>
-</body>
 </html>
