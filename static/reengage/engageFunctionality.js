@@ -51,12 +51,18 @@ var writeQueue = function() { //Outputs post titles and dates in replaceWithPost
             out += "    <div class='post' id='" + post.uuid + "'>";
             out += "        <div class='postDate'>" + getDate(i) + "</div>";
             out += "        <div class='postTitle'>" + post.title + "</div>";
-            out += "        <div class='postDelete' title='" + post.uuid + "'><a href='#' class='postDeleteImg' id='delete" + post.uuid + "'></a></div>";
+            out += "        <div class='postDelete'><a href='#' class='postDeleteImg' id='delete" + post.uuid + "' height='15px'></a></div>";
             out += "    </div>";
         }
+        //$("#" + post.uuid + " .postDelete").data("uuid", post.uuid);
         $("#replaceTextWithPosts").hide();
         $("#replaceHiddenPost").html(out);
         $("#replaceHiddenPost").show();
+        
+        for (var i = 0; i < postQueue.length; i++) {
+            var uuid = postQueue[i].uuid;
+            $("#" + uuid + " .postDelete").data("uuid", uuid);
+        }
     }
     else {
         $("#replaceHiddenPost").hide();
@@ -135,6 +141,8 @@ var popup = function(html, type) {
     $('body').append(lightbox);
 };
 
+//------jQuery Dialogs------
+
 var alertDialog = function(alertTitle, content) {
     var $dialog = $("<div></div>")
         .html(content)
@@ -173,13 +181,6 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
 };
 
 var newPostConfirm = function() {
-    var content = '';
-    content +=      'New post name: <br><br>';
-    content +=          '<input type="text" id="newPostTitle" value=""/><br><br>';
-    content +=      'Should this post be added to the end or the beginning of the queue? <br><br>';
-    content +=          '<input type="radio" name="first" value="last" checked="true"/>End<br>';
-    content +=          '<input type="radio" name="first" value="first" />Beginning<br><br>';
-
     $("#newPostDialog").dialog({
         buttons: {
                 "Cancel": function() {
@@ -226,7 +227,55 @@ var newPostConfirm = function() {
                 }
         }
     });
-}
+};
+
+var newTitlePromptDialog = function() {
+    var $emptyWarning = $("<div></div>")
+        .html("You can't give a post an empty title! Try again.")
+        .dialog({
+            title: "Warning!",
+            buttons: {
+                "Ok": function() {
+                    $(this).dialog("close");
+                    $editDialog.dialog("open");
+                }
+            }
+        });
+    $emptyWarning.dialog("close");
+    
+    var $editDialog = $("#editTitleDialog").dialog({
+        buttons: {
+            "Cancel": function() {
+                $(this).dialog("destroy");
+                $("#editTitleInput").val("");
+            },
+            "Ok": function() {
+                var title = $("#editTitleInput").val();
+                if (title.length === 0) {
+                    $(this).dialog("close");
+                    $emptyWarning.dialog("open");
+                }
+                else {
+                    var id = $(".post.selected").attr('id');
+				    for (var i = 0; i < postQueue.length; i++) {
+					    if (postQueue[i].uuid == id) {
+						    var post = postQueue[i];
+					    }
+				    }
+                    post.title = title;
+                    $("#selectedTitleContent").html(post.title);
+                    $(".post.selected .postTitle").html(post.title);
+                    $(this).dialog("close");
+                    $("#editTitleInput").val("");
+                }
+            }
+        }
+    });
+    $editDialog.dialog("open");
+    
+};
+
+//------Functions attached to html elements-----
 
 $(document).ready(function() {
 
@@ -289,52 +338,6 @@ $(document).ready(function() {
         }
     });
 
-    //When 'ok' in 'new post' dialog is clicked
-    /*$("#newPostOk").on("click", function() {
-        newPostConfirm();
-
-        var title = $("#newPostTitle").val();
-        //var first = $('input[name=first]:checked').val();
-        if ($("input[name=first]:checked").val() == "first") {
-            first = true;
-        }
-        else {
-            first = false;
-        }
-
-        //Make sure a title was given to the new post
-        if (title === "") {
-            //'Warning - empty title' shows and flashes red if title field is empty
-            $("#newTitleWarning").show();
-            $("#newTitleWarning").css("color", "#f00");
-            $("#newTitleWarning").animate({color: "#000"}, 1000);
-        }
-        else {
-            //Create post, make lightbox disappear, update queue
-            createNewPost(title, first);
-            $("#newTitleWarning").hide();
-            $("#light").hide();
-
-            writeQueue();
-
-            //Write queue, select newly created post
-            if (first) {
-                var uuid = postQueue[0].uuid;
-                var post = postQueue[0];
-            }
-            else if (!first) {
-                var uuid = postQueue[postQueue.length - 1].uuid;
-                var post = postQueue[postQueue.length - 1];
-            }
-
-            post.typeOfContent = "type1" //This is the default value - change later
-
-            clickPost(post);
-            $("#newPostTitle").val("");
-
-        }
-    });*/
-
     //When a post is clicked, clickPost() populates post content to right, and selects the clicked post
     //First checks to make sure you've saved any changes to the right
     $(document).on("click", ".post", function() {
@@ -379,7 +382,7 @@ $(document).ready(function() {
 
     //Delete post
     $(document).on("click", ".postDelete", function() {
-            var uuid = $(this).attr("title");
+            var uuid = $(this).data("uuid");
             var yes = confirmDialog("Confirm", "Are you sure you want to delete this post?");
 
             var ifOk = function() {
@@ -425,7 +428,7 @@ $(document).ready(function() {
             alertDialog("Warning!", "Give your current post some content first!");
         }
         else {
-            var uuid = $(this).attr("title");
+            var uuid = $(this).data("uuid");
             var post = "";
             for (var i = 0; i < postQueue.length; i++) {
                 if (uuid == postQueue[i].uuid) {
@@ -442,34 +445,16 @@ $(document).ready(function() {
 
     //When you click 'edit' beside the title, prompts you to change the post title
     $(document).on("click", "#editTitle", function() {
-        var newTitle = prompt("Enter a new title for your post:");
-        while (newTitle === "") {
-            if (newTitle === "") {
-                alertDialog("Oops!", "You can't give a post an empty title! Try again");
-            }
-            var newTitle = prompt("Enter a new title for your post:");
-        }
-
-        if (newTitle !== null) {
-            var uuid = $(".post.selected").attr('id');
-            for (var i = 0; i < postQueue.length; i++) {
-                if (postQueue[i].uuid == uuid) {
-                    var post = postQueue[i];
-                }
-            }
-            post.title = newTitle;
-            $("#selectedTitleContent").html(post.title);
-            $(".post.selected .postTitle").html(post.title);
-        }
+        newTitlePromptDialog();
     });
 
     $(document).on("mouseenter", ".postDelete", function() {
-        var uuid = $(this).attr("title");
+        var uuid = $(this).data("uuid");
         $("#delete" + uuid).css("background-position", "0 0");
     });
 
     $(document).on("mouseleave", ".postDelete", function() {
-        var uuid = $(this).attr("title");
+        var uuid = $(this).data("uuid");
         $("#delete" + uuid).css("background-position", "bottom");
     });
 
@@ -487,6 +472,8 @@ method: "GET",
 callback:  function(response) {
 }
 })*/
+
+//--getDate() is a hack, remove it later - for final version actually fetch the date it'll be published
 
 var getDate = function(x) {
     //For now set to be every MWF
