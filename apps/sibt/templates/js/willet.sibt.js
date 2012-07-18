@@ -622,7 +622,7 @@ _willet.sibt = (function (me) {
             'visited_urls_count',  // exact URLs not tracked for privacy
             parseInt(_willet.storage.get('visited_urls_count', 0)) + 1
         );
-        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 4) {  // UNSURE_MULTI_VIEW trigger
+        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 3) {  // UNSURE_MULTI_VIEW trigger
             // must be changed before initBottomPopup
             wm.fire('log', 'unsure_multi_view was turned on from the client side.');
             app.unsure_multi_view = true;
