@@ -61,20 +61,17 @@
                 <div id="categories">Categories</div>
             </div>
             <div id="postBar">
-                <div class="barBorderImg">
-                    <img class="barBorder" src="imgs/border-fade-1x25.png">
-                </div>
                 <div id="date">Date</div>
-                <div class="barBorderImg">
-                    <img class="barBorder" src="imgs/border-fade-1x25.png">
-                </div>
                 <div id="title">Title</div>
-                <div class="barBorderImg">
-                    <img class="barBorder" src="imgs/border-fade-1x25.png">
-                </div>
             </div>
             <div id="postContentBar">
-                <div id="selectedTitle">Post Title Here</div>
+                <div id="selectedTitle">
+                    <!-- Value changes depending on which post is selected -->
+                    <span id="selectedTitleContent">Post Title Here</span>
+                    
+                    <!-- Hidden initially, shown when postQueue.length > 0 -->
+                    <span id='editTitle'>(<a href='#'>edit</a>)</span>
+                </div>
             </div>
         </div>
         
