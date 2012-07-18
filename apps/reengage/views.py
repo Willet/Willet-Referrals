@@ -52,7 +52,7 @@ class ReEngageLanding(URIHandler):
 
 class ReEngageShopifyWelcome(URIHandler):
     def get(self):
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
+        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', 'instructions'), exc_info=True)
         self.response.out.write(self.render_page('instructions.html', {}))
 
 
