@@ -12,6 +12,6 @@ from util.urihandler import URIHandler
 
 class SkypeCallTestingService(URIHandler):
     def get(self):
-        instance = SIBTInstance.get('c2039b05df1841b9')
+        instance = SIBTInstance.get('fb0b475f4e984f87')
         Email.SIBTVoteCompletion(instance=instance,
                                  product=Product.get(instance.products[0]))

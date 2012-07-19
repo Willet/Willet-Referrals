@@ -3,45 +3,99 @@
 {% block title %}The voting is complete!{% endblock %}
 
 {% block content %}
-    <table border="0" cellpadding="10" cellspacing="0" width="100%">
-        <tr>
-            <td valign="top">
-                <div style="font-size:110%">
-                    <p>Hi {{ name }},</p>
-                    <p>Your friends were voting on {{ products.0.title }}:</p>
+    {% if wosib_mode %}
+        <table border="0" cellpadding="10" cellspacing="0" width="100%">
+            <tr>
+                <td valign="top">
+                    <div style="font-size:110%">
+                        <p>Hi {{ name }},</p>
+                        {% if bi_winning %}
+                            <p>Your vote has ended. These products tied in score:</p>
+                            {% for prod in products %}
+                                <center style="display:block;
+                                            margin: 0 auto;
+                                            text-align: center;">
+                                    {% if prod.title %}
+                                        <p>
+                                            <b>{{ prod.title }}</b>
+                                        </p>
+                                    {% endif %}
+                                    <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                                        style="text-align: center;
+                                            margin: 0 auto;
+                                            display: block;
+                                            border: 1px silver solid;
+                                            padding: 4px;"
+                                        width="200" />
+                                    <p><a href="{{ prod.resource_url }}">
+                                        Get this item
+                                    </a></p>
+                                </center>
+                            {% endfor %}
+                        {% else %}
+                            <p>You started a vote a few hours ago.
+                            Your friends suggested you to get
+                            <b>{{ products.0.title|default:"this" }}</b>:
+                            </p>
 
-                    <img src="{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                         style="max-height: 25%; max-width: 25%; text-align: center" />
-                    <p>
-                        <strong>{{ yesses }} out of
-                        {{ yesses_and_noes }}</strong> friends said to buy it.
-                    </p>
-                    {% if product.resource_url %}
-                        <table cellspacing="0"
-                            cellpadding="0"
-                            style="border-collapse:collapse">
-                            <tbody>
-                                <tr>
-                                    <td style="padding:5px;
-                                               background-color:#fff9d7;
-                                               border-left:1px solid #eecc22;
-                                               border-right:1px solid #eecc22;
-                                               border-top:1px solid #eecc22;
-                                               border-bottom:1px solid #eecc22">
-                                        <a href="{{ product.resource_url }}"
-                                           style="color:#336699;"
-                                           target="_blank">
-                                            Visit this item again
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p>Thank you for creating the vote!</p>
-                    {% endif %}
-                </div>
-            </td>
-        </tr>
-    </table>
+                            <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                                style="text-align: center"
+                                width="200" />
+                            <p>
+                                <a href="{{ products.0.resource_url }}">
+                                    Click here to buy it now!
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    {% else %}
+        <table border="0" cellpadding="10" cellspacing="0" width="100%">
+            <tr>
+                <td valign="top">
+                    <div style="font-size:110%">
+                        <p>Hi {{name}},</p>
+                        <p>Your friends were voting on <b>{{ products.0.title }}</b>:</p>
+
+                        <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                            style="max-height: 25%; max-width: 25%; text-align: center" />
+                        <p>
+                            <strong>{{ yesses }} out of
+                            {{ yesses_and_noes }}</strong> friends said to buy it.
+                        </p>
+                        {% if products.0.resource_url %}
+                            <table cellspacing="0"
+                                cellpadding="0"
+                                style="border-collapse:collapse">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding:5px;
+                                                background-color:#fff9d7;
+                                                border-left:1px solid #eecc22;
+                                                border-right:1px solid #eecc22;
+                                                border-top:1px solid #eecc22;
+                                                border-bottom:1px solid #eecc22">
+                                            <a href="{{ products.0.resource_url }}"
+                                            style="color:#336699;"
+                                            target="_blank">
+                                                {% if buy_it %}
+                                                    Click here to buy it now
+                                                {% else %}
+                                                    Find something else you might like!
+                                                {% endif %}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>Thank you for creating the vote!</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    {% endif %}
 {% endblock %}

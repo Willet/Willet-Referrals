@@ -383,30 +383,25 @@ class Email():
         name = instance.asker.name or "Savvy Shopper"
         subject = '%s, the votes are in!' % name
 
-        if len(instance.products) > 1:
-            file_path = 'wosib_voteCompletion.html'  # wosib mode
-        else:
-            file_path = 'sibt_voteCompletion.html'
-
-        path = Email.template_path(file_path, client)
+        path = Email.template_path('sibt_voteCompletion.html', client)
         logging.debug('Email template path = %s' % path)
 
-        path = 'templates/Shu Uemura USA/wosib_voteCompletion.html'  # test
-
         body = template.render(path, {
-                'client': client,
-                'name': name,
-                'product_url': getattr(product, 'resource_url', ''),
-                'vote_url'   : instance.link.get_willt_url(),
-                'product_img': product.images[0],
-                'yesses': yesses,
-                'noes': noes,
-                'yesses_and_noes': yesses + noes,
-                'bi_winning': bool(len(winning_products) > 1),
-                'product': instance.products[0],
-                'products': winning_products,  # take note
-                'buy_it': buy_it,
-                'buy_it_percentage': buy_it_percentage})
+            'client': client,
+            'name': name,
+            'product_url': getattr(product, 'resource_url', ''),
+            'vote_url'   : instance.link.get_willt_url(),
+            'product_img': product.images[0],
+            'yesses': yesses,
+            'noes': noes,
+            'yesses_and_noes': yesses + noes,
+            'bi_winning': bool(len(winning_products) > 1),
+            'product': instance.products[0],
+            'products': winning_products,  # take note
+            'buy_it': buy_it,
+            'buy_it_percentage': buy_it_percentage,
+            'wosib_mode': bool(len(instance.products) > 1)
+        })
 
         logging.error('Going to send a SIBT email to %s... '
                       '(not actually an error, but worth looking at)' % to_addr)
@@ -513,6 +508,7 @@ class Email():
             replyto_address = from_address  # who would reply to "None"?
         taskqueue.add(
                 url=url('SendEmailAsync'),
+                queue_name='emailer',
                 params={
                     'from_address': from_address,
                     'to_address': to_address,
