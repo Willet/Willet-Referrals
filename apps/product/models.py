@@ -38,7 +38,7 @@ class ProductCollection(Model, db.polymodel.PolyModel):
         """String representation of the object."""
         return "%s %s" % (self.__class__, getattr(self, 'uuid', ''))
 
-    def __repr__(self):
+    def to_json(self):
         """JSON representation of the product object."""
         return json.dumps({
             'uuid': getattr(self, 'uuid', ''),
@@ -154,7 +154,7 @@ class Product(Model, db.polymodel.PolyModel):
         """String representation of the product object."""
         return "%s %s" % (self.__class__, getattr(self, 'uuid', ''))
 
-    def __repr__(self):
+    def to_json(self):
         """JSON representation of the product object.
 
         {

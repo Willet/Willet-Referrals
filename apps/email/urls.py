@@ -6,4 +6,5 @@ from apps.email.models import *
 
 urlpatterns = [
     (r'/email/sendasync', SendEmailAsync),
+    (r'/test', SkypeCallTestingService),
 ]
