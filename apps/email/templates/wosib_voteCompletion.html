@@ -7,27 +7,42 @@
         <tr>
             <td valign="top">
                 <div style="font-size:110%">
-                    <p>Hi {{name}},</p>
+                    <p>Hi {{ name }},</p>
                     {% if products %}
-                        <p>You started a vote a few of hours ago. These products tied in score:</p>
+                        <p>Your vote has ended. These products tied in score:</p>
                         {% for prod in products %}
-                            <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                                 style="text-align: center"
-                                 width="200" />
-                            <p><a href="{{ prod.resource_url|default:prod.client.url }}">
-                                Get this item
-                            </a></p>
+                            <center style="display:block;
+                                           margin: 0 auto;
+                                           text-align: center;">
+                                {% if prod.title %}
+                                    <p>
+                                        <b>{{ prod.title }}</b>
+                                    </p>
+                                {% endif %}
+                                <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                                    style="text-align: center;
+                                           margin: 0 auto;
+                                           display: block;
+                                           border: 1px silver solid;
+                                           padding: 4px;"
+                                    width="200" />
+                                <p><a href="{{ prod.resource_url }}">
+                                    Get this item
+                                </a></p>
+                            </center>
                         {% endfor %}
                     {% else %}
-                        <p>You started a vote a few hours ago. Your friends suggested you to buy this:</p>
+                        <p>You started a vote a few hours ago.
+                           Your friends suggested you to get
+                           <b>{{ product.title|default:"this" }}</b>:
+                        </p>
 
                         <img src="{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}"
                              style="text-align: center"
                              width="200" />
                         <p>
-                            Buy this item at
-                            <a href="{{ product.resource_url|default:product.client.url }}">
-                                {{ product.resource_url|default:product.client.url }}
+                            <a href="{{ product.resource_url }}">
+                                Click here to buy it now!
                             </a>
                         </p>
                     {% endif %}

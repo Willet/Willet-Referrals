@@ -322,7 +322,7 @@ class Email():
 
         product_url = "%s#open=1" % instance.url  # full product link
 
-	try:
+        try:
             product_img = instance.product_img
             product_img = instance.products[0].images[0]
         except (TypeError, IndexError), err:
@@ -358,6 +358,7 @@ class Email():
     def SIBTVoteCompletion(instance, product):
         """Vote is over! Send asker an email."""
         client = getattr(instance.app_, 'client', None)
+        winning_products = instance.get_winning_products()
 
         if not instance.asker:
             logging.warn('The deuce? Instance has no asker.')
@@ -382,14 +383,28 @@ class Email():
         name = instance.asker.name or "Savvy Shopper"
         subject = '%s, the votes are in!' % name
 
-        body = template.render(
-            Email.template_path('sibt_voteCompletion.html', client), {
+        if len(instance.products) > 1:
+            file_path = 'wosib_voteCompletion.html'  # wosib mode
+        else:
+            file_path = 'sibt_voteCompletion.html'
+
+        path = Email.template_path(file_path, client)
+        logging.debug('Email template path = %s' % path)
+
+        path = 'templates/Shu Uemura USA/wosib_voteCompletion.html'  # test
+
+        body = template.render(path, {
+                'client': client,
                 'name': name,
                 'product_url': getattr(product, 'resource_url', ''),
                 'vote_url'   : instance.link.get_willt_url(),
                 'product_img': product.images[0],
                 'yesses': yesses,
                 'noes': noes,
+                'yesses_and_noes': yesses + noes,
+                'bi_winning': bool(len(winning_products) > 1),
+                'product': instance.products[0],
+                'products': winning_products,  # take note
                 'buy_it': buy_it,
                 'buy_it_percentage': buy_it_percentage})
 
