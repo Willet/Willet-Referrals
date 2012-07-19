@@ -9,19 +9,26 @@
                 <div style="font-size:110%">
                     <p>Hi {{name}},</p>
                     {% if products %}
-                        <p>You started a vote a couple of hours ago. These products tied in score:</p>
+                        <p>You started a vote a few of hours ago. These products tied in score:</p>
                         {% for prod in products %}
-                            <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}" style="max-height: 25%; max-width: 25%; text-align: center" />
-                            <p>
-                                <a href="{{ prod.resource_url|default:prod.client.url }}">Buy this item</a>
-                            </p>
+                            <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                                 style="text-align: center"
+                                 width="200" />
+                            <p><a href="{{ prod.resource_url|default:prod.client.url }}">
+                                Get this item
+                            </a></p>
                         {% endfor %}
                     {% else %}
-                        <p>You started a vote a couple of hours ago. Your friends suggested you to buy this:</p>
+                        <p>You started a vote a few hours ago. Your friends suggested you to buy this:</p>
 
-                        <img src="{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}" style="max-height: 25%; max-width: 25%; text-align: center" />
+                        <img src="{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                             style="text-align: center"
+                             width="200" />
                         <p>
-                            <a href="{{ product.resource_url|default:product.client.url }}">Click here to buy it now!</a>
+                            Buy this item at
+                            <a href="{{ product.resource_url|default:product.client.url }}">
+                                {{ product.resource_url|default:product.client.url }}
+                            </a>
                         </p>
                     {% endif %}
                 </div>
