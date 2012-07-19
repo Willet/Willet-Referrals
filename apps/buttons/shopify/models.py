@@ -327,9 +327,12 @@ class ButtonsShopify(Buttons, AppShopify):
             logging.warning("Couldn't get or put script")
 
 
-    def update_prefs(self, preferences):
+    def update_prefs(self, preferences=None, force_update=False):
         """Update preferences for the application."""
-        if self.billing_enabled:
+        if preferences is None:
+            preferences = {}
+
+        if self.billing_enabled or force_update:
             json_preferences = json.dumps(preferences)
 
             script = """
@@ -388,7 +391,12 @@ class ButtonsShopify(Buttons, AppShopify):
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
-            pass  # Either user is unbilled, or doesn't have the snippet.
+            # Either the user does not have billing enabled,
+            # or the snippet is missing.
+            #
+            # Assume that the snippet is missing, and create it.
+
+            self.update_prefs(force_update=True)
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 
