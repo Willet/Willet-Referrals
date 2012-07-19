@@ -196,6 +196,9 @@ class AskDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
+            'page_url': page_url,
+
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
