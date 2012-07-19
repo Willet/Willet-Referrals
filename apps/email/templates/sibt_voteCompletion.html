@@ -8,7 +8,7 @@
             <tr>
                 <td valign="top">
                     <div style="font-size:110%">
-                        <p>Hi {{ name }},</p>
+                        <p>Hi {{ name|capfirst }},</p>
                         {% if bi_winning %}
                             <p>Your vote has ended. These products tied in score:</p>
                             {% for prod in products %}
@@ -56,7 +56,7 @@
             <tr>
                 <td valign="top">
                     <div style="font-size:110%">
-                        <p>Hi {{name}},</p>
+                        <p>Hi {{ name|capfirst }},</p>
                         <p>Your friends were voting on <b>{{ products.0.title }}</b>:</p>
 
                         <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
