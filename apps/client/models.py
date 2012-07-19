@@ -16,6 +16,7 @@ from util.consts import *
 from util.mailchimp import MailChimp
 from util.model import Model
 from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.shopify_helpers import get_url_variants
 
 

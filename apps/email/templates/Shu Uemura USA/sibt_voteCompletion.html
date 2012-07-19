@@ -59,8 +59,12 @@
                         <p>Hi {{ name|capfirst }},</p>
                         <p>Your friends were voting on <b>{{ products.0.title }}</b>:</p>
 
-                        <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                            style="max-height: 25%; max-width: 25%; text-align: center" />
+                        <center style="display:block;
+                                       margin: 0 auto;
+                                       text-align: center;">
+                            <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
+                                 style="max-height: 25%; max-width: 25%; text-align: center" />
+                        </center>
                         <p>
                             <strong>{{ yesses }} out of
                             {{ yesses_and_noes }}</strong> friends said to buy it.

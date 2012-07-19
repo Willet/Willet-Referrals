@@ -12,6 +12,8 @@ from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import get_application_id
 from google.appengine.ext.webapp import template
 
+from apps.product.models import Product
+
 from util.consts import *
 from util.helpers import url
 
@@ -324,7 +326,7 @@ class Email():
 
         try:
             product_img = instance.product_img
-            product_img = instance.products[0].images[0]
+            product_img = Product.get(instance.products[0]).images[0]
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
