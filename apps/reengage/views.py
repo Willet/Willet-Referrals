@@ -53,7 +53,29 @@ class ReEngageShopifyWelcome(URIHandler):
 class ReEngageInstructions(URIHandler):
     """Display the instructions page."""
     def get(self):
-        self.response.out.write(self.render_page('instructions.html', {}))
+        session = get_current_session()
+
+        shop_url = session.get("shop")
+
+        shop_owner = "Savvy shopper"
+        shop_name  = "Your Shop"
+        if shop_url:
+            try:
+                client = ClientShopify.get_by_url(shop_url)
+                shop_owner = client.merchant.get_full_name()
+                shop_name  = client.name
+            except Exception:
+                # Client has no merchant
+                logging.error("Client %r has no merchant.  Using fake values" % (client,))
+
+        login_url = build_url("ReEngageLogin")
+
+        self.response.out.write(self.render_page('instructions.html', {
+            'shop_owner': shop_owner,
+            'shop_name' : shop_name,
+            'login_url' : login_url,
+            'store_url' : shop_url or "mystore.shopify.com"
+        }))
 
 
 class ReEngageLogin(URIHandler):

@@ -15,8 +15,8 @@ from apps.email.models import Email
 # from apps.reengage.shopify.models import ReEngageShopify
 from apps.user.models import User
 
-from util.consts import REROUTE_EMAIL, SHOPIFY_APPS
-from util.helpers import to_dict, generate_uuid
+from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN
+from util.helpers import to_dict, generate_uuid, url
 from util.model import Model
 
 class TwitterAssociation(Model):
@@ -69,13 +69,70 @@ class ReEngageShopify(ReEngage, AppShopify):
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=True)
         #self.queue_script_tags(script_tags=tags)
-        #self.queue_assets(assets=assets)
+        self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/reengage-header.liquid',
+                'value': """
+                      <meta property="og:url" content="{{ canonical_url }}" />
+                      <meta property="fb:app_id" content="392482400810748">
+                      <meta property="og:type" content="ogproduct:product">
+                      <meta property="og:site_name" content="{{ shop.name | escape }}" />
+
+                      {% if template == 'index' %}
+                       <title>{{ shop.name }}</title>
+                       <meta property="og:title" content="{{ shop.name }}" />
+                      {% elsif template == '404' %}
+                        <title>Page Not Found | {{ shop.name }}</title>
+                        <meta property="og:title" content="Page not found" />
+                      {% else %}
+                       <title>{{ page_title }} | {{ shop.name }}</title>
+                       <meta property="og:title" content="{{ page_title }}" />
+                      {% endif %}
+
+                      {% assign maxmeta = 155 %}
+                      {% if template contains 'product' %}
+                      <meta name="description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      {% elsif template contains 'page' %}
+                      <meta name="description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      {% elsif template == 'index' and shop.description != '' %}
+                      <meta name="description" content="{{ shop.description }}" />
+                      <meta property="og:description" content="{{ shop.description }}" />
+                      {% endif %}
+
+
+                      {% comment %}
+                        Open Graph tags for Facebook Like buttons
+                      {% endcomment %}
+                      {% if template contains 'product' %}
+                        <meta property="og:image" content="{{ product.featured_image | product_img_url: 'original' }}" />
+                      {% else %}
+                        {% if settings.logo_image == "logo.png" %}
+                          <meta property="og:image" content="{{ 'logo.png' | asset_url }}" />
+                        {% endif %}
+                      {% endif %}
+                    """
+            }
+        }])
         self.install_queued()
 
         email = self.client.email or u''
         name  = self.client.merchant.get_full_name()
         store = self.client.name
         use_full_name = False
+
+        # Create a new user
+        user = ReEngageAccount(email=email, uuid=generate_uuid(16))
+        user.reset_password()
+
+        # Get verification URL
+        link = url("ReEngageVerify", qs={
+            "email": email,
+            "token": user.token
+        })
+
+        full_url = "https://%s%s" % (APP_DOMAIN, link)
 
         if REROUTE_EMAIL:
             Email.welcomeFraser(app_name="ReEngageShopify",
@@ -85,8 +142,9 @@ class ReEngageShopify(ReEngage, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
-            Email.welcomeClient("ReEngageShopify", email, name, store,
-                                use_full_name=use_full_name)
+            Email.welcomeClient("ShopConnection Engage", email, name, store,
+                                use_full_name=use_full_name,
+                                additional_data={"url": full_url})
 
         # Email DevTeam
         Email.emailDevTeam(
@@ -339,11 +397,11 @@ class ReEngageAccount(User):
         self.hash = hash
         self.put()
 
-    def forgot_password(self):
+    def reset_password(self):
         """Creates a token to allow the user to reset their password.
 
         User is given a token (which expires) to verify their email address
-        and set a new password. Sends an email to the user as well."""
+        and set a new password."""
         token = urlsafe_b64encode(os.urandom(32))
 
         self.hash      = ""
@@ -353,6 +411,10 @@ class ReEngageAccount(User):
         self.token_exp = datetime.datetime.now() + datetime.timedelta(days=1)
 
         self.put()
+
+    def forgot_password(self):
+        """As `reset_password` plus sends an email."""
+        self.reset_password()
 
         # Send verification email
         Email.verify_reengage_token_email(self.email, self.token)

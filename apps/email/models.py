@@ -65,7 +65,8 @@ class Email():
 
     @staticmethod
     def welcomeClient(app_name, to_addr, name, store_name,
-                      use_full_name=False, custom_install_url=""):
+                      use_full_name=False, custom_install_url="",
+                      additional_data=None):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
@@ -92,6 +93,15 @@ class Email():
                   <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
                   <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
 
+        elif app_name == 'ShopConnection Engage':
+            body += """<p>Thanks for installing <i>%s</i>!  We are excited to see
+                        your store, %s, getting the exposure it deserves.</p>
+                        <p>Please <a href="%s">activate your new account</a> to
+                         get started.</p>
+                      <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
+                      <p>If you have any ideas on how to improve %s,
+                      please let us know.</p>""" % \
+                (app_name, store_name, additional_data.get("url"), app_name)
         else:
             logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
             return
@@ -176,10 +186,10 @@ class Email():
 
         full_url = "https://%s%s" % (APP_DOMAIN, link)
 
-        subject = "ReEngage Account Activation"
+        subject = "ShopConnection ReEngage: Account Activation"
         body = """
                 <p>Hi,</p>
-                <p>Please click this link to activate your new ReEngage
+                <p>Please click this link to activate your ReEngage
                 account.</p>
                 <p>
                     <a href="%s">Activate your account</a>
