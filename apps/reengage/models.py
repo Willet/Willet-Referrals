@@ -46,7 +46,12 @@ class TwitterAssociation(Model):
 
 
 class ReEngage(App):
-    pass
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        super(ReEngage, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
 
 class ReEngageShopify(ReEngage, AppShopify):
@@ -226,7 +231,7 @@ class ReEngageQueue(Model):
                 continue
 
         return {
-            "key": "queue",
+            "key": "queues",
             "value": {
                 "uuid"         : self.uuid,
                 "app"          : self.app_.uuid,
@@ -358,6 +363,7 @@ class ReEngageAccount(User):
         logging.info("Obtaining user...")
 
         user = cls.all().filter('email = ', username).get()
+        logging.info("User: %s" % user)
 
         # User already exists
         if user:

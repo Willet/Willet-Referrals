@@ -19,7 +19,7 @@ class ReEngageAppPage(URIHandler):
                                                  template_values))
 
 
-class ReEngageLanding(URIHandler):
+class ReEngageShopifyWelcome(URIHandler):
     """Acts as a router for requests from shopify"""
     def get(self):
         token  = self.request.get( 't' )
@@ -50,12 +50,6 @@ class ReEngageLanding(URIHandler):
         self.redirect(page)
 
 
-class ReEngageShopifyWelcome(URIHandler):
-    def get(self):
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', 'instructions'), exc_info=True)
-        self.response.out.write(self.render_page('instructions.html', {}))
-
-
 class ReEngageInstructions(URIHandler):
     """Display the instructions page."""
     def get(self):
@@ -80,7 +74,7 @@ class ReEngageLogin(URIHandler):
         # TODO: if session is already active
 
         self.response.out.write(self.render_page('login.html', {
-            "host" : self.request.host_url
+            "host" : self.request.host_url,
         }))
 
     def post(self):
@@ -103,11 +97,15 @@ class ReEngageLogin(URIHandler):
             session['t']         = token
             session['shop']      = shop
 
-            page = build_url("ReEngageQueueHandler", qs={})
+            self.redirect(build_url("ReEngageQueueHandler", qs={}))
         else:
-            page = build_url("ReEngageLogin", qs={})
+            self.response.out.write(self.render_page('login.html', {
+                "host" : self.request.host_url,
+                "msg": "Username or password incorrect",
+                "cls": "error",
+            }))
 
-        self.redirect(page)
+
 
 class ReEngageLogout(URIHandler):
     def get(self):
@@ -133,7 +131,7 @@ class ReEngageLogout(URIHandler):
 class ReEngageCreateAccount(URIHandler):
     def get(self):
         """Show the 'create an account' page"""
-        self.response.out.write(self.render_page('create.html', {
+        self.response.out.write(self.render_page('login.html', {
             "host" : self.request.host_url,
         }))
 
@@ -145,20 +143,27 @@ class ReEngageCreateAccount(URIHandler):
 
         if user and created:  # Activate account
             logging.info("User was created")
-            self.response.out.write(self.render_page('verify.html', {
-                "msg": "You have been sent an email to verify your account.",
+            self.response.out.write(self.render_page('login.html', {
+                "msg": "You have been sent an email with further instructions.",
+                "cls": "success",
+                "host" : self.request.host_url
             }))
         elif user:  # Account already exists
             logging.info("User already exists")
-            self.response.out.write(self.render_page('create.html', {
+            self.response.out.write(self.render_page('login.html', {
                 "username": username,
-                "msg": "Username already exists"
+                "msg": "Sorry, that email is already in use.",
+                "host" : self.request.host_url,
+                "cls": "error",
             }))
             pass
         else:  # Some mistake
-            self.response.out.write(self.render_page('create.html', {
+            self.response.out.write(self.render_page('login.html', {
                 "username": username,
-                "msg": "There was a problem :("
+                "msg": "There was a problem creating your account.<br/>Please"
+                       " try again later",
+                "host" : self.request.host_url,
+                "cls": "error",
             }))
 
 
@@ -193,43 +198,52 @@ class ReEngageResetAccount(URIHandler):
 class ReEngageVerify(URIHandler):
     def get(self):
         """Verify that the token provided was correct"""
-        email = self.request.get("email")
-        token = self.request.get("token")
+        session = get_current_session()
+
+        email = self.request.get("email") or session.get("email")
+        token = self.request.get("token") or session.get("token")
+
+        session["email"] = email
+        session["token"] = token
 
         user = ReEngageAccount.all().filter(" email = ", email).get()
 
         if not user:
             # Nothing to verify
             context = {
-                "msg": "No user found :("
+                "msg": "No user found :(",
+                "cls": "error"
             }
         elif user.token != token:
             # Token is invalid
             context = {
                 "msg": "Tokens do not match. Please try the link from the "
-                       "email again."
+                       "email again.",
+                "cls": "error"
             }
         elif user.token_exp < datetime.datetime.now():
             # Token has expired. Send a new token?
             context = {
-                "msg": "Your verification token has expired. You should be "
-                       "receiving a new one in an email shortly :)"
+                "msg": "Your token has expired. You should be "
+                       "receiving a new one in an email shortly :)",
+                "cls": "error"
             }
             user.forgot_password()
         else:
             # All is well
             context = {
-                "set_password": True,
-                "email"       : email,
-                "token"       : token
+                "set_password": True
             }
 
         self.response.out.write(self.render_page('verify.html', context))
 
     def post(self):
         """Set the user's new password"""
-        email    = self.request.get("email")
-        token    = self.request.get("token")
+        session = get_current_session()
+
+        email    = session.get("email")
+        token    = session.get("token")
+
         password = self.request.get("password")
         verify   = self.request.get("password2")
 
@@ -237,11 +251,13 @@ class ReEngageVerify(URIHandler):
 
         if password and verify and password != verify:
             context = {
-                "msg": "Passwords don't match."
+                "msg": "Passwords don't match.",
+                "cls": "error"
             }
         elif not (user and user.token == token):
             context = {
-                "msg": "There was a problem verifying your account."
+                "msg": "There was a problem verifying your account.",
+                "cls": "error"
             }
         else:
             user.token     = None
@@ -250,10 +266,12 @@ class ReEngageVerify(URIHandler):
             user.set_password(password)
 
             user.put()
+
+            url = build_url("ReEngageLogin")
             context = {
                 "msg": "Successfully set password. "
-                       "Please log in.",
-                "success": True
+                       "Please <a href='%s'>log in</a>." % url,
+                "cls": "success"
             }
 
         self.response.out.write(self.render_page('verify.html', context))
@@ -274,5 +292,5 @@ class ReEngageCPLServeScript(URIHandler):
             'client': client,
         }
 
-        self.response.out.write(self.render_page('js/com.js',
-                                                 template_values))
+        self.response.headers.add_header('content-type', 'text/javascript', charset='utf-8')
+        self.response.out.write(self.render_page('js/com.js', template_values))

@@ -8,7 +8,6 @@ urlpatterns = [
     # Re-engage handlers (beta)
     (r'/r/reengage/js/com.js', ReEngageCPLServeScript),
     (r'/r/shopify/beta/?', ReEngageAppPage),
-    # (r'/r/shopify/welcome/?', ReEngageLanding),
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
 

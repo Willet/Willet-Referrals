@@ -65,8 +65,8 @@ var loadApps = function (client, callback) {
 
             for (var i = 0; i < data.length; i++) {
                 apps.push({
-                    'uuid': response[i].uuid,
-                    'name': response[i].name,  // e.g. ReEngageShopify
+                    'uuid': data[i].uuid,
+                    'name': data[i].name,  // e.g. ReEngageShopify
                     'client': client,
                     'queues': []  // you can choose to load it
                 });
@@ -85,7 +85,8 @@ var loadQueues = function (app, callback) {
         '{% url ReEngageQueueJSONHandler %}',
         {'app_uuid': app.uuid},  // not used (one-app-one-queue MVP)
         function (response) {
-            var data = response.queues;  // key
+            // normally returns an array, but not yet
+            var data = [response.queues];  // key
 
             queues = [];  // reset
             app.queues = []; // reset references
@@ -94,8 +95,8 @@ var loadQueues = function (app, callback) {
                 queues.push({
                     'uuid': data[i].uuid,
                     'app': app,  // "owner" in DB
-                    'activePosts': [],  // "queued" in DB
-                    'expiredPosts': []  // "expired" in DB
+                    'activePosts': data[i].activePosts,  // "queued" in DB
+                    'expiredPosts': data[i].expiredPosts  // "expired" in DB
                 });
             }
         },
@@ -138,19 +139,13 @@ var loadPosts = function (queue, callback) {
     );
 };
 
-var __main__ = function () {
-    $(document).ready(function () {
-        // ...
-    });
-};
 
-// fire up Mr.AJAX
-if (window.__name__ === '__main__') {
+$(document).ready(function () {
     loadClient('', function () {
         loadApps(client, function () {
             loadQueues(apps[0], function () {
-                loadPosts(queues[0], __main__);
+//                loadPosts(queues[0], function(){});
             })
         })
     });
-}
+});

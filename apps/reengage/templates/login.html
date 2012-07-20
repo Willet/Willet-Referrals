@@ -1,11 +1,105 @@
 <html>
+
+<!--a href="{{ host }}{% url ReEngageCreateAccount %}">No account?</a>
+<a href="{{ host }}{% url ReEngageResetAccount %}">Forgot password?</a-->
+<head>
+    <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+    <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript">
+    </script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript">
+    </script>
+    <script src="/static/reengage/engageFunctionality.js" type="text/javascript">
+    </script>
+</head>
+
 <body>
-<a href="{{ host }}{% url ReEngageCreateAccount %}">No account?</a>
-<a href="{{ host }}{% url ReEngageResetAccount %}">Forgot password?</a>
-<form action="{{ host }}{% url ReEngageLogin %}" method="POST">
-    <input type="text" name="username" />
-    <input type="password" name="password" />
-    <input type="submit" value="Submit"/>
-</form>
+
+<div id="banner" class="shadow">
+    <div id="bannerBody">
+        <div id="bannerTitle">
+            <h1><b>Engage</b></h1>
+        </div>
+        <div id="bannerRight">
+        </div>
+    </div>
+</div>
+
+<div id="body">
+    <div id="loginTopMessage">Instantly engage with your customers!</div>
+    {% if msg %}
+    <p class='message {{cls}}'>{{msg}}</p>
+    {% endif %}
+    <div id="loginMainBox">
+
+        <div id="signupBox" class="roundedTops roundedBL roundedBR">
+            <div class="loginHead roundedTops">Sign up</div>
+
+            <div class="loginLeft">
+                <div class="loginElemLeft">Email:</div>
+            </div>
+
+            <form action="{{ host }}{% url ReEngageCreateAccount %}"
+                  method="POST">
+                <div class="loginRight">
+                    <div class="loginElemRight">
+                        <input type="text" name="username" value="{{username}}"/>
+                    </div>
+                </div>
+
+                <div id="signupButtonContainer">
+                    <div id="signupButton" class="button">
+                        <a href="#">Sign up</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="loginBox" class="roundedTops roundedBL roundedBR">
+            <div class="loginHead roundedTops">Login</div>
+
+            <div class="loginLeft">
+                <div class="loginElemLeft">Email:</div>
+                <div class="loginElemLeft">Password:</div>
+            </div>
+            <form action="{{ host }}{% url ReEngageLogin %}" method="POST">
+                <div class="loginRight">
+                    <div class="loginElemRight">
+                        <input type="text" name="username" value=""/>
+                    </div>
+                    <div class="loginElemRight">
+                        <input type="password" name="password"value="" />
+                    </div>
+                </div>
+
+                <div id="loginButtonContainer">
+                    <div id="loginButton" class="button">
+                        <a href="#">Login</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script src="engageFunctionality.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#loginButton").click(function(event){
+            event.preventDefault();
+            $(this).parents("form").submit();
+        });
+    });
+
+    $(document).ready(function(){
+        $("#signupButton").click(function(event){
+            event.preventDefault();
+            $(this).parents("form").submit();
+        });
+    });
+</script>
 </body>
+
 </html>

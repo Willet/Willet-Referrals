@@ -547,3 +547,20 @@ ul.breakNav li.selected {
     background: -ms-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background: linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
 }
+
+.message {
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+.message.success {
+    background: #afa;
+    border: 1px solid #6a6;
+}
+
+.message.error {
+    background: #faa;
+    border: 1px solid #a66;
+}
