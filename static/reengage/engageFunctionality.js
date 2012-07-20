@@ -1,8 +1,14 @@
+"use strict";
+/*
+ * Willet's "Should I Buy This"
+ * Copyright Willet Inc, 2012
+ *
+ */
+
 var postQueue = function () {
     //The queue of posts to be made
     return $('.post');
 };
-// var postuuid = 0; //Each post has a unique uuid - hack for now, generate actual ids later
 
 var randomUUID = function () {
     return parseInt(Math.random() * 100000000);
@@ -26,17 +32,6 @@ var createNewPost = function (params, first) {
         'typeOfContent': 'typeOfContent',
         'contentLink': 'contentLink'
     };
-    /*var content = "";
-    var typeOfContent = "";
-    var contentLink = "";
-
-    var newPost = new Post(title, content, typeOfContent, contentLink, postuuid++);
-    if (first) {
-        postQueue.splice(0,0,newPost);
-    }
-    else if (!first) {
-        postQueue.push(newPost);
-    }*/
 
     /* TODO: ajax, and if succeeds, ... */
 
@@ -83,23 +78,6 @@ var updateQueueUI = function (selectedPostUUID) { //Outputs post titles and date
 
     //If no posts in queue, suggest making a new post, else write out the posts in the queue
     if ($('.post').length > 0) {
-//         for (var i = 0; i < postQueue.length; i++) {
-//             var post = postQueue[i];
-//             out += "    <div class='post' id='" + post.uuid + "'>";
-//             out += "        <div class='postDate'>" + getDate(i) + "</div>";
-//             out += "        <div class='postTitle'>" + post.title + "</div>";
-//             out += "        <div class='postDelete'><a href='#' class='postDeleteImg' id='delete" + post.uuid + "' height='15px'></a></div>";
-//             out += "    </div>";
-//         }
-//         //$("#" + post.uuid + " .postDelete").data("uuid", post.uuid);
-//         $("#replaceTextWithPosts").hide();
-//         $("#replaceHiddenPost").html(out);
-//         $("#replaceHiddenPost").show();
-//
-//         for (var i = 0; i < postQueue.length; i++) {
-//             var uuid = postQueue[i].uuid;
-//             $("#" + uuid + " .postDelete").data("uuid", uuid);
-//         }
         $("#replaceHiddenPost").show();
         $("#replaceTextWithPosts").hide();
     }
@@ -117,37 +95,8 @@ var updateQueueUI = function (selectedPostUUID) { //Outputs post titles and date
     }
 };
 
-var removePost = function (uuid) { //Looks through queue for post of this uuid and deletes it
-//     var ifOk = function() {
-//         var x = 0;
-//         for (var i = 0; i < postQueue.length; i++) {
-//             if (postQueue[i].uuid === uuid) {
-//                 postQueue.splice(i, 1);
-//
-//                 if (postQueue.length > 0) { //If queue isn't empty
-//                     if (postQueue.length === 1) { //If queue only has one post left in it
-//                         x = postQueue[0].uuid;
-//                     }
-//                     else if (postQueue.length === i) { //If deleted post was last in queue
-//                         x = postQueue[i-1].uuid;
-//                     }
-//                     else {
-//                         x = postQueue[i].uuid;
-//                     }
-//                 }
-//             }
-//         }
-//
-//         updateQueueUI();
-//
-//         if (postQueue.length > 0) {
-//             $("#" + x).addClass("selected");
-//         }
-//         else {
-//             ("#selectedTitleContent").html("Post Title Here");
-//         }
-//     };
-
+var removePost = function (uuid) {
+    // removes a post from the UI. TODO: ajax
     confirmDialog(
         "Confirm",
         "Are you sure you want to delete this post?",
@@ -174,7 +123,7 @@ var clickPost = function (uuid) {
         $("#postContentContainer").show();
         $("#editTitle").show();
     }
-    $("#postContent").html(content);
+    $("#postContent").val(content);
     //Actions to do regardless of whether post is first in queue
     console.log($("#postSave"));
 
@@ -251,19 +200,6 @@ var newPostConfirm = function() {
                         $(this).dialog("destroy");
 
                         updateQueueUI();
-
-                        /*
-                        //Write queue, select newly created post
-                        if (first) {
-                            var uuid = postQueue()[0].uuid;
-                            var post = postQueue()[0];
-                        } else {
-                            var uuid = postQueue()[postQueue().length - 1].uuid;
-                            var post = postQueue()[postQueue().length - 1];
-                        }
-
-                        post.typeOfContent = "type1" //This is the default value - change later
-                        */
 
                         clickPost(uuid);
                         $("#newPostTitle").val("");
@@ -402,12 +338,6 @@ $(document).ready(function() {
         var oldPost = $(".post.selected");
         var posts = $(".post");
 
-//         for (var i = 0; i < postQueue().length; i++) {
-//             if (olduuid == postQueue()[i].uuid) {
-//                 var oldPost = postQueue()[i];
-//             }
-//         }
-
         if (posts.length > 1) {
             var content = $("#postContent").val();
             console.log(content);
@@ -435,47 +365,14 @@ $(document).ready(function() {
 
     //Delete post
     $(document).on("click", ".postDelete", function() {
-            var uuid = $(this).data("uuid");
-            var yes = confirmDialog("Confirm", "Are you sure you want to delete this post?");
-
-            var posts = postQueue();
-
-            var ifOk = function() {
-//                 var x = 0;
-//                 for (var i = 0; i < postQueue().length; i++) {
-//                     if (uuid == postQueue()[i].uuid) {
-//                         postQueue().splice(i, 1);
-//
-//                         if (postQueue().length > 0) { //If queue isn't empty
-//                             if (postQueue().length === 1) { //If queue only has one post left in it
-//                                 x = 0;
-//                             }
-//                             else if (postQueue().length === i) { //If deleted post was last in queue
-//                                 x = i - 1;
-//                             }
-//                             else {
-//                                 x = i;
-//                             }
-//                         }
-//                     }
-//                 }
+        var uuid = $(this).data("uuid");
+        confirmDialog(
+            "Confirm", "Are you sure you want to delete this post?",
+            function () {
                 $('#' + uuid).remove();
-
                 updateQueueUI();
-
-                //If there are posts remaining, select post identified by var x in above looping; otherwise remove post content form
-//                 if (postQueue().length > 0) {
-//                     clickPost($(postQueue()[x]).data('uuid'));
-//                 }
-//                 else {
-//                     $("#replaceTextWithPostContent").show();
-//                     $("#postContentContainer").hide();
-//                     $("#editTitle").hide();
-//                     $("#selectedTitleContent").html("Post title here");
-//                 }
             }
-
-            confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
+        );
     });
 
     //When you click 'save', contents are saved to the post
