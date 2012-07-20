@@ -1,6 +1,6 @@
 "use strict";
 /*
- * Willet's "Should I Buy This"
+ * Willet's "ReEngage"
  * Copyright Willet Inc, 2012
  *
  */
@@ -52,7 +52,7 @@ var createNewPost = function (params, first) {
         })
         .append($('<div />', {
             'class': 'postDate',
-            'html': '2012-04-31' // getDate(i)
+            'html': '2012-04-31'
         }))
         .append($('<div />', {
             'class': 'postTitle',
@@ -91,6 +91,29 @@ var updateQueueUI = function (selectedPostUUID) {
     }
 };
 
+var updatePostUI = function () {
+    // Change the right-hand side area with the appropriate UI:
+    // either no post at all, or information about the selected post.
+
+    //If no posts in queue, suggest making a new post, else write out the posts in the queue
+    if ($('.post').length > 0) {
+        $("#replaceTextWithPostContent").hide();
+        $("#postContentContainer").show();
+        $("#editTitle").show();
+    }
+    else {
+        $("#replaceTextWithPostContent").show();
+        $("#postContentContainer").hide();
+    }
+
+    var post = $('.post.selected'),
+        uuid = post.data('uuid');
+    //Actions to do regardless of whether post is first in queue
+    $('#selectedTitleContent').text(post.data('title'));
+    $('#postContent').val(post.data('content'));
+    $('#postSave').eq(0).data('uuid', uuid);
+};
+
 var removePost = function (uuid) {
     // removes a post from the UI. TODO: ajax
     confirmDialog(
@@ -108,23 +131,10 @@ var clickPost = function (uuid) {
     console.log('clicked clickPost');
 
     var post = $("#" + uuid);
-
-    var content = post.data('content');
     var uuid = post.data('uuid');
 
-    updateQueueUI(uuid);
-
-    //If first post in queue, replace all contents on right
-    if (postQueue().length === 1) {
-        $("#replaceTextWithPostContent").hide();
-        $("#postContentContainer").show();
-        $("#editTitle").show();
-    } // otherwise...?
-
-    //Actions to do regardless of whether post is first in queue
-    $('#selectedTitleContent').text(post.data('title'));
-    $('#postContent').val(content);
-    $('#postSave').eq(0).data('uuid', uuid);
+    updateQueueUI(uuid);  // "select it"
+    updatePostUI();
 };
 
 //------jQuery Dialogs------
