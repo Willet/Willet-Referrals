@@ -109,7 +109,7 @@ var updatePostUI = function () {
     var post = $('.post.selected'),
         uuid = post.data('uuid');
     //Actions to do regardless of whether post is first in queue
-    $('#selectedTitleContent').text(post.data('title'));
+    $('#selectedTitleContent').html(post.data('title'));
     $('#postContent').val(post.data('content'));
     $('#postSave').eq(0).data('uuid', uuid);
 };
@@ -146,11 +146,14 @@ var alertDialog = function (alertTitle, content) {
             autoOpen: false,
             title: alertTitle,
             'modal': true,
-            buttons: {
-                "Ok": function () {
-                    $(this).dialog("destroy");
+            buttons: [
+                {
+                    text: "Ok",
+                    click: function() {
+                        $(this).dialog("destroy");
+                    }
                 }
-            }
+            ]
         });
 
     $dialog.dialog('open');
@@ -164,15 +167,22 @@ var confirmDialog = function (confirmTitle, content, ifOk) {
             autoOpen: false,
             title: confirmTitle,
             'modal': true,
-            buttons: {
-                "Cancel": function () {
-                    $(this).dialog("destroy");
+            buttons: [
+                {
+                    text: "Cancel",
+                    click: function() {
+                        $(this).dialog("destroy");
+                    }
                 },
-                "Ok": function () {
-                    $(this).dialog("destroy");
-                    ifOk();
+                {
+                    text: "Ok",
+                    className: "clickOnEnter",
+                    click: function() {
+                        $(this).dialog("destroy");
+                        ifOk();
+                    }
                 }
-            }
+            ]
         });
 
     $dialog.dialog('open');
@@ -181,38 +191,44 @@ var confirmDialog = function (confirmTitle, content, ifOk) {
 var newPostConfirm = function () {
     $("#newPostDialog").dialog({
         'modal': true,
-        buttons: {
-            "Cancel": function () {
-                $(this).dialog("destroy");
-                $("#newPostTitle").val("");
-            },
-            "Ok": function () {
-                var title = $("#newPostTitle").val();
-                var first = ($("input[name=first]:checked").val() === "first");
-
-                //Make sure a title was given to the new post
-                if (!title.length) {
+        buttons: [
+            {
+                text: "Cancel",
+                click: function() {
                     $(this).dialog("destroy");
-                    confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
-                }
-                else {
-                    //Create post, make lightbox disappear, update queue
-                    var uuid = createNewPost({
-                        'uuid': randomUUID(),
-                        'title': title,
-                        'content': 'Example content',
-                        'typeOfContent': 'type1',  //This is the default value - change later
-                        'contentLink': 'contentLink'
-                    }, first);
-                    $(this).dialog("destroy");
-
-                    updateQueueUI();
-
-                    clickPost(uuid);
                     $("#newPostTitle").val("");
                 }
+            },
+            {
+                text: "Ok",
+                className: "clickOnEnter",
+                click: function () {
+                    var title = $("#newPostTitle").val();
+                    var first = ($("input[name=first]:checked").val() === "first");
+
+                    //Make sure a title was given to the new post
+                    if (!title.length) {
+                        $(this).dialog("destroy");
+                        confirmDialog("Warning!", "Give your post a title!", newPostConfirm);
+                    } else {
+                        //Create post, make lightbox disappear, update queue
+                        var uuid = createNewPost({
+                            'uuid': randomUUID(),
+                            'title': title,
+                            'content': 'Example content',
+                            'typeOfContent': 'type1',  //This is the default value - change later
+                            'contentLink': 'contentLink'
+                        }, first);
+                        $(this).dialog("destroy");
+
+                        updateQueueUI();
+
+                        clickPost(uuid);
+                        $("#newPostTitle").val("");
+                    }
+                }
             }
-        }
+        ]
     });
 };
 
@@ -222,43 +238,52 @@ var newTitlePromptDialog = function () {
         .dialog({
             title: "Warning!",
             'modal': true,
-            buttons: {
-                "Ok": function () {
-                    $(this).dialog("close");
-                    $editDialog.dialog("open");
+            buttons: [
+                {
+                    text: "Ok",
+                    click: function() {
+                        $(this).dialog("close");
+                        $editDialog.dialog("open");
+                    }
                 }
-            }
+            ]
         });
     $emptyWarning.dialog("close");
 
     var $editDialog = $("#editTitleDialog").dialog({
         'modal': true,
-        buttons: {
-            "Cancel": function () {
-                $(this).dialog("destroy");
-                $("#editTitleInput").val("");
-            },
-            "Ok": function () {
-                var title = $("#editTitleInput").val();
-                if (!title) {
-                    $(this).dialog("close");
-                    $emptyWarning.dialog("open");
-                }
-                else {
-                    var uuid = $('.post.selected').data('uuid');
-                    var post = $('#' + uuid);
-                    post.data('title', title);
-
-                    // TODO: ajax
-
-                    $("#selectedTitleContent").html(title);
-                    $(".post.selected .postTitle").html(title);
-
-                    $(this).dialog("close");
+        buttons: [
+            {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("destroy");
                     $("#editTitleInput").val("");
                 }
+            },
+            {
+                text: "Ok",
+                className: "clickOnEnter",
+                click: function() {
+                    var title = $("#editTitleInput").val();
+                    if (!title) {
+                        $(this).dialog("close");
+                        $emptyWarning.dialog("open");
+                    } else {
+                        var uuid = $('.post.selected').data('uuid');
+                        var post = $('#' + uuid);
+                        post.data('title', title);
+
+                        // TODO: ajax
+
+                        $("#selectedTitleContent").html(title);
+                        $(".post.selected .postTitle").html(title);
+
+                        $(this).dialog("close");
+                        $("#editTitleInput").val("");
+                    }
+                }
             }
-        }
+        ]
     });
     $editDialog.dialog("open");
 
@@ -288,6 +313,7 @@ var newTitlePromptDialog = function () {
 //------Functions attached to html elements-----
 
 $(document).ready(function () {
+    $("#IEWarning").hide(); //Warning will only show up if scripts are blocked
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function () {
@@ -327,6 +353,8 @@ $(document).ready(function () {
                 newPostConfirm();
             }
         }
+
+        (postQueue.length == 0) ? $("#endOrBeginning").hide() : $("#endOrBeginning").show();
     });
 
     //When 'cancel' in 'new post' dialog is clicked
@@ -398,12 +426,18 @@ $(document).ready(function () {
                 'typeOfContent': 'type1',
                 'content': $("#postContent").val()
             });
-            alertDialog("", "Saved!");
+            alertDialog("Saved!", "Post saved!");
         }
     });
 
     //When you click 'edit' beside the title, prompts you to change the post title
     $(document).on("click", "#editTitle", function () {
         newTitlePromptDialog();
+    });
+
+    $(".enableEnterPress").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(".clickOnEnter").click();
+        }
     });
 });
