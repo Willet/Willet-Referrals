@@ -128,7 +128,6 @@ var clickPost = function(post) {
         $("#postContent").val(content);
     }
     //Actions to do regardless of whether post is first in queue
-    $("#postSave").attr("title", uuid);
     $("#selectedTitleContent").html(post.title);
 };
 
@@ -149,11 +148,14 @@ var alertDialog = function(alertTitle, content) {
         .dialog({
             autoOpen: false,
             title: alertTitle,
-            buttons: {
-                "Ok": function() {
-                    $(this).dialog("destroy");
+            buttons: [
+                {
+                    text: "Ok",
+                    click: function() {
+                        $(this).dialog("destroy");
+                    }
                 }
-            }
+            ]
         });
     
     $dialog.dialog('open');
@@ -166,15 +168,22 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
         .dialog({
             autoOpen: false,
             title: confirmTitle,
-            buttons: {
-                "Cancel": function() {
-                    $(this).dialog("destroy");
+            buttons: [
+                {
+                    text: "Cancel",
+                    click: function() {
+                        $(this).dialog("destroy");
+                    }
                 },
-                "Ok": function() {
-                    $(this).dialog("destroy");
-                    ifOk();
+                {
+                    text: "Ok",
+                    className: "clickOnEnter",
+                    click: function() {
+                        $(this).dialog("destroy");
+                        ifOk();
+                    }
                 }
-            }
+            ]
         });
         
     $dialog.dialog('open');
@@ -182,12 +191,18 @@ var confirmDialog = function(confirmTitle, content, ifOk) {
 
 var newPostConfirm = function() {
     $("#newPostDialog").dialog({
-        buttons: {
-                "Cancel": function() {
+        buttons: [
+            {
+                text: "Cancel",
+                click: function() {
                     $(this).dialog("destroy");
                     $("#newPostTitle").val("");
-                },
-                "Ok": function() {
+                }
+            },
+            {
+                text: "Ok",
+                className: "clickOnEnter",
+                click: function() {
                     var title = $("#newPostTitle").val();
                     var first = $('input[name=first]:checked').val();
                     if ($("input[name=first]:checked").val() == "first") {
@@ -225,7 +240,8 @@ var newPostConfirm = function() {
                         $("#newPostTitle").val("");
                     }
                 }
-        }
+            }
+        ]
     });
 };
 
@@ -234,42 +250,52 @@ var newTitlePromptDialog = function() {
         .html("You can't give a post an empty title! Try again.")
         .dialog({
             title: "Warning!",
-            buttons: {
-                "Ok": function() {
-                    $(this).dialog("close");
-                    $editDialog.dialog("open");
+            buttons: [
+                {
+                    text: "Ok",
+                    click: function() {
+                        $(this).dialog("close");
+                        $editDialog.dialog("open");
+                    }
                 }
-            }
+            ]
         });
     $emptyWarning.dialog("close");
     
     var $editDialog = $("#editTitleDialog").dialog({
-        buttons: {
-            "Cancel": function() {
-                $(this).dialog("destroy");
-                $("#editTitleInput").val("");
-            },
-            "Ok": function() {
-                var title = $("#editTitleInput").val();
-                if (title.length === 0) {
-                    $(this).dialog("close");
-                    $emptyWarning.dialog("open");
-                }
-                else {
-                    var id = $(".post.selected").attr('id');
-				    for (var i = 0; i < postQueue.length; i++) {
-					    if (postQueue[i].uuid == id) {
-						    var post = postQueue[i];
-					    }
-				    }
-                    post.title = title;
-                    $("#selectedTitleContent").html(post.title);
-                    $(".post.selected .postTitle").html(post.title);
-                    $(this).dialog("close");
+        buttons: [
+            {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("destroy");
                     $("#editTitleInput").val("");
                 }
+            },
+            {
+                text: "Ok",
+                className: "clickOnEnter",
+                click: function() {
+                    var title = $("#editTitleInput").val();
+                    if (title.length === 0) {
+                        $(this).dialog("close");
+                        $emptyWarning.dialog("open");
+                    }
+                    else {
+                        var id = $(".post.selected").attr('id');
+				        for (var i = 0; i < postQueue.length; i++) {
+					        if (postQueue[i].uuid == id) {
+						        var post = postQueue[i];
+					        }
+				        }
+                        post.title = title;
+                        $("#selectedTitleContent").html(post.title);
+                        $(".post.selected .postTitle").html(post.title);
+                        $(this).dialog("close");
+                        $("#editTitleInput").val("");
+                    }
+                }
             }
-        }
+        ]
     });
     $editDialog.dialog("open");
     
@@ -278,6 +304,8 @@ var newTitlePromptDialog = function() {
 //------Functions attached to html elements-----
 
 $(document).ready(function() {
+    
+    $("#IEWarning").hide(); //Warning will only show up if scripts are blocked *cough* IE *cough cough*
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function() {
@@ -304,7 +332,7 @@ $(document).ready(function() {
                 }
             }
             
-            if (post.content !== $("#postContent").val() || post.typeOfContent !== $("#postKind option:selected").val()) {
+            if (post.content !== $("#postContent").val()) {
                 var ifOk = function() {
                     $("#postContent").val(post.content);
                     if ($("#postContent").val() === "") {
@@ -356,12 +384,11 @@ $(document).ready(function() {
                 var newPost = postQueue[i];
                 
                 if (postQueue.length > 1) {
-                    var typeOfContent = $("#postKind option:selected").val();
                     var content = $("#postContent").val();
                     if (oldPost.content === "" && content === "") {
                         alertDialog("Warning!", "Give your current post some content first!");
                     }
-                    else if ((oldPost.typeOfContent != typeOfContent) || (oldPost.content != content)) {
+                    else if (oldPost.content != content) {
                         var ifOk = function() {
                             $("#postContent").val(oldPost.content);
                             if (oldPost.content !== "") {
@@ -428,7 +455,7 @@ $(document).ready(function() {
             alertDialog("Warning!", "Give your current post some content first!");
         }
         else {
-            var uuid = $(this).data("uuid");
+            var uuid = $(".post.selected").attr("id");
             var post = "";
             for (var i = 0; i < postQueue.length; i++) {
                 if (uuid == postQueue[i].uuid) {
@@ -436,7 +463,7 @@ $(document).ready(function() {
                 }
             }
                 
-            post.typeOfContent = $("#postKind option:selected").val();
+            //post.typeOfContent = $("#postKind option:selected").val();
             post.content = $("#postContent").val();
             
             alertDialog("Saved!", "");
@@ -456,6 +483,15 @@ $(document).ready(function() {
     $(document).on("mouseleave", ".postDelete", function() {
         var uuid = $(this).data("uuid");
         $("#delete" + uuid).css("background-position", "bottom");
+    });
+    
+    //Trying to make it so that pressing "enter" in a dialog clicks the "ok" button in that dialog
+    //eg press 'enter' in 'New Post' dialog title area should click 'ok', but currently it does not
+    //Not concerned about this for MVP
+    $(".enableEnterPress").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $(".clickOnEnter").click();
+        }
     });
 
 });
