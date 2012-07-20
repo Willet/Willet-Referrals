@@ -21,11 +21,12 @@
                                         </p>
                                     {% endif %}
                                     <img src="{{ prod.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                                        style="text-align: center;
-                                            margin: 0 auto;
-                                            display: block;
-                                            border: 1px silver solid;
-                                            padding: 4px;"
+                                         alt="product image"
+                                         style="text-align: center;
+                                                margin: 0 auto;
+                                                display: block;
+                                                border: 1px silver solid;
+                                                padding: 4px;"
                                         width="200" />
                                     <p><a href="{{ prod.resource_url }}">
                                         Get this item
@@ -39,7 +40,8 @@
                             </p>
 
                             <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                                style="text-align: center"
+                                 alt="product image"
+                                 style="text-align: center; border: 1px silver solid;"
                                 width="200" />
                             <p>
                                 <a href="{{ products.0.resource_url }}">
@@ -63,7 +65,8 @@
                                        margin: 0 auto;
                                        text-align: center;">
                             <img src="{{ products.0.images.0|default:"/static/imgs/noimage-willet.png" }}"
-                                 style="max-height: 25%; max-width: 25%; text-align: center" />
+                                 alt="product image"
+                                 style="max-height: 25%; max-width: 25%; text-align: center;border: 1px silver solid;" />
                         </center>
                         <p>
                             <strong>{{ yesses }} out of
