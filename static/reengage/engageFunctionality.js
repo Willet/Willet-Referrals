@@ -42,12 +42,15 @@ var createNewPost = function (params, first) {
     });
     postObj  // put the thing on the page.
         .data({
+            'uuid': params.uuid,
             'title': params.title,
             'content': params.content,
             'typeOfContent': params.typeOfContent,
             'contentLink': params.contentLink
         })
-        .click(clickPost)
+        .click(function () {
+            clickPost(params.uuid);
+        })
         .append($('<div />', {
             'class': 'postDate',
             'html': '2012-04-31' // getDate(i)
@@ -67,6 +70,8 @@ var createNewPost = function (params, first) {
 
     postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
     updateQueueUI();
+
+    return params.uuid;
 };
 
 var updateQueueUI = function (selectedPostUUID) { //Outputs post titles and dates in replaceWithPosts, aka main box area
@@ -151,7 +156,7 @@ var removePost = function (uuid) { //Looks through queue for post of this uuid a
 
 // var clickPost = function (post) {
 var clickPost = function (uuid) {
-    var post = $(this) || $("#" + uuid);
+    var post = $("#" + uuid);
 
     var content = post.data('content');
     var uuid = post.data('uuid');
@@ -174,8 +179,10 @@ var clickPost = function (uuid) {
         $("#postContent").val(content);
     }
     //Actions to do regardless of whether post is first in queue
-    $("#postSave")
-        .attr("title", uuid)
+    console.log($("#postSave"));
+
+    $("#postSave").eq(0)
+        // .attr("title", uuid)
         .data('uuid', uuid);
     $("#selectedTitleContent").html(post.title);
 };
@@ -237,17 +244,18 @@ var newPostConfirm = function() {
                     }
                     else {
                         //Create post, make lightbox disappear, update queue
-                        createNewPost({
+                        var uuid = createNewPost({
                             'uuid': parseInt(Math.random() * 100000000),
                             'title': title,
                             'content': 'Example content',
-                            'typeOfContent': 'typeOfContent',
+                            'typeOfContent': 'type1',  //This is the default value - change later
                             'contentLink': 'contentLink'
                         }, first);
                         $(this).dialog("destroy");
 
                         updateQueueUI();
 
+                        /*
                         //Write queue, select newly created post
                         if (first) {
                             var uuid = postQueue()[0].uuid;
@@ -258,8 +266,9 @@ var newPostConfirm = function() {
                         }
 
                         post.typeOfContent = "type1" //This is the default value - change later
+                        */
 
-                        clickPost($(post).data('uuid'));
+                        clickPost(uuid);
                         $("#newPostTitle").val("");
                     }
                 }
@@ -268,8 +277,7 @@ var newPostConfirm = function() {
 };
 
 var newTitlePromptDialog = function() {
-    var $emptyWarning = $("<div></div>")
-        .html("You can't give a post an empty title! Try again.")
+    var $emptyWarning = $("<div>You can't give a post an empty title! Try again.</div>")
         .dialog({
             title: "Warning!",
             buttons: {
@@ -294,15 +302,13 @@ var newTitlePromptDialog = function() {
                     $emptyWarning.dialog("open");
                 }
                 else {
-                    var id = $(".post.selected").attr('id');
-                    for (var i = 0; i < postQueue().length; i++) {
-                        if (postQueue()[i].uuid == id) {
-                            var post = postQueue()[i];
-                        }
-                    }
-                    post.title = title;
-                    $("#selectedTitleContent").html(post.title);
-                    $(".post.selected .postTitle").html(post.title);
+                    var uuid = $('.post.selected').data('uuid');
+                    var post = $('#' + uuid);
+                    post.data('title', title);
+
+                    $("#selectedTitleContent").html(title);
+                    $(".post.selected .postTitle").html(title);
+
                     $(this).dialog("close");
                     $("#editTitleInput").val("");
                 }
@@ -351,22 +357,18 @@ $(document).ready(function() {
         //make sure that currently selected post was given content, that is, if queue.length > 0
         //also make sure changes from current post were saved
 
-        if (postQueue().length === 0) {
+        var posts = $('.post');
+
+        if (!posts.length) {
             $("#newTitleWarning").hide();
             newPostConfirm();
-        }
-        else {
-            var uuid = $(".post.selected").attr('id');
-            for (var i = 0; i < postQueue().length; i++) {
-                if (postQueue()[i].uuid == uuid) {
-                    var post = postQueue()[i];
-                }
-            }
+        } else {
+            var activePost = $(".post.selected");
 
-            if (post.content !== $("#postContent").val() ||
-                post.typeOfContent !== $("#postKind option:selected").val()) {
+            if (activePost.data('content') !== $("#postContent").val() ||
+                activePost.data('typeOfContent') !== $("#postKind option:selected").val()) {
                 var ifOk = function() {
-                    $("#postContent").val(post.content);
+                    $("#postContent").val(activePost.data('content'));
                     if ($("#postContent").val() === "") {
                         alertDialog("Warning!", "Give your current post some content first!");
                     }
@@ -375,11 +377,9 @@ $(document).ready(function() {
                     }
                 };
                 confirmDialog("Confirm", "Unsaved changes. Discard changes?", ifOk);
-            }
-            else if (post.content === "") {
+            } else if (!activePost.data('content')) {
                 alertDialog("Warning!", "Give your current post some content first!");
-            }
-            else {
+            } else {
                 newPostConfirm();
             }
         }
@@ -402,41 +402,40 @@ $(document).ready(function() {
     //First checks to make sure you've saved any changes to the right
     $(document).on("click", ".post", function() {
         //newuuid is uuid of post just clicked, olduuid is uuid of post previously selected
-        var newuuid = $(this).attr('id');
-        var olduuid = $(".post.selected").attr('id');
+        var newPost = $(this);
+        var oldPost = $(".post.selected");
+        var posts = $(".post");
 
-        for (var i = 0; i < postQueue().length; i++) {
-            if (olduuid == postQueue()[i].uuid) {
-                var oldPost = postQueue()[i];
+//         for (var i = 0; i < postQueue().length; i++) {
+//             if (olduuid == postQueue()[i].uuid) {
+//                 var oldPost = postQueue()[i];
+//             }
+//         }
+
+        if (posts.length > 1) {
+            var typeOfContent = $("#postKind option:selected").val();
+            var content = $("#postContent").val();
+            if (!oldPost.data('content') && !content) {
+                alertDialog("Warning!", "Give your current post some content first!");
+            } else if ((oldPost.data('typeOfContent') != typeOfContent) ||
+                       (oldPost.data('content') != content)) {
+                confirmDialog(
+                    "Confirm", "You have unsaved changes. Discard changes?",
+                    function () {
+                        $("#postContent").val(oldPost.content);
+                        if (oldPost.content !== "") {
+                            clickPost($(newPost).data('uuid'));
+                        }
+                        else {
+                            alertDialog("Warning!", "Give your current post some content first!");
+                        }
+                    }
+                );
+            } else {
+                clickPost(newPost.data('uuid'));
             }
-        }
-
-        for (var i = 0; i < postQueue().length; i++) {
-            if (newuuid == postQueue()[i].uuid) {
-                var newPost = postQueue()[i];
-
-                if (postQueue().length > 1) {
-                    var typeOfContent = $("#postKind option:selected").val();
-                    var content = $("#postContent").val();
-                    if (oldPost.content === "" && content === "") {
-                        alertDialog("Warning!", "Give your current post some content first!");
-                    }
-                    else if ((oldPost.typeOfContent != typeOfContent) || (oldPost.content != content)) {
-                        var ifOk = function() {
-                            $("#postContent").val(oldPost.content);
-                            if (oldPost.content !== "") {
-                                clickPost($(newPost).data('uuid'));
-                            }
-                            else {
-                                alertDialog("Warning!", "Give your current post some content first!");
-                            }
-                        };
-                        confirmDialog("Confirm", "You have unsaved changes. Discard changes?", ifOk);
-                    }
-                    else clickPost($(newPost).data('uuid'));
-                    }
-                else clickPost($(newPost).data('uuid'));
-            }
+        } else {
+            clickPost(newPost.data('uuid'));
         }
     });
 
@@ -487,7 +486,7 @@ $(document).ready(function() {
         if (!$("#postContent").val()) {
             alertDialog("Warning!", "Give your current post some content first!");
         } else {
-            var uuid = $(this).data("uuid");
+            var uuid = $('.post.selected').data("uuid");
             console.log('got postSave uuid of ' + uuid);
             $('#' + uuid).data({
                 'typeOfContent': $("#postKind option:selected").val(),
