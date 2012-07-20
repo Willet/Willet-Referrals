@@ -12,10 +12,21 @@
         {% block styles %}{% endblock styles %}
 
         <script type="text/javascript">
+            {# repeated paths to let vendor-based templates load either one #}
             {% include "../../sibt/templates/js/willet.mediator.js" %}
+            {% include "../../../sibt/templates/js/willet.mediator.js" %}
+
             {% include "../../sibt/templates/js/willet.debug.js" %}
+            {% include "../../../sibt/templates/js/willet.debug.js" %}
+
             {% include "../../sibt/templates/js/willet.loader.js" %}
+            {% include "../../../sibt/templates/js/willet.loader.js" %}
+
             {% include "../../sibt/templates/js/willet.analytics.js" %}
+            {% include "../../../sibt/templates/js/willet.analytics.js" %}
+
+            {% include "../../sibt/templates/js/willet.sibtShareMethods.js" %}
+            {% include "../../../sibt/templates/js/willet.sibtShareMethods.js" %}
         </script>
         {% if not embed %}{# intentionally left blank #}{% else %}
             <style>

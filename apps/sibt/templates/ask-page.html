@@ -42,7 +42,8 @@
         </style>
 
         <!-- Add styles here! Try to reuse as much of ask.css as possible -->
-        {% block styles %}{% endblock styles %}
+        {% block styles %}
+        {% endblock styles %}
     </head>
     <body>
 
@@ -51,26 +52,26 @@
                 <div id="oem_panel" class="width">
                     <img id="sibt_people" alt="Hippie faces"
                          src="/static/sibt/imgs/happy-people-245x120.png"
-                         style="float: right; margin: -25px 40px 0 0" />
-                    <h1>{{ client.name|default:"Ask Trusted Friends" }}</h1>
+                         style="float: right; margin: -7px 40px 0 0" />
+                    <h1>{{ client.name|default:"Help me decide!" }}</h1>
+                    <p class="subtitle">Ask your trusted friends for advice</p>
                 </div>
             </header>
             <div id="main_content" class="width">
-                <p style="margin: 36px 0 -24px 0">
-                    Ask your trusted friends for advice!
+                <p class="cta">
                     Choose two products for them to vote on:
                 </p>
                 <div class="invisible error">Please select two products :)</div>
                 <section id="selected_products">
                     <span class="static selected item">
                         <span class="selected target"
-                              style="background-image:url('/static/sibt/imgs/choice-a.png');">
+                              style="background-image:url('/static/sibt/imgs/choice-a2.png');">
                             <img class="selected product" />
                         </span>
                     </span>
                     <span class="static selected item">
                         <span class="selected target"
-                              style="background-image:url('/static/sibt/imgs/choice-b.png');">
+                              style="background-image:url('/static/sibt/imgs/choice-b2.png');">
                             <img class="selected product" />
                         </span>
                     </span>
@@ -92,7 +93,7 @@
                     </span>
                 </section>
                 <section id="available_products">
-                    <img alt="drag" src="/static/imgs/drag-and-drop-upward-120x75.png"
+                    <img alt="drag" src="/static/imgs/drag-and-drop-upward2-120x75.png"
                          style="position: absolute;
                                 top: -70px;
                                 left: 150px;
