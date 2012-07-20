@@ -31,6 +31,7 @@ def session_active(fn):
 
     return wrapped
 
+
 def get_queue():
     """Obtains a queue using the provided shop url"""
     session = get_current_session()
@@ -53,6 +54,7 @@ def get_post(uuid):
 
     post = ReEngagePost.all().filter(" uuid = ", uuid).get()
     return post
+
 
 class ReEngageQueueJSONHandler(URIHandler):
     """A resource for accessing queues using JSON"""
@@ -92,10 +94,12 @@ class ReEngageQueueJSONHandler(URIHandler):
         content = self.request.get("content")
         method  = self.request.get("method", "append")
 
+        uuid = generate_uuid(16)
         post = ReEngagePost(title=title,
                             content=content,
                             network=Facebook.__name__,
-                            uuid=generate_uuid(16))
+                            uuid=uuid,
+                            key_name=uuid)
         post.put()
 
         if method == "append":
