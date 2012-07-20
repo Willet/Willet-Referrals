@@ -235,12 +235,12 @@ class ReEngageQueue(Model):
 
     def prepend(self, obj):
         """Puts a post at the front of the list"""
-        self.queued.insert(0, obj.uuid)
+        self.queued.insert(0, unicode(obj.uuid))
         self.put()
 
     def append(self, obj):
         """Puts a post at the end of the list"""
-        self.queued.append(obj.uuid)
+        self.queued.append(unicode(obj.uuid))
         self.put()
 
     def remove_all(self):
@@ -258,7 +258,7 @@ class ReEngageQueue(Model):
         """Remove any objects that have been deleted"""
         expired = []
         for uuid in self.queued:
-            model_object = db.get(uuid)
+            model_object = ReEngagePost.get(uuid)
             if not model_object:
                 expired.append(uuid)
 
@@ -277,14 +277,14 @@ class ReEngageQueue(Model):
         posts = []
         for uuid in self.queued:
             try:
-                posts.append(to_dict(db.get(uuid)))
+                posts.append(to_dict(ReEngagePost.get(uuid)))
             except:
                 continue
 
         expired = []
         for uuid in self.expired:
             try:
-                expired.append(to_dict(db.get(uuid)))
+                expired.append(to_dict(ReEngagePost.get(uuid)))
             except:
                 continue
 
