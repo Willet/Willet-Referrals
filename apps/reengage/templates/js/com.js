@@ -146,3 +146,20 @@ var loadPosts = function (queue, callback) {
         callback
     );
 };
+
+var createPost = function (title, content, first) {
+    // creates a post on the server. reloads the queue.
+    $.ajax({
+        url: '{% url ReEngageQueueJSONHandler %}',
+        type: "POST",
+        dataType: 'json',
+        data: {
+            'title': title,
+            'content': content,
+            'method': (first? 'append' : 'prepend')
+        },
+        success: function () {
+            loadQueues(client.apps[0]);
+        }
+    });
+};
