@@ -5,11 +5,6 @@
  *
  */
 
-var postQueue = function () {
-    //The queue of posts to be made
-    return $('.post');
-};
-
 var randomUUID = function () {
     return parseInt(Math.random() * 100000000);
 };
@@ -290,26 +285,6 @@ var newTitlePromptDialog = function () {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------Functions attached to html elements-----
 
 $(document).ready(function () {
@@ -354,7 +329,7 @@ $(document).ready(function () {
             }
         }
 
-        (postQueue.length == 0) ? $("#endOrBeginning").hide() : $("#endOrBeginning").show();
+        (!$('.post').length) ? $("#endOrBeginning").hide() : $("#endOrBeginning").show();
     });
 
     //When 'cancel' in 'new post' dialog is clicked

@@ -37,14 +37,16 @@ class AppJSONDynamicLoader(URIHandler):
         """See class docstring."""
         app = App.get(self.request.get('app_uuid'))
         if app:
+            queues1 = getattr(app, 'queues', [None])  # count of 1
+            queues2 = getattr(app, 'queues', [])  # count of 0
             self.respondJSON({
                 'uuid': app.uuid,
                 'client_uuid': app.client.uuid,
                 'url': getattr(app, 'store_url', ''),
                 'name': getattr(app, 'name', ''),
                 'class': app.__class__.__name__,
-                'queue': getattr(getattr(app, 'queues', [None])[0], 'uuid', ''),
-                'queues': [x.uuid for x in getattr(app, 'queues', [])]
+                'queue': getattr(queues1[0], 'uuid', ''),
+                'queues': [x.uuid for x in queues2)]
             }, response_key="app")
             return
 
@@ -62,14 +64,16 @@ class AppJSONDynamicLoader(URIHandler):
                 if app and filter_class and not filter_class in allowed:
                     continue  # this app is not of the requested class.
 
+                queues1 = getattr(app, 'queues', [None])  # count of 1
+                queues2 = getattr(app, 'queues', [])  # count of 0
                 apps_obj.append({
                     'uuid': app.uuid,
                     'client_uuid': app.client.uuid,
                     'url': getattr(app, 'store_url', ''),
                     'name': getattr(app, 'name', ''),
                     'class': app.__class__.__name__,
-                    'queue': getattr(getattr(app, 'queues', [None])[0], 'uuid', ''),
-                    'queues': [x.uuid for x in getattr(app, 'queues', [])]
+                    'queue': getattr(queues1[0], 'uuid', ''),
+                    'queues': [x.uuid for x in queues2)]
                 })
             if len(apps_obj):
                 self.respondJSON(apps_obj, response_key="apps")
