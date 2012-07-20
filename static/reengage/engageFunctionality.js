@@ -351,6 +351,8 @@ $(document).ready(function() {
                 newPostConfirm();
             }
         }
+        
+        (postQueue.length == 0) ? $("#endOrBeginning").hide() : $("#endOrBeginning").show();
     });
     
     //When 'cancel' in 'new post' dialog is clicked
