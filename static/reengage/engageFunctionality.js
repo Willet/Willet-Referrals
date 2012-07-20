@@ -2,7 +2,11 @@ var postQueue = function () {
     //The queue of posts to be made
     return $('.post');
 };
-var postuuid = 0; //Each post has a unique uuid - hack for now, generate actual ids later
+// var postuuid = 0; //Each post has a unique uuid - hack for now, generate actual ids later
+
+var randomUUID = function () {
+    return parseInt(Math.random() * 100000000);
+};
 
 // typedef struct {
 //     str uuid;
@@ -169,15 +173,8 @@ var clickPost = function (uuid) {
         $("#replaceTextWithPostContent").hide();
         $("#postContentContainer").show();
         $("#editTitle").show();
-
-        $("#postKind option[value='type1']").attr("selected", "selected");
-        $("#postContent").val(content);
     }
-    //If not first in queue, only replace necessary values
-    else {
-        $("#postKind option[value='" + typeOfContent + "']").attr("selected", "selected");
-        $("#postContent").val(content);
-    }
+    $("#postContent").html(content);
     //Actions to do regardless of whether post is first in queue
     console.log($("#postSave"));
 
@@ -245,7 +242,7 @@ var newPostConfirm = function() {
                     else {
                         //Create post, make lightbox disappear, update queue
                         var uuid = createNewPost({
-                            'uuid': parseInt(Math.random() * 100000000),
+                            'uuid': randomUUID(),
                             'title': title,
                             'content': 'Example content',
                             'typeOfContent': 'type1',  //This is the default value - change later
@@ -365,8 +362,7 @@ $(document).ready(function() {
         } else {
             var activePost = $(".post.selected");
 
-            if (activePost.data('content') !== $("#postContent").val() ||
-                activePost.data('typeOfContent') !== $("#postKind option:selected").val()) {
+            if (activePost.data('content') !== $("#postContent").val()) {
                 var ifOk = function() {
                     $("#postContent").val(activePost.data('content'));
                     if ($("#postContent").val() === "") {
@@ -413,20 +409,18 @@ $(document).ready(function() {
 //         }
 
         if (posts.length > 1) {
-            var typeOfContent = $("#postKind option:selected").val();
             var content = $("#postContent").val();
+            console.log(content);
             if (!oldPost.data('content') && !content) {
                 alertDialog("Warning!", "Give your current post some content first!");
-            } else if ((oldPost.data('typeOfContent') != typeOfContent) ||
-                       (oldPost.data('content') != content)) {
+            } else if (oldPost.data('content') != content) {
                 confirmDialog(
                     "Confirm", "You have unsaved changes. Discard changes?",
                     function () {
                         $("#postContent").val(oldPost.content);
                         if (oldPost.content !== "") {
-                            clickPost($(newPost).data('uuid'));
-                        }
-                        else {
+                            clickPost(newPost.data('uuid'));
+                        } else {
                             alertDialog("Warning!", "Give your current post some content first!");
                         }
                     }
@@ -444,38 +438,41 @@ $(document).ready(function() {
             var uuid = $(this).data("uuid");
             var yes = confirmDialog("Confirm", "Are you sure you want to delete this post?");
 
-            var ifOk = function() {
-                var x = 0;
-                for (var i = 0; i < postQueue().length; i++) {
-                    if (uuid == postQueue()[i].uuid) {
-                        postQueue().splice(i, 1);
+            var posts = postQueue();
 
-                        if (postQueue().length > 0) { //If queue isn't empty
-                            if (postQueue().length === 1) { //If queue only has one post left in it
-                                x = 0;
-                            }
-                            else if (postQueue().length === i) { //If deleted post was last in queue
-                                x = i - 1;
-                            }
-                            else {
-                                x = i;
-                            }
-                        }
-                    }
-                }
+            var ifOk = function() {
+//                 var x = 0;
+//                 for (var i = 0; i < postQueue().length; i++) {
+//                     if (uuid == postQueue()[i].uuid) {
+//                         postQueue().splice(i, 1);
+//
+//                         if (postQueue().length > 0) { //If queue isn't empty
+//                             if (postQueue().length === 1) { //If queue only has one post left in it
+//                                 x = 0;
+//                             }
+//                             else if (postQueue().length === i) { //If deleted post was last in queue
+//                                 x = i - 1;
+//                             }
+//                             else {
+//                                 x = i;
+//                             }
+//                         }
+//                     }
+//                 }
+                $('#' + uuid).remove();
 
                 updateQueueUI();
 
                 //If there are posts remaining, select post identified by var x in above looping; otherwise remove post content form
-                if (postQueue().length > 0) {
-                    clickPost($(postQueue()[x]).data('uuid'));
-                }
-                else {
-                    $("#replaceTextWithPostContent").show();
-                    $("#postContentContainer").hide();
-                    $("#editTitle").hide();
-                    $("#selectedTitleContent").html("Post title here");
-                }
+//                 if (postQueue().length > 0) {
+//                     clickPost($(postQueue()[x]).data('uuid'));
+//                 }
+//                 else {
+//                     $("#replaceTextWithPostContent").show();
+//                     $("#postContentContainer").hide();
+//                     $("#editTitle").hide();
+//                     $("#selectedTitleContent").html("Post title here");
+//                 }
             }
 
             confirmDialog("Confirm", "Are you sure you want to delete this post?", ifOk);
@@ -489,7 +486,7 @@ $(document).ready(function() {
             var uuid = $('.post.selected').data("uuid");
             console.log('got postSave uuid of ' + uuid);
             $('#' + uuid).data({
-                'typeOfContent': $("#postKind option:selected").val(),
+                'typeOfContent': 'type1',
                 'content': $("#postContent").val()
             });
             alertDialog("Saved!", "");
