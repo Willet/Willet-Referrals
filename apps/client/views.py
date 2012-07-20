@@ -27,4 +27,5 @@ class ClientJSONDynamicLoader(URIHandler):
             'uuid': client.uuid,
             'url': getattr(client, 'url', getattr(client, 'domain', '')),
             'name': getattr(client, 'name', getattr(client, 'store_name', '')),
+            'apps': [x.uuid for x in getattr(client, 'apps', [])]
         }))
