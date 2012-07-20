@@ -145,7 +145,7 @@ $(document).ready(function () {
         loadApps(client, function () {
             loadQueues(apps[0], function () {
 //                loadPosts(queues[0], function(){});
-            })
-        })
+            });
+        });
     });
 });
