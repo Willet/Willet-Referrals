@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html>
 
 <head>
@@ -29,7 +31,15 @@
     </div>
 </div>
 
-<div id="body"> 
+<div id="body"> <div id="innerBody">
+
+	<!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
+	<div id="IEWarning">
+		<br>
+		<b>To use Engage, please allow the scripts on the page to run. </b><br><br>
+		Our website is completely secure.<br><br>
+		For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
+	</div>
     
     <div id="break">
         <div class="button" id="newPost">
@@ -148,12 +158,12 @@
         
     </div>
     
-</div>
+</div></div>
 
 <!--Dialogs-->
 <div id="newPostDialog" title="New Post">
     New post name: <br><br>
-        <input type="text" id="newPostTitle" value="" /><br><br>
+        <input type="text" id="newPostTitle" class="enableEnterPress" maxLength="50" value="" /><br><br>
     Should this post be added to the end or the beginning of the queue? <br><br>
         <input type="radio" name="first" value="last" checked="checked" />End<br>
         <input type="radio" name="first" value="first" />Beginning<br><br>
@@ -161,7 +171,7 @@
 
 <div id="editTitleDialog" title="Edit Title">
 	Enter a new title for your post: <br><br>
-		<input type="text" id="editTitleInput" value="" /><br><br>
+		<input type="text" id="editTitleInput" class="enableEnterPress" maxLength="50" value="" /><br><br>
 </div>
 
 
