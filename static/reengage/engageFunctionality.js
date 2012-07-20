@@ -60,11 +60,7 @@ var createNewPost = function (params, first) {
         }))
         .append($('<div />', {
             'id': 'delete' + params.uuid,
-            'class': 'postDelete postDeleteImg',
-            'html': params.title,
-            'css': {
-                'height': '15px'
-            }
+            'class': 'postDelete postDeleteImg'
         }));
 
     postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
@@ -139,6 +135,7 @@ var alertDialog = function (alertTitle, content) {
         .dialog({
             autoOpen: false,
             title: alertTitle,
+            'modal': true,
             buttons: {
                 "Ok": function () {
                     $(this).dialog("destroy");
@@ -156,6 +153,7 @@ var confirmDialog = function (confirmTitle, content, ifOk) {
         .dialog({
             autoOpen: false,
             title: confirmTitle,
+            'modal': true,
             buttons: {
                 "Cancel": function () {
                     $(this).dialog("destroy");
@@ -172,6 +170,7 @@ var confirmDialog = function (confirmTitle, content, ifOk) {
 
 var newPostConfirm = function () {
     $("#newPostDialog").dialog({
+        'modal': true,
         buttons: {
             "Cancel": function () {
                 $(this).dialog("destroy");
@@ -212,6 +211,7 @@ var newTitlePromptDialog = function () {
     var $emptyWarning = $("<div>You can't give a post an empty title! Try again.</div>")
         .dialog({
             title: "Warning!",
+            'modal': true,
             buttons: {
                 "Ok": function () {
                     $(this).dialog("close");
@@ -222,6 +222,7 @@ var newTitlePromptDialog = function () {
     $emptyWarning.dialog("close");
 
     var $editDialog = $("#editTitleDialog").dialog({
+        'modal': true,
         buttons: {
             "Cancel": function () {
                 $(this).dialog("destroy");
@@ -394,15 +395,5 @@ $(document).ready(function () {
     //When you click 'edit' beside the title, prompts you to change the post title
     $(document).on("click", "#editTitle", function () {
         newTitlePromptDialog();
-    });
-
-    $(document).on("mouseenter", ".postDelete", function () {
-        var uuid = $(this).data("uuid");
-        $("#delete" + uuid).css("background-position", "0 0");
-    });
-
-    $(document).on("mouseleave", ".postDelete", function () {
-        var uuid = $(this).data("uuid");
-        $("#delete" + uuid).css("background-position", "bottom");
     });
 });
