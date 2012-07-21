@@ -76,9 +76,12 @@ var loadApps = function (client, callback) {
                     'queues': [],  // you can choose to load it
                 };
                 apps.push(app);
-                loadQueues(false, app.queue);
+                for (var i2 = 0; i2 < app.queues.length; ++i2) {
+                    // load each queue now
+                    loadQueues(app, app.queues[i2]);
+                }
             }
-
+            loadQueues(app, app.queue);
             client.apps = apps;
         },
         callback
@@ -91,31 +94,40 @@ var loadQueues = function (app, queue, callback) {
     ajaxRequest(
         '{% url ReEngageQueueJSONHandler %}',
         {
-            'app_uuid': app.uuid || '', // not used (one-app-one-queue MVP)
-            'queue_uuid': queue.uuid || '' // not used (one-app-one-queue MVP)
+            'app_uuid': (app && app.uuid) || '', // not used (one-app-one-queue MVP)
+            'queue_uuid': (queue && queue.uuid) || '' // not used (one-app-one-queue MVP)
         },
         function (response) {
             // normally returns an array, but not yet
-            var data = [response.queues || []];  // key
+            // console.log('loadQueues succeded');
+
+            var data = [response.queues || {}];  // data is a list of queues
+            // console.log(data);
 
             var queues = [];  // reset
             for (var i = 0; i < data.length; i++) {
+                // console.log(data[i]);
                 var queue = {
+                    // data[i] is a queue
                     'uuid': data[i].uuid,
                     'app': app,  // "owner" in DB
                     'activePosts': data[i].activePosts,  // "queued" in DB
                     'expiredPosts': data[i].expiredPosts  // "expired" in DB
                 };
                 queues.push(queue);
-                loadPosts(queue);
+                // console.log(queues);
+                // console.log(queue.activePosts);
+                // loadPosts(queue);
             }
             app.queues = queues;
+            console.log(app.queues);
         },
         callback
     );
 };
 
 var loadPosts = function (queue, callback) {
+    console.log('loadPosts (queue?uuid=' + queue.uuid + ')');
     // returns nothing.
     ajaxRequest(
         '{% url ReEngageQueueJSONHandler %}',
@@ -147,7 +159,7 @@ var loadPosts = function (queue, callback) {
     );
 };
 
-var createPost = function (title, content, first) {
+var createPost = function (title, content, first, uuid) {
     // creates a post on the server. reloads the queue.
     $.ajax({
         url: '{% url ReEngageQueueJSONHandler %}',
@@ -159,7 +171,34 @@ var createPost = function (title, content, first) {
             'method': (first? 'append' : 'prepend')
         },
         success: function () {
+            alertDialog("", "Post created on server"    );
             loadQueues(client.apps[0]);
+            updateQueueUI();
         }
     });
 };
+
+var deletePost = function (uuid) {
+    // deletes a post from the server. reloads the queue.
+    var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
+              .replace(/__REPLACE__/g, uuid);
+    $.ajax({
+        url: url,
+        type: "DELETE",
+        dataType: 'json',
+        data: {},
+        success: function () {
+            alertDialog("", "Post deleted from server");
+            loadQueues(client.apps[0]);
+            updateQueueUI();
+        }
+    });
+};
+
+setInterval(function () {
+    loadClient();
+    updateQueueUI();
+}, 5000);
+
+loadClient(); // no need to wait for page to load
+updateQueueUI();

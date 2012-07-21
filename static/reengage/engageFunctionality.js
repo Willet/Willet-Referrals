@@ -17,6 +17,39 @@ var randomUUID = function () {
 //     str contentLink;  // link to the post (use unknown)
 // } Post;
 
+var createPostElement = function (post, first) {
+    // given a post object (from the server), render it.
+    var postObj = $('<div />', {
+        'class': 'post',
+        'id': post.uuid,
+    });
+    postObj  // put the thing on the page.
+        .data({
+            'uuid': post.uuid,
+            'title': post.title,
+            'content': post.content,
+            'typeOfContent': post.typeOfContent,
+            'contentLink': post.contentLink
+        })
+        .click(function () {
+            clickPost(post.uuid);
+        })
+        .append($('<div />', {
+            'class': 'postDate',
+            'html': '2012-04-31'
+        }))
+        .append($('<div />', {
+            'class': 'postTitle',
+            'html': post.title
+        }))
+        .append($('<div />', {
+            'id': 'delete' + post.uuid,
+            'class': 'postDelete postDeleteImg'
+        }));
+
+    postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
+};
+
 var createNewPost = function (params, first) {
     // creates a new post on the UI. also sends a request to create a new post on the server.
     // if first, post is put on top of the queue.
@@ -29,36 +62,9 @@ var createNewPost = function (params, first) {
     };
 
     /* TODO: ajax, and if succeeds, ... */
+    createPost(params.title, params.content, first);
+    createPostElement(params, first);
 
-    var postObj = $('<div />', {
-        'class': 'post',
-        'id': params.uuid,
-    });
-    postObj  // put the thing on the page.
-        .data({
-            'uuid': params.uuid,
-            'title': params.title,
-            'content': params.content,
-            'typeOfContent': params.typeOfContent,
-            'contentLink': params.contentLink
-        })
-        .click(function () {
-            clickPost(params.uuid);
-        })
-        .append($('<div />', {
-            'class': 'postDate',
-            'html': '2012-04-31'
-        }))
-        .append($('<div />', {
-            'class': 'postTitle',
-            'html': params.title
-        }))
-        .append($('<div />', {
-            'id': 'delete' + params.uuid,
-            'class': 'postDelete postDeleteImg'
-        }));
-
-    postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
     updateQueueUI();
 
     return params.uuid;
@@ -67,14 +73,24 @@ var createNewPost = function (params, first) {
 var updateQueueUI = function (selectedPostUUID) {
     // Outputs post titles and dates in replaceWithPosts, aka main box area
 
+    var queueArea = $('#replaceHiddenPost'),
+        emptyQueueArea = $('#replaceTextWithPosts'),
+        serverPosts = client.apps[0].queues[0].activePosts;
+
+    // reset the array of posts displayed.
+    queueArea.empty();
+    for (var i = 0; i < serverPosts.length; i++) {
+        createPostElement(serverPosts[i], false);
+    }
+
     //If no posts in queue, suggest making a new post, else write out the posts in the queue
     if ($('.post').length > 0) {
-        $("#replaceHiddenPost").show();
-        $("#replaceTextWithPosts").hide();
+        queueArea.show();
+        emptyQueueArea.hide();
     }
     else {
-        $("#replaceHiddenPost").hide();
-        $("#replaceTextWithPosts").show();
+        queueArea.hide();
+        emptyQueueArea.show();
     }
 
     // reset selection (if the selected post was deleted)

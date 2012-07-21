@@ -207,7 +207,7 @@ class ReEngagePostJSONHandler(URIHandler):
     @session_active
     def put(self, uuid):
         """Update the details of a post"""
-        # Unused, for now
+        # check ReEngageQueueHandler.put for post creation
         self.error(204)
 
     @session_active

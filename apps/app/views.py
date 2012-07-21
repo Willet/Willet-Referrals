@@ -46,7 +46,7 @@ class AppJSONDynamicLoader(URIHandler):
                 'name': getattr(app, 'name', ''),
                 'class': app.__class__.__name__,
                 'queue': getattr(queues1[0], 'uuid', ''),
-                'queues': [x.uuid for x in queues2)]
+                'queues': [x.uuid for x in queues2]
             }, response_key="app")
             return
 
@@ -73,7 +73,7 @@ class AppJSONDynamicLoader(URIHandler):
                     'name': getattr(app, 'name', ''),
                     'class': app.__class__.__name__,
                     'queue': getattr(queues1[0], 'uuid', ''),
-                    'queues': [x.uuid for x in queues2)]
+                    'queues': [x.uuid for x in queues2]
                 })
             if len(apps_obj):
                 self.respondJSON(apps_obj, response_key="apps")
