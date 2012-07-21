@@ -95,6 +95,7 @@ var updateQueueUI = function (selectedPostUUID) {
 
     // reset selection (if the selected post was deleted)
     $('.post').removeClass('selected');
+    // console.log(selectedPostUUID);
     if (selectedPostUUID) {
         $('#' + selectedPostUUID).addClass('selected');
     } else {
@@ -126,20 +127,21 @@ var updatePostUI = function () {
 };
 
 var removePost = function (uuid) {
-    // removes a post from the UI. TODO: ajax
+    // removes a post from the UI.
     confirmDialog(
         "Confirm",
         "Are you sure you want to delete this post?",
         function () {
+            deletePost(uuid);
             $('#' + uuid).remove();
-            updateQueueUI();
+            // updateQueueUI();
         }
     );
 };
 
 // var clickPost = function (post) {
 var clickPost = function (uuid) {
-    console.log('clicked clickPost');
+    // console.log('clicked clickPost');
 
     var post = $("#" + uuid);
     var uuid = post.data('uuid');
@@ -365,33 +367,33 @@ $(document).ready(function () {
     //First checks to make sure you've saved any changes to the right
     $(document).on("click", ".post", function () {
         //newuuid is uuid of post just clicked, olduuid is uuid of post previously selected
-        var newPost = $(this);
-        var oldPost = $(".post.selected");
         var posts = $(".post");
 
-        if (posts.length > 1) {
-            var content = $("#postContent").val();
-            console.log(content);
-            if (!oldPost.data('content') && !content) {
-                alertDialog("Warning!", "Give your current post some content first!");
-            } else if (oldPost.data('content') != content) {
-                confirmDialog(
-                    "Confirm", "You have unsaved changes. Discard changes?",
-                    function () {
-                        $("#postContent").val(oldPost.content);
-                        if (oldPost.content !== "") {
-                            clickPost(newPost.data('uuid'));
-                        } else {
-                            alertDialog("Warning!", "Give your current post some content first!");
-                        }
-                    }
-                );
-            } else {
-                clickPost(newPost.data('uuid'));
-            }
-        } else {
-            clickPost(newPost.data('uuid'));
+        var newPost = $(this);
+        var oldPost = $(".post.selected");
+        var content = $("#postContent").val();
+
+        if (!oldPost.data('content') && !content) { // if new post has no content
+            alertDialog("Warning!", "Give your current post some content first!");
+            return;
         }
+
+        if (oldPost.data('content') != content) { // if content changed
+            confirmDialog(
+                "Confirm", "You have unsaved changes. Discard changes?",
+                function () {
+                    $("#postContent").val(oldPost.data('content'));
+                    if (oldPost.data('content')) {
+                        clickPost(newPost.data('uuid'));
+                    } else {
+                        alertDialog("Warning!", "Give your current post some content first!");
+                    }
+                }
+            );
+            return;
+        }
+        // updateQueueUI(newPost.data('uuid'));
+        // clickPost(newPost.data('uuid'));
     });
 
     //Delete post
@@ -431,4 +433,10 @@ $(document).ready(function () {
             $(".clickOnEnter").click();
         }
     });
+
+    // start the stuff
+    loadClient();
+    setInterval(function () {
+        updateQueueUI($('.post.selected').data('uuid'));
+    }, 5000);
 });

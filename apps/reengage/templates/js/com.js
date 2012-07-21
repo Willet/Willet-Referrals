@@ -195,10 +195,7 @@ var deletePost = function (uuid) {
     });
 };
 
-setInterval(function () {
-    loadClient();
-    updateQueueUI();
-}, 5000);
-
-loadClient(); // no need to wait for page to load
-updateQueueUI();
+// setInterval(function () {
+//     loadClient();
+//     updateQueueUI();
+// }, 5000);
