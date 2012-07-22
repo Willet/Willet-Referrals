@@ -15,6 +15,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from apps.action.models import Action
+from apps.app.models import App
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link

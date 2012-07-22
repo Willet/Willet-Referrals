@@ -100,7 +100,7 @@ REROUTE_EMAIL = None
 
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 4,
+    'url_count_for_app_and_user': 3,
 }
 
 # controls the number of memcache buckets

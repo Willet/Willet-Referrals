@@ -196,6 +196,9 @@ class AskDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
+            'page_url': page_url,
+
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
@@ -235,9 +238,14 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
+        if vendor:
+            logging.debug('displaying vendor template for %s' % vendor)
         filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
         path = os.path.join('apps/sibt/templates', vendor, filename)
-        if not os.path.exists(path):
+        if os.path.exists(path):
+            logging.warn('using template %s' % path)
+        else:
+            logging.warn('vendor template %s not found; using default.' % path)
             path = os.path.join('apps/sibt/templates', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
