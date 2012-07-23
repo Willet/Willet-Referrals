@@ -14,6 +14,7 @@ var client = {},    // {props}
         // whenever a ajax request is sent, this is used as defaults.
         'dataType': 'json',
         'type': 'GET',
+        'cache': false,
         'headers': {
             'x-requested-with': 'XMLHttpRequest'
         }
@@ -162,16 +163,37 @@ var loadPosts = function (queue, callback) {
 var createPost = function (title, content, first, uuid) {
     // creates a post on the server. reloads the queue.
     $.ajax({
-        url: '{% url ReEngageQueueJSONHandler %}',
-        type: "POST",
-        dataType: 'json',
-        data: {
+        'url': '{% url ReEngageQueueJSONHandler %}',
+        'type': "POST",
+        'dataType': 'json',
+        'data': {
             'title': title,
             'content': content,
-            'method': (first? 'append' : 'prepend')
+            'method': (first? 'prepend' : 'append')
         },
-        success: function () {
-            alertDialog("", "Post created on server"    );
+        'cache': false,
+        'success': function () {
+            // alertDialog("", "Post created on server");
+            loadQueues(client.apps[0]);
+            updateQueueUI();
+        }
+    });
+};
+
+var updatePost = function (uuid, title, content) {
+    // updates a post on the server. reloads the queue.
+    var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
+              .replace(/__REPLACE__/g, uuid);
+    $.ajax({
+        'url': url,
+        'type': 'PUT',
+        'data': {
+            'title': title,
+            'content': content
+        },
+        'cache': false,
+        'success': function () {
+            alertDialog("Saved!", "Post saved!");
             loadQueues(client.apps[0]);
             updateQueueUI();
         }
@@ -183,11 +205,11 @@ var deletePost = function (uuid) {
     var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
               .replace(/__REPLACE__/g, uuid);
     $.ajax({
-        url: url,
-        type: "DELETE",
-        dataType: 'json',
-        data: {},
-        success: function () {
+        'url': url,
+        'type': "DELETE",
+        'dataType': 'json',
+        'data': {},
+        'success': function () {
             alertDialog("", "Post deleted from server");
             loadQueues(client.apps[0]);
             updateQueueUI();

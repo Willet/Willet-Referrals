@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import logging
+import webob
+import urlparse
 
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
@@ -206,9 +208,34 @@ class ReEngagePostJSONHandler(URIHandler):
 
     @session_active
     def put(self, uuid):
-        """Update the details of a post"""
-        # check ReEngageQueueHandler.put for post creation
-        self.error(204)
+        """Update the details of a post.
+
+        check ReEngageQueueHandler.put for post creation.
+        """
+        # http://code.google.com/p/googleappengine/issues/detail?id=170
+        params = urlparse.parse_qsl(self.request.body)
+        self.request.PUT = webob.MultiDict(params)
+        title   = self.request.PUT.get("title")
+        content = self.request.PUT.get("content")
+
+        post = ReEngagePost.get(uuid)
+        logging.warn('%r' % [title, content, post])
+
+        if not post:
+            logging.warn('post not found')
+            self.error(204)  # done
+            return
+
+        if title:
+            logging.warn('updating title')
+            post.title = title
+        if content:
+            logging.warn('updating content')
+            post.content = content
+
+        logging.warn('putting post')
+        post.put()
+        self.response.out.write('OK')
 
     @session_active
     def delete(self, uuid):
@@ -219,7 +246,8 @@ class ReEngagePostJSONHandler(URIHandler):
             self.error(404)
             return
 
-        # TODO: What about Keys that reference this post?
+        # TODO: What about Keys that reference this params = urlparse.parse_qsl(self.request.body)
+        post.clear_cache()
         post.delete()
         self.error(204)
 

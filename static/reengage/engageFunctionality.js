@@ -87,8 +87,7 @@ var updateQueueUI = function (selectedPostUUID) {
     if ($('.post').length > 0) {
         queueArea.show();
         emptyQueueArea.hide();
-    }
-    else {
+    } else {
         queueArea.hide();
         emptyQueueArea.show();
     }
@@ -286,7 +285,7 @@ var newTitlePromptDialog = function () {
                         var post = $('#' + uuid);
                         post.data('title', title);
 
-                        // TODO: ajax
+                        updatePost(uuid, title, '');
 
                         $("#selectedTitleContent").html(title);
                         $(".post.selected .postTitle").html(title);
@@ -398,12 +397,14 @@ $(document).ready(function () {
 
     //Delete post
     $(document).on("click", ".postDelete", function () {
-        var uuid = $(this).data("uuid");
+        var uuid = $(this).parent().attr("id");
+        console.log(this, $(this).parent(), uuid);
         confirmDialog(
             "Confirm", "Are you sure you want to delete this post?",
             function () {
                 $('#' + uuid).remove();
-                updateQueueUI();
+                deletePost(uuid);
+                // updateQueueUI();
             }
         );
     });
@@ -419,7 +420,7 @@ $(document).ready(function () {
                 'typeOfContent': 'type1',
                 'content': $("#postContent").val()
             });
-            alertDialog("Saved!", "Post saved!");
+            updatePost(uuid, '', $("#postContent").val());
         }
     });
 
