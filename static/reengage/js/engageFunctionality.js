@@ -17,6 +17,39 @@ var randomUUID = function () {
 //     str contentLink;  // link to the post (use unknown)
 // } Post;
 
+var createPostElement = function (post, first) {
+    // given a post object (from the server), render it.
+    var postObj = $('<div />', {
+        'class': 'post',
+        'id': post.uuid,
+    });
+    postObj  // put the thing on the page.
+        .data({
+            'uuid': post.uuid,
+            'title': post.title,
+            'content': post.content,
+            'typeOfContent': post.typeOfContent,
+            'contentLink': post.contentLink
+        })
+        .click(function () {
+            clickPost(post.uuid);
+        })
+        .append($('<div />', {
+            'class': 'postDate',
+            'html': '(scheduled)'
+        }))
+        .append($('<div />', {
+            'class': 'postTitle',
+            'html': post.title
+        }))
+        .append($('<div />', {
+            'id': 'delete' + post.uuid,
+            'class': 'postDelete postDeleteImg'
+        }));
+
+    postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
+};
+
 var createNewPost = function (params, first) {
     // creates a new post on the UI. also sends a request to create a new post on the server.
     // if first, post is put on top of the queue.
@@ -29,36 +62,9 @@ var createNewPost = function (params, first) {
     };
 
     /* TODO: ajax, and if succeeds, ... */
+    createPost(params.title, params.content, first);
+    createPostElement(params, first);
 
-    var postObj = $('<div />', {
-        'class': 'post',
-        'id': params.uuid,
-    });
-    postObj  // put the thing on the page.
-        .data({
-            'uuid': params.uuid,
-            'title': params.title,
-            'content': params.content,
-            'typeOfContent': params.typeOfContent,
-            'contentLink': params.contentLink
-        })
-        .click(function () {
-            clickPost(params.uuid);
-        })
-        .append($('<div />', {
-            'class': 'postDate',
-            'html': '2012-04-31'
-        }))
-        .append($('<div />', {
-            'class': 'postTitle',
-            'html': params.title
-        }))
-        .append($('<div />', {
-            'id': 'delete' + params.uuid,
-            'class': 'postDelete postDeleteImg'
-        }));
-
-    postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
     updateQueueUI();
 
     return params.uuid;
@@ -67,14 +73,23 @@ var createNewPost = function (params, first) {
 var updateQueueUI = function (selectedPostUUID) {
     // Outputs post titles and dates in replaceWithPosts, aka main box area
 
+    var queueArea = $('#replaceHiddenPost'),
+        emptyQueueArea = $('#replaceTextWithPosts'),
+        serverPosts = client.apps[0].queues[0].activePosts;
+
+    // reset the array of posts displayed.
+    queueArea.empty();
+    for (var i = 0; i < serverPosts.length; i++) {
+        createPostElement(serverPosts[i], false);
+    }
+
     //If no posts in queue, suggest making a new post, else write out the posts in the queue
     if ($('.post').length > 0) {
-        $("#replaceHiddenPost").show();
-        $("#replaceTextWithPosts").hide();
-    }
-    else {
-        $("#replaceHiddenPost").hide();
-        $("#replaceTextWithPosts").show();
+        queueArea.show();
+        emptyQueueArea.hide();
+    } else {
+        queueArea.hide();
+        emptyQueueArea.show();
     }
 
     // reset selection (if the selected post was deleted)
@@ -110,20 +125,20 @@ var updatePostUI = function () {
 };
 
 var removePost = function (uuid) {
-    // removes a post from the UI. TODO: ajax
+    // removes a post from the UI.
     confirmDialog(
         "Confirm",
         "Are you sure you want to delete this post?",
         function () {
+            deletePost(uuid);
             $('#' + uuid).remove();
-            updateQueueUI();
+            // updateQueueUI();
         }
     );
 };
 
 // var clickPost = function (post) {
 var clickPost = function (uuid) {
-    console.log('clicked clickPost');
 
     var post = $("#" + uuid);
     var uuid = post.data('uuid');
@@ -268,7 +283,7 @@ var newTitlePromptDialog = function () {
                         var post = $('#' + uuid);
                         post.data('title', title);
 
-                        // TODO: ajax
+                        updatePost(uuid, title, '');
 
                         $("#selectedTitleContent").html(title);
                         $(".post.selected .postTitle").html(title);
@@ -349,43 +364,44 @@ $(document).ready(function () {
     //First checks to make sure you've saved any changes to the right
     $(document).on("click", ".post", function () {
         //newuuid is uuid of post just clicked, olduuid is uuid of post previously selected
-        var newPost = $(this);
-        var oldPost = $(".post.selected");
         var posts = $(".post");
 
-        if (posts.length > 1) {
-            var content = $("#postContent").val();
-            console.log(content);
-            if (!oldPost.data('content') && !content) {
-                alertDialog("Warning!", "Give your current post some content first!");
-            } else if (oldPost.data('content') != content) {
-                confirmDialog(
-                    "Confirm", "You have unsaved changes. Discard changes?",
-                    function () {
-                        $("#postContent").val(oldPost.content);
-                        if (oldPost.content !== "") {
-                            clickPost(newPost.data('uuid'));
-                        } else {
-                            alertDialog("Warning!", "Give your current post some content first!");
-                        }
-                    }
-                );
-            } else {
-                clickPost(newPost.data('uuid'));
-            }
-        } else {
-            clickPost(newPost.data('uuid'));
+        var newPost = $(this);
+        var oldPost = $(".post.selected");
+        var content = $("#postContent").val();
+
+        if (!oldPost.data('content') && !content) { // if new post has no content
+            alertDialog("Warning!", "Give your current post some content first!");
+            return;
         }
+
+        if (oldPost.data('content') != content) { // if content changed
+            confirmDialog(
+                "Confirm", "You have unsaved changes. Discard changes?",
+                function () {
+                    $("#postContent").val(oldPost.data('content'));
+                    if (oldPost.data('content')) {
+                        clickPost(newPost.data('uuid'));
+                    } else {
+                        alertDialog("Warning!", "Give your current post some content first!");
+                    }
+                }
+            );
+            return;
+        }
+        // updateQueueUI(newPost.data('uuid'));
+        // clickPost(newPost.data('uuid'));
     });
 
     //Delete post
     $(document).on("click", ".postDelete", function () {
-        var uuid = $(this).data("uuid");
+        var uuid = $(this).parent().attr("id");
         confirmDialog(
             "Confirm", "Are you sure you want to delete this post?",
             function () {
                 $('#' + uuid).remove();
-                updateQueueUI();
+                deletePost(uuid);
+                // updateQueueUI();
             }
         );
     });
@@ -396,12 +412,11 @@ $(document).ready(function () {
             alertDialog("Warning!", "Give your current post some content first!");
         } else {
             var uuid = $('.post.selected').data("uuid");
-            console.log('got postSave uuid of ' + uuid);
             $('#' + uuid).data({
                 'typeOfContent': 'type1',
                 'content': $("#postContent").val()
             });
-            alertDialog("Saved!", "Post saved!");
+            updatePost(uuid, '', $("#postContent").val());
         }
     });
 
@@ -415,4 +430,10 @@ $(document).ready(function () {
             $(".clickOnEnter").click();
         }
     });
+
+    // start the stuff
+    loadClient();
+    setInterval(function () {
+        updateQueueUI($('.post.selected').data('uuid'));
+    }, 5000);
 });
