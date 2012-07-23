@@ -105,23 +105,41 @@
                             box-design content-container" >
     <h1>Integration Guide for {{shop_name}}</h1>
 
-   <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
-            <div class="step-num">1.</div>
-            <p><strong>Check</strong> your inbox.</p>
-            <p>You should have received an email about your new account.
-                Follow the instructions in the email.</p>
+            <div class="step-warn">!</div>
+            <p><strong>Uninstall</strong> ShopConnection, if it is
+                installed.</p>
+            <p>At the moment, ShopConnection causes
+                problems when it is installed with ReEngage. To uninstall,
+                visit the <a href="http://{{store_url}}/admin">Shopify
+                administration panel</a>.</p>
         </div>
     </div>
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
-            <div class="step-num">2.</div>
-            <p><strong>Set</strong> your password.</p>
-            <p>Once you have your password set up, you'll be able to log
-                in.</p>
+            <div class="step-num">1.</div>
+            <p><strong>Visit</strong> the <a
+                    href="http://{{store_url}}/admin">Shopify
+                administration panel</a></p>
+            <p>Open the <em>Template Editor</em> under <em>Themes</em></p>
+            <img class="span-18" src="/static/imgs/template_editor.png">
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <span class="span-10">
+                <div class="step-num">2.</div>
+                <p><strong>Click</strong> <em>theme.liquid</em></p>
+            </span>
+            <div class="prepend-2 span-6 last">
+                <img src="/static/reengage/imgs/instructions-theme-liquid.png">
+            </div>
         </div>
     </div>
 
@@ -129,27 +147,27 @@
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
             <div class="step-num">3.</div>
-            <p><strong>Visit</strong> the <a
-                    href="http://{{store_url}}/admin">Shopify
-                administration panel</a></p>
-            <p>Open the <em>Template Editor</em> under <em>Themes</em></p>
+            <p><strong>Remove</strong> <em>&lt;link rel="canonical"
+                href="&#123;&#123; canonical_url &#125;&#125;" /&gt;</em> and
+                everything between it...</p>
+            <img src="/static/reengage/imgs/instructions-header.png">
+            <p>... and <em>"&#123;&#123; content_for_header &#125;&#125;"</em></p>
+            <img src="/static/reengage/imgs/instructions-content-for-header.png">
         </div>
     </div>
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
-                                    box-design instruction-step">
+                            box-design instruction-step">
             <div class="step-num">4.</div>
-            <p><strong>Edit</strong> <em>theme.liquid</em></p>
-            <p>Remove everything between "link rel=" and
-            "{ { content_for_header } }" and replace with this</p>
+            <p><strong>Replace</strong> the text you removed with this:
             <textarea style='font-size:13px;
                                     max-width:275px; width: 245px;
                                     vertical-align: middle; margin-bottom:0px;
                                     height:20px'
                       type='text'
                       readonly='readonly'>&#0123;% include &apos;reengage-header&apos; %&#0125;</textarea>
-            <p>Copy code, but...</p>
+            </p>
         </div>
     </div>
 
@@ -157,18 +175,119 @@
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
             <div class="step-warn">!</div>
-            <p>This can potentially reset your 'like' count. Sorry :(</p>
+            <p>This will reset your Facebook 'like' count. Sorry :(</p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">5.</div>
+            <p>
+                <strong>Click</strong> <em>save</em> near the top of the screen.
+            </p>
+            <img class="span-18" src="/static/imgs/save.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="span-10">
+                <div class="step-num">6.</div>
+                <p class="lower-50">
+                    <strong>Under</strong> the <em>Templates</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Templates</em>, try looking under <em>Snippets</em>.
+                </p>
+            </div>
+            <div class="prepend-2 span-6 last">
+                <img src="/static/imgs/snippets_product.png" />
+            </div>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">7.</div>
+            <p>
+                <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
+            </p>
+            <img class="span-18" src="/static/imgs/form.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-warn">!</div>
+            <p>Having trouble finding your cart?  Some templates keep the cart separate as a snippet.  Your <i>product.liquid</i> includes this snippet wherever the cart is supposed to be.  Look through your template snippets, searching each for 'cart' or 'form'.</p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">8.</div>
+            <p>
+                <strong>Once </strong>you've picked a spot, add this code:
+                <textarea style='font-size:13px;
+                                    max-width:275px; width: 245px;
+                                    vertical-align: middle; margin-bottom:0px;
+                                    height:20px'
+                          type='text'
+                          readonly='readonly'>&lt;div id="_willet_buttons_app"&gt;&lt;/div&gt;</textarea>
+            </p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">9.</div>
+            <p>
+                <strong>Click</strong> <em>save</em> near the top of the screen.
+            </p>
+            <img class="span-18" src="/static/imgs/save.png" />
+        </div>
+    </div>
+
+   <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-num">10.</div>
+            <p><strong>Check</strong> your inbox.</p>
+            <p>You should have received an email about your new account.
+                Follow the instructions in the email.</p>
+            <img src="/static/reengage/imgs/instructions-email.png" />
         </div>
     </div>
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
-            <div class="step-num">3.</div>
+            <div class="step-num">11.</div>
+            <p><strong>Set</strong> your password.</p>
+            <p>Once you have your password set up, you'll be able to log
+                in.</p>
+            <img src="/static/reengage/imgs/instructions-login.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">&#x2713;</div>
             <p>
                 <strong>Log in</strong> to <em>ReEngage ShopConnection</em>
             </p>
-            <p>How to do things inside?</p>
+            <div class="center lower-15">
+                <button class='blue' id='next_page'>
+                    <img src="/static/imgs/shopify-bag-36.png" />
+                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                        Log In
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -181,20 +300,7 @@
         </div>
     </div>
 
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-num">&#x2713;</div>
-            <div class="center lower-15">
-                <button class='blue' id='next_page'>
-                    <img src="/static/imgs/shopify-bag-36.png" />
-                                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                                        Log In
-                                    </span>
-                </button>
-            </div>
-        </div>
-    </div>
+
 
     <div class="lower-15 prepend-top span-24 append-bottom last"></div>
 </div>

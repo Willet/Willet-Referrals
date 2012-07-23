@@ -81,6 +81,7 @@ class ReEngageShopify(ReEngage, AppShopify):
             'asset': {
                 'key': 'snippets/reengage-header.liquid',
                 'value': """
+                      <link rel="canonical" href="{{ canonical_url }}" />
                       <meta property="og:url" content="{{ canonical_url }}" />
                       <meta property="fb:app_id" content="392482400810748">
                       <meta property="og:type" content="ogproduct:product">
