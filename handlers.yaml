@@ -31,6 +31,9 @@ handlers:
 - url: /b/shopify/load
   static_dir: static/buttons/js
 
+- url: /r/shopify/load
+  static_dir: static/reengage
+
 - url: /b/shopify/start_report
   script: urls.py
   login: admin

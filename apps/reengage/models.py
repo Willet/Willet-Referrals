@@ -15,7 +15,7 @@ from apps.email.models import Email
 # from apps.reengage.shopify.models import ReEngageShopify
 from apps.user.models import User
 
-from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN
+from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN, URL
 from util.helpers import to_dict, generate_uuid, url
 from util.model import Model
 
@@ -68,7 +68,15 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=True)
-        #self.queue_script_tags(script_tags=tags)
+        self.queue_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/r/shopify/load/reengage-buttons.js?app_uuid=%s" % (
+                    URL,
+                    self.uuid
+                    ),
+                "event": "onload"
+            }
+        }])
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/reengage-header.liquid',
@@ -211,7 +219,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                     app.store_token = token
                     app.client = client
                     app.old_client = None
-                    app.created = datetime.utcnow()
+                    app.created = datetime.datetime.utcnow()
                     app.put()
 
                     app.do_install()
