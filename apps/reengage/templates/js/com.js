@@ -17,6 +17,23 @@ var client = {},    // {props}
         'cache': false,
         'headers': {
             'x-requested-with': 'XMLHttpRequest'
+        },
+        'beforeSend': function (jqXHR, settings) {
+            var ajax_loader = $('#ajax_loader');
+            if (ajax_loader.length) {
+                ajax_loader.show();
+                setTimeout(function () {
+                    ajax_loader.hide();
+                }, 2000);
+            }
+        },
+        'error': function (jqXHR, textStatus, errorThrown) {
+            alertDialog(
+                'Oops :(',
+                'Could not talk to server. Please try again later!' +
+                '<br /><br />' +
+                'message: ' + textStatus
+            );
         }
     };
 
@@ -176,35 +193,36 @@ var updatePost = function (uuid, title, content) {
     // updates a post on the server. reloads the queue.
     var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
               .replace(/__REPLACE__/g, uuid);
-    $.ajax({
+    $.ajax($.extend({}, jsonTemplate, {
         'url': url,
         'type': 'PUT',
+        'dataType': 'html',
         'data': {
             'title': title,
             'content': content
         },
         'cache': false,
         'success': function () {
-            alertDialog("Saved!", "Post saved!");
+            // alertDialog("Saved!", "Post saved!");
             loadQueues(client.apps[0]);
             updateQueueUI();
         }
-    });
+    }));
 };
 
 var deletePost = function (uuid) {
     // deletes a post from the server. reloads the queue.
     var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
               .replace(/__REPLACE__/g, uuid);
-    $.ajax({
+    $.ajax($.extend({}, jsonTemplate, {
         'url': url,
         'type': "DELETE",
         'dataType': 'json',
         'data': {},
         'success': function () {
-            alertDialog("", "Post deleted from server");
+            // alertDialog("", "Post deleted from server");
             loadQueues(client.apps[0]);
             updateQueueUI();
         }
-    });
+    }));
 };
