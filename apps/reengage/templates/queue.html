@@ -1,178 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html class="ReEngage">
+    <head>
+        <title>SecondFunnel ReEngage&trade;</title>
+        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+        <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
+        <link href="/static/reengage/css/jquery-ui-1.8.21.ReEngage.css" rel="stylesheet" type="text/css"/>
 
-<head>
-    <title>SecondFunnel ReEngage&trade;</title>
-    <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
-    <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
-    <link href="/static/reengage/css/jquery-ui-1.8.21.ReEngage.css" rel="stylesheet" type="text/css"/>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
+        <script src="/r/reengage/js/com.js" type="text/javascript"></script>
+        <script src="/static/reengage/js/engageFunctionality.js" type="text/javascript"></script>
+    </head>
+    <body>
 
-
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript">
-    </script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript">
-    </script>
-    <script src="/static/reengage/engageFunctionality.js" type="text/javascript"></script>
-    <script src="/r/reengage/js/com.js" type="text/javascript"></script>
-</head>
-
-<body>
-
-<div id="banner" class="shadow">
-    <div id="bannerBody">
-        <div id="bannerTitle">
-            <h1><b>Engage</b> // Your Store Name Here</h1>
-        </div>
-        <div id="bannerRight">
-            <ul id="bannerRightObj">
-                <li>Settings</li>
-                <li>Support</li>
-                <li id="#logout"><a href="#">Logout</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div id="body">
-
-    <div id="break">
-        <div class="button" id="newPost">
-            + New Post
-        </div>
-        <div id="breakNav">
-            <ul class="breakNav" style="text-align: center">
-                <li class="selected"><b>Facebook</b></li>
-                <li class="comingSoon"><a href="#">Twitter</a></li>
-                <li class="comingSoon"><a href="#">Pinterest</a></li>
-                <li class="comingSoon"><a href="#">Email</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Divided into sections of: 180px, 330px, 490px -->
-    <div id="box">
-
-        <div id="boxTop">
-            <div class="boxTopNav">
-                <ul class="boxTopNav">
-                    <li><b>Queued Posts</b></li>
-                    <li><a href="engage-past.html">Past Posts</a></li>
-                </ul>
-            </div>
-            <div id="boxTopRight">
-                <p id="boxTopSchedule"><i>
-                    Posting schedule: Mondays, Wednesdays, and Fridays at 8:00 EST
-                    (<a href="#" class="comingSoon">change</a>)
-                </i></p>
-            </div>
-        </div>
-
-        <div id="detailsBar" class="details">
-            <div id="categoryBar">
-                <div id="categories">Categories</div>
-            </div>
-            <div id="postBar">
-                <div id="date">Date</div>
-                <div id="title">Title</div>
-            </div>
-            <div id="postContentBar">
-                <div id="selectedTitle">
-                    <!-- Value changes depending on which post is selected -->
-                    <span id="selectedTitleContent">Post Title Here</span>
-
-                    <!-- Hidden initially, shown when postQueue.length > 0 -->
-                    <span id='editTitle'>(<a href='#'>edit</a>)</span>
+        <div id="banner" class="shadow">
+            <div id="bannerBody">
+                <div id="bannerTitle">
+                    <h1><b>Engage</b> // {{ client.name|default:"Your Store Name Here" }}</h1>
+                </div>
+                <div id="bannerRight">
+                    <ul id="bannerRightObj">
+                        <li>Settings</li>
+                        <li>Support</li>
+                        <li><a href="engage-login.html">Logout</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div id="mainBox">
-            <div id="categoryBox">
-                <div class="category">Category 1</div>
-                <div class="category">Category 2</div>
-                <div class="category">Category 3</div>
-                <div class="category">
-                    <p id="soon">Soon you'll be able to make unique posts in each category!</p>
+        <div id="body">
+            <div id="innerBody">
+                <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
+                <div id="IEWarning">
+                    <br>
+                    <b>To use Engage, please allow the scripts on the page to run. </b><br><br>
+                    Our website is completely secure.<br><br>
+                    For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
                 </div>
             </div>
 
-            <div id="replaceWithPosts">
-                <div id="replaceTextWithPosts"><p>
-                    Make a new Facebook post by clicking the 'New Post' button!<br><br>
-                    The posts you create here will be seen by any of your visitors who 'liked' a product.
-                </p></div>
-
-                <div id="replaceHiddenPost"></div>
+            <div id="break">
+                <div class="button" id="newPost">
+                    + New Post
+                </div>
+                <div id="breakNav">
+                    <ul class="breakNav" style="text-align: center">
+                        <li class="selected"><b>Facebook</b></li>
+                        <li class="comingSoon"><a href="#">Twitter</a></li>
+                        <li class="comingSoon"><a href="#">Pinterest</a></li>
+                        <li class="comingSoon"><a href="#">Email</a></li>
+                    </ul>
+                </div>
             </div>
 
-            <div id="replaceWithPostContent">
+            <!-- Divided into sections of: 180px, 330px, 490px -->
+            <div id="box">
 
-                <!-- Shown initially, hidden when postQueue.length > 0 -->
-                <div id="replaceTextWithPostContent">
-                    Selected Facebook post contents will appear here
-                </div>
-
-                <!-- Hidden initially, shown when postQueue.length > 0 -->
-                <div id='postContentContainer'>
-                    <div id='postKind'>
-
-                        <!-- No back end for 'typeofcontent' for current version
-
-                       What kind of content is this?
-                       <select id='postKind'>
-                           <option value='type1' [[ ifType1 ]]>Type 1</option>
-                           <option value='type2' [[ ifType2 ]]>Type 2</option>
-                           <option value='type3' [[ ifType3 ]]>Type 3</option>
-                       </select>
-                       <br><br> -->
-
-                        Facebook post content:
+                <div id="boxTop">
+                    <div class="boxTopNav">
+                        <ul class="boxTopNav">
+                            <li><b>Queued Posts</b></li>
+                            <li><a href="#">Past Posts</a></li>
+                        </ul>
                     </div>
-                    <div id='postGuts'>
-                        <textarea rows='4' cols='100' id='postContent'></textarea>
-                    </div>
-                    <!--
-                    <div id='postEmbed'>
-                        <input type='button' value='Embed a photo or video' />
-                    </div>
-                    -->
-                    <br><br>
-                    <div id='postSave' class='button'>
-                        Save Changes
+                    <div id="boxTopRight">
+                        <p id="boxTopSchedule"><i>
+                            Posting schedule: Mondays, Wednesdays, and Fridays at 8:00 EST
+                            (<a href="#" class="comingSoon">change</a>)
+                        </i></p>
                     </div>
                 </div>
 
+                <div id="detailsBar" class="details">
+                    <div id="categoryBar">
+                        <div id="categories">Categories</div>
+                    </div>
+                    <div id="postBar">
+                        <div id="date">Date</div>
+                        <div id="title">Title</div>
+                    </div>
+                    <div id="postContentBar">
+                        <div id="selectedTitle">
+                            <!-- Value changes depending on which post is selected -->
+                            <span id="selectedTitleContent">Post Title Here</span>
+
+                            <!-- Hidden initially, shown when postQueue.length > 0 -->
+                            <span id='editTitle'>(<a href='#'>edit</a>)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mainBox">
+                    <div id="categoryBox">
+                        <div class="category">Category 1</div>
+                        <div class="category">Category 2</div>
+                        <div class="category">Category 3</div>
+                        <div class="category">
+                            <p id="soon">Soon you'll be able to make unique posts in each category!</p>
+                        </div>
+                    </div>
+
+                    <div id="replaceWithPosts">
+                        <div id="replaceTextWithPosts"><p>
+                            Make a new Facebook post by clicking the 'New Post' button!<br><br>
+                            The posts you create here will be seen by any of your visitors who 'liked' a product.
+                        </p></div>
+
+                        <div id="replaceHiddenPost"></div>
+                    </div>
+
+                    <div id="replaceWithPostContent">
+
+                        <!-- Shown initially, hidden when postQueue.length > 0 -->
+                        <div id="replaceTextWithPostContent">
+                            Selected Facebook post contents will appear here
+                        </div>
+
+                        <!-- Hidden initially, shown when postQueue.length > 0 -->
+                        <div id='postContentContainer'>
+                            <div id='postKind'>
+
+                                <!-- No back end for 'typeofcontent' for current version
+
+                               What kind of content is this?
+                               <select id='postKind'>
+                                   <option value='type1' [[ ifType1 ]]>Type 1</option>
+                                   <option value='type2' [[ ifType2 ]]>Type 2</option>
+                                   <option value='type3' [[ ifType3 ]]>Type 3</option>
+                               </select>
+                               <br><br> -->
+
+                                Facebook post content:
+                            </div>
+                            <div id='postGuts'>
+                                <textarea rows='4' cols='100' id='postContent'></textarea>
+                            </div>
+                            <!--
+                            <div id='postEmbed'>
+                                <input type='button' value='Embed a photo or video' />
+                            </div>
+                            -->
+                            <br><br>
+                            <div id='postSave' class='button'>
+                                Save Changes
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-    </div>
+        <!--Dialogs-->
+        <div id="newPostDialog" title="New Post">
+            New post name: <br><br>
+                <input type="text" id="newPostTitle" class="enableEnterPress" maxLength="50" value="" /><br><br>
+            <div id="endOrBeginning">
+                Should this post be added to the end or the beginning of the queue? <br><br>
+                    <input type="radio" name="first" value="last" checked="checked" />End<br>
+                    <input type="radio" name="first" value="first" />Beginning<br><br>
+            </div>
+        </div>
 
-</div>
-
-<!--Dialogs-->
-<div id="newPostDialog" title="New Post">
-    New post name: <br><br>
-    <input type="text" id="newPostTitle" value="" /><br><br>
-    Should this post be added to the end or the beginning of the queue? <br><br>
-    <input type="radio" name="first" value="last" checked="checked" />End<br>
-    <input type="radio" name="first" value="first" />Beginning<br><br>
-</div>
-
-<div id="editTitleDialog" title="Edit Title">
-    Enter a new title for your post: <br><br>
-    <input type="text" id="editTitleInput" value="" /><br><br>
-</div>
-
-
-<script type="text/javascript">
-    $(document).ready(function(){
-        $("#logout").click(function(event){
-            event.preventDefault();
-            //#post to logout page
-            //redirect to logout page
-        });
-    });
-</script>
-
-</body>
-
+        <div id="editTitleDialog" title="Edit Title">
+            Enter a new title for your post: <br><br>
+                <input type="text" id="editTitleInput" class="enableEnterPress" maxLength="50" value="" /><br><br>
+        </div>
+    </body>
 </html>
