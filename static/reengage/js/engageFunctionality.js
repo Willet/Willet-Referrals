@@ -61,11 +61,10 @@ var createNewPost = function (params, first) {
         'contentLink': 'contentLink'
     };
 
-    /* TODO: ajax, and if succeeds, ... */
-    createPost(params.title, params.content, first);
     createPostElement(params, first);
 
-    updateQueueUI();
+    updateQueueUI(params.uuid);
+    createPost(params.title, params.content, first);
 
     return params.uuid;
 };
@@ -130,8 +129,8 @@ var removePost = function (uuid) {
         "Confirm",
         "Are you sure you want to delete this post?",
         function () {
-            deletePost(uuid);
             $('#' + uuid).remove();
+            deletePost(uuid);
             // updateQueueUI();
         }
     );
@@ -156,6 +155,7 @@ var alertDialog = function (alertTitle, content) {
             autoOpen: false,
             title: alertTitle,
             'modal': true,
+            'width': 400,
             buttons: [
                 {
                     text: "Ok",

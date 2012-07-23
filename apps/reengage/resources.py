@@ -2,7 +2,7 @@
 
 import logging
 import webob
-import urlparse
+import cgi
 
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
@@ -213,7 +213,7 @@ class ReEngagePostJSONHandler(URIHandler):
         check ReEngageQueueHandler.put for post creation.
         """
         # http://code.google.com/p/googleappengine/issues/detail?id=170
-        params = urlparse.parse_qsl(self.request.body)
+        params = cgi.parse_qsl(self.request.body)
         self.request.PUT = webob.MultiDict(params)
         title   = self.request.PUT.get("title")
         content = self.request.PUT.get("content")

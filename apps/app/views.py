@@ -38,7 +38,17 @@ class AppJSONDynamicLoader(URIHandler):
         app = App.get(self.request.get('app_uuid'))
         if app:
             queues1 = getattr(app, 'queues', [None])  # count of 1
+            try:  # trigger length error if it returns a Query
+                dummy_var = queues1[0]
+            except IndexError:
+                queues1 = [None]
+
             queues2 = getattr(app, 'queues', [])  # count of 0
+            try:  # trigger length error if it returns a Query
+                dummy_var = queues2[0]
+            except IndexError:
+                queues2 = []
+
             self.respondJSON({
                 'uuid': app.uuid,
                 'client_uuid': app.client.uuid,
@@ -65,7 +75,17 @@ class AppJSONDynamicLoader(URIHandler):
                     continue  # this app is not of the requested class.
 
                 queues1 = getattr(app, 'queues', [None])  # count of 1
+                try:  # trigger length error if it returns a Query
+                    dummy_var = queues1[0]
+                except IndexError:
+                    queues1 = [None]
+
                 queues2 = getattr(app, 'queues', [])  # count of 0
+                try:  # trigger length error if it returns a Query
+                    dummy_var = queues2[0]
+                except IndexError:
+                    queues2 = []
+
                 apps_obj.append({
                     'uuid': app.uuid,
                     'client_uuid': app.client.uuid,
