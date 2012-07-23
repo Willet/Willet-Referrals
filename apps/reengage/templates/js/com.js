@@ -5,15 +5,16 @@
  */
 
 var client = {},    // {props}
-    apps = {},      // [{props}, {...}]; clients own apps
-    products = {},  // [{props}, {...}]; clients own products
-    queues = {},    // [{props}, {...}]; apps own queues
-    posts = {},     // [{props}, {...}]; queues own posts
+  //apps = {},      // [{props}, {...}]; clients own apps
+  //products = {},  // [{props}, {...}]; clients own products
+  //queues = {},    // [{props}, {...}]; apps own queues
+  //posts = {},     // [{props}, {...}]; queues own posts
 
     jsonTemplate = {
         // whenever a ajax request is sent, this is used as defaults.
         'dataType': 'json',
         'type': 'GET',
+        'cache': false,
         'headers': {
             'x-requested-with': 'XMLHttpRequest'
         }
@@ -34,7 +35,7 @@ var ajaxRequest = function (url, data, sideEffect, callback) {
 };
 
 var loadClient = function (client_uuid, callback) {
-    // overwrites existing client object.
+    // overwrites existing client, apps, queues, and posts objects.
     // returns nothing.
     ajaxRequest(
         '{% url ClientJSONDynamicLoader %}',
@@ -43,79 +44,90 @@ var loadClient = function (client_uuid, callback) {
             client = {
                 'uuid': data.uuid,
                 'name': data.name,
-                'domain': data.domain,
-                'apps': []  // you can choose to load it
+                'domain': data.domain
+                // @later 'apps': ...
             };
+            loadApps(client);
         },
         callback
     );
 };
 
 var loadApps = function (client, callback) {
-    // overwrites existing apps object.
+    // overwrites existing apps, queues, and posts objects.
     // returns nothing.
     ajaxRequest(
         '{% url AppJSONDynamicLoader %}',
-        {'client_uuid': client.uuid},
+        {
+            'client_uuid': client.uuid,
+            'class': 'ReEngage'
+        },
         function (response) {
-            var data = response.apps;  // key
+            var data = response.apps || [];  // key
 
-            apps = [];  // reset
-            client.apps = []; // reset references
-
+            var apps = [];  // reset
             for (var i = 0; i < data.length; i++) {
-                apps.push({
+                var app = {
                     'uuid': data[i].uuid,
                     'name': data[i].name,  // e.g. ReEngageShopify
                     'client': client,
-                    'queues': []  // you can choose to load it
-                });
+                    'queue': {
+                        'uuid': data[i].queue  // MVP single queue
+                    },
+                    'queues': [],  // you can choose to load it
+                };
+                apps.push(app);
+                for (var i2 = 0; i2 < app.queues.length; ++i2) {
+                    // load each queue now
+                    loadQueues(app, app.queues[i2]);
+                }
             }
-
+            loadQueues(app, app.queue);
             client.apps = apps;
         },
         callback
     );
 };
 
-var loadQueues = function (app, callback) {
-    // overwrites existing queues object.
+// @unused in MVP
+var loadQueues = function (app, queue, callback) {
     // returns nothing.
     ajaxRequest(
         '{% url ReEngageQueueJSONHandler %}',
-        {'app_uuid': app.uuid},  // not used (one-app-one-queue MVP)
+        {
+            'app_uuid': (app && app.uuid) || '', // not used (one-app-one-queue MVP)
+            'queue_uuid': (queue && queue.uuid) || '' // not used (one-app-one-queue MVP)
+        },
         function (response) {
             // normally returns an array, but not yet
-            var data = [response.queues];  // key
+            var data = [response.queues || {}];  // data is a list of queues
 
-            queues = [];  // reset
-            app.queues = []; // reset references
-
+            var queues = [];  // reset
             for (var i = 0; i < data.length; i++) {
-                queues.push({
+                var queue = {
+                    // data[i] is a queue
                     'uuid': data[i].uuid,
                     'app': app,  // "owner" in DB
                     'activePosts': data[i].activePosts,  // "queued" in DB
                     'expiredPosts': data[i].expiredPosts  // "expired" in DB
-                });
+                };
+                queues.push(queue);
             }
+            app.queues = queues;
         },
         callback
     );
 };
 
 var loadPosts = function (queue, callback) {
-    // overwrites existing posts object.
     // returns nothing.
-    var requestURL = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
-                     .replace(/__REPLACE__/g, queue.uuid);
     ajaxRequest(
-        requestURL,
-        {},
+        '{% url ReEngageQueueJSONHandler %}',
+        {'queue_uuid': queue.uuid},
         function (response) {
-            var data = response.posts;  // key
+            var data = response.posts || [];  // key
 
-            posts = [];  // reset
+            var posts = [];  // reset
             queue.activePosts = []; // reset references
             queue.expiredPosts = []; // reset references
 
@@ -134,18 +146,65 @@ var loadPosts = function (queue, callback) {
                     queue.activePosts.push(post);
                 }
             }
+            updateQueueUI();
         },
         callback
     );
 };
 
-
-$(document).ready(function () {
-    loadClient('', function () {
-        loadApps(client, function () {
-            loadQueues(apps[0], function () {
-//                loadPosts(queues[0], function(){});
-            })
-        })
+var createPost = function (title, content, first, uuid) {
+    // creates a post on the server. reloads the queue.
+    $.ajax({
+        'url': '{% url ReEngageQueueJSONHandler %}',
+        'type': "POST",
+        'dataType': 'json',
+        'data': {
+            'title': title,
+            'content': content,
+            'method': (first? 'prepend' : 'append')
+        },
+        'cache': false,
+        'success': function () {
+            // alertDialog("", "Post created on server");
+            loadQueues(client.apps[0]);
+            updateQueueUI();
+        }
     });
-});
+};
+
+var updatePost = function (uuid, title, content) {
+    // updates a post on the server. reloads the queue.
+    var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
+              .replace(/__REPLACE__/g, uuid);
+    $.ajax({
+        'url': url,
+        'type': 'PUT',
+        'data': {
+            'title': title,
+            'content': content
+        },
+        'cache': false,
+        'success': function () {
+            alertDialog("Saved!", "Post saved!");
+            loadQueues(client.apps[0]);
+            updateQueueUI();
+        }
+    });
+};
+
+var deletePost = function (uuid) {
+    // deletes a post from the server. reloads the queue.
+    var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
+              .replace(/__REPLACE__/g, uuid);
+    $.ajax({
+        'url': url,
+        'type': "DELETE",
+        'dataType': 'json',
+        'data': {},
+        'success': function () {
+            alertDialog("", "Post deleted from server");
+            loadQueues(client.apps[0]);
+            updateQueueUI();
+        }
+    });
+};

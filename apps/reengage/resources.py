@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import logging
+import webob
+import urlparse
 
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
@@ -31,6 +33,7 @@ def session_active(fn):
 
     return wrapped
 
+
 def get_queue():
     """Obtains a queue using the provided shop url"""
     session = get_current_session()
@@ -53,6 +56,7 @@ def get_post(uuid):
 
     post = ReEngagePost.all().filter(" uuid = ", uuid).get()
     return post
+
 
 class ReEngageQueueJSONHandler(URIHandler):
     """A resource for accessing queues using JSON"""
@@ -92,10 +96,12 @@ class ReEngageQueueJSONHandler(URIHandler):
         content = self.request.get("content")
         method  = self.request.get("method", "append")
 
+        uuid = generate_uuid(16)
         post = ReEngagePost(title=title,
                             content=content,
                             network=Facebook.__name__,
-                            uuid=generate_uuid(16))
+                            uuid=uuid,
+                            key_name=uuid)
         post.put()
 
         if method == "append":
@@ -202,9 +208,29 @@ class ReEngagePostJSONHandler(URIHandler):
 
     @session_active
     def put(self, uuid):
-        """Update the details of a post"""
-        # Unused, for now
-        self.error(204)
+        """Update the details of a post.
+
+        check ReEngageQueueHandler.put for post creation.
+        """
+        # http://code.google.com/p/googleappengine/issues/detail?id=170
+        params = urlparse.parse_qsl(self.request.body)
+        self.request.PUT = webob.MultiDict(params)
+        title   = self.request.PUT.get("title")
+        content = self.request.PUT.get("content")
+
+        post = ReEngagePost.get(uuid)
+
+        if not post:
+            self.error(404)  # done
+            return
+
+        if title:
+            post.title = title
+        if content:
+            post.content = content
+
+        post.put()
+        self.response.out.write('OK')
 
     @session_active
     def delete(self, uuid):
@@ -215,7 +241,8 @@ class ReEngagePostJSONHandler(URIHandler):
             self.error(404)
             return
 
-        # TODO: What about Keys that reference this post?
+        # TODO: What about Keys that reference this params = urlparse.parse_qsl(self.request.body)
+        post.clear_cache()
         post.delete()
         self.error(204)
 
