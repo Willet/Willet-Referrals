@@ -155,6 +155,7 @@ var loadPosts = function (queue, callback) {
                     queue.activePosts.push(post);
                 }
             }
+            updateQueueUI();
         },
         callback
     );
