@@ -219,21 +219,16 @@ class ReEngagePostJSONHandler(URIHandler):
         content = self.request.PUT.get("content")
 
         post = ReEngagePost.get(uuid)
-        logging.warn('%r' % [title, content, post])
 
         if not post:
-            logging.warn('post not found')
-            self.error(204)  # done
+            self.error(404)  # done
             return
 
         if title:
-            logging.warn('updating title')
             post.title = title
         if content:
-            logging.warn('updating content')
             post.content = content
 
-        logging.warn('putting post')
         post.put()
         self.response.out.write('OK')
 

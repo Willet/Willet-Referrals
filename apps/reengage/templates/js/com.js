@@ -100,14 +100,10 @@ var loadQueues = function (app, queue, callback) {
         },
         function (response) {
             // normally returns an array, but not yet
-            // console.log('loadQueues succeded');
-
             var data = [response.queues || {}];  // data is a list of queues
-            // console.log(data);
 
             var queues = [];  // reset
             for (var i = 0; i < data.length; i++) {
-                // console.log(data[i]);
                 var queue = {
                     // data[i] is a queue
                     'uuid': data[i].uuid,
@@ -116,19 +112,14 @@ var loadQueues = function (app, queue, callback) {
                     'expiredPosts': data[i].expiredPosts  // "expired" in DB
                 };
                 queues.push(queue);
-                // console.log(queues);
-                // console.log(queue.activePosts);
-                // loadPosts(queue);
             }
             app.queues = queues;
-            console.log(app.queues);
         },
         callback
     );
 };
 
 var loadPosts = function (queue, callback) {
-    console.log('loadPosts (queue?uuid=' + queue.uuid + ')');
     // returns nothing.
     ajaxRequest(
         '{% url ReEngageQueueJSONHandler %}',
@@ -217,8 +208,3 @@ var deletePost = function (uuid) {
         }
     });
 };
-
-// setInterval(function () {
-//     loadClient();
-//     updateQueueUI();
-// }, 5000);

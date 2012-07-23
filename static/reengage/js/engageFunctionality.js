@@ -94,7 +94,6 @@ var updateQueueUI = function (selectedPostUUID) {
 
     // reset selection (if the selected post was deleted)
     $('.post').removeClass('selected');
-    // console.log(selectedPostUUID);
     if (selectedPostUUID) {
         $('#' + selectedPostUUID).addClass('selected');
     } else {
@@ -140,7 +139,6 @@ var removePost = function (uuid) {
 
 // var clickPost = function (post) {
 var clickPost = function (uuid) {
-    // console.log('clicked clickPost');
 
     var post = $("#" + uuid);
     var uuid = post.data('uuid');
@@ -398,7 +396,6 @@ $(document).ready(function () {
     //Delete post
     $(document).on("click", ".postDelete", function () {
         var uuid = $(this).parent().attr("id");
-        console.log(this, $(this).parent(), uuid);
         confirmDialog(
             "Confirm", "Are you sure you want to delete this post?",
             function () {
@@ -415,7 +412,6 @@ $(document).ready(function () {
             alertDialog("Warning!", "Give your current post some content first!");
         } else {
             var uuid = $('.post.selected').data("uuid");
-            console.log('got postSave uuid of ' + uuid);
             $('#' + uuid).data({
                 'typeOfContent': 'type1',
                 'content': $("#postContent").val()
