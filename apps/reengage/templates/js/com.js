@@ -22,9 +22,6 @@ var client = {},    // {props}
             var ajax_loader = $('#ajax_loader');
             if (ajax_loader.length) {
                 ajax_loader.show();
-                setTimeout(function () {
-                    ajax_loader.hide();
-                }, 2000);
             }
         },
         'error': function (jqXHR, textStatus, errorThrown) {
@@ -181,10 +178,13 @@ var createPost = function (title, content, first, uuid) {
             'method': (first? 'prepend' : 'append')
         },
         'cache': false,
-        'success': function () {
+        'success': function (data) {
             // alertDialog("", "Post created on server");
-            loadQueues(client.apps[0]);
-            updateQueueUI();
+            var post = data.post;
+            loadQueues(client.apps[0], '', function () {
+                updateQueueUI(post.uuid);
+            });
+            // updateQueueUI(post.uuid);
         }
     });
 };
@@ -204,8 +204,15 @@ var updatePost = function (uuid, title, content) {
         'cache': false,
         'success': function () {
             // alertDialog("Saved!", "Post saved!");
+
+            // show the saved indicator for 2 seconds, then hide it
+            $('#postSaveIndicator').show();
+            setTimeout(function() {
+                $('#postSaveIndicator').fadeOut('slow');
+            }, 2000);
+
             loadQueues(client.apps[0]);
-            updateQueueUI();
+            updateQueueUI(uuid);
         }
     }));
 };
