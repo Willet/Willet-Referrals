@@ -127,7 +127,10 @@ class Facebook(SocialNetwork):
 
         token = None
         if success:
-            token = content.split("=")[1]
+            try:
+                token = content.split("=")[1]
+            except AttributeError:
+                pass
         else:
             logging.error("FB Token Error: %s" % content)
 

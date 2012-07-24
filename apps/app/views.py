@@ -12,22 +12,6 @@ from apps.client.models import Client
 
 from util.urihandler import URIHandler
 
-
-class DoDeleteApp(URIHandler):
-    """Why is this thing in views.py? TODO move to processes.py."""
-    def post(self):
-        client = self.get_client()
-        app_uuid = self.request.get('app_uuid')
-
-        logging.info('app id: %s' % app_uuid)
-        app = App.get(app_uuid)
-        if app.client.key() == client.key():
-            logging.info('deelting')
-            app.delete()
-
-        self.redirect('/client/account')
-
-
 class AppJSONDynamicLoader(URIHandler):
     """Return a JSON object for an app given a app_uuid if found,
     a JSON object for a list of apps given a client_uuid if found,

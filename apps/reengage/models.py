@@ -206,15 +206,13 @@ class ReEngageShopify(ReEngage, AppShopify):
             app = cls.create_app(client, token)
             created = True
 
-        elif token != None and token != '':
+        elif token:
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
                 logging.warn(
                     'We are going to reinstall this app because the stored\
-                     token does not match the request token\n%s vs %s' % (
-                        app.store_token,
-                        token
-                        )
+                     token does not match the request token\n%s vs %s' % \
+                     (app.store_token,token)
                 )
                 try:
                     app.store_token = token
