@@ -576,7 +576,7 @@ _willet = (function (me) {
             if (qs) {
                 // A little hack - convert the query string into JSON format and parse it
                 // '&' -> ',' and '=' -> ':'
-                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/(&amp;|&)/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
                 params = {
                     "enabled": raw_obj.enabled && (raw_obj.enabled === "true"),
                     "shop":  raw_obj.shop || '',

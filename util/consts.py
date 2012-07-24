@@ -86,10 +86,12 @@ SHOPIFY_APPS = {
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586',
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
-    }, 'ReEngage': {
+    }, 'ReEngageShopify': {
+        'api_key': '185a921ab8ddb223c9ab5ad4190e057b',
+        'api_secret': 'bddaccc5dd9105f071e9f36b232b5d58',
         'facebook': {
-            'app_id': '211970025590862',
-            'app_secret': '0df9044286825cea416a31ebe44a7c41'
+            'app_id': '392482400810748',
+            'app_secret': '70936547d4f80c815dcd3dff67eab869'
         }
     }
 }
