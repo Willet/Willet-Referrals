@@ -7,6 +7,7 @@ import cgi
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
 
+from util.consts import ADMIN_IPS, USING_DEV_SERVER
 from util.gaesessions import get_current_session
 from util.helpers import generate_uuid, url as build_url
 from util.urihandler import URIHandler
@@ -109,7 +110,7 @@ class ReEngageQueueJSONHandler(URIHandler):
         else:
             queue.prepend(post)
 
-        response = queue.to_obj()
+        response = post.to_obj()
         self.respondJSON(response.get("value"), response.get("key"))
 
     @session_active
@@ -137,6 +138,7 @@ class ReEngageQueueHandler(URIHandler):
 
         #TODO: Replace with HTML view
         page = self.render_page('queue.html', {
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             "t": session.get("t"),
             "shop": session.get("shop"),
             "host" : self.request.host_url
