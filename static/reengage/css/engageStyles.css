@@ -461,6 +461,18 @@ which has one pixel less height for the white border on top */
     margin: auto;
 }
 
+#postSaveIndicator {
+    display: none;
+}
+
+.saved {
+    display: none;
+    color: #595;
+    padding: 9px;
+    display: inline-block;
+    font-weight: 700;
+}
+
 #light {
     display: none;
     position: fixed;
@@ -497,8 +509,9 @@ which has one pixel less height for the white border on top */
 
 #ajax_loader {
     position: fixed;
-    right: 16px;
-    top: 16px;
+    right: 48%;
+    top: 48%;
+    z-index: 9001;
     background-color:#fff;
     border-radius: 6px;
     border: 1px #ddd solid;

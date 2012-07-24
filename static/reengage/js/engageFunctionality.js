@@ -95,9 +95,9 @@ var updateQueueUI = function (selectedPostUUID) {
     $('.post').removeClass('selected');
     if (selectedPostUUID) {
         $('#' + selectedPostUUID).addClass('selected');
-    } else {
-        $('.post').eq(0).addClass('selected');
-    }
+        // updatePostUI();
+    } // else: select nothing
+    updatePostUI();
 };
 
 var updatePostUI = function () {
@@ -105,7 +105,7 @@ var updatePostUI = function () {
     // either no post at all, or information about the selected post.
 
     //If no posts in queue, suggest making a new post, else write out the posts in the queue
-    if ($('.post').length > 0) {
+    if ($('.post.selected').length > 0) {
         $("#replaceTextWithPostContent").hide();
         $("#postContentContainer").show();
         $("#editTitle").show();
@@ -115,12 +115,14 @@ var updatePostUI = function () {
         $("#postContentContainer").hide();
     }
 
-    var post = $('.post.selected'),
-        uuid = post.data('uuid');
-    //Actions to do regardless of whether post is first in queue
-    $('#selectedTitleContent').html(post.data('title'));
-    $('#postContent').val(post.data('content'));
-    $('#postSave').eq(0).data('uuid', uuid);
+    var post = $('.post.selected');
+    if (post.length) {
+        var uuid = post.data('uuid');
+        //Actions to do regardless of whether post is first in queue
+        $('#selectedTitleContent').html(post.data('title'));
+        $('#postContent').val(post.data('content'));
+        $('#postSave').eq(0).data('uuid', uuid);
+    }
 };
 
 var removePost = function (uuid) {
@@ -321,12 +323,14 @@ $(document).ready(function () {
         var posts = $('.post');
 
         if (!posts.length) {
-            $("#newTitleWarning").hide();
+            $("#newTitleWarning, #endOrBeginning").hide();
             newPostConfirm();
         } else {
+            $("#endOrBeginning").show();
             var activePost = $(".post.selected");
 
-            if (activePost.data('content') !== $("#postContent").val()) {
+            if (activePost.length &&
+                activePost.data('content') !== $("#postContent").val()) {
                 var ifOk = function () {
                     $("#postContent").val(activePost.data('content'));
                     if (!$("#postContent").val()) {
@@ -337,14 +341,13 @@ $(document).ready(function () {
                     }
                 };
                 confirmDialog("Confirm", "Unsaved changes. Discard changes?", ifOk);
-            } else if (!activePost.data('content')) {
+            } else if (activePost.length &&
+                      !activePost.data('content')) {
                 alertDialog("Warning!", "Give your current post some content first!");
             } else {
                 newPostConfirm();
             }
         }
-
-        (!$('.post').length) ? $("#endOrBeginning").hide() : $("#endOrBeginning").show();
     });
 
     //When 'cancel' in 'new post' dialog is clicked
@@ -430,6 +433,17 @@ $(document).ready(function () {
             $(".clickOnEnter").click();
         }
     });
+
+
+    // some hook thingy that is rumoured to trigger when any ajax completes
+    var ajaxHookThingy = function () {
+        var ajax_loader = $('#ajax_loader');
+        if (ajax_loader.length) {
+            ajax_loader.fadeOut('slow');
+        }
+    };
+    // $(document).ajaxComplete(ajaxHookThingy);
+    $(document).ajaxStop(ajaxHookThingy);
 
     // start the stuff
     loadClient();

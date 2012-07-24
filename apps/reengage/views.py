@@ -131,8 +131,7 @@ class ReEngageLogin(URIHandler):
 
 class ReEngageLogout(URIHandler):
     def get(self):
-        # TODO: Redirect to previous URL
-        pass
+        self.post()
 
     def post(self):
         """Display the 'logged out' page"""
