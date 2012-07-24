@@ -244,7 +244,7 @@ var newPostConfirm = function () {
 
 var newTitlePromptDialog = function () {
     // invoked when "(edit)" is clicked after selecting a post.
-    var $emptyWarning = $("<div>You can't give a post an empty title! Try again.</div>")
+    var $emptyWarning = $("<div>Posts must have a title. Try again.</div>")
         .dialog({
             title: "Warning!",
             'modal': true,

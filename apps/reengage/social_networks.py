@@ -28,7 +28,10 @@ class SocialNetwork():
         - result : The result or a reason for failure
         """
         if payload:
-            payload = urlencode(payload)
+            try:
+                payload = urlencode(payload)
+            except TypeError:
+                return False, "Payload couldn't be URL-encoded"
 
         if not headers:
             headers = {}

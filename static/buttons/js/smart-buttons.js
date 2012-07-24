@@ -247,7 +247,7 @@ _willet.util = {
             try {
                 params = JSON.parse('{"' + decodeURIComponent(qs.replace(/(&amp;|&)/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
             } catch(e) {
-                _willet.debug.error("Couldn't parse query string")
+                _willet.debug.error("Couldn't parse query string");
             }
         }
 

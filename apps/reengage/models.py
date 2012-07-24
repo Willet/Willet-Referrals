@@ -380,7 +380,6 @@ class ReEngageAccount(User):
     # Used for one-time tokens
     token    = db.StringProperty(default="")
     token_exp= db.DateTimeProperty()
-    # Sessions?
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
