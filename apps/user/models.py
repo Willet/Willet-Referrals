@@ -15,6 +15,7 @@ from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import deferred
 from google.appengine.ext import db
+from google.appengine.ext.db import polymodel
 from google.appengine.datastore import entity_pb
 
 from apps.email.models import Email
@@ -91,7 +92,7 @@ class EmailModel(Model):
         return cls.all().filter('user =', user)
 
 
-class User(db.Expando):
+class User(db.Expando, polymodel.PolyModel):
     """User class definition."""
     uuid = db.StringProperty(indexed=True)
     creation_time = db.DateTimeProperty(auto_now_add=True)

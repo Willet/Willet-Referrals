@@ -6,9 +6,10 @@ urlpatterns = [
     # Views
     #(r'/a/shopify',   ShopifyRedirect),
     (r'/a/deleteApp', DoDeleteApp),
+    (r'/app.json', AppJSONDynamicLoader),
 
     # Processes
-    (r'/a/appClicksCounter',    AppClicksCounter),
-    (r'/a/batchRequest',        BatchRequest),
-    (r'/a/storeSurvey',         BatchStoreSurvey)
+    (r'/a/appClicksCounter', AppClicksCounter),
+    (r'/a/batchRequest', BatchRequest),
+    (r'/a/storeSurvey', BatchStoreSurvey)
 ]

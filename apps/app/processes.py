@@ -14,6 +14,19 @@ from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
+class DoDeleteApp(URIHandler):
+    def post(self):
+        client = self.get_client()
+        app_uuid = self.request.get('app_uuid')
+
+        logging.info('app id: %s' % app_uuid)
+        app = App.get(app_uuid)
+        if app.client.key() == client.key():
+            logging.info('deelting')
+            app.delete()
+
+        self.redirect('/client/account')
+
 
 class BatchRequest(URIHandler):
     """ I-CAN'T-BELIEVE-IT'S-EXPERIMENTAL: Start a batch request of a class
