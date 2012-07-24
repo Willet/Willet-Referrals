@@ -529,6 +529,8 @@ class VoteDynamicLoader(URIHandler):
 
         if instance.asker:
             name = instance.asker.name
+            logging.info('asker_name %s '
+                         'coming from instance.asker.name' % name)
         else:  # fix instance by assigning a best-guess user
             logging.warn('Fixing user-less instance. '
                          'Assigning whichever user we can get.')
