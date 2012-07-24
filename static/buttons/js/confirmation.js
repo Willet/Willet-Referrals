@@ -439,7 +439,7 @@ _willet = (function (me) {
 
     var sharePurchaseTemplate = ""
         + "<div class='sharing'>"
-        + "  <p>Thanks! Check us out on these networks:</p>"
+        + "  <p>Follow us to get the latest updates:</p>"
         + "  <ul>"
         + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
@@ -460,6 +460,9 @@ _willet = (function (me) {
         + "    margin: 10px 0 0 0;"
         + "    background-color:#FFF !important;"
         + "    color: #000 !important;"
+        + "}"
+        + "div.sharing>p {"
+        + "    text-align: center;"
         + "}"
         + "div.sharing ul {"
         + "    list-style-type:none;"
