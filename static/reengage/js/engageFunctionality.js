@@ -130,8 +130,8 @@ var removePost = function (uuid) {
         "Confirm",
         "Are you sure you want to delete this post?",
         function () {
-            $('#' + uuid).remove();
             deletePost(uuid);
+            $('#' + uuid).remove();
             // updateQueueUI();
         }
     );
