@@ -128,7 +128,7 @@ var loadQueues = function (app, queue, callback) {
                 queues.push(queue);
             }
             app.queues = queues;
-            updateQueueUI($(".post.selected").data("uuid"))
+            updateQueueUI($(".post.selected").data("uuid"));
         },
         callback
     );
@@ -184,6 +184,7 @@ var createPost = function (title, content, first, uuid) {
             var post = data.post;
             loadQueues(client.apps[0], '', function () {
                 updateQueueUI(post.uuid);
+                updatePostUI();
             });
             // updateQueueUI(post.uuid);
         }
@@ -222,6 +223,8 @@ var deletePost = function (uuid) {
     // deletes a post from the server. reloads the queue.
     var url = '{% url ReEngagePostJSONHandler "__REPLACE__" %}'
               .replace(/__REPLACE__/g, uuid);
+
+    var prevPostUUID = $('#' + uuid).prev().data('uuid');
     $.ajax($.extend({}, jsonTemplate, {
         'url': url,
         'type': "DELETE",
@@ -229,7 +232,8 @@ var deletePost = function (uuid) {
         'data': {},
         'success': function () {
             loadQueues(client.apps[0]);
-            //updateQueueUI();
+            updateQueueUI(prevPostUUID);
+            updatePostUI();
         }
     }));
 };
