@@ -459,13 +459,13 @@ _willet = (function (me) {
         + "<ul>"
         + "    <li>Follow us on: </li>"
         + "    {% if facebookUsername %}<li><a target='_blank' href='//facebook.com/{{ facebookUsername }}/'>"
-        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/facebook-140x140.png' /></a>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/facebook-140x140.png' /></a>"
         + "    </li>{% endif %}"
         + "    {% if pinterestUsername %}<li><a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
-        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/pinterest-60x60.png' /></a>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/pinterest-60x60.png' /></a>"
         + "    </li>{% endif %}"
         + "    {% if twitterUsername %}<li><a target='_blank' href='//twitter.com/{{ twitterUsername }}'>"
-        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/twitter-250x250.png' /></a>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/twitter-250x250.png' /></a>"
         + "    </li>{% endif %}"
         + "</ul>";
 
