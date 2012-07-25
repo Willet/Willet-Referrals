@@ -664,4 +664,5 @@ def get_user(urihandler, **kwargs):
         return user
 
     app = get_app(urihandler=urihandler)  # None
+    logging.debug('Creating user with app %s' % app.uuid)
     return User.get_or_create_by_cookie(urihandler, app)

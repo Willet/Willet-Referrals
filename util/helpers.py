@@ -195,7 +195,7 @@ def read_user_cookie(request_handler):
     """Sets a cookie to identify a user"""
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
     user_uuid = cookieutil.get_secure_cookie(name = 'willet_user_uuid')
-    logging.info("Reading a user cookie: %s" % user_uuid)
+    logging.debug("Reading a user cookie: %s" % user_uuid)
     return user_uuid
 
 

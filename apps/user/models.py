@@ -5,7 +5,7 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
+# import logging
 import urllib
 
 from django.utils import simplejson
@@ -22,6 +22,7 @@ from apps.email.models import Email
 from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
                         MEMCACHE_TIMEOUT
 from util.helpers import common_items, generate_uuid, set_user_cookie, url
+from util.logger import logging
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -66,12 +67,12 @@ class EmailModel(Model):
             try:
                 # Check if this is a returning user who has cleared their cookies
                 if existing_model.user.uuid != user.uuid:
-                    '''
-                    Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (
+                    Email.emailDevTeam("CHECK OUT: %s(%s) %s. "
+                                       "They might be the same person." % (
                                         existing_model.address,
-                                        existing_model.user.uuid, user.uuid),
-                                        subject='Duplicate user detected')
-                    '''
+                                        existing_model.user.uuid,
+                                        user.uuid),
+                                       subject='Duplicate user detected')
                     logging.warn('merging two duplicate users.')
                     user.merge_data(existing_model.user)  # merge
                     existing_model.user = user  # replace reference
@@ -388,23 +389,29 @@ class User(db.Expando):
         """
         if service == 'facebook':
             if getattr(self, 'fb_first_name', u''):
+                logging.debug('using fb_first_name as name')
                 return u'%s %s' % (getattr(self, 'fb_first_name', ''),
                                    getattr(self, 'fb_last_name', ''))
             if hasattr(self, 'fb_name'):
+                logging.debug('using fb_name as name')
                 return self.fb_name
 
         if getattr(self, 'full_name', u''):
+            logging.debug('using full_name as name')
             return getattr(self, 'full_name', u'')
 
         if getattr(self, 'first_name', ''):
+            logging.debug('using first_name as name')
             return u'%s %s' % (getattr(self, 'first_name', ''),
                                getattr(self, 'last_name', ''))
 
         if getattr(self, 'fb_first_name', ''):
+            logging.debug('using fb_first_name as name')
             return u'%s %s' % (getattr(self, 'fb_first_name', ''),
                                getattr(self, 'fb_last_name', ''))
 
         if getattr(self, 'fb_name', u''):
+            logging.debug('using fb_name as name')
             return getattr(self, 'fb_name', u'')
 
         # Twitter username
@@ -416,6 +423,7 @@ class User(db.Expando):
             logging.warn('passing user\'s email as name!')
             return getattr(self, 'email', u'')
 
+        logging.warn('This user has no name!')
         return u''
 
     name = property(get_full_name) # read-only property
