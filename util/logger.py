@@ -35,91 +35,85 @@ class logging(object):
     """
     logs_namespace = 'logging'  # to avoid interference with memcache items
 
+    # tuple of logging methods you can call
+    allowed_log_methods = ('debug', 'info', 'warn', 'error', 'critical')
+
     @classmethod
     def debug(cls, *args, **kwargs):
-        if not len(args):
-            return  # don't screw with us
-
-        count = cls._get_tally(msg=args[0])
-
-        args = list(args)  # turn immutable tuple into a list
-        args[0] = u"%s%s" % (args[0], cls._format_msg(count))
-
-        kwargs['exc_info'] = True
-        internal_logging.debug(*args, **kwargs)
+        """Tallies; does not email."""
+        cls._emit(*args, **kwargs)
 
     @classmethod
     def info(cls, *args, **kwargs):
-        if not len(args):
-            return  # don't screw with us
-
-        count = cls._get_tally(msg=args[0])
-
-        args = list(args)  # turn immutable tuple into a list
-        args[0] = u"%s%s" % (args[0], cls._format_msg(count))
-
-        kwargs['exc_info'] = True
-        internal_logging.info(*args, **kwargs)
+        """Tallies; does not email."""
+        default_dict = {'method': 'info'}
+        default_dict.update(kwargs)
+        cls._emit(*args, **default_dict)
 
     @classmethod
     def warn(cls, *args, **kwargs):
-        if not len(args):
-            return  # don't screw with us
-
-        count = cls._get_tally(msg=args[0])
-
-        args = list(args)  # turn immutable tuple into a list
-        args[0] = u"%s%s" % (args[0], cls._format_msg(count))
-        kwargs['exc_info'] = True
-        internal_logging.warn(*args, **kwargs)
+        """Tallies; does not email."""
+        default_dict = {'method': 'warn'}
+        default_dict.update(kwargs)
+        cls._emit(*args, **default_dict)
 
     @classmethod
     def error(cls, *args, **kwargs):
         """Does not send email, unless kwargs[email] = True."""
-        if not len(args):
-            return  # don't screw with us
-
-        kwargs['exc_info'] = True
-        internal_logging.error(*args, **kwargs)
-        if not USING_DEV_SERVER and kwargs.get('email', False):
-            Email.emailDevTeam(args[0], subject='[Error]')
+        default_dict = {'method': 'error', 'include_count': False}
+        default_dict.update(kwargs)
+        cls._emit(*args, **default_dict)
 
     @classmethod
     def critical(cls, *args, **kwargs):
-        """Can you even issue a critical message?"""
-        if not len(args):
+        """Does not send email, unless kwargs[email] = False."""
+        default_dict = {'method': 'critical', 'email': True,
+                        'include_count': False}
+        default_dict.update(kwargs)
+        cls._emit(*args, **default_dict)
+
+    @classmethod
+    def _emit(cls, *args, **kwargs):
+        """Emits a {method}-level log.
+
+        Method must be defined in allowed_log_methods.
+        Then, if {email} is true, fire off an email with said message.
+
+        If {include_count} is true, message tells you the number of times
+        the same error message occurred in the past {MEMCACHE_TIMEOUT} period.
+        """
+        method = kwargs.get('method', 'debug')
+        if not (len(args) and method):
             return  # don't screw with us
 
-        kwargs['exc_info'] = True
-        internal_logging.critical(*args, **kwargs)
-        if not USING_DEV_SERVER and kwargs.get('email', True):
-            Email.emailDevTeam(args[0], subject='[CRITICAL]')
+        if kwargs.get('include_count', True):  # patch message
+            args = list(args)  # first turn immutable tuple into a list
+            args[0] = cls._format_msg(args[0])
+
+        log_func = getattr(internal_logging, method, None)
+        if not (log_func and method in cls.allowed_log_methods):
+            raise AttributeError(u'Method not allowed')
+
+        # fire the logging function.
+        log_func(exc_info=True, *args)
+
+        # fire off email on live server.
+        if kwargs.get('email', False) and not USING_DEV_SERVER:
+            Email.emailDevTeam(args[0], subject='[%s]' % method)
 
     @classmethod
-    def _format_msg(cls, count=0):
+    def _format_msg(cls, msg):
         """Outputs a string account to the count. If count is 0? No message."""
-        if count:
-            return u"(logged %d times in the past %d secs)" % (
-                count, memcache.get_stats().get('oldest_item_age', 0))
-        return u''
-
-    @classmethod
-    def _get_tally(cls, msg=None):
-        """Count the number of times a similar message appeared.
-
-        Because logs usually come in the form
-        {Problem}: {Description}
-        e.g. Cannot set memcache: Brian is a n00b
-        _get_tally tallies tallies only using the part before the messages'
-        first colon.
-
-        Returns: the count (as far as memcache can tell)
-        """
+        count = 0
         try:
             msg = msg[msg.find(':')+1:].strip()
             if msg:
-                return memcache.incr(msg, namespace=cls.logs_namespace,
+                count = memcache.incr(msg, namespace=cls.logs_namespace,
                                      initial_value=0) or 0
         except:
             pass  # no need to try hard
-        return 0
+
+        if count:
+            return u"%s (logged %d times in the past %d secs)" % (
+                msg, count, memcache.get_stats().get('oldest_item_age', 0))
+        return u''

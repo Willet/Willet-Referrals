@@ -5,7 +5,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-# import logging
 import urllib
 
 from django.utils import simplejson

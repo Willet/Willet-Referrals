@@ -4,7 +4,6 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
-# import logging
 import os
 import random
 import urllib2
