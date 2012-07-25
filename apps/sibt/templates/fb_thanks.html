@@ -21,7 +21,10 @@
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
-                    data: { email : addr },
+                    data: {
+                        'email': addr,
+                        'user_uuid': '{{ user_uuid }}'
+                    },
                     success: function (tr) {
                         window.close();
                     }

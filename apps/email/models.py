@@ -67,7 +67,8 @@ class Email():
 
     @staticmethod
     def welcomeClient(app_name, to_addr, name, store_name,
-                      use_full_name=False, custom_install_url=""):
+                      use_full_name=False, custom_install_url="",
+                      additional_data=None):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
@@ -94,6 +95,15 @@ class Email():
                   <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
                   <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
 
+        elif app_name == 'ShopConnection Engage':
+            body += """<p>Thanks for installing <i>%s</i>!  We are excited to see
+                        your store, %s, getting the exposure it deserves.</p>
+                        <p>Please <a href="%s">activate your new account</a> to
+                         get started.</p>
+                      <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
+                      <p>If you have any ideas on how to improve %s,
+                      please let us know.</p>""" % \
+                (app_name, store_name, additional_data.get("url"), app_name)
         else:
             logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
             return
@@ -165,6 +175,35 @@ class Email():
                          body=body,
                          to_name=name,
                          replyto_address=FRASER)
+
+    @staticmethod
+    def verify_reengage_token_email(email, token):
+        """Sends email to a ReEngage user to activate their account.
+
+        Also used to reset their password."""
+        link = url("ReEngageVerify", qs={
+            "email": email,
+            "token": token
+        })
+
+        full_url = "https://%s%s" % (APP_DOMAIN, link)
+
+        subject = "ShopConnection ReEngage: Account Activation"
+        body = """
+                <p>Hi,</p>
+                <p>Please click this link to activate your ReEngage
+                account.</p>
+                <p>
+                    <a href="%s">Activate your account</a>
+                </p>""" % full_url
+
+        Email.send_email(
+            from_address=FROM_ADDR,
+            to_address=email,
+            to_name=email,
+            subject=subject,
+            body=body
+        )
 
     @staticmethod
     def report_smart_buttons(email="info@getwillet.com", items={},

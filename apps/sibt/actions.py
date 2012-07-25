@@ -5,8 +5,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
-
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
@@ -15,6 +13,7 @@ from apps.action.models import ClickAction, ShowAction, UserAction, VoteAction
 from util.consts import MEMCACHE_TIMEOUT
 from util.errors import deprecated
 from util.helpers import generate_uuid
+from util.logger import logging
 
 
 class SIBTUserAction(UserAction):
