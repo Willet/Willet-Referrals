@@ -225,22 +225,26 @@ class UpdateEmailAddress(URIHandler):
     """Allows updates to the current user.
 
     New: allows update of the name attribute as well.
+    New: allows update of FB access token (deprecated) as well.
     """
     def post(self):
-        user = User.get_by_cookie(self)
+        user = User.get(self.request.get('user_uuid'))
         if not user:  # null-cookie'd
+            self.error(404)
             return
+
         email = self.request.get('email')
         if email:
             user.update(email=email)
+
         name = self.request.get('name')
         if name:
             user.update(full_name=name)
 
+        access_token = self.request.get('accessToken')
+        if access_token:
+            user.update(fb_access_token=access_token)
 
-class UpdateFBAccessToken(URIHandler):
-    """ Store FB access token and FB id in User """
-    def post(self):
-        user = User.get(self.request.get('user_uuid'))
-        user.update(fb_access_token = self.request.get('accessToken'),
-                     fb_identity = self.request.get('fbUserId'))
+        fb_user_id = self.request.get('fbUserId')
+        if fb_user_id:
+            user.update(fb_identity=fb_user_id)

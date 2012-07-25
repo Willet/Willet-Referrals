@@ -807,7 +807,7 @@ class ShowFBThanks(URIHandler):
         user_cancelled = True
         app = None
         post_id = self.request.get('post_id') # from FB
-        user = User.get_by_cookie(self)
+        user = User.get_or_create_by_cookie(self)
         instance = SIBTInstance.get_by_user(user)
         product = None
 
@@ -820,6 +820,7 @@ class ShowFBThanks(URIHandler):
 
         template_values = {
             'email': user.get_attr('email'),
+            'user_uuid': user.uuid,
             'user_cancelled': user_cancelled,
             'incentive_enabled': app.incentive_enabled if app else False
         }
