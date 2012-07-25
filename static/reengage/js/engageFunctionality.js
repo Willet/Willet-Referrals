@@ -398,14 +398,7 @@ $(document).ready(function () {
     //Delete post
     $(document).on("click", ".postDelete", function () {
         var uuid = $(this).parent().attr("id");
-        confirmDialog(
-            "Confirm", "Are you sure you want to delete this post?",
-            function () {
-                $('#' + uuid).remove();
-                deletePost(uuid);
-                // updateQueueUI();
-            }
-        );
+        removePost(uuid);
     });
 
     //When you click 'save', contents are saved to the post
