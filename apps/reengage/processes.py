@@ -1,7 +1,7 @@
 import logging
 import datetime
 from google.appengine.ext import db
-from apps.reengage.models import ReEngageQueue
+from apps.reengage.models import ReEngageQueue, ReEngagePost
 from apps.reengage.social_networks import Facebook, SocialNetwork
 from util.urihandler import URIHandler
 
@@ -38,17 +38,22 @@ class ReEngageCron(URIHandler):
             post_uuid = queue.queued[0]
 
             try:
-                post = db.get(post_uuid)
-                cls  = POST_CLASSES.get(post.network, SocialNetwork)
-
-                logging.info("Preparing post...")
-                for product in products:
-                    logging.info("Sending content for %s..." % product)
-                    cls.post(post, product=product)
-
+                post = ReEngagePost.get(post_uuid)
             except Exception, e:
+                # There was a problem getting the post.
                 logging.error(e)
                 continue
+
+            cls  = POST_CLASSES.get(post.network, SocialNetwork)
+
+            logging.info("Preparing post...")
+            for product in products:
+                logging.info("Sending content for %s..." % product)
+                try:
+                    cls.post(post, product=product)
+                except Exception, e:
+                    # Problem posting, no OpenGraph tag?
+                    logging.error("Problem posting. Probably no OG tag for %s" % product.uuid)
 
             logging.info("Post: %s" % post_uuid)
 
