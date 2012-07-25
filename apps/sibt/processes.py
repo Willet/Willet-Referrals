@@ -4,7 +4,6 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
-import logging
 import random
 import re
 import hashlib
@@ -26,6 +25,7 @@ from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
+from util.logger import logging
 from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler

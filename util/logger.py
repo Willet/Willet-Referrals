@@ -99,7 +99,7 @@ class logging(object):
     def _format_msg(cls, count=0):
         """Outputs a string account to the count. If count is 0? No message."""
         if count:
-            return u"\n\nThis message showed %d times in the past %d seconds." % (
+            return u"(logged %d times in the past %d secs)" % (
                 count, memcache.get_stats().get('oldest_item_age', 0))
         return u''
 

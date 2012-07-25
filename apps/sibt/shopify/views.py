@@ -3,7 +3,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
 import os
 
 from datetime import datetime
@@ -24,6 +23,7 @@ from apps.user.models import User
 from util.consts import P3P_HEADER, SECURE_URL, SHOPIFY_APPS, URL
 from util.helpers import admin_required, get_target_url
 from util.helpers import url as build_url
+from util.logger import logging
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 

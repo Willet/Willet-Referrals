@@ -5,7 +5,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
 import random
 
 from datetime import timedelta
@@ -30,6 +29,7 @@ from apps.vote.models import VoteCounter
 from util.consts import USING_DEV_SERVER
 from util.helpers import generate_uuid, get_target_url, \
                          unhashable_object_unique_filter
+from util.logger import logging
 from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty

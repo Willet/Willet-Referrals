@@ -60,27 +60,27 @@ class EmailModel(Model):
             raise ValueError('Supply an email to create an EmailModel.')
 
         # Check to see if we have one already
-        existing_model = cls.get_by_email(email)
+        existing_emailmodel = cls.get_by_email(email)
 
         # get...
-        if existing_model:
+        if existing_emailmodel:
             try:
                 # Check if this is a returning user who has cleared their cookies
-                if existing_model.user.uuid != user.uuid:
+                if existing_emailmodel.user.uuid != user.uuid:
                     Email.emailDevTeam("CHECK OUT: %s(%s) %s. "
                                        "They might be the same person." % (
-                                        existing_model.address,
-                                        existing_model.user.uuid,
+                                        existing_emailmodel.address,
+                                        existing_emailmodel.user.uuid,
                                         user.uuid),
                                        subject='Duplicate user detected')
                     logging.warn('merging two duplicate users.')
-                    user.merge_data(existing_model.user)  # merge
-                    existing_model.user = user  # replace reference
+                    existing_emailmodel.user.merge_data(user)  # merge
             except AttributeError, err:
                 logging.error('wtf? user has no uuid.', exc_info=True)
         else:  # ... or create
-            existing_model = cls(key_name=email, address=email, user=user)
-        existing_model.put()
+            existing_emailmodel = cls(key_name=email, address=email, user=user)
+        existing_emailmodel.put()
+        return existing_emailmodel
 
     @classmethod
     def get_by_email(cls, email):
@@ -535,7 +535,7 @@ class User(db.Expando):
         return is_admin
 
     def merge_data(self, u):
-        """ Merge u into self."""
+        """ Merge u into self. u will be terminated."""
         if self.key() == u.key():
             return True
 
@@ -545,6 +545,7 @@ class User(db.Expando):
         for p in props:
             setattr(self, p, getattr(u, p))
 
+        u.delete()
         self.put_later()
 
     def update(self, **kwargs):
