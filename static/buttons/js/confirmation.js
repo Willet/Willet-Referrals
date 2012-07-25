@@ -644,26 +644,6 @@ _willet = (function (me) {
         }
     }
 
-    // Public functions
-    me.createFollowUs = function(config) {
-        debug.log("Follow us: finding placeholder on page");
-        var followUsDiv = document.getElementById(FOLLOW_DIV_ID);
-
-        if (followUsDiv) {
-
-            // Style container
-            // followUsDiv.style.... = ...
-
-            // Make visible if hidden
-            followUsDiv.style.display = 'block';
-
-            debug.log('Follow us: Done!');
-        } else {
-            debug.log('Follow us: could not find buttons placeholder on page');
-        }
-    };
-
-
     me.init = function () {
         // Load confirmation follow us widget on purchase confirmation page
         if (window.location.hostname.match(/^checkout\.shopify\.com$/)) {
