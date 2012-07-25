@@ -9,7 +9,6 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import inspect
-import logging
 from datetime import datetime
 
 from django.utils import simplejson as json
@@ -23,6 +22,7 @@ from apps.sibt.models import SIBT
 from util.consts import DOMAIN
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
+from util.logger import logging
 
 
 class SIBTShopify(SIBT, AppShopify):
