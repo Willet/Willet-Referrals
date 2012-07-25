@@ -128,6 +128,7 @@ var loadQueues = function (app, queue, callback) {
                 queues.push(queue);
             }
             app.queues = queues;
+            updateQueueUI($(".post.selected").data("uuid"))
         },
         callback
     );
@@ -227,9 +228,8 @@ var deletePost = function (uuid) {
         'dataType': 'json',
         'data': {},
         'success': function () {
-            // alertDialog("", "Post deleted from server");
             loadQueues(client.apps[0]);
-            updateQueueUI();
+            //updateQueueUI();
         }
     }));
 };

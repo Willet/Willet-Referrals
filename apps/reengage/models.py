@@ -348,9 +348,9 @@ class ReEngageQueue(Model):
 
 class ReEngagePost(Model):
     """Represents an individual piece of content in the queue"""
-    title   = db.StringProperty()
-    network = db.StringProperty()
-    content = db.StringProperty()
+    title   = db.StringProperty(indexed=True)
+    network = db.StringProperty(indexed=True)
+    content = db.StringProperty(multiline=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
