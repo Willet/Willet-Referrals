@@ -645,42 +645,35 @@ _willet = (function (me) {
     }
 
     me.init = function () {
-        // Load confirmation follow us widget on purchase confirmation page
+        var setup = {};
+
         if (window.location.hostname.match(/^checkout\.shopify\.com$/)) {
-            // Get hook on page
+            // Load confirmation follow us widget on purchase confirmation page
             var content = document.getElementById('content');
+            var container = document.createElement('div');
+            content.parentNode.insertBefore(container, content);
 
-            if (content) {
-                var container = document.createElement('div');
-
-                // Retrieve configuration from script query string
-                var config = me.getConfigurationFromURL();
-
-                if (config.enabled) {
-                    container.innerHTML = util.renderSimpleTemplate(confirmationTemplate, config);
-                    container.appendChild( util.createStyle(confirmationStyleRules) );
-
-                    for (var i = scripts.length-1; i >= 0; i--) {
-                        HEAD.appendChild( util.createScript(scripts[i]) );
-                    }
-
-                    // Add the div to the page
-                    content.parentNode.insertBefore(container, content);
-                } else {
-                    debug.log("Confirmation widget not loaded: disabled by configuration");
-                }
+            setup = {
+                'placeholderDiv': container,
+                'template': confirmationTemplate,
+                'rules': confirmationStyleRules
             }
         } else {
-            // See 
-            var followUsDiv = document.getElementById(FOLLOW_DIV_ID);
-
-            if (followUsDiv) {
+            // Load follow us widget for all other pages
+            setup = {
+                'placeholderDiv': document.getElementById(FOLLOW_DIV_ID),
+                'template': followUsTemplate,
+                'rules': followUsStyleRules
+            }
+        }
+        // Load widget given inputs
+        if (setup.placeholderDiv) {
                 // Retrieve configuration from script query string
                 var config = me.getConfigurationFromURL();
 
                 if (config.enabled) {
-                    followUsDiv.innerHTML = util.renderSimpleTemplate(followUsTemplate, config);
-                    followUsDiv.appendChild( util.createStyle(followUsStyleRules) );
+                    setup.placeholderDiv.innerHTML = util.renderSimpleTemplate(setup.template, config);
+                    setup.placeholderDiv.appendChild( util.createStyle(setup.rules) );
 
                     for (var i = scripts.length-1; i >= 0; i--) {
                         HEAD.appendChild( util.createScript(scripts[i]) );
@@ -689,7 +682,6 @@ _willet = (function (me) {
                     debug.log("Follow us widget not loaded: disabled by configuration");
                 }
             }
-        }
     };
 
     return me;
