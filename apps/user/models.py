@@ -5,7 +5,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
 import urllib
 
 from django.utils import simplejson
@@ -22,6 +21,7 @@ from apps.email.models import Email
 from util.consts import ADMIN_EMAILS, ADMIN_IPS, FACEBOOK_QUERY_URL, \
                         MEMCACHE_TIMEOUT
 from util.helpers import common_items, generate_uuid, set_user_cookie, url
+from util.logger import logging
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -59,27 +59,27 @@ class EmailModel(Model):
             raise ValueError('Supply an email to create an EmailModel.')
 
         # Check to see if we have one already
-        existing_model = cls.get_by_email(email)
+        existing_emailmodel = cls.get_by_email(email)
 
         # get...
-        if existing_model:
+        if existing_emailmodel:
             try:
                 # Check if this is a returning user who has cleared their cookies
-                if existing_model.user.uuid != user.uuid:
-                    '''
-                    Email.emailDevTeam("CHECK OUT: %s(%s) %s. They might be the same person." % (
-                                        existing_model.address,
-                                        existing_model.user.uuid, user.uuid),
-                                        subject='Duplicate user detected')
-                    '''
+                if existing_emailmodel.user.uuid != user.uuid:
+                    Email.emailDevTeam("CHECK OUT: %s(%s) %s. "
+                                       "They might be the same person." % (
+                                        existing_emailmodel.address,
+                                        existing_emailmodel.user.uuid,
+                                        user.uuid),
+                                       subject='Duplicate user detected')
                     logging.warn('merging two duplicate users.')
-                    user.merge_data(existing_model.user)  # merge
-                    existing_model.user = user  # replace reference
+                    existing_emailmodel.user.merge_data(user)  # merge
             except AttributeError, err:
                 logging.error('wtf? user has no uuid.', exc_info=True)
         else:  # ... or create
-            existing_model = cls(key_name=email, address=email, user=user)
-        existing_model.put()
+            existing_emailmodel = cls(key_name=email, address=email, user=user)
+        existing_emailmodel.put()
+        return existing_emailmodel
 
     @classmethod
     def get_by_email(cls, email):
@@ -388,23 +388,29 @@ class User(db.Expando):
         """
         if service == 'facebook':
             if getattr(self, 'fb_first_name', u''):
+                logging.debug('using fb_first_name as name')
                 return u'%s %s' % (getattr(self, 'fb_first_name', ''),
                                    getattr(self, 'fb_last_name', ''))
             if hasattr(self, 'fb_name'):
+                logging.debug('using fb_name as name')
                 return self.fb_name
 
         if getattr(self, 'full_name', u''):
+            logging.debug('using full_name as name')
             return getattr(self, 'full_name', u'')
 
         if getattr(self, 'first_name', ''):
+            logging.debug('using first_name as name')
             return u'%s %s' % (getattr(self, 'first_name', ''),
                                getattr(self, 'last_name', ''))
 
         if getattr(self, 'fb_first_name', ''):
+            logging.debug('using fb_first_name as name')
             return u'%s %s' % (getattr(self, 'fb_first_name', ''),
                                getattr(self, 'fb_last_name', ''))
 
         if getattr(self, 'fb_name', u''):
+            logging.debug('using fb_name as name')
             return getattr(self, 'fb_name', u'')
 
         # Twitter username
@@ -416,6 +422,7 @@ class User(db.Expando):
             logging.warn('passing user\'s email as name!')
             return getattr(self, 'email', u'')
 
+        logging.warn('This user has no name!')
         return u''
 
     name = property(get_full_name) # read-only property
@@ -527,7 +534,7 @@ class User(db.Expando):
         return is_admin
 
     def merge_data(self, u):
-        """ Merge u into self."""
+        """ Merge u into self. u will be terminated."""
         if self.key() == u.key():
             return True
 
@@ -537,6 +544,7 @@ class User(db.Expando):
         for p in props:
             setattr(self, p, getattr(u, p))
 
+        u.delete()
         self.put_later()
 
     def update(self, **kwargs):
