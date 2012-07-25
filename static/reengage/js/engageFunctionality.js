@@ -97,7 +97,6 @@ var updateQueueUI = function (selectedPostUUID) {
         $('#' + selectedPostUUID).addClass('selected');
         // updatePostUI();
     } // else: select nothing
-    updatePostUI();
 };
 
 var updatePostUI = function () {
