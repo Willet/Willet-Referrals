@@ -435,13 +435,14 @@ _willet = (function (me) {
         debug = me.debug,
         cookies = me.cookies;
 
-    var HEAD = document.getElementsByTagName('head')[0];
+    var HEAD = document.getElementsByTagName('head')[0],
+        FOLLOW_DIV_ID = '_willet_follow_app';
 
-    var sharePurchaseTemplate = ""
-        + "<div class='sharing'>"
+    var confirmationTemplate = ""
+        + "<div id='_willet_confirmation_app'>"
         + "  <p>Follow us to get the latest updates:</p>"
         + "  <ul>"
-        + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
+        + "    {% if facebookUsername %}<li><div class='fb-like' href='//facebook.com/{{ facebookUsername }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
         + "      <div class='pinterest-button'>"
         + "        <a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
@@ -454,23 +455,37 @@ _willet = (function (me) {
         + "  </ul>"
         + "</div>";
 
-    var styleRules = ""
-        + "div.sharing {"
+    var followUsTemplate = ""
+        + "<ul>"
+        + "    <li>Follow us on: </li>"
+        + "    {% if facebookUsername %}<li><a target='_blank' href='//facebook.com/{{ facebookUsername }}/'>"
+        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/facebook-140x140.png' /></a>"
+        + "    </li>{% endif %}"
+        + "    {% if pinterestUsername %}<li><a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
+        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/pinterest-60x60.png' /></a>"
+        + "    </li>{% endif %}"
+        + "    {% if twitterUsername %}<li><a target='_blank' href='//twitter.com/{{ twitterUsername }}'>"
+        + "        <img src='//fraser-willet2.appspot.com/static/buttons/imgs/twitter-250x250.png' /></a>"
+        + "    </li>{% endif %}"
+        + "</ul>";
+
+    var confirmationStyleRules = ""
+        + "div#_willet_confirmation_app {"
         + "    padding: 0 15px;"
         + "    margin: 10px 0 0 0;"
         + "    background-color:#FFF !important;"
         + "    color: #000 !important;"
         + "}"
-        + "div.sharing>p {"
+        + "div#_willet_confirmation_app>p {"
         + "    text-align: center;"
         + "}"
-        + "div.sharing ul {"
+        + "div#_willet_confirmation_app ul {"
         + "    list-style-type:none;"
         + "    padding: 0 40px;"
         + "    line-height:40px;"
         + "    margin-bottom: 0;"
         + "}"
-        + "div.sharing li {"
+        + "div#_willet_confirmation_app li {"
         + "    display: inline-table;"
         + "    width: 140px;"
         + "}"
@@ -555,6 +570,37 @@ _willet = (function (me) {
         + "        white-space: nowrap;"
         + "}";
 
+    var followUsStyleRules = ""
+        + "div#_willet_follow_app {"
+        + "    height: 20px;"
+        + "    float: right;"
+        + "}"
+        + "div#_willet_follow_app ul {"
+        + "    list-style-type: none;"
+        + "    padding: 0;"
+        + "    margin: 0;"
+        + "}"
+        + "div#_willet_follow_app li {"
+        + "    display: inline;"
+        + "    line-height: 20px;"
+        + "    height: 20px;"
+        + "    font-size: 12px;"
+        + "    list-style-type: none;"
+        + "    padding: 0;"
+        + "    margin: 0;"
+        + "    vertical-align: top;"
+        + "}"
+        + "div#_willet_follow_app a {"
+        + "    text-decoration: none;"
+        + "}"
+        + "div#_willet_follow_app img {"
+        + "    padding: 0;"
+        + "    margin: 0 0 0 3px;"
+        + "    height: 20px;"
+        + "    width: 20px;"
+        + "    border-radius: 2px;"
+        + "}";
+
     var scripts = [ "//platform.twitter.com/widgets.js", "//connect.facebook.net/en_US/all.js#xfbml=1" ];
 
     //var config = {
@@ -598,9 +644,28 @@ _willet = (function (me) {
         }
     }
 
+    // Public functions
+    me.createFollowUs = function(config) {
+        debug.log("Follow us: finding placeholder on page");
+        var followUsDiv = document.getElementById(FOLLOW_DIV_ID);
+
+        if (followUsDiv) {
+
+            // Style container
+            // followUsDiv.style.... = ...
+
+            // Make visible if hidden
+            followUsDiv.style.display = 'block';
+
+            debug.log('Follow us: Done!');
+        } else {
+            debug.log('Follow us: could not find buttons placeholder on page');
+        }
+    };
+
 
     me.init = function () {
-        // Only do something on the order confirmation page
+        // Load confirmation follow us widget on purchase confirmation page
         if (window.location.hostname.match(/^checkout\.shopify\.com$/)) {
             // Get hook on page
             var content = document.getElementById('content');
@@ -612,8 +677,8 @@ _willet = (function (me) {
                 var config = me.getConfigurationFromURL();
 
                 if (config.enabled) {
-                    container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
-                    container.appendChild( util.createStyle(styleRules) );
+                    container.innerHTML = util.renderSimpleTemplate(confirmationTemplate, config);
+                    container.appendChild( util.createStyle(confirmationStyleRules) );
 
                     for (var i = scripts.length-1; i >= 0; i--) {
                         HEAD.appendChild( util.createScript(scripts[i]) );
@@ -626,7 +691,24 @@ _willet = (function (me) {
                 }
             }
         } else {
-            debug.log("Confirmation widget not loaded: not on confirmation page");
+            // See 
+            var followUsDiv = document.getElementById(FOLLOW_DIV_ID);
+
+            if (followUsDiv) {
+                // Retrieve configuration from script query string
+                var config = me.getConfigurationFromURL();
+
+                if (config.enabled) {
+                    followUsDiv.innerHTML = util.renderSimpleTemplate(followUsTemplate, config);
+                    followUsDiv.appendChild( util.createStyle(followUsStyleRules) );
+
+                    for (var i = scripts.length-1; i >= 0; i--) {
+                        HEAD.appendChild( util.createScript(scripts[i]) );
+                    }
+                } else {
+                    debug.log("Follow us widget not loaded: disabled by configuration");
+                }
+            }
         }
     };
 
