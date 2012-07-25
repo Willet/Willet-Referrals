@@ -128,7 +128,7 @@ class MemcacheReferenceProperty(db.Property):
 
             else:
                 # Check for instance in memcache first
-                instance = memcache.get(self.memcache_key)
+                instance = memcache.get(self.memcache_key or '')
 
                 if instance:
                     # Convert to model from protobuf
@@ -138,13 +138,17 @@ class MemcacheReferenceProperty(db.Property):
             if not instance:
                 instance = db.get(reference_id)
 
+                '''
+                # removed to make sure things keep running even after we screw with the db.
                 if instance is None:
                     raise ReferencePropertyResolveError(
                                 'ReferenceProperty failed to be resolved: %s' %
                                 reference_id.to_path())
+                '''
 
             if not instance:
-                logging.error("END: THIS IS BAD. RETURNING NONE")
+                logging.error("The referenced object no longer exists; "
+                              "returning None.")
 
             setattr(model_instance, self.__resolved_attr_name(), instance)
             return instance
@@ -154,9 +158,12 @@ class MemcacheReferenceProperty(db.Property):
     def __set__(self, model_instance, value):
         """Set reference."""
         if not self.memcache_key:
+            '''
+            # permitting storage of None references.
             if not value:
                 raise TypeError('MemcacheReferenceProperty: '
                                 'cannot set reference to None!')
+            '''
 
             if isinstance(value, datastore.Key):
                 logging.debug('MemcacheReferenceProperty: '
@@ -181,7 +188,7 @@ class MemcacheReferenceProperty(db.Property):
                 raise TypeError('Value supplied is neither <google.appengine.datastore.Key> '
                                 'nor <google.appengine.ext.db.Model> (supplied %s)' % type(value))
 
-        if not self.memcache_key:
+        if value and not self.memcache_key:
             logging.error('Cannot get/create memcache key for %s! '
                           'The referenced object no longer exists.' % value,
                           exc_info=True)

@@ -71,9 +71,12 @@ class URIHandler(webapp.RequestHandler):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
-        template_values = {'login_url': '/client/login',
+        template_values = {'debug': USING_DEV_SERVER or \
+                                    (self.request.remote_addr in ADMIN_IPS),
+                           'login_url': '/client/login',
                            'logout_url': '/client/logout',
                            'URL': URL,
+                           'DOMAIN': DOMAIN,
                            'NAME': NAME,
                            'client': client}
         merged_values = dict(template_values)
