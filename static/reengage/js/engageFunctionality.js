@@ -398,7 +398,6 @@ $(document).ready(function () {
     //Delete post
     $(document).on("click", ".postDelete", function () {
         var uuid = $(this).parent().attr("id");
-        console.log(uuid);
         removePost(uuid);
     });
 
