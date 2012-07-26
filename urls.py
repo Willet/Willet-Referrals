@@ -54,7 +54,7 @@ def main():
                     # we clobbered some urls
                     raise ImportError('url route conflict with %s' % app)
             except ImportError, err:
-                logging.error('error importing %s: %s' % (app, err), 
+                logging.error('error importing %s: %s' % (app, err),
                               exc_info=True)
                 import_error = True
 
@@ -72,4 +72,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

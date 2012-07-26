@@ -336,7 +336,7 @@ class SIBTInstance(Model):
                                             self.products)
             return Product.all()\
                           .filter('uuid IN', winning_products_uuids)\
-                          .fetch(1000)
+                          .fetch(10)
         else:
             # that is, if one product is winning the voting
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]

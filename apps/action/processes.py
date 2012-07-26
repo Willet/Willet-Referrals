@@ -47,7 +47,6 @@ class TallyActions(URIHandler):
         """
         actions_to_persist = (memcache.get('actions_to_persist') or '')\
                              .split(',')
-        user = User.get_or_create_by_cookie(self)
 
         for action in actions_to_persist:
             if action:  # could be empty string for some reason
@@ -62,8 +61,7 @@ class TallyActions(URIHandler):
                     act_obj = ActionTally(key_name=uuid,
                                           uuid=uuid,
                                           what=action,
-                                          count=count,
-                                          user=user)
+                                          count=count)
 
                     act_obj.persist()
                     logging.debug('wrote a thing')
