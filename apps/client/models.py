@@ -5,14 +5,13 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
-
 from decimal import *
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
 from apps.user.models import *
 from util.consts import *
+from util.logger import logging
 from util.mailchimp import MailChimp
 from util.model import Model
 from util.helpers import generate_uuid
@@ -62,6 +61,7 @@ class Client(Model, polymodel.PolyModel):
             raise ValueError("User is missing")
 
         try:
+            logging.debug('Client user = %r' % user)
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
         except (AttributeError, IndexError):
