@@ -435,13 +435,14 @@ _willet = (function (me) {
         debug = me.debug,
         cookies = me.cookies;
 
-    var HEAD = document.getElementsByTagName('head')[0];
+    var HEAD = document.getElementsByTagName('head')[0],
+        FOLLOW_DIV_ID = '_willet_follow_app';
 
-    var sharePurchaseTemplate = ""
-        + "<div class='sharing'>"
+    var confirmationTemplate = ""
+        + "<div id='_willet_confirmation_app'>"
         + "  <p>Follow us to get the latest updates:</p>"
         + "  <ul>"
-        + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
+        + "    {% if facebookUsername %}<li><div class='fb-like' href='//facebook.com/{{ facebookUsername }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
         + "      <div class='pinterest-button'>"
         + "        <a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
@@ -454,23 +455,37 @@ _willet = (function (me) {
         + "  </ul>"
         + "</div>";
 
-    var styleRules = ""
-        + "div.sharing {"
+    var followUsTemplate = ""
+        + "<ul>"
+        + "    <li>Follow us on: </li>"
+        + "    {% if facebookUsername %}<li><a target='_blank' href='//facebook.com/{{ facebookUsername }}/'>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/facebook-20x20.png' /></a>"
+        + "    </li>{% endif %}"
+        + "    {% if pinterestUsername %}<li><a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/pinterest-20x20.png' /></a>"
+        + "    </li>{% endif %}"
+        + "    {% if twitterUsername %}<li><a target='_blank' href='//twitter.com/{{ twitterUsername }}'>"
+        + "        <img src='//social-referral.appspot.com/static/buttons/imgs/twitter-20x20.png' /></a>"
+        + "    </li>{% endif %}"
+        + "</ul>";
+
+    var confirmationStyleRules = ""
+        + "div#_willet_confirmation_app {"
         + "    padding: 0 15px;"
         + "    margin: 10px 0 0 0;"
         + "    background-color:#FFF !important;"
         + "    color: #000 !important;"
         + "}"
-        + "div.sharing>p {"
+        + "div#_willet_confirmation_app>p {"
         + "    text-align: center;"
         + "}"
-        + "div.sharing ul {"
+        + "div#_willet_confirmation_app ul {"
         + "    list-style-type:none;"
         + "    padding: 0 40px;"
         + "    line-height:40px;"
         + "    margin-bottom: 0;"
         + "}"
-        + "div.sharing li {"
+        + "div#_willet_confirmation_app li {"
         + "    display: inline-table;"
         + "    width: 140px;"
         + "}"
@@ -555,6 +570,37 @@ _willet = (function (me) {
         + "        white-space: nowrap;"
         + "}";
 
+    var followUsStyleRules = ""
+        + "div#_willet_follow_app {"
+        + "    height: 20px;"
+        + "    float: right;"
+        + "}"
+        + "div#_willet_follow_app ul {"
+        + "    list-style-type: none;"
+        + "    padding: 0;"
+        + "    margin: 0;"
+        + "}"
+        + "div#_willet_follow_app li {"
+        + "    display: inline;"
+        + "    line-height: 20px;"
+        + "    height: 20px;"
+        + "    font-size: 12px;"
+        + "    list-style-type: none;"
+        + "    padding: 0;"
+        + "    margin: 0;"
+        + "    vertical-align: top;"
+        + "}"
+        + "div#_willet_follow_app a {"
+        + "    text-decoration: none;"
+        + "}"
+        + "div#_willet_follow_app img {"
+        + "    padding: 0;"
+        + "    margin: 0 0 0 3px;"
+        + "    height: 20px;"
+        + "    width: 20px;"
+        + "    border-radius: 2px;"
+        + "}";
+
     var scripts = [ "//platform.twitter.com/widgets.js", "//connect.facebook.net/en_US/all.js#xfbml=1" ];
 
     //var config = {
@@ -576,7 +622,7 @@ _willet = (function (me) {
             if (qs) {
                 // A little hack - convert the query string into JSON format and parse it
                 // '&' -> ',' and '=' -> ':'
-                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                var raw_obj = JSON.parse('{"' + decodeURIComponent(qs.replace(/(&amp;|&)/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
                 params = {
                     "enabled": raw_obj.enabled && (raw_obj.enabled === "true"),
                     "shop":  raw_obj.shop || '',
@@ -598,36 +644,44 @@ _willet = (function (me) {
         }
     }
 
-
     me.init = function () {
-        // Only do something on the order confirmation page
+        var setup = {};
+
         if (window.location.hostname.match(/^checkout\.shopify\.com$/)) {
-            // Get hook on page
+            // Load confirmation follow us widget on purchase confirmation page
             var content = document.getElementById('content');
+            var container = document.createElement('div');
+            content.parentNode.insertBefore(container, content);
 
-            if (content) {
-                var container = document.createElement('div');
-
+            setup = {
+                'placeholderDiv': container,
+                'template': confirmationTemplate,
+                'rules': confirmationStyleRules
+            }
+        } else {
+            // Load follow us widget for all other pages
+            setup = {
+                'placeholderDiv': document.getElementById(FOLLOW_DIV_ID),
+                'template': followUsTemplate,
+                'rules': followUsStyleRules
+            }
+        }
+        // Load widget given inputs
+        if (setup.placeholderDiv) {
                 // Retrieve configuration from script query string
                 var config = me.getConfigurationFromURL();
 
                 if (config.enabled) {
-                    container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
-                    container.appendChild( util.createStyle(styleRules) );
+                    setup.placeholderDiv.innerHTML = util.renderSimpleTemplate(setup.template, config);
+                    setup.placeholderDiv.appendChild( util.createStyle(setup.rules) );
 
-                    for (var i = scripts.length; i >= 0; i--) {
+                    for (var i = scripts.length-1; i >= 0; i--) {
                         HEAD.appendChild( util.createScript(scripts[i]) );
                     }
-
-                    // Add the div to the page
-                    content.parentNode.insertBefore(container, content);
                 } else {
-                    debug.log("Confirmation widget not loaded: disabled by configuration");
+                    debug.log("Follow us widget not loaded: disabled by configuration");
                 }
             }
-        } else {
-            debug.log("Confirmation widget not loaded: not on confirmation page");
-        }
     };
 
     return me;

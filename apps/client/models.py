@@ -16,6 +16,7 @@ from util.consts import *
 from util.mailchimp import MailChimp
 from util.model import Model
 from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.shopify_helpers import get_url_variants
 
 
@@ -63,7 +64,7 @@ class Client(Model, polymodel.PolyModel):
         try:
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
-        except AttributeError:
+        except (AttributeError, IndexError):
             msg = "User supplied must have at least name and one email address"
             logging.error(msg, exc_info=True)
             raise AttributeError(msg)  # can't really skip that

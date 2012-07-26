@@ -400,7 +400,29 @@ _willet.sibt = (function (me) {
                 'display': 'block',
                 'clear': 'both'
             })
-            .click(me.button_onclick);
+            .click(function (message) {
+                // shows the ask your friends iframe
+                wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
+                var shopify_ids = [];
+                if (cart_items) {
+                    // WOSIB exists on page; send extra data
+                    for (var i = 0; i < cart_items.length; i++) {
+                        shopify_ids.push(cart_items[i].id);
+                    }
+                }
+
+                return wm.fire('showColorbox', {
+                    href: "{{URL}}{% url AskDynamicLoader %}" +
+                        // do not merge with metadata(): it escapes commas
+                        "?products=" + me.getProductUUIDs().join(',') +
+                        "&shopify_ids=" + shopify_ids.join(',') +
+                        "&instance_uuid={{ instance.uuid }}" +
+                        "&" + me.metadata()
+                });
+
+                // else if no products: do nothing
+                wm.fire('log', "no products! cancelling dialogue.");
+            });
 
             if (!instance.has_product) {
                 // if no product, try to detect one, but don't show button
@@ -622,7 +644,7 @@ _willet.sibt = (function (me) {
             'visited_urls_count',  // exact URLs not tracked for privacy
             parseInt(_willet.storage.get('visited_urls_count', 0)) + 1
         );
-        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 4) {  // UNSURE_MULTI_VIEW trigger
+        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 3) {  // UNSURE_MULTI_VIEW trigger
             // must be changed before initBottomPopup
             wm.fire('log', 'unsure_multi_view was turned on from the client side.');
             app.unsure_multi_view = true;

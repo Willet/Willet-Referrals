@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
+<link rel="stylesheet" href="/static/css/colorbox.css" />
+<script>
+    $(document).ready(function() {
+        $('#go_to_shopify').click(function() {
+            window.location = "{{app.store_url}}/admin";
+        });
+        $('#next_page').click(function(){
+            window.location = "{{login_url}}";
+        });
+        SnapABug.setUserEmail('{{ client_email }}');
+        SnapABug.startChat('Hi - if you run into any problems, i\'m here to help :-)');
+    });
+</script>
+
+<style>
+    p {
+        padding: 0px 0px 0px 0px;
+        margin-bottom: 10px;
+    }
+    h2 {
+        padding: 0px 0px 0px 0px;
+        margin-bottom: 5px;
+    }
+    .instruction-step {
+        background-color: #FFF;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        font-size: 1.0em;
+    }
+    .instruction-step input {
+        margin: 0;
+    }
+    .step-num, .step-warn, .step-info {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        padding: 1px 7px 1px 9px;
+        font-size: 20px;
+        color: #FFF;
+        border-radius: 18px;
+        -webkit-box-shadow: -3px -3px 20px rgb(150,150,150);
+        -moz-box-shadow: -3px -3px 20px rgb(150,150,150);
+        box-shadow: -3px -3px 20px rgb(150,150,150);
+    }
+    .step-num {
+        background-color: #0496AC;
+    }
+    .step-warn {
+        background-color: #C40000;
+        padding: 0 13px;
+    }
+    .step-info {
+        background-color: #0496AC;
+        padding: 0 13px;
+    }
+
+        /*----------------------------  ONE-OFFS ---------------------*/
+
+    .shopconnection-header {
+        height: 62px;
+        margin: 10px 0;
+    }
+    .shopconnection-header img {
+        border: 1px solid #93BC8B;
+        border-radius: 10px;
+        width: 60px;
+        height: 60px;
+        float: left;
+    }
+    .shopconnection-header h3 {
+        color: #0496AC;
+        text-shadow: 1px 1px 1px #FFF;
+        line-height: 2em;
+        padding-left: 90px;
+        margin: 0;
+    }
+</style>
+<!--[if lt IE 9]>
+<style>
+    .step-num, .step-warn, .step-info {
+        box-shadow: none !important;
+        behavior: url("../../static/js/PIE.htc");
+    }
+</style>
+<![endif]-->
+
+{% endblock head %}
+
+{% block header-class %}tall{% endblock %}
+
+{% block content %}
+<div class="lower-10 span-24 last
+                            shopconnection-header">
+    <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+    <h3>{{ shop_owner }}, terrific choice.<br />
+        Let's get you started.
+    </h3>
+</div>
+
+<div class="prepend-top span-24 last
+                            box-design content-container" >
+    <h1>Integration Guide for {{shop_name}}</h1>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-warn">!</div>
+            <p><strong>Uninstall</strong> ShopConnection, if it is
+                installed.</p>
+            <p>At the moment, ShopConnection causes
+                problems when it is installed with ReEngage. To uninstall,
+                visit the <a href="http://{{store_url}}/admin" target="_blank">Shopify
+                administration panel</a>.</p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-num">1.</div>
+            <p><strong>Visit</strong> the <a href="http://{{store_url}}/admin" target="_blank">
+                Shopify administration panel</a></p>
+            <p>Open the <em>Template Editor</em> under <em>Themes</em></p>
+            <img class="span-18" src="/static/imgs/template_editor.png">
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="span-10">
+                <div class="step-num">2.</div>
+                <p><strong>Under</strong> the
+                    <em>Layouts</em> section click on <em>theme.liquid</em></p>
+            </div>
+            <div class="prepend-2 span-6 last">
+                <img src="/static/reengage/imgs/instructions-theme-liquid.png">
+            </div>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-num">3.</div>
+            <p><strong>Replace</strong> <em>&lt;link rel="canonical"
+                href="&#123;&#123; canonical_url &#125;&#125;" /&gt;</em></p>
+            <img src="/static/reengage/imgs/instructions-header.png">
+            <p>... with this:
+                <textarea style='font-size:13px;
+                                    max-width:275px; width: 245px;
+                                    vertical-align: middle; margin-bottom:0px;
+                                    height:20px'
+                          type='text'
+                          readonly='readonly'>&#0123;% include &apos;reengage-header&apos; %&#0125;</textarea>
+            </p>
+
+            <p>Also,
+             remove all the text between that and <em>"&#123;&#123; content_for_header &#125;&#125;"</em></p>
+            <img src="/static/reengage/imgs/instructions-content-for-header.png">
+
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-warn">!</div>
+            <p>This will reset your Facebook 'like' count. Sorry :(</p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">4.</div>
+            <p>
+                <strong>Click</strong> <em>save</em> near the top of the screen.
+            </p>
+            <img class="span-18" src="/static/imgs/save.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="span-10">
+                <div class="step-num">5.</div>
+                <p class="lower-50">
+                    <strong>Under</strong> the <em>Templates</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Templates</em>, try looking under <em>Snippets</em>.
+                </p>
+            </div>
+            <div class="prepend-2 span-6 last">
+                <img src="/static/imgs/snippets_product.png" />
+            </div>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">6.</div>
+            <p>
+                <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
+            </p>
+            <img class="span-18" src="/static/imgs/form.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-warn">!</div>
+            <p>Having trouble finding your cart?  Some templates keep the cart separate as a snippet.  Your <i>product.liquid</i> includes this snippet wherever the cart is supposed to be.  Look through your template snippets, searching each for 'cart' or 'form'.</p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">7.</div>
+            <p>
+                <strong>Once </strong>you've picked a spot, add this code:
+                <textarea style='font-size:13px;
+                                    max-width:275px; width: 245px;
+                                    vertical-align: middle; margin-bottom:0px;
+                                    height:20px'
+                          type='text'
+                          readonly='readonly'>&lt;div id="_willet_buttons_app"&gt;&lt;/div&gt;</textarea>
+            </p>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">8.</div>
+            <p>
+                <strong>Click</strong> <em>save</em> near the top of the screen.
+            </p>
+            <img class="span-18" src="/static/imgs/save.png" />
+        </div>
+    </div>
+
+   <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-num">9.</div>
+            <p><strong>Check</strong> your inbox.</p>
+            <p>You should have received an email about your new account.
+                Follow the instructions in the email.</p>
+            <img src="/static/reengage/imgs/instructions-email.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
+            <div class="step-num">10.</div>
+            <p><strong>Set</strong> your password.</p>
+            <p>Once you have your password set up, you'll be able to log
+                in.</p>
+            <img src="/static/reengage/imgs/instructions-login.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-num">&#x2713;</div>
+            <p>
+                <strong>Log in</strong> to <em>ReEngage ShopConnection</em>
+            </p>
+            <div class="center lower-15">
+                <button class='blue' id='next_page'>
+                    <img src="/static/imgs/shopify-bag-36.png" />
+                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                        Log In
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+            <div class="step-warn">!</div>
+            <p><b>Having trouble?</b> Visit
+                <a target="_blank" href="http://support.willetinc.com">our support website</a>, or email <a href="mailto:support@getwillet.com">support@getwillet.com</a></p>
+        </div>
+    </div>
+
+
+
+    <div class="lower-15 prepend-top span-24 append-bottom last"></div>
+</div>
+{% endblock content %}
+
+{% block body-addendum %}
+<div class="installation-steps">
+    <ul>
+        <li>1. Register Store </li>
+        <li class="on-this-step">2. Setup <em>ShopConnection Engage</em></li>
+        <li>3. Log In</li>
+    </ul>
+</div>
+{% endblock %}

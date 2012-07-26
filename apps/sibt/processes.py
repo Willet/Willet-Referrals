@@ -14,6 +14,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from apps.action.models import Action
+from apps.app.models import App
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
@@ -292,6 +293,23 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
+
+            try:
+                votes = SIBTVoteAction.all().filter('sibt_instance =', instance)\
+                                      .count()
+                if votes:
+                    logging.info('%d Votes for this instance' % votes)
+                else:
+                    logging.info('Instance has no votes. Not emailing user.')
+                    return
+            except TypeError, err:
+                logging.info('Instance has no votes: %s' % err)
+                return # votes can *sometimes* be a Query object if zero votes
+            except AttributeError, err:
+                # votes can *sometimes* be a Query object if zero votes
+                logging.error('Could not find instance votes: %s' % err,
+                              exc_info=True)
+
             products = instance.products
             if products and len(products):
                 Email.SIBTVoteCompletion(instance=instance,
