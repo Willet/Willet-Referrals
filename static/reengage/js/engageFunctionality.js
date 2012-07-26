@@ -43,9 +43,13 @@ var createPostElement = function (post, first) {
             'html': post.title
         }))
         .append($('<div />', {
-            'id': 'delete' + post.uuid,
-            'class': 'postDelete postDeleteImg'
-        }));
+                'id': 'delete' + post.uuid,
+                'class': 'postDelete postDeleteImg'
+            }).click(function() {
+                removePost(post.uuid);
+            })
+        );
+
 
     postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
 };
@@ -393,12 +397,6 @@ $(document).ready(function () {
         }
         // updateQueueUI(newPost.data('uuid'));
         // clickPost(newPost.data('uuid'));
-    });
-
-    //Delete post
-    $(document).on("click", ".postDelete", function () {
-        var uuid = $(this).parent().attr("id");
-        removePost(uuid);
     });
 
     //When you click 'save', contents are saved to the post
