@@ -364,20 +364,6 @@ class User(db.Expando, polymodel.PolyModel):
 
         return user
 
-    def get_first_name(self):
-        fname = None
-        if hasattr(self, 'fb_first_name'):
-            fname = self.fb_first_name
-        elif hasattr(self, 'first_name'):
-            fname = self.first_name
-        elif hasattr(self, 'fb_name'):
-            fname = self.fb_name
-        elif hasattr(self, 'fb_username'):
-            fname = self.fb_username
-        else:
-            fname = self.get_handle()
-        return fname
-
     def get_full_name(self, service=None):
         """attempts to get the users full name, with preference to the
             service supplied.
@@ -561,7 +547,7 @@ class User(db.Expando, polymodel.PolyModel):
                     self.ips = [kwargs['ip']]
 
             elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
-                logging.info("Adding %s %s" % (k, kwargs[k]))
+                logging.info("Updating %s: %s" % (k, kwargs[k]))
                 setattr(self, k, kwargs[k])
         self.put_later()
 
