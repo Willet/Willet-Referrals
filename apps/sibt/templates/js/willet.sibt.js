@@ -70,10 +70,10 @@ _willet.sibt = (function (me) {
             'topbar': ('{{app.top_bar_enabled}}' === 'True')
         },
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
-        // true when visitor on page more than (5) times
+        // true when visitor on page more than (3) times
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
         'uuid': '{{ app.uuid }}',
-        'version': '{{sibt_version|default:"10"}}'
+        'version': '{{sibt_version|default:"11"}}'
     }, instance = {
         'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
         'has_results': ('{{has_results}}' === 'True'),

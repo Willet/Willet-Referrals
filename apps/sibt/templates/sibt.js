@@ -27,6 +27,7 @@
 
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
+    {% include "js/willet.browserdetection.js" %}
     {% include "js/willet.loader.js" %}
     {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
