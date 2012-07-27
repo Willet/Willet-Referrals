@@ -261,7 +261,8 @@ _willet.sibt = (function (me) {
         // me.addScrollShaking(jqElem);
         me.saveProduct(jqElem.data());
 
-        if (app.visited_urls_count >= 2) {  // wosib threshold detection
+        if (   app.visited_urls_count >= 2
+            && me.getProductUUIDs().length >= 2) {  // wosib threshold detection
             jqElem.click(me.button_onclick);
             jqElem.css ({
                 'background': ((instance.is_live || instance.has_results)?
@@ -311,7 +312,9 @@ _willet.sibt = (function (me) {
             return;
         }
 
-        if (app.features.button && app.visited_urls_count >= 2) {  // wosib threshold detection
+        if (   app.features.button
+            && app.visited_urls_count >= 2
+            && me.getProductUUIDs().length >= 2) {  // wosib threshold detection
             wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
                 wm.fire('log', 'v2 button is enabled');
