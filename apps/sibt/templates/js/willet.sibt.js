@@ -734,7 +734,7 @@ _willet.sibt = (function (me) {
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
         // return a copy of obj with falsy values removed.
         var new_obj = {};
-        for (i in obj) {
+        for (var i in obj) {
             if (obj.hasOwnProperty(i) && i) {
                 new_obj[i] = obj[i];
             }

@@ -61,12 +61,17 @@ class EmailModel(Model):
 
         # Check to see if we have one already
         existing_emailmodel = cls.get_by_email(email)
+        logging.debug('Looking for EmailModel %s; found %r' % (email, existing_emailmodel))
 
-        # get...
-        if existing_emailmodel:
+        if existing_emailmodel:  # get...
             try:
-                # Check if this is a returning user who has cleared their cookies
-                if existing_emailmodel.user.uuid != user.uuid:
+                if not getattr(existing_emailmodel, 'user', None):
+                    # Check if user is still there
+                    logging.warn('Referenced user no longer exists. Overwriting...')
+                    existing_emailmodel.user = user
+                    existing_emailmodel.put()
+                elif existing_emailmodel.user.uuid != user.uuid:
+                    # Check if users are the same
                     Email.emailDevTeam("CHECK OUT: %s(%s) %s. "
                                        "They might be the same person." % (
                                         existing_emailmodel.address,
@@ -79,7 +84,7 @@ class EmailModel(Model):
                 logging.error('wtf? user has no uuid.', exc_info=True)
         else:  # ... or create
             existing_emailmodel = cls(key_name=email, address=email, user=user)
-        existing_emailmodel.put()
+            existing_emailmodel.put()
         return existing_emailmodel
 
     @classmethod
@@ -537,6 +542,7 @@ class User(db.Expando, polymodel.PolyModel):
     def update(self, **kwargs):
         for k in kwargs:
             if k == 'email':
+                logging.debug('creating EmailModel for user %s' % self.uuid)
                 EmailModel.get_or_create(self, kwargs['email'])
             elif k == 'client':
                 self.client = kwargs['client']
