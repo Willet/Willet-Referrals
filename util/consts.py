@@ -87,8 +87,8 @@ SHOPIFY_APPS = {
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
     }, 'ReEngageShopify': {
-        'api_key': '185a921ab8ddb223c9ab5ad4190e057b',
-        'api_secret': 'bddaccc5dd9105f071e9f36b232b5d58',
+        'api_key': 'c4ea9b523ef54ae10c2abdcf43f93234',
+        'api_secret': '2f4511971cacaede2ec2af52006b6c84',
         'facebook': {
             'app_id': '392482400810748',
             'app_secret': '70936547d4f80c815dcd3dff67eab869'
