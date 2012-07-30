@@ -78,6 +78,12 @@ class ReEngageInstructions(URIHandler):
         }))
 
 
+class ReEngageHowTo(URIHandler):
+    """Display the instructions page."""
+    def get(self):
+        self.response.out.write(self.render_page('howto.html', {}))
+
+
 class ReEngageLogin(URIHandler):
     def get(self):
         """Display the login page"""

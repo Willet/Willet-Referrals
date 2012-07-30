@@ -10,6 +10,7 @@ urlpatterns = [
     (r'/r/shopify/beta/?', ReEngageAppPage),
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
+    (r'/r/shopify/how_to/?', ReEngageHowTo),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),
