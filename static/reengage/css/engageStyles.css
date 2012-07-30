@@ -583,3 +583,36 @@ which has one pixel less height for the white border on top */
     background: #faa;
     border: 1px solid #a66;
 }
+
+#howToNavContainer {
+	height: 100%;
+	float: left;
+	width: 179px;
+    background: #fff;
+    display: inline-block;
+    padding-top: 10px;
+}
+
+.howToNav {
+	padding: 8px 15px;
+	cursor: pointer;
+}
+.howToNav:hover,
+.howToNav.selected {
+	background: #eee;
+}
+
+#howToMain {
+	float: left;
+	width: 699px;
+	display: inline-block;
+	padding: 10px 100px 30px 20px;
+}
+
+.howTo {
+	padding: 8px 15px;
+	font-size: 14px;
+	color: #222;
+}
+
+.hidden { display: none; }
