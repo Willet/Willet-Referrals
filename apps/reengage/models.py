@@ -84,7 +84,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                       <link rel="canonical" href="{{ canonical_url }}" />
                       <meta property="og:url" content="{{ canonical_url }}" />
                       <meta property="fb:app_id" content="392482400810748">
-                      <meta property="og:type" content="ogproduct:product">
+                      <meta property="og:type" content="product">
                       <meta property="og:site_name" content="{{ shop.name | escape }}" />
 
                       {% if template == 'index' %}
