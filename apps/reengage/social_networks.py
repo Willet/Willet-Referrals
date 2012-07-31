@@ -40,8 +40,8 @@ class SocialNetwork():
             response = fetch(url, payload=payload, method=verb, headers=headers)
         except InvalidURLError:
             return False, "Problem making request. Invalid URL"
-        except:
-            return False, "Problem making request. Not sure why..."
+        except Exception, e:
+            return False, "Problem making request. Not sure why...\n%s" % e
 
         if not any(x in response.headers["content-type"] for x in cls._response_types):
             return False, "Invalid content type: %s" % response.headers["content-type"]
