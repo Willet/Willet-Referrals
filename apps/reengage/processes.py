@@ -51,6 +51,8 @@ class ReEngageCron(URIHandler):
                 logging.info("Sending content for %s..." % product)
                 try:
                     cls.post(post, product=product)
+                except NotImplementedError:
+                    logging.error("No 'post' method for class %s" % cls)
                 except Exception, e:
                     # Problem posting, no OpenGraph tag?
                     logging.error("Problem posting. Probably no OG tag for %s" % product.uuid)
