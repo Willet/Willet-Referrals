@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 
+from apps.sibt.models import SIBT
 from apps.sibt.processes import VendorSignUp
 
 from util.consts import URL
@@ -45,5 +46,12 @@ class SIBTShuuemuraWelcome(URIHandler):
                                          first_name=first_name,
                                          last_name=last_name,
                                          phone=phone)
+
+        if success:
+            app = SIBT.get_by_url(domain)
+            if app:  # custom settings
+                app.top_bar_enabled = False
+                app.bottom_popup_enabled = False
+                app.put_later()
 
         self.response.out.write(script)

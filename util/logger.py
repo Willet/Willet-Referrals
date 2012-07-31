@@ -5,12 +5,10 @@
 __author__ = 'brian'
 __copyright__ = "Copyright 2012, Willet, Inc"
 
+import traceback
 import logging as internal_logging
 
 from google.appengine.api import memcache
-
-# DO NOT use this logging module in emailing scripts! Infinite loops!
-from apps.email.models import Email
 
 from util.consts import USING_DEV_SERVER
 
@@ -95,25 +93,36 @@ class logging(object):
             raise AttributeError(u'Method not allowed')
 
         # fire the logging function.
-        log_func(exc_info=True, *args)
+        log_func(*args)
 
         # fire off email on live server.
         if kwargs.get('email', False) and not USING_DEV_SERVER:
+            # DO NOT use this logging module in emailing scripts! Infinite loops!
+            from apps.email.models import Email
             Email.emailDevTeam(args[0], subject='[%s]' % method)
 
     @classmethod
-    def _format_msg(cls, msg):
+    def _format_msg(cls, msg=u''):
         """Outputs a string account to the count. If count is 0? No message."""
         count = 0
         try:
-            msg = msg[msg.find(':')+1:].strip()
-            if msg:
-                count = memcache.incr(msg, namespace=cls.logs_namespace,
+            msg2 = msg[msg.find(u':')+1:].strip()
+            if msg2:
+                count = memcache.incr(msg2, namespace=cls.logs_namespace,
                                      initial_value=0) or 0
         except:
             pass  # no need to try hard
 
+        # remove first 6 items, which are inside middleware
+        # remove last 3 items, which are inside logger.py
+        # and then reverse the list
+        stack = traceback.extract_stack()[6:-3][::-1]
+        stack_list = ['%s.%s:%s' % (c[0], c[2], c[1]) for c in stack]
+        stack_msg = '\n> '.join(stack_list)
+
+        msg = '%s\n\nTraceback (most recent call last):\n%s' % (msg, stack_msg)
+
         if count:
-            return u"%s (logged %d times in the past %d secs)" % (
+            msg = u"%s\n\n(logged %d times in the past %d secs)" % (
                 msg, count, memcache.get_stats().get('oldest_item_age', 0))
-        return u''
+        return msg

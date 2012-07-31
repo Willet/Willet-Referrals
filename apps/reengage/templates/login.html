@@ -31,30 +31,7 @@
     {% endif %}
     <div id="loginMainBox">
 
-        <div id="signupBox" class="roundedTops roundedBL roundedBR">
-            <div class="loginHead roundedTops">Sign up</div>
-
-            <div class="loginLeft">
-                <div class="loginElemLeft">Email:</div>
-            </div>
-
-            <form action="{{ host }}{% url ReEngageCreateAccount %}"
-                  method="POST">
-                <div class="loginRight">
-                    <div class="loginElemRight">
-                        <input type="text" name="username" value="{{username}}"/>
-                    </div>
-                </div>
-
-                <div id="signupButtonContainer">
-                    <div id="signupButton" class="button">
-                        <a href="#">Sign up</a>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <div id="loginBox" class="roundedTops roundedBL roundedBR">
+       <div id="loginBox" class="roundedTops roundedBL roundedBR">
             <div class="loginHead roundedTops">Login</div>
 
             <div class="loginLeft">

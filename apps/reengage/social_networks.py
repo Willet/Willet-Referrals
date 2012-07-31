@@ -17,7 +17,7 @@ class SocialNetwork():
         """Template method for posting to a social network.
 
         - post: a ReEngagePost object"""
-        pass  # raise NotImplementedError("Class must implement 'post' method!")
+        raise NotImplementedError("Class must implement 'post' method!")
 
     @classmethod
     def _request(cls, url, verb="GET", payload=None, headers=None):
@@ -40,8 +40,8 @@ class SocialNetwork():
             response = fetch(url, payload=payload, method=verb, headers=headers)
         except InvalidURLError:
             return False, "Problem making request. Invalid URL"
-        except:
-            return False, "Problem making request. Not sure why..."
+        except Exception, e:
+            return False, "Problem making request. Not sure why...\n%s" % e
 
         if not any(x in response.headers["content-type"] for x in cls._response_types):
             return False, "Invalid content type: %s" % response.headers["content-type"]
@@ -76,14 +76,16 @@ class Facebook(SocialNetwork):
         logging.info("Product: %s" % product)
 
         url     = product.resource_url  # Assume this is a canonical URL
+        logging.info("Page url: %s" % url)
         page_id = cls._get_page_id(url)
         logging.info("Page Id: %s" % page_id)
 
         token   = cls._get_access_token()
         logging.info("Token: %s" % token)
 
+        logging.info("Title: %s" % post.title)
         message = cls._render_message(post.content)
-        logging.info("Message: %s" % message)
+
 
         success, content = cls._request(cls.__destination_url, "POST", {
             "id"          : page_id,
@@ -144,6 +146,7 @@ class Facebook(SocialNetwork):
         """Obtains the FB opengraph id for a given url"""
         data      = { "id": url }
         final_url = "%s?%s" % (cls.__graph_url, urlencode(data))
+        logging.info("Final URL: %s" % final_url)
 
         success, content = cls._request(final_url, payload=data)
 

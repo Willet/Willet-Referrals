@@ -4,6 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
+import logging
 import random
 import re
 import hashlib
@@ -26,7 +27,6 @@ from apps.user.models import User
 
 from util.consts import DOMAIN, PROTOCOL, URL
 from util.helpers import url
-from util.logger import logging
 from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
@@ -66,6 +66,8 @@ class SIBTSignUp(URIHandler):
             self.error(400)  # malformed URL
             return
 
+        logging.debug('Checking if there is already a user '
+                      'associated with this email.')
         user = User.get_or_create_by_email(email=email,
                                            request_handler=self,
                                            app=None)  # for now
@@ -685,12 +687,15 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
 
     If previous user/client/app objects exist, they will be reused.
     """
+    logging.debug('Checking if there is already a user '
+                  'associated with this email: %s' % email)
     user = User.get_or_create_by_email(email=email,
                                        request_handler=request_handler,
                                        app=None)
     if not user:
         return (False, 'wtf, no user?')
 
+    logging.debug('VendorSignUp user = %r' % user.uuid)
     full_name = "%s %s" % (first_name, last_name)
     user.update(email=email,
                 first_name=first_name,
