@@ -4,7 +4,6 @@ Copied from http://code.google.com/p/googleappengine/source/browse/trunk/python/
 With added memcaching features
 """
 
-import logging
 import time
 
 from datetime import timedelta
@@ -15,6 +14,7 @@ from google.appengine.datastore import entity_pb
 from google.appengine.ext.db import ReferencePropertyResolveError
 
 from util.consts import MEMCACHE_TIMEOUT
+from util.logger import logging
 
 _SELF_REFERENCE = object()
 

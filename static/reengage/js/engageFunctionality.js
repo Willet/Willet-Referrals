@@ -43,9 +43,13 @@ var createPostElement = function (post, first) {
             'html': post.title
         }))
         .append($('<div />', {
-            'id': 'delete' + post.uuid,
-            'class': 'postDelete postDeleteImg'
-        }));
+                'id': 'delete' + post.uuid,
+                'class': 'postDelete postDeleteImg'
+            }).click(function() {
+                removePost(post.uuid);
+            })
+        );
+
 
     postObj[(first? 'prependTo': 'appendTo')]('#replaceHiddenPost');
 };
@@ -395,12 +399,6 @@ $(document).ready(function () {
         // clickPost(newPost.data('uuid'));
     });
 
-    //Delete post
-    $(document).on("click", ".postDelete", function () {
-        var uuid = $(this).parent().attr("id");
-        removePost(uuid);
-    });
-
     //When you click 'save', contents are saved to the post
     $(document).on("click", "#postSave", function () {
         if (!$("#postContent").val()) {
@@ -442,4 +440,21 @@ $(document).ready(function () {
     setInterval(function () {
         updateQueueUI($('.post.selected').data('uuid'));
     }, 5000);
+
+    //For the 'How To' page (howto.html) - sets of instructions are hidden and shown
+    //rather than making several different html pages
+    $(document).on("click", ".howToNav.overview", function() {
+        $(".howToText").addClass("hidden");
+        $(".howToText.overview").removeClass("hidden");
+
+        $(".howToNav").removeClass("selected");
+        $(".howToNav.overview").addClass("selected");
+    });
+    $(document).on("click", ".howToNav.facebook", function() {
+        $(".howToText").addClass("hidden");
+        $(".howToText.facebook").removeClass("hidden");
+
+        $(".howToNav").removeClass("selected");
+        $(".howToNav.facebook").addClass("selected");
+    });
 });
