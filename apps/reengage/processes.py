@@ -1,9 +1,14 @@
 import logging
 import datetime
-from google.appengine.ext import db
-from apps.reengage.models import ReEngageQueue, ReEngagePost
+
+from google.appengine.api import taskqueue
+from apps.product.models import ProductCollection
+
+from apps.reengage.models import ReEngageQueue, ReEngagePost, ReEngageSchedule
 from apps.reengage.social_networks import Facebook, SocialNetwork
+
 from util.urihandler import URIHandler
+from util.helpers import url as build_url
 
 POST_CLASSES = {
     Facebook.__name__: Facebook,
@@ -13,9 +18,42 @@ class ReEngageCron(URIHandler):
     def get(self):
         self.post()
 
-    # TODO: This probably needs to use task queues...
-    # TODO: How to make scheduling more flexible
     def post(self):
+        today   = datetime.datetime.today()
+        weekday = today.weekday()
+
+        schedules = ReEngageSchedule.all()\
+                    .filter('days = ', weekday)\
+                    .filter('times = ', today.hour)
+
+        for schedule in schedules:
+            queue = schedule.queue
+            if not queue.queued:
+                logging.info("No messages queued, continuing...")
+                continue
+
+            products = queue.get_products()
+            if not products:
+                logging.info("No products associated with queue, continuing...")
+                continue
+
+            uuid          = queue.queued[0]
+            url           = build_url('ReEngagePostProduct')
+            params        = {"post": uuid}
+            retry_options = {"task_retry_limit": 0}
+
+            for product in products:
+                params.update({"product": product.uuid})
+                taskqueue.add(queue_name='buttonsEmail', url=url,
+                              params=params, retry_options=retry_options)
+
+            queue.expired.append(uuid)
+            queue.queued.remove(uuid)
+            queue.put()
+
+
+
+    def post2(self):
         """Posts all queue content to facebook on weekdays"""
         today = datetime.datetime.today()
         if today.isoweekday() not in xrange(1,6):
@@ -62,3 +100,24 @@ class ReEngageCron(URIHandler):
             queue.expired.append(post_uuid)
             queue.queued.remove(post_uuid)
             queue.put()
+
+
+class ReEngagePostProduct(URIHandler):
+    def get(self):
+        self.post()
+
+    def post(self):
+        post_uuid    = self.request.get("post")
+        product_uuid = self.request.get("product")
+
+        try:
+            post = ReEngagePost.get(post_uuid)
+            product = ProductCollection.get(product_uuid)
+
+            network  = POST_CLASSES.get(post.network, SocialNetwork)
+            network.post(post, product=product)
+        except NotImplementedError, e:
+            logging.error("Not implemented error: %s" % e)
+        except Exception, e:
+            logging.error("Problem posting. %s" % e)
+

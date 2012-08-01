@@ -231,9 +231,12 @@ class ReEngageShopify(ReEngage, AppShopify):
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
-    app_    = db.ReferenceProperty(App, collection_name='queues')
+    # When we support multiple queues, we will need to rename 'queues' to
+    # 'queue'
+    app_     = db.ReferenceProperty(App, collection_name='queues')
     queued   = db.ListProperty(unicode, indexed=False)
     expired  = db.ListProperty(unicode, indexed=False)
+    schedule = db.ReferenceProperty(ReEngageSchedule, collection_name="queue")
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -446,3 +449,22 @@ class ReEngageAccount(User):
             return (user, True)
         else:
             return (None, False)
+
+
+class ReEngageSchedule(Model):
+    """A class for handling general post scheduling in a queue
+
+    days  = A list of integers representing days of the week.
+            1 = Monday, 7 = Sunday (as in date.isoweekday)
+    times = A list of times that a post may occur at.
+    """
+    days     = db.ListProperty(int=[1,2,3,4,5]) #Weekdays, isoweekday
+    times    = db.ListProperty(datetime.time, default=[datetime.time(12)])
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageSchedule, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
