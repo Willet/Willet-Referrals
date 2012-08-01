@@ -1,0 +1,52 @@
+{% extends "admin_base.html" %}
+
+
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
+{% block bottom_content %}
+    <h1 style="text-align:center;margin-top: 90px;">
+        <img alt=""
+             title="crazy Zoidberg in heat"
+             src="/static/imgs/angry-zoidberg.png" />
+        <br />
+        JOHN FUCKING ZOIDBERG
+        <br/>
+        <span style="color: #666; font-size: 11px;">
+            The database doctor
+        </span>
+    </h1>
+    <h2>{{ obj_class }}?uuid={{ obj.uuid }}</h2>
+    <pre>{{ prop }}</pre>
+    <ul>
+        {% for prop in props %}
+            <li>
+                ({{ prop.type }}) <b>{{ prop.key }}</b>
+                =
+                <form action="" method="POST">
+                    <input name="key" type="hidden" value="{{ prop.key }}" />
+                    <input name="value" type="text" value="{{ prop.value }}"
+                           style="width: 800px; max-width: 800px;"
+                           placeholder="python expression e.g. None, True, 'Hello'"
+                        {% if prop.editable %}
+                            disabled="disabled"
+                        {% endif %}
+                    />
+                    {% if prop.editable %}
+                        <input name="" type="submit" value="Save" />
+                    {% endif %}
+                    <div style="color: #666; font-size: 11px;">
+                        Warning: typecasted variable must match
+                        datastore schema; failure to do so will
+                        stop this object from loading.
+                    </div>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock bottom_content %}
