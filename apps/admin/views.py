@@ -548,24 +548,3 @@ class JohnFuckingZoidbergEditor(URIHandler):
         setattr(obj, form_key, eval(form_val))
         obj.put()
         self.error(204)  # woop woop woop woop woop woop
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
