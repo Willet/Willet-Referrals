@@ -164,7 +164,7 @@ class ReEngageQueueHandler(URIHandler):
 
         post = ReEngagePost(title=title,
                             content=content,
-                            network="facebook",
+                            network=Facebook.__name__,
                             uuid=generate_uuid(16))
         post.put()
 

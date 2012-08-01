@@ -61,11 +61,11 @@ class Client(Model, polymodel.PolyModel):
             raise ValueError("User is missing")
 
         try:
-            logging.debug('Client user = %r' % user)
+            logging.debug('Client user = %r' % user.uuid)
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
-        except (AttributeError, IndexError):
-            msg = "User supplied must have at least name and one email address"
+        except (AttributeError, IndexError), err:
+            msg = "User supplied must have at least name and one email address: %s" % err
             logging.error(msg, exc_info=True)
             raise AttributeError(msg)  # can't really skip that
 
