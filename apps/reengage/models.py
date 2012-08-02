@@ -229,6 +229,53 @@ class ReEngageShopify(ReEngage, AppShopify):
         return app, created
 
 
+class ReEngageSchedule(Model):
+    """A class for handling general post scheduling in a queue
+
+    days  = A list of integers representing days of the week.
+            1 = Monday, 7 = Sunday (as in date.isoweekday)
+    times = A list of times that a post may occur at.
+    """
+    days     = db.ListProperty(int, default=[1,2,3,4,5]) #Weekdays, isoweekday
+    times    = db.ListProperty(datetime.time, default=[datetime.time(12)])
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageSchedule, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
+
+    @classmethod
+    def get_or_create(cls, queue):
+        if hasattr(queue, "schedule") and getattr(queue, "schedule"):
+            schedule = queue.schedule
+        else:
+            # Generally, 'get' should not modify a resource / have
+            # side-effects, but we don't have an easy way to create
+            # the schedule
+            uuid = generate_uuid(16)
+
+            schedule = cls(uuid=uuid, key_name=uuid)
+            schedule.put()
+
+            queue.schedule = schedule
+            queue.put()
+
+        return schedule
+
+    def to_obj(self):
+        """Convert a schedule into a serializable object.
+
+        Mostly used as a preliminary step to convert to JSON
+        """
+        return {
+            "key": "schedule",
+            "value": to_dict(self)
+        }
+
+
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
     # When we support multiple queues, we will need to rename 'queues' to
@@ -340,7 +387,7 @@ class ReEngageQueue(Model):
             return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, app_=app)
+        queue = cls(uuid=uuid, key_name=uuid, app_=app)
         queue.put()
 
         return (queue, True)
@@ -449,22 +496,3 @@ class ReEngageAccount(User):
             return (user, True)
         else:
             return (None, False)
-
-
-class ReEngageSchedule(Model):
-    """A class for handling general post scheduling in a queue
-
-    days  = A list of integers representing days of the week.
-            1 = Monday, 7 = Sunday (as in date.isoweekday)
-    times = A list of times that a post may occur at.
-    """
-    days     = db.ListProperty(int=[1,2,3,4,5]) #Weekdays, isoweekday
-    times    = db.ListProperty(datetime.time, default=[datetime.time(12)])
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
-        super(ReEngageSchedule, self).__init__(*args, **kwargs)
-
-    def _validate_self(self):
-        return True

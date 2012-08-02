@@ -149,7 +149,7 @@ class URIHandler(webapp.RequestHandler):
             json_obj = json.dumps(obj)
         except Exception, e:
             logging.info(e)
-            pass
+            json_obj = "{}"
 
         self.response.headers.add_header('content-type', 'application/json', charset='utf-8')
         self.response.set_status(code, message)

@@ -74,7 +74,7 @@ def to_dict(something, recursion=0):
             if value is None or isinstance(value, SIMPLE_TYPES):
                 output[key] = value
             elif isinstance(value, datetime.date) or \
-                    isinstance(value, datetime.datetime):
+                 isinstance(value, datetime.datetime):
                 # Convert date/datetime to ms-since-epoch ("new Date()").
                 ms = time.mktime(value.utctimetuple()) * 1000
                 ms += getattr(value, 'microseconds', 0) / 1000

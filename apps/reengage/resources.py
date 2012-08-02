@@ -4,7 +4,9 @@ import logging
 import webob
 import cgi
 
-from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
+import django.utils.simplejson as json
+
+from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue, ReEngageSchedule
 from apps.reengage.social_networks import Facebook
 
 from util.consts import ADMIN_IPS, USING_DEV_SERVER
@@ -321,3 +323,62 @@ class ReEngageProductSourceHandler(URIHandler):
     def post(self):
         """Posts to the ProductSource."""
         self.error(204)
+
+
+class ReEngageScheduleJSONHandler(URIHandler):
+    """A resource for accessing schedules using JSON"""
+    @session_active
+    def get(self):
+        queue = ReEngageQueue.get(self.request.get('queue_uuid'))
+        if not queue:
+            session = get_current_session()
+            queue = get_queue()
+        if not queue:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.error(404)
+            return
+
+        schedule = ReEngageSchedule.get_or_create(queue)
+
+        response = schedule.to_obj()
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
+
+    @session_active
+    def put(self):
+        queue = ReEngageQueue.get(self.request.get('queue_uuid'))
+        if not queue:
+            session = get_current_session()
+            queue = get_queue()
+        if not queue:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.error(404)
+            return
+
+        schedule = ReEngageSchedule.get_or_create(queue)
+
+        params           = cgi.parse_qsl(self.request.body)
+        self.request.PUT = webob.MultiDict(params)
+
+        try:
+            days  = json.loads(self.request.PUT.get("days", "[]"))
+            times = json.loads(self.request.PUT.get("times", "[]"))
+        except ValueError:
+            # Error!
+            pass
+
+        # TODO: Validate days
+        # TODO: Validate times
+
+        schedule.days  = days
+        schedule.times = times
+        schedule.put()
+
+        self.error(204)
+
+
+
+
+
