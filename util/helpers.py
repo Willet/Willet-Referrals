@@ -51,46 +51,57 @@ def quoted_join(lst):
     return '"%s"' % '","'.join(lst)
 
 
-def to_dict(something, recursion=0):
+def to_dict(obj, recursion=0):
     """Converts an object into a dictionary.
 
     Converted dictionary is serializable; if an attribute is an object, the
     object will be recursively converted to a dictionary as well.
     """
-    import datetime
-    import time
-    output = {}
-
-    SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
     if recursion > 3:
         logging.error('recursion too much, returning: %s' % str(something))
-        return str(something)
+        return str(obj)
 
-    for key, prop in something.properties().iteritems():
-        value = getattr(something, key)
+    output = {}
+    for key, prop in obj.properties().iteritems():
+        value = getattr(obj, key)
         logging.debug('processing: %s' % key)
+        output[key] = json_value(value)
 
-        try:
-            if value is None or isinstance(value, SIMPLE_TYPES):
-                output[key] = value
-            elif isinstance(value, datetime.date) or \
-                 isinstance(value, datetime.datetime):
-                # Convert date/datetime to ms-since-epoch ("new Date()").
-                ms = time.mktime(value.utctimetuple()) * 1000
-                ms += getattr(value, 'microseconds', 0) / 1000
-                output[key] = int(ms)
-            elif isinstance(value, db.GeoPt):
-                output[key] = {'lat': value.lat, 'lon': value.lon}
-            elif isinstance(value, db.Model):
-                output[key] = to_dict(value, recursion=recursion+1)
-            else:
-                output[key] = str(value)
-                logging.error('weird value: %s' % str(value))
-                #raise ValueError('cannot encode ' + repr(prop))
-        except Exception, e:
-            logging.error(e, exc_info=True)
     return output
 
+def json_value(value, recursion=0):
+    """Converts a value into its json-serializable equivalent
+    """
+    import datetime
+    import time
+
+    SIMPLE_TYPES = (int, long, float, bool, dict, basestring)
+
+    try:
+        if value is None or isinstance(value, SIMPLE_TYPES):
+            return value
+        elif isinstance(value, list):
+            result = []
+            for item in value:
+                result.append(json_value(item))
+            return result
+        elif isinstance(value, datetime.date) or\
+             isinstance(value, datetime.datetime):
+            # Convert date/datetime to ms-since-epoch ("new Date()").
+            ms = time.mktime(value.utctimetuple()) * 1000
+            ms += getattr(value, 'microseconds', 0) / 1000
+            return int(ms)
+        elif isinstance(value, db.GeoPt):
+            return {'lat': value.lat, 'lon': value.lon}
+        elif isinstance(value, db.Model):
+            return to_dict(value, recursion=recursion+1)
+        else:
+            logging.error('weird value: %s' % str(value))
+            #raise ValueError('cannot encode ' + repr(prop))
+            return str(value)
+    except Exception, e:
+        logging.error(e, exc_info=True)
+        return {}
 
 def common_items(list1, list2):
     """Returns the items present in both lists."""
