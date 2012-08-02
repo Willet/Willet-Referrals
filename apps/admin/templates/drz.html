@@ -33,7 +33,7 @@
                     <input name="value" type="text" value="{{ prop.value }}"
                            style="width: 800px; max-width: 800px;"
                            placeholder="python expression e.g. None, True, 'Hello'"
-                        {% if prop.editable %}
+                        {% if not prop.editable %}
                             disabled="disabled"
                         {% endif %}
                     />

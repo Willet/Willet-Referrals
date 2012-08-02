@@ -469,11 +469,12 @@ class JohnFuckingZoidbergEditor(URIHandler):
         obj = None
         props = []
 
-        if not kind and not uuid:
+        if not (kind or uuid):
             logging.debug('getting all kinds')
+            content += 'Classes you can import:\n'
             for kind in Kind.all():
                 logging.debug('kind = %s' % kind.kind_name)
-                content = '%s\n' % kind.kind_name
+                content += '%s\n' % kind.kind_name
         elif uuid and kind:
             import_str = 'apps.%s.models' % kind.lower()
             __import__(import_str, globals(), locals(), [], -1)
