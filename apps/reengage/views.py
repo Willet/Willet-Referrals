@@ -93,8 +93,11 @@ class ReEngageLogin(URIHandler):
         logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
         client = ClientShopify.get_by_url(shop)
 
+
         # Fetch or create the app
-        app, created = ReEngageShopify.get_or_create(client, token=token)
+        app = None
+        if client:
+            app, created = ReEngageShopify.get_or_create(client, token=token)
 
         if not app:
             pass  # TODO: error
@@ -120,6 +123,18 @@ class ReEngageLogin(URIHandler):
         if user and user.verify(password):
             session = get_current_session()
             session.regenerate_id()
+
+            # steps to fix clientless ReEngageAccounts
+            if not getattr(user, 'client', None):
+                if user.email:
+                    user.client = Client.get_by_email(user.email)
+                    user.put()
+                    logging.info('fixed clientless ReEngageAccount.')
+
+            if not token or token == 'None':
+                token = user.client.token  # which may or may not be correct
+            if not shop or shop == 'None':
+                shop = user.client.url
 
             session['logged_in'] = True
             session['t']         = token
@@ -310,6 +325,7 @@ class ReEngageCPLServeScript(URIHandler):
         """Required variable: client_uuid."""
         session = get_current_session()
         client = Client.get_by_url(session.get('shop'))
+        logging.debug('shop = %r' % session.get('shop'))
         if not client:
             logging.warn('client not found; exiting')
             self.error(400)
