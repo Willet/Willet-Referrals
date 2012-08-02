@@ -53,9 +53,16 @@
 
         <!-- CONTENT -->
         <div id='header'>
-            <div id="white"></div>
-            <div id="cloud_bottom"></div>
-            <div id="cloud_top"></div>
+            {% if debug %}
+                <div id="white"
+                     style='height:42px;background:#F90;padding:10px 0 0 14px;font-size:20px;'>
+                    Test Server
+                </div>
+            {% else %}
+                <div id="white"></div>
+                <div id="cloud_bottom"></div>
+                <div id="cloud_top"></div>
+            {% endif %}
         </div>
         <div id='wrap'>
             <div id='main' class='container'>
