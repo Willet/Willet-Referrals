@@ -192,7 +192,7 @@ class ShowAction(ActionTally):
     def __str__(self):
         return 'Showing %s to %s on %s' % (
             self.what,
-            self.user.get_first_name(),
+            self.user.name,
             self.url,
         )
 

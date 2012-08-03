@@ -5,17 +5,17 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
-
 from decimal import *
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
 from apps.user.models import *
 from util.consts import *
+from util.logger import logging
 from util.mailchimp import MailChimp
 from util.model import Model
 from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.shopify_helpers import get_url_variants
 
 
@@ -61,10 +61,11 @@ class Client(Model, polymodel.PolyModel):
             raise ValueError("User is missing")
 
         try:
+            logging.debug('Client user = %r' % user.uuid)
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
-        except AttributeError:
-            msg = "User supplied must have at least name and one email address"
+        except (AttributeError, IndexError), err:
+            msg = "User supplied must have at least name and one email address: %s" % err
             logging.error(msg, exc_info=True)
             raise AttributeError(msg)  # can't really skip that
 

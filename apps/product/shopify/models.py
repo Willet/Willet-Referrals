@@ -247,6 +247,13 @@ class ProductShopify(Product):
                                      resource_url=url,
                                      images=images)
 
+        if not product.resource_url and not data.get("url"):
+            # Create the product URL
+            # {client.url}/products/{handle}
+
+            url = "%s/products/%s" % (client.domain, data.get("handle"))
+            data["url"] = url
+
         # Now, update it with info.
         # update_from_json will PUT the obj.
         product.update_from_json(data)
@@ -344,6 +351,8 @@ class ProductShopify(Product):
             self.description = description
         if tags:
             self.tags = tags
+        if data.get("url"):
+            self.resource_url = data.get("url")
 
         if hasattr(self, 'processed'):
             delattr(self, 'processed')

@@ -70,10 +70,11 @@ _willet.sibt = (function (me) {
             'topbar': ('{{app.top_bar_enabled}}' === 'True')
         },
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
-        // true when visitor on page more than (5) times
+        // true when visitor on page more than (3) times
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+        'visited_urls_count': parseInt(_willet.storage.get('visited_urls_count', 0)),
         'uuid': '{{ app.uuid }}',
-        'version': '{{sibt_version|default:"10"}}'
+        'version': '{{sibt_version|default:"11"}}'
     }, instance = {
         'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
         'has_results': ('{{has_results}}' === 'True'),
@@ -148,7 +149,7 @@ _willet.sibt = (function (me) {
         }
         return Boolean($('._vendor_sibt').length) ||
                Boolean($('#_vendor_shouldIBuyThisButton').length);
-    }
+    };
 
     me.showPopupWindow = me.showPopupWindow || function (url) {
         var new_window = window.open(url, '_blank');
@@ -256,30 +257,35 @@ _willet.sibt = (function (me) {
         wm.fire('log', 'setting a small SIBT button');
         wm.fire('storeAnalytics');
 
-        jqElem.click(me.button_onclick);
-        jqElem.css ({
-            'background': ((instance.is_live || instance.has_results)?
-                            "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
-                            "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
-            'width': '80px',
-            'height': '21px',
-            'cursor': 'pointer',
-            'display': 'inline-block'
-        });
-
-        if (!instance.has_product) {
-            // if no product, try to detect one, but don't show button
-            wm.fire('log', "product did not exist here; hiding button. " +
-                           "(if product detection succeeds, refreshing this " +
-                           "page will make the button show again.)");
-            jqElem.css ({
-                'display': 'none'
-            });
-        }
-
         // shake ONLY the SIBT button when scrolled into view
-        me.addScrollShaking(jqElem);
+        // me.addScrollShaking(jqElem);
         me.saveProduct(jqElem.data());
+
+        if (   app.visited_urls_count >= 2
+            && me.getProductUUIDs().length >= 2) {  // wosib threshold detection
+            jqElem.click(me.button_onclick);
+            jqElem.css ({
+                'background': ((instance.is_live || instance.has_results)?
+                                "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
+                                "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
+                'width': '80px',
+                'height': '21px',
+                'cursor': 'pointer',
+                'display': 'inline-block'
+            });
+
+            if (!instance.has_product) {
+                // if no product, try to detect one, but don't show button
+                wm.fire('log', "product did not exist here; hiding button. " +
+                            "(if product detection succeeds, refreshing this " +
+                            "page will make the button show again.)");
+                jqElem.css ({
+                    'display': 'none'
+                });
+            }
+        } else {
+            wm.fire('log', "View count too low; hiding button.");
+        }
     };
 
     // large buttons are larger than the small ones.
@@ -306,7 +312,9 @@ _willet.sibt = (function (me) {
             return;
         }
 
-        if (app.features.button) {
+        if (   app.features.button
+            && app.visited_urls_count >= 2
+            && me.getProductUUIDs().length >= 2) {  // wosib threshold detection
             wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
                 wm.fire('log', 'v2 button is enabled');
@@ -375,10 +383,10 @@ _willet.sibt = (function (me) {
                 if ($wbtn.length > 0) {
                     $wbtn = $($wbtn[0]);
                 }
-                me.addScrollShaking($wbtn);
+                // me.addScrollShaking($wbtn);
             }
         } else {
-            wm.fire('log', "product does not exist here; hiding button.");
+            wm.fire('log', "no product / view count too low; hiding button.");
         }
     };
 
@@ -400,7 +408,29 @@ _willet.sibt = (function (me) {
                 'display': 'block',
                 'clear': 'both'
             })
-            .click(me.button_onclick);
+            .click(function (message) {
+                // shows the ask your friends iframe
+                wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
+                var shopify_ids = [];
+                if (cart_items) {
+                    // WOSIB exists on page; send extra data
+                    for (var i = 0; i < cart_items.length; i++) {
+                        shopify_ids.push(cart_items[i].id);
+                    }
+                }
+
+                return wm.fire('showColorbox', {
+                    href: "{{URL}}{% url AskDynamicLoader %}" +
+                        // do not merge with metadata(): it escapes commas
+                        "?products=" + me.getProductUUIDs().join(',') +
+                        "&shopify_ids=" + shopify_ids.join(',') +
+                        "&instance_uuid={{ instance.uuid }}" +
+                        "&" + me.metadata()
+                });
+
+                // else if no products: do nothing
+                wm.fire('log', "no products! cancelling dialogue.");
+            });
 
             if (!instance.has_product) {
                 // if no product, try to detect one, but don't show button
@@ -622,7 +652,7 @@ _willet.sibt = (function (me) {
             'visited_urls_count',  // exact URLs not tracked for privacy
             parseInt(_willet.storage.get('visited_urls_count', 0)) + 1
         );
-        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 4) {  // UNSURE_MULTI_VIEW trigger
+        if (parseInt(_willet.storage.get('visited_urls_count', 0)) > 3) {  // UNSURE_MULTI_VIEW trigger
             // must be changed before initBottomPopup
             wm.fire('log', 'unsure_multi_view was turned on from the client side.');
             app.unsure_multi_view = true;
@@ -712,7 +742,7 @@ _willet.sibt = (function (me) {
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
         // return a copy of obj with falsy values removed.
         var new_obj = {};
-        for (i in obj) {
+        for (var i in obj) {
             if (obj.hasOwnProperty(i) && i) {
                 new_obj[i] = obj[i];
             }

@@ -254,7 +254,7 @@ class Model(db.Model):
             cache_keys_dict[key] = db.model_to_protobuf(self).Encode()
 
             try:
-                memcache.set_multi (cache_keys_dict, time=MEMCACHE_TIMEOUT)
+                memcache.set_multi(cache_keys_dict, time=MEMCACHE_TIMEOUT)
             except Exception, e:
                 logging.warn (
                     "Failed to memcache object by custom key: %s" % e,
@@ -268,6 +268,13 @@ class Model(db.Model):
                                    len(self._memcache_fields),
                                    self._memcache_fields),
                            exc_info=True)
+
+    def clear_cache(self):
+        """using db.delete(), object will remain in memcache indefinitely.
+
+        Use this function to remove a memcached item from memcache.
+        """
+        memcache.delete(self.get_key())
 # end class
 
 

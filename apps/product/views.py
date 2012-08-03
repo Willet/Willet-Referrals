@@ -61,7 +61,7 @@ class CollectionJSONDynamicLoader(URIHandler):
         """
 
         # Decode an encoded json object, because I'm an idiot
-        cols_json = [json.loads(repr(col)) for col in collections]
+        cols_json = [json.loads(col.to_json()) for col in collections]
         json_base = {'collections': cols_json}
 
         self.response.out.write(json.dumps(json_base))
@@ -109,7 +109,7 @@ class ProductJSONDynamicLoader(URIHandler):
         The json format mimics the shopify product json, but not exactly.
         (I am trying to make your life worse, lololo)
         """
-        products_json = [json.loads(repr(product)) for product in products]
+        products_json = [json.loads(product.to_json()) for product in products]
         json_base = {'products': products_json}
         self.response.out.write(json.dumps(json_base))
         return

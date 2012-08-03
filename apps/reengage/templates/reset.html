@@ -1,0 +1,79 @@
+<html>
+
+<head>
+    <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+    <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript">
+    </script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript">
+    </script>
+    <script src="/static/reengage/engageFunctionality.js" type="text/javascript">
+    </script>
+</head>
+
+<body>
+
+<div id="banner" class="shadow">
+    <div id="bannerBody">
+        <div id="bannerTitle">
+            <h1><b>Engage</b></h1>
+        </div>
+        <div id="bannerRight">
+        </div>
+    </div>
+</div>
+
+<div id="body">
+    <br/>
+    {% if msg %}
+    <p class='message {{cls}}'>{{msg}}</p>
+    {% endif %}
+    {% if show_form %}
+    <div id="loginMainBox">
+
+        <div id="signupBox" class="roundedTops roundedBL roundedBR">
+            <div class="loginHead roundedTops">Reset your password</div>
+
+            <div class="loginLeft">
+                <div class="loginElemLeft">Email:</div>
+            </div>
+
+            <form action="{{ host }}{% url ReEngageResetAccount %}" method="POST">
+                <div class="loginRight">
+                    <div class="loginElemRight">
+                        <input type="text" name="username" />
+                    </div>
+                </div>
+
+                <div id="signupButtonContainer">
+                    <div id="signupButton">
+                        <input type="submit" value="Reset Password"/>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#loginButton").click(function(event){
+            event.preventDefault();
+            $(this).parents("form").submit();
+        });
+    });
+
+    $(document).ready(function(){
+        $("#signupButton").click(function(event){
+            event.preventDefault();
+            $(this).parents("form").submit();
+        });
+    });
+</script>
+</body>
+
+</html>

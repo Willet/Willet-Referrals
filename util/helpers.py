@@ -52,6 +52,11 @@ def quoted_join(lst):
 
 
 def to_dict(something, recursion=0):
+    """Converts an object into a dictionary.
+
+    Converted dictionary is serializable; if an attribute is an object, the
+    object will be recursively converted to a dictionary as well.
+    """
     import datetime
     import time
     output = {}
@@ -63,7 +68,7 @@ def to_dict(something, recursion=0):
 
     for key, prop in something.properties().iteritems():
         value = getattr(something, key)
-        logging.error('processing: %s' % key)
+        logging.debug('processing: %s' % key)
 
         try:
             if value is None or isinstance(value, SIMPLE_TYPES):
@@ -195,7 +200,7 @@ def read_user_cookie(request_handler):
     """Sets a cookie to identify a user"""
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
     user_uuid = cookieutil.get_secure_cookie(name = 'willet_user_uuid')
-    logging.info("Reading a user cookie: %s" % user_uuid)
+    logging.debug("Reading a user cookie: %s" % user_uuid)
     return user_uuid
 
 

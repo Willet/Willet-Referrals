@@ -32,6 +32,12 @@ cron:
   schedule: every monday 09:00
   timezone: America/Toronto
 
+# Cron jobs aren't terribly flexible for our tasks...
+- description:
+  url: /r/shopify/cron
+  schedule: every mon,tue,wed,thu,fri 12:00
+  timezone: America/Toronto
+
 - description: hourly action tallying
   url: /a/tally
   schedule: every 5 minutes

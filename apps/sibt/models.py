@@ -5,7 +5,6 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import logging
 import random
 
 from datetime import timedelta
@@ -30,6 +29,7 @@ from apps.vote.models import VoteCounter
 from util.consts import USING_DEV_SERVER
 from util.helpers import generate_uuid, get_target_url, \
                          unhashable_object_unique_filter
+from util.logger import logging
 from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -336,7 +336,7 @@ class SIBTInstance(Model):
                                             self.products)
             return Product.all()\
                           .filter('uuid IN', winning_products_uuids)\
-                          .fetch(1000)
+                          .fetch(10)
         else:
             # that is, if one product is winning the voting
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
@@ -664,4 +664,8 @@ def get_user(urihandler, **kwargs):
         return user
 
     app = get_app(urihandler=urihandler)  # None
-    return User.get_or_create_by_cookie(urihandler, app)
+    if app:
+        logging.debug('Creating user with app %s' % app.uuid)
+        return User.get_or_create_by_cookie(urihandler, app)
+    else:
+        return User.get_or_create_by_cookie(urihandler)
