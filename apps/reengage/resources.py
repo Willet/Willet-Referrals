@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import datetime
 import webob
 import cgi
 
@@ -347,6 +348,7 @@ class ReEngageScheduleJSONHandler(URIHandler):
 
     @session_active
     def put(self):
+        #TODO: Need to know what queue to set to...
         queue = ReEngageQueue.get(self.request.get('queue_uuid'))
         if not queue:
             session = get_current_session()
@@ -359,18 +361,36 @@ class ReEngageScheduleJSONHandler(URIHandler):
 
         schedule = ReEngageSchedule.get_or_create(queue)
 
-        params           = cgi.parse_qsl(self.request.body)
-        self.request.PUT = webob.MultiDict(params)
-
         try:
-            days  = json.loads(self.request.PUT.get("days", "[]"))
-            times = json.loads(self.request.PUT.get("times", "[]"))
-        except ValueError:
-            # Error!
-            pass
+            data = json.loads(self.request.body)
+        except Exception:
+            self.error(400)
+            return
 
-        # TODO: Validate days
-        # TODO: Validate times
+        days  = data.get("days")
+        times = data.get("times")
+
+        if not (days or times):
+            self.error(400)
+            return
+
+        #Validate days
+        days = list(set(days)) # Remove duplicates
+        if not all(x in range(1,8) for x in days):
+            logging.info("Days out of range: %s", days)
+            self.error(400)
+            return
+
+        #Validate times
+        try:
+            for index, value in enumerate(times):
+                t_time    = datetime.datetime.strptime(value, "%H:%M")
+                times[index] = datetime.time(t_time.hour, t_time.minute)
+            logging.info("%s" % times)
+        except ValueError, e:
+            logging.info("Couldn't parse times: %s" % e)
+            self.error(400)
+            return
 
         schedule.days  = days
         schedule.times = times
