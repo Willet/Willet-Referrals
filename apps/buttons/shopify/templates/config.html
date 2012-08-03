@@ -338,6 +338,9 @@
     .masked-hidden {
         visibility: hidden !important;
     }
+    .field_is_no_good {
+        background-color: #ffd0e0 !important;
+    }
 
     /* Confirm preview */
     div.sharing {
@@ -517,13 +520,13 @@
                 $(newImg).css("margin-right", buttonPadding + "px");
 
                 buttonsDiv.append(newImg);
-            })
+            });
         };
 
         update = function () {
             updateNetworks();
             updatePreview();
-        }
+        };
 
         changeTabs = function(event) {
             var target = event.currentTarget,
@@ -612,14 +615,35 @@
         $("#max-buttons").change(update);
 
         $("[name=twitter_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9_]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
             confirmUpdate('twitter', event);
-        })
+        });
         $("[name=facebook_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9\.]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
             confirmUpdate('facebook', event);
-        })
+        });
         $("[name=pinterest_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
             confirmUpdate('pinterest', event);
-        })
+        });
 
         // Enable tabbing
         $(".tab-header").not(".tab-ignore").click(changeTabs);
