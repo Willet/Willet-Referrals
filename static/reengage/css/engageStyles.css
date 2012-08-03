@@ -262,7 +262,6 @@ p#soon {
 
 #box {
     background: #fff;
-    border: 1px solid #3b3b3b;
     border-top: 0;
 }
 
@@ -287,7 +286,7 @@ p#soon {
 
 #detailsBar{
     background: #eaeaea;
-    border-bottom: 1px solid #3b3b3b;
+    border-bottom: 1px solid #878787;
 }
 
 #categoryBar { width: 179px; float: left; }
@@ -363,7 +362,7 @@ which has one pixel less height for the white border on top */
 #replaceWithPosts {
     width: 329px;
     background: #e4e4e4;
-    border-right: 1px solid #3b3b3b;
+    border-right: 1px solid #878787;
     float: left;
     overflow: auto;
 }
@@ -372,7 +371,7 @@ which has one pixel less height for the white border on top */
     width: 329px;
     cursor: pointer;
     border-top: 1px solid #fff;
-    border-bottom: 1px solid #3b3b3b;
+    border-bottom: 1px solid #878787;
     float: left;
     background: #eaeaea;
     color: #000;
