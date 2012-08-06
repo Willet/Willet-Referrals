@@ -41,11 +41,11 @@ h2 a:hover {
 }
 #header {
     background-color: #000;
-    height: 150px;
+    height: 100px;
 }
 #header .vendor_logo {
     display: block;
-    padding: 60px 0 0 60px;
+    padding: 37px 0 0 60px;
 }
 #header .vendor_logo a {
     border: 0;
@@ -60,11 +60,12 @@ h2 a:hover {
     width: 525px;
     min-height: 550px;
     text-align: justify;
-    margin: -120px 15px 0 0;
+    margin: 0 15px 0 0;
 }
 #product_img {
     display: block;
     margin: 0 auto;
+    float: left;
 }
 #success_message h4 {
     display: none;
@@ -119,8 +120,8 @@ h2 a:hover {
     /* border-radius: 3px; */
 }
 .product-image {
-    max-width: 350px;
-    max-height: 350px;
+    max-width: 250px;
+    max-height: 250px;
     display: block;
     margin: 24px auto;
 }
@@ -145,17 +146,6 @@ h2 a:hover {
     margin: 14px 0 0 15px;
 }
 .button {
-    padding: 7px 15px;
-    display: inline;
-    background: #ddd;
-    border: 1px #999 solid;
-    color: #555;
+    display: inline-block;
     cursor: pointer;
-    margin: 6px;
-    font-weight: bold;
-    border-radius: 5px;
-    text-shadow: 1px 1px #fff;
-}
-.button:hover {
-    background: #eee;
 }

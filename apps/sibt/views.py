@@ -294,7 +294,6 @@ class AskDynamicLoader(URIHandler):
                                        motivation=None,
                                        sharing_message="",
                                        products=product_uuids)
-        instance.is_live = False
 
         # after creating the instance, switch the link's URL right back to the
         # instance's vote page
@@ -306,7 +305,6 @@ class AskDynamicLoader(URIHandler):
         logging.info("link.target_url changed to %s" % link.target_url)
         link.put()
 
-        instance.put()
         return instance
 
 

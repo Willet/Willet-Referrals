@@ -4,6 +4,7 @@
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" />
+        <link href="/static/css/facebook.css" rel="stylesheet" type="text/css" />
         <link href="/static/sibt/css/shuuemura.css" rel="stylesheet" type="text/css" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
@@ -18,41 +19,41 @@
         <title>Ask a Friend | Shu Uemura</title>
     </head>
     <body>
+        <div id="header">
+            <img class="vendor_logo"
+                 src="/static/sibt/imgs/sibt-shu-logo.png"
+                 width="226" height="29" />
+        </div>
+        <div id="success_message" class="hidden">
+            thanks for helping your friend. for your generosiy, GET A CHANCE TO WIN 1 of 3 shu uemura beauty sets, a value of $150! <a href="#">click here to enter</a>
+        </div>
         <div id="wrapper">
-            <div id="header">
-                <img class="vendor_logo"
-                     src="/static/sibt/imgs/sibt-shu-logo.png"
-                     width="226"
-                     height="29" />
-            </div>
             <div id="asker_bar">
-                <div class="blob">
+                <div class="choice">
                     <div class="title">
-                    {% if asker_pic %}
-                        <img align="left" src="{{ asker_pic }}" />
-                    {% endif %}
-                    {{asker_name}} asks:</div>
-                    <div id="sharing_message">
-                        {{ sharing_message|escape|default:"I like this - what do you think?" }}
+                        should <b>{{asker_name}}</b> get this?
                     </div>
+                    <div class="center">
+                        <div id="yes" class="button"
+                            style="background-image:url('/static/sibt/imgs/SHU-like-norm-108x32.png');width:108px;height:32px;">
+                        </div>
+                        <div id="no" class="button"
+                            style="background-image:url('/static/sibt/imgs/SHU-dislike-norm-126x32.png');width:126px;height:32px;">
+                        </div>
+                    </div>
+
+                    <img class="profile_pic"
+                            src='{{ asker_pic|default:"https://fbcdn-profile-a.akamaihd.net/static-ak/rsrc.php/v2/yo/r/UlIqmHJn-SK.gif" }}' />
+                    <span class="fbName asker_name_target">{{ asker_name|capfirst }}</span>
+                    <br />
+                    <span class="fbPost sharing_message_target">
+                        {{ sharing_message|escape|default:"I'm thinking of buying this, but I'm not sure. what do you think?" }}
+                    </span>
                 </div>
                 {% block left_screens %}{% endblock left_screens %}
-                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
-                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
-                </div>
             </div>
             <div id="main_content" class="slight-highlight">
                 {% block right_screens %}{% endblock right_screens %}
-                <div id="discount_screen" class="hidden">
-                    <h2>Thank you for helping {{asker_name}}.</h2>
-                    <div id="discount_gettest">
-                        <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
-                        <input id="discount_code" type="text" />
-                    </div>
-                    <p style="margin-top:24px;">
-                        <a href="http://shuuemura-usa.com">Continue Shopping</a>
-                    </p>
-                </div>
             </div>
             <script type="text/javascript">
                 {% block body_script %}{% endblock %}
@@ -60,7 +61,7 @@
                 window.fbAsyncInit = function() {
                     // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
                     FB.init({
-                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        appId: '{{ FACEBOOK_APP_ID }}', // App ID
                         //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
                         status: true, // check login status
                         cookie: true, // enable cookies to allow the server to access the session
