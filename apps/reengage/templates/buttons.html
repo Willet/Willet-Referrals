@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml">
+<head prefix="og: http://ogp.me/ns#">
+    <title>{{request.title}}</title>
+    <link href="{{request.url}}" rel="canonical" />
+    <meta property="og:url" content="{{request.url}}" />
+
+    <meta property="fb:app_id" content='{{request.app_id|default:"340019906075293"}}'>
+    <meta property="og:type" content='{{request.type|default:"product"}}' />
+
+    <meta property="og:title" content="{{request.title}}" />
+    <meta property="og:image" content="{{request.image}}" />
+    <meta property="og:site_name" content="{{request.site}}" />
+    <meta property="og:description" content="{{request.description}}" />
+</head>
+<body style="margin: 0px;">
+<div id="fb-root"></div>
+<script>
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+<div class="fb-like"
+     data-href="{{request.url}}" data-send="false" data-layout="button_count"
+     data-width="450" data-show-faces="false"></div>
+</body>
+</html>
