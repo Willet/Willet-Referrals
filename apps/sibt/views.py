@@ -185,6 +185,14 @@ class AskDynamicLoader(URIHandler):
         if not page_url: # if somehow it's still missing, fix the missing url
             page_url = products[0].resource_url
 
+
+        # generate an Instance if not exists.
+        if not instance:
+            instance = self.create_instance(app=app, page_url=page_url,
+                                            product_uuids=[x.uuid for x in products],
+                                            sharing_message="",
+                                            user=user)
+
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
@@ -193,6 +201,10 @@ class AskDynamicLoader(URIHandler):
             logging.info("Reusing the link of an existing instance.")
         else:
             link = Link.create(page_url, app, origin_domain, user)
+
+        if not app.wosib_enabled:
+            # force-present SIBT mode if WOSIB is not enabled
+            template_products = [template_products[0]]
 
         template_values = {
             'URL': URL,
@@ -215,6 +227,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
+            'instance': instance,
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
@@ -251,6 +264,46 @@ class AskDynamicLoader(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message="", user=None):
+        """Helper to create an instance without question."""
+        if not user:
+            User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
 
 
 class AskPageDynamicLoader(URIHandler):

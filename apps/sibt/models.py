@@ -60,6 +60,9 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name = db.StringProperty(indexed=True)
 
+    # if wosib_enabled, then this shop can make votes with multiple products.
+    wosib_enabled = db.BooleanProperty(default=True)
+
     # Apps cannot be memcached by secondary key, because they are all stored
     # as App objects, and this may cause field collision.
     _memcache_fields = []
@@ -188,39 +191,6 @@ class SIBT(App):
         logging.info('instance created: %s\nends: %s' % (instance.created,
                                                          instance.end_datetime))
         instance.put()
-
-        # Now, make an action
-        # SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
-
-        # "if it is a non-admin share on live server"
-        if not user.is_admin() and not USING_DEV_SERVER:
-            try:
-                Email.emailDevTeam("""
-                    %s (%s) created an SIBT instance (%s) on %s
-                    (http://rf.rs/%s).<br />
-                    <br />
-                    dialog = %s <br />
-                    fb_uuid= %s<br />
-                    fb_access_token= %s <br />
-                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
-                    """ % (
-                        user.name or "Someone",
-                        user.get_attr('email'),
-                        uuid,
-                        link.target_url,
-                        link.willt_url_code,
-                        dialog,
-                        user.get_attr('fb_identity'),
-                        user.get_attr('fb_access_token'),
-                        user.get_attr('fb_identity'),
-                        user.get_attr('fb_access_token')
-                    ),
-                    subject='SIBT instance created'
-                )
-            except Exception, err:
-               Email.emailDevTeam('SIBT INSTANCE: error printing data: '
-                                  '%s' % unicode(err),
-                                  subject='SIBT instance create failed')
         return instance
 
 

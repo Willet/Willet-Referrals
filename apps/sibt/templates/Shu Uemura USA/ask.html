@@ -3,7 +3,8 @@
 {% block styles %}
     <style>
         html, body {
-            background-image: url('/static/imgs/tiles/diagonal.png');
+            background-image: url('/static/imgs/tiles/diagonal-light.png');
+            font-family: 'helvetica neue', helvetica, arial, sans-serif;
         }
         .content.narrow {
             margin: 10px 5%;
@@ -11,6 +12,8 @@
         .title_bar {
             background-color: #000;
             color: #fff;
+            font-family: 'helvetica extended', helvetica, arial, sans-serif;
+            font-size: 45px;
             padding: 10px 0 5px 10px;
             }
             .title_bar > div {
@@ -50,8 +53,12 @@
 
     <div id="splash">
         <div class="title_bar">
-            <b>Shu Uemura</b>
-            <div>Ask your friends for advice</div>
+            <span>
+                <!-- byapss ask.css's direct descendant selector, div>img -->
+                <img src="/static/sibt/imgs/sibt-shu-logo.png"
+                     style="padding: 9px"
+                     alt="shu uemura" title="shu uemura">
+            </span>
         </div>
         <div class="content narrow">
             <p style="margin-top:23px;">Ask your friends if they like this item: <b>{{ products.0.title }}</b></p>
@@ -60,16 +67,16 @@
             <p style="float: left;text-align: center; font-weight: 700;">
                 &nbsp;
             </p>
-            <div class="button" id="postOnWall" title="Post to your wall"
-                 style="float: left; margin: 35px 0 0 55px; width: 160px;">
+            <button class="button" id="postOnWall" title="Post to your wall"
+                 style="float: left; margin: 35px 0 0 33px; width: 200px;background-color:#b0c2d0;">
                 <img alt="facebook icon" src="/static/imgs/sb-facebook.png" />
-                <div class="title">Post to Facebook</div>
-            </div>
-            <div class="button" id="showChooseScreen" title="Post to your friends' walls"
-                 style="float: left; margin: 10px 0 0 59px; width: 160px;">
+                <div class="title">share on your wall</div>
+            </button>
+            <button class="button" id="showChooseScreen" title="Post to your friends' walls"
+                 style="float: left; margin: 10px 0 0 36px; width: 230px;background-color:#b0c2d0;">
                 <img alt="facebook icon" src="/static/imgs/sb-facebook.png" />
-                <div class="title">Message to Friends</div>
-            </div>
+                <div class="title">message to your Friends</div>
+            </button>
         </div>
     </div>
 {% endblock screens %}
@@ -181,6 +188,37 @@
 {% block js_init %}
 
     // unbind original click behaviour with Shu Uemura specific codes.
+    $('#postOnWall').unbind('click').click(function () {
+        var button = $(this);
+        var oldButtonText = button.html();
+        button.text('Please wait...');
+
+        var fbInstanceCallback = function () {
+            button.html(oldButtonText);
+            _willet.mediator.fire('postOnWall', {
+                'name': 'Which one should I Buy?',
+                'link': '{{ share_url }}',
+                'caption': 'Which one should I Buy?',
+                'description': '{{ AB_share_text }}',
+                'picture': '{{ products.0.image }}' ||
+                            '//{{ DOMAIN }}/static/imgs/noimage.png',
+                'redirect_uri': '{{ fb_redirect }}'
+            }).fire('redirectWindow');  // fire remainders
+        };
+
+        // determine if we should show the FB popup right now
+        // or after creating an instance.
+        if ('{{ instance.uuid }}') {  // '' if instance didn't exist
+            // run callback while creating
+            createSIBTInstance();
+            fbInstanceCallback();
+        } else {
+            // run callback after creating
+            createSIBTInstance(fbInstanceCallback);
+        }
+    });
+
+    // unbind original click behaviour with Shu Uemura specific codes.
     $('#showChooseScreen').unbind('click').click(function () {
         // Wub wub wub wub wub wub (V)(;,,;)(V)
         var button = $(this);
@@ -190,9 +228,9 @@
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
             _willet.mediator.fire('sendToFriends', {
-                'name': 'Not sure which one I should buy!',
+                'name': 'Which one should I Buy?',
                 'link': '{{ share_url }}',
-                'caption': 'Not sure which one I should buy!',
+                'caption': 'Which one should I Buy?',
                 'description': '{{ AB_share_text }}',
                 'picture': '{{ products.0.image }}' ||
                             '//{{ DOMAIN }}/static/imgs/noimage.png',
