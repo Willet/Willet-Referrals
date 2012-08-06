@@ -61,22 +61,22 @@
             </span>
         </div>
         <div class="content narrow">
-            <p style="margin-top:23px;">Ask your friends if they like this item: <b>{{ products.0.title }}</b></p>
+            <p style="margin-top:23px;">
+                Ask your friends if they like this item:
+                <b>{{ products.0.title }}</b>
+            </p>
             <img class="product_img" alt="product" src="{{ product_images|first }}"
                  style="float: left;" />
-            <p style="float: left;text-align: center; font-weight: 700;">
-                &nbsp;
-            </p>
-            <button class="button" id="postOnWall" title="Post to your wall"
-                 style="float: left; margin: 35px 0 0 33px; width: 200px;background-color:#b0c2d0;">
-                <img alt="facebook icon" src="/static/imgs/sb-facebook.png" />
-                <div class="title">share on your wall</div>
-            </button>
-            <button class="button" id="showChooseScreen" title="Post to your friends' walls"
-                 style="float: left; margin: 10px 0 0 36px; width: 230px;background-color:#b0c2d0;">
-                <img alt="facebook icon" src="/static/imgs/sb-facebook.png" />
-                <div class="title">message to your Friends</div>
-            </button>
+            <p>&nbsp;</p>
+            <img id="postOnWall"
+                 alt="Share on your wall"
+                 title="Share on your wall"
+                 style="margin: 30px 0 0 57px;cursor:pointer;"
+                 src="/static/sibt/imgs/SHU-share-on-wall-180x32.png" />
+            <img id="showChooseScreen"
+                 alt="Message to friends"
+                 style="margin: 20px 0 0 57px;cursor:pointer;"
+                 src="/static/sibt/imgs/SHU-message-to-friends-180x32.png" />
         </div>
     </div>
 {% endblock screens %}

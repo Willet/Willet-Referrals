@@ -144,6 +144,12 @@ class AskDynamicLoader(URIHandler):
 
         # successive steps to obtain the product(s) using any way possible
         products = get_products(urihandler=self)
+        if not app.wosib_enabled:
+            # force-present SIBT mode if WOSIB is not enabled
+            logging.info('reverting to SIBT mode.')
+            # leave template products -> last product
+            products = [Product.get_or_fetch(page_url, app.client)]
+
         if not products[0]:  # we failed to find a single product!
             logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
@@ -201,10 +207,6 @@ class AskDynamicLoader(URIHandler):
             logging.info("Reusing the link of an existing instance.")
         else:
             link = Link.create(page_url, app, origin_domain, user)
-
-        if not app.wosib_enabled:
-            # force-present SIBT mode if WOSIB is not enabled
-            template_products = [template_products[0]]
 
         template_values = {
             'URL': URL,
@@ -292,6 +294,7 @@ class AskDynamicLoader(URIHandler):
                                        motivation=None,
                                        sharing_message="",
                                        products=product_uuids)
+        instance.is_live = False
 
         # after creating the instance, switch the link's URL right back to the
         # instance's vote page
@@ -303,6 +306,7 @@ class AskDynamicLoader(URIHandler):
         logging.info("link.target_url changed to %s" % link.target_url)
         link.put()
 
+        instance.put()
         return instance
 
 
