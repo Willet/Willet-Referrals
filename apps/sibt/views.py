@@ -890,6 +890,7 @@ class ShowFBThanks(URIHandler):
 
         template_values = {
             'email': user.get_attr('email'),
+            'user': user,
             'user_uuid': user.uuid,
             'user_cancelled': user_cancelled,
             'incentive_enabled': app.incentive_enabled if app else False
