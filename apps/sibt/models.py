@@ -312,7 +312,6 @@ class SIBTInstance(Model):
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
             return [Product.get(winning_product_uuid)]
 
-    # Accessor ----------------------------------------------------------------
     @staticmethod
     def get_by_asker_for_url(user, url, only_live=True):
         """Retrieve an instance by its user object and link URL (not model).

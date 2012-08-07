@@ -8,7 +8,9 @@
 
 {% block right_screens %}
     <div id="product_screen">
-        <h2><a href="{{ product_url }}">{{ product.title|striptags }}</a></h2>
+        <h2>
+            <a href="{{ product_url }}">{{ product.title|striptags|lower }}</a>
+        </h2>
         <img id="product_img" class="product-image" src="{{ product_img }}" />
         <div id="right-div" class="description">
             {{ product.description|striptags }}
@@ -19,6 +21,7 @@
 {% block body_script %}
     $(document).ready(function () {
         {% if user_voted %}
+            $('.choice .button').css('cursor', 'auto');
         {% else %}
             var vote = function (which) {
                 $.ajax({
@@ -31,6 +34,9 @@
                     success: function (tr) {
                         $("#success_message").show();
                         fbinit(document, 'script', 'facebook-jssdk');
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
                     },
                     error: function () {
                         $(".choice").hide();

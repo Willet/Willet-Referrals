@@ -20,25 +20,66 @@
     </head>
     <body>
         <div id="header">
-            <img class="vendor_logo"
-                 src="/static/sibt/imgs/sibt-shu-logo.png"
-                 width="226" height="29" />
+            <div class="_1kwrapper">
+                <img class="vendor_logo"
+                    src="/static/sibt/imgs/sibt-shu-logo.png"
+                    width="226" height="29" />
+            </div>
         </div>
-        <div id="success_message" class="hidden">
-            thanks for helping your friend. for your generosiy, GET A CHANCE TO WIN 1 of 3 shu uemura beauty sets, a value of $150! <a href="#">click here to enter</a>
+        <div id="success_message" class="{% if not user_voted %}hidden{% endif %} emph">
+            <div class="_1kwrapper">
+                thanks for helping your friend. for your generosiy,
+                GET A CHANCE TO WIN 1 of 3 shu uemura beauty sets,
+                a value of $150! <a href="#">click here to enter</a>
+            </div>
         </div>
-        <div id="wrapper">
+        <div id="wrapper" class="_1kwrapper">
             <div id="asker_bar">
                 <div class="choice">
-                    <div class="title">
-                        should <b>{{asker_name}}</b> get this?
-                    </div>
-                    <div class="center">
-                        <div id="yes" class="button"
-                            style="background-image:url('/static/sibt/imgs/SHU-like-norm-108x32.png');width:108px;height:32px;">
+                    {% if not user_voted %}
+                        <div class="emph title" style="padding:0; padding-top:20px;">
+                            should <b>{{asker_name}}</b> get this?
                         </div>
-                        <div id="no" class="button"
-                            style="background-image:url('/static/sibt/imgs/SHU-dislike-norm-126x32.png');width:126px;height:32px;">
+                    {% endif %}
+                    <div class="center" style="padding:20px 0;">
+                        {% ifequal user_voted_what 'yes' %}
+                            <div id="yes" class="button"
+                                style="background-image:url('/static/sibt/imgs/SHU-like-pressed-108x32.png');width:108px;height:32px;">
+                            </div>
+                        {% else %}
+                            {% if user_voted %}
+                                <div id="yes" class="button"
+                                    style="background-image:url('/static/sibt/imgs/SHU-like-transparent-108x32.png');width:108px;height:32px;">
+                                </div>
+                            {% else %}
+                                <div id="yes" class="button"
+                                    style="background-image:url('/static/sibt/imgs/SHU-like-norm-108x32.png');width:108px;height:32px;">
+                                </div>
+                            {% endif %}
+                        {% endifequal %}
+                        <div class="vote_counter"
+                             style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
+                            {{ instance.get_yesses_count }}
+                        </div>
+
+                        {% ifequal user_voted_what 'no' %}
+                            <div id="no" class="button"
+                                style="background-image:url('/static/sibt/imgs/SHU-dislike-pressed-126x32.png');width:126px;height:32px;">
+                            </div>
+                        {% else %}
+                            {% if user_voted %}
+                                <div id="no" class="button"
+                                    style="background-image:url('/static/sibt/imgs/SHU-dislike-transparent-126x32.png');width:126px;height:32px;">
+                                </div>
+                            {% else %}
+                                <div id="no" class="button"
+                                    style="background-image:url('/static/sibt/imgs/SHU-dislike-norm-126x32.png');width:126px;height:32px;">
+                                </div>
+                            {% endif %}
+                        {% endifequal %}
+                        <div class="vote_counter"
+                             style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
+                            {{ instance.get_nos_count }}
                         </div>
                     </div>
 
@@ -58,11 +99,11 @@
             <script type="text/javascript">
                 {% block body_script %}{% endblock %}
 
-                window.fbAsyncInit = function() {
+                window.fbAsyncInit = function () {
                     // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
                     FB.init({
                         appId: '{{ FACEBOOK_APP_ID }}', // App ID
-                        //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                        channelURL : '//{{ DOMAIN }}/static/js/fbchannel.html', // Channel File
                         status: true, // check login status
                         cookie: true, // enable cookies to allow the server to access the session
                         oauth: true, // enable OAuth 2.0

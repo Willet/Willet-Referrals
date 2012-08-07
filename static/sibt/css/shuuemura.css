@@ -1,7 +1,8 @@
 html, body {
     background: #fff url('/static/imgs/clean_textile.png');
     color: #444;
-    font-family: 'PT sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
     margin: 0;
     padding: 0;
 }
@@ -36,6 +37,9 @@ h2 a:hover {
 }
 #wrapper {
     background: #fff;
+    margin: 0 auto;
+}
+._1kwrapper {
     width: 1000px;
     margin: 0 auto;
 }
@@ -45,7 +49,7 @@ h2 a:hover {
 }
 #header .vendor_logo {
     display: block;
-    padding: 37px 0 0 60px;
+    padding: 37px 0 0 0;
 }
 #header .vendor_logo a {
     border: 0;
@@ -58,14 +62,23 @@ h2 a:hover {
 #main_content {
     float: right;
     width: 525px;
-    min-height: 550px;
+    /*min-height: 550px;*/
     text-align: justify;
-    margin: 0 15px 0 0;
+    margin: 15px 15px 0 0;
+}
+#right-div {
+    float: right;
+    width: 265px;
 }
 #product_img {
     display: block;
     margin: 0 auto;
     float: left;
+}
+#success_message {
+    background-color: #b0c2d0;
+    padding: 12px 6px;
+    text-align: center;
 }
 #success_message h4 {
     display: none;
@@ -108,6 +121,9 @@ h2 a:hover {
 .center {
     text-align: center;
 }
+.choice {
+    width: 375px;
+}
 .hidden {
     display: none;
 }
@@ -135,6 +151,16 @@ h2 a:hover {
 .title_bar>* {
     float: left;
 }
+.emph {
+    font-size: 1.2em;
+}
+.vote_counter {
+    vertical-align: top;
+    line-height: 32px;
+    width:28px;
+    height:32px;
+    display:inline-block;
+}
 .title_bar>img {
     height: 60px;
     width: 50px;
@@ -148,4 +174,9 @@ h2 a:hover {
 .button {
     display: inline-block;
     cursor: pointer;
+}
+
+img.profile_pic {
+    float: left;
+    margin: 0px 15px 9px 11px;
 }

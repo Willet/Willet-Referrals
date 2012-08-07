@@ -635,6 +635,10 @@ class VoteDynamicLoader(URIHandler):
             product_img = ''
 
         user_voted = bool(instance.get_votes_count(user=user) > 0)
+        user_voted_what = getattr(
+            SIBTVoteAction.get_by_app_and_instance_and_user(
+                app, instance, user),
+            'vote', '')
 
         template_values = {
             'URL': URL,
@@ -649,6 +653,7 @@ class VoteDynamicLoader(URIHandler):
 
             'user': user,
             'user_voted': user_voted,
+            'user_voted_what': user_voted_what,
             'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
