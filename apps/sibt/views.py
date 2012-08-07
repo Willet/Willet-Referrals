@@ -599,6 +599,7 @@ class VoteDynamicLoader(URIHandler):
                          'Assigning whichever user we can get.')
             instance.asker = get_user(urihandler=self)
             instance.put()
+            name = 'your friend'
 
         link = instance.link
         try:
