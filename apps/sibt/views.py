@@ -642,7 +642,9 @@ class VoteDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
 
             'evnt': event,
             'product': product,

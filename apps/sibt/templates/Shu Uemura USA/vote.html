@@ -11,9 +11,11 @@
         <h2>
             <a href="{{ product_url }}">{{ product.title|striptags|lower }}</a>
         </h2>
-        <img id="product_img" class="product-image" src="{{ product_img }}" />
+        <a href="{{ product_url }}">
+            <img id="product_img" class="product-image" src="{{ product_img }}" />
+        </a>
         <div id="right-div" class="description">
-            {{ product.description|striptags }}
+            {{ product.description }}
         </div>
     </div>
 {% endblock right_screens %}
