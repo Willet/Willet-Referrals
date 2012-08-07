@@ -1088,7 +1088,7 @@ _willet = (function (me, config) {
         DEFAULT_BUTTONS = ['Facebook', 'Twitter', 'Pinterest'],
         DEFAULT_COUNT = 'false',
         DEFAULT_SPACING = '5',
-        DEFAULT_PADDING = '5',
+        DEFAULT_PADDING = '0', //'5',
         DEFAULT_ALIGNMENT = 'left',
         DEFAULT_CANONICAL_URL = window.location.protocol
                               + '//'
