@@ -85,7 +85,7 @@
     var options = [
         // Could use template here
         {
-            title: "Should I buy this?",
+            title: "Do you like this?",
             text: "{{ AB_share_text|escape }}"
         },
         {
@@ -196,9 +196,9 @@
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
             _willet.mediator.fire('postOnWall', {
-                'name': 'Which one should I Buy?',
+                'name': 'Do you like this?',
                 'link': '{{ share_url }}',
-                'caption': 'Which one should I Buy?',
+                'caption': 'Do you like this?',
                 'description': '{{ AB_share_text }}',
                 'picture': '{{ products.0.image }}' ||
                             '//{{ DOMAIN }}/static/imgs/noimage.png',
@@ -228,9 +228,9 @@
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
             _willet.mediator.fire('sendToFriends', {
-                'name': 'Which one should I Buy?',
+                'name': 'Do you like this?',
                 'link': '{{ share_url }}',
-                'caption': 'Which one should I Buy?',
+                'caption': 'Do you like this?',
                 'description': '{{ AB_share_text }}',
                 'picture': '{{ products.0.image }}' ||
                             '//{{ DOMAIN }}/static/imgs/noimage.png',

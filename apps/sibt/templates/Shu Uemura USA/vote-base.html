@@ -44,59 +44,47 @@
                         {% endif %}
                     </div>
                     <div class="center" style="padding:20px 0;">
-                        {% ifequal user_voted_what 'yes' %}
-                            <div id="yes" class="button"
-                                style="background-image:url('/static/sibt/imgs/SHU-like-pressed-108x32.png');
-                                       width:108px;
-                                       height:32px;">
-                            </div>
-                        {% else %}
-                            {% if user_voted %}
-                                <div id="yes" class="button"
-                                    style="background-image:url('/static/sibt/imgs/SHU-like-transparent-108x32.png');
-                                           width:108px;
-                                           height:32px;">
-                                </div>
-                            {% else %}
-                                <div id="yes" class="button"
-                                    style="background-image:url('/static/sibt/imgs/SHU-like-norm-108x32.png');
-                                           width:108px;
-                                           height:32px;">
-                                </div>
-                            {% endif %}
-                        {% endifequal %}
-                        <div class="vote_counter"
-                             style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
-                             <!-- how many yesses -->
-                            {{ instance.get_yesses_count }}
+                        <div id="yes" class="button"
+                             style="width:108px;
+                                    height:32px;
+                                    {% ifequal user_voted_what 'yes' %}
+                                        background-image:url('/static/sibt/imgs/SHU-like-pressed-108x32.png');
+                                    {% else %}
+                                        {% if user_voted %}
+                                        background-image:url('/static/sibt/imgs/SHU-like-transparent-108x32.png');
+                                        {% else %}
+                                        background-image:url('/static/sibt/imgs/SHU-like-norm-108x32.png');
+                                        {% endif %}
+                                    {% endifequal %}">
                         </div>
+                        {% if user_voted %}
+                            <div class="vote_counter"
+                                style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
+                                <!-- how many yesses -->
+                                {{ instance.get_yesses_count }}
+                            </div>
+                        {% endif %}
 
-                        {% ifequal user_voted_what 'no' %}
-                            <div id="no" class="button"
-                                style="background-image:url('/static/sibt/imgs/SHU-dislike-pressed-126x32.png');
-                                       width:126px;
-                                       height:32px;">
-                            </div>
-                        {% else %}
-                            {% if user_voted %}
-                                <div id="no" class="button"
-                                    style="background-image:url('/static/sibt/imgs/SHU-dislike-transparent-126x32.png');
-                                           width:126px;
-                                           height:32px;">
-                                </div>
-                            {% else %}
-                                <div id="no" class="button"
-                                    style="background-image:url('/static/sibt/imgs/SHU-dislike-norm-126x32.png');
-                                           width:126px;
-                                           height:32px;">
-                                </div>
-                            {% endif %}
-                        {% endifequal %}
-                        <div class="vote_counter"
-                             style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
-                             <!-- how many noes -->
-                            {{ instance.get_nos_count }}
+                        <div id="no" class="button"
+                             style="width:126px;
+                                    height:32px;
+                                    {% ifequal user_voted_what 'no' %}
+                                        background-image:url('/static/sibt/imgs/SHU-dislike-pressed-126x32.png');
+                                    {% else %}
+                                        {% if user_voted %}
+                                        background-image:url('/static/sibt/imgs/SHU-dislike-transparent-126x32.png');
+                                        {% else %}
+                                        background-image:url('/static/sibt/imgs/SHU-dislike-norm-126x32.png');
+                                        {% endif %}
+                                    {% endifequal %}">
                         </div>
+                        {% if user_voted %}
+                            <div class="vote_counter"
+                                style="background-image:url('/static/sibt/imgs/SHU-like-counter-28x32.png');">
+                                <!-- how many noes -->
+                                {{ instance.get_nos_count }}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <img class="profile_pic"
