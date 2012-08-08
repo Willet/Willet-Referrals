@@ -92,14 +92,14 @@ class App(Model, polymodel.PolyModel):
         and of any subclass. Use subclass-specific get_by_url functions
         to obtain more precise targets.
         """
-        (url, www_url) = get_url_variants(store_url, keep_path=False)
+        urls = get_url_variants(store_url, keep_path=False)
 
-        logging.info("Looking for App in %s" % url)
-        app = cls.all().filter('store_url IN', [url, www_url]).get()
+        logging.info("Looking for App in %r" % urls)
+        app = cls.all().filter('store_url IN', urls).get()
         if app:
             return app
 
-        app = cls.all().filter('extra_url IN', [url, www_url]).get()
+        app = cls.all().filter('extra_url IN', urls).get()
         return app
 
     # Counters ----------------------------------------------------------------

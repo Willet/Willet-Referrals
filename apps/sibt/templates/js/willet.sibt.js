@@ -398,9 +398,7 @@ _willet.sibt = (function (me) {
         // process vendor info on server side
         {% ifequal client.name "Shu Uemura USA" %}
             jqElem.css ({
-                'background': ((instance.is_live || instance.has_results)?
-                                "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent":
-                                "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent"),
+                'background': "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent",
                 'width': '92px',
                 'height': '24px',
                 'margin-top': '3px',

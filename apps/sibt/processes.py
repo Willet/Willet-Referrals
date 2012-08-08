@@ -679,7 +679,8 @@ class SaveProductsToInstance(URIHandler):
         self.error(400)
 
 
-def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
+def VendorSignUp(request_handler, domain, email, first_name, last_name, phone,
+                 wosib_enabled=True, bottom_popup_enabled=True):
     """Function to create a vendor's Client, SIBT App, and User.
 
     Returns (<bool>success?, <string>code), where code is the error message
@@ -719,8 +720,11 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     user.update(client=client)  # can't bundle with previous user update
 
     app = SIBT.get_or_create(client=client, domain=domain)
-    if not client:
+    if not app:
         return (False, 'wtf, no app?')
+    app.wosib_enabled = wosib_enabled
+    app.bottom_popup_enabled = bottom_popup_enabled
+    app.put()
 
     template_values = {'app': app,
                        'URL': URL,

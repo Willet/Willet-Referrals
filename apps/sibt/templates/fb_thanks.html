@@ -16,13 +16,15 @@
 
         <script type="text/javascript">
             var updateEmailAddress = function() {
-                var addr = document.getElementById( 'email-field' ).value;
+                var addr = document.getElementById('email-field').value,
+                    name = document.getElementById('name-field').value;
 
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
                     data: {
                         'email': addr,
+                        'name': name,
                         'user_uuid': '{{ user_uuid }}'
                     },
                     success: function (tr) {
@@ -56,15 +58,21 @@
                         {% if incentive_enabled %}
                             Enter your PayPal email and we'll send you $5 immediately after you make a purchase!
                         {% else %}
-                            Leave your e-mail so we can notify you when your friends give feedback:
+                            Leave your nickname and e-mail so we can notify you when your friends give feedback:
                         {% endif %}
                     </p>
+
+                    <input class="fb_textinput"
+                           id="name-field"
+                           type="text"
+                           value="{{ user.name }}"
+                           placeholder="e.g. Johnny"></input>
 
                     <input class="fb_textinput"
                            id="email-field"
                            type="text"
                            value="{{ email }}"
-                           placeholder="john@example.com"></input>
+                           placeholder="e.g. john@example.com"></input>
                     <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
                 </div>
             </div>
