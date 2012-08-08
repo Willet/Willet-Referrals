@@ -60,6 +60,9 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name = db.StringProperty(indexed=True)
 
+    # if wosib_enabled, then this shop can make votes with multiple products.
+    wosib_enabled = db.BooleanProperty(default=True)
+
     # Apps cannot be memcached by secondary key, because they are all stored
     # as App objects, and this may cause field collision.
     _memcache_fields = []
@@ -71,22 +74,22 @@ class SIBT(App):
     @classmethod
     def get_by_store_url(cls, url):
         app = None
-        www_url = url
 
         if not url:
             return None  # can't get by store_url if no URL given
 
-        (url, www_url) = get_url_variants(url, keep_path=False)
+        urls = get_url_variants(url, keep_path=False)
 
-        app = cls.get(url)
-        if app:
-            return app
+        for url2 in urls:
+            app = cls.get(url2)
+            if app:
+                return app
 
         # "first get by url, then by www_url"
-        app = cls.all().filter('store_url IN', [url, www_url]).get()
+        app = cls.all().filter('store_url IN', urls).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = cls.all().filter('extra_url IN', [url, www_url]).get()
+            app = cls.all().filter('extra_url IN', urls).get()
         return app
 
     @staticmethod
@@ -188,39 +191,6 @@ class SIBT(App):
         logging.info('instance created: %s\nends: %s' % (instance.created,
                                                          instance.end_datetime))
         instance.put()
-
-        # Now, make an action
-        # SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
-
-        # "if it is a non-admin share on live server"
-        if not user.is_admin() and not USING_DEV_SERVER:
-            try:
-                Email.emailDevTeam("""
-                    %s (%s) created an SIBT instance (%s) on %s
-                    (http://rf.rs/%s).<br />
-                    <br />
-                    dialog = %s <br />
-                    fb_uuid= %s<br />
-                    fb_access_token= %s <br />
-                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
-                    """ % (
-                        user.name or "Someone",
-                        user.get_attr('email'),
-                        uuid,
-                        link.target_url,
-                        link.willt_url_code,
-                        dialog,
-                        user.get_attr('fb_identity'),
-                        user.get_attr('fb_access_token'),
-                        user.get_attr('fb_identity'),
-                        user.get_attr('fb_access_token')
-                    ),
-                    subject='SIBT instance created'
-                )
-            except Exception, err:
-               Email.emailDevTeam('SIBT INSTANCE: error printing data: '
-                                  '%s' % unicode(err),
-                                  subject='SIBT instance create failed')
         return instance
 
 
@@ -342,7 +312,6 @@ class SIBTInstance(Model):
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
             return [Product.get(winning_product_uuid)]
 
-    # Accessor ----------------------------------------------------------------
     @staticmethod
     def get_by_asker_for_url(user, url, only_live=True):
         """Retrieve an instance by its user object and link URL (not model).
