@@ -94,14 +94,15 @@ class ButtonsShopifyBeta(URIHandler):
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
         }
 
-        self.response.out.write(self.render_page('beta.html', template_values))
+        self.response.out.write(self.render_page('buttons/beta.html',
+                                                 template_values))
 
 
 class ButtonsShopifyLearn(URIHandler):
     """ Video & blurb about premium ShopConnection """
     def get(self):
         """Display a page to learn more about smart buttons."""
-        self.response.out.write(self.render_page('learn.html', {}))
+        self.response.out.write(self.render_page('buttons/learn.html'))
 
 
 class ButtonsShopifyWelcome(URIHandler):
@@ -156,7 +157,7 @@ class ButtonsShopifyWelcome(URIHandler):
             'disabled'   : disabled,
         }
 
-        self.response.out.write(self.render_page('upsell.html',
+        self.response.out.write(self.render_page('buttons/upsell.html',
                                                  template_values))
 
 
@@ -264,7 +265,7 @@ class ButtonsShopifyPaidInstallThanks(URIHandler):
         }
 
         # prepopulate values
-        self.response.out.write(self.render_page('install4u-instructions.html',
+        self.response.out.write(self.render_page('buttons/install4u-instructions.html',
                                                  template_values))
 
 
@@ -431,7 +432,7 @@ class ButtonsShopifyInstructions(URIHandler):
             'config_url'    : config_url
         }
 
-        self.response.out.write(self.render_page('welcome.html',
+        self.response.out.write(self.render_page('buttons/welcome.html',
                                                  template_values))
 
 
@@ -527,7 +528,8 @@ class ButtonsShopifyConfig(URIHandler):
         }
 
         # prepopulate values
-        self.response.out.write(self.render_page('config.html', template_values))
+        self.response.out.write(self.render_page('buttons/config.html',
+                                                 template_values))
 
     @catch_error
     def post(self):
@@ -601,7 +603,7 @@ class ButtonsShopifyInstallError(URIHandler):
         }
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.response.out.write(self.render_page('install_error.html',
+        self.response.out.write(self.render_page('buttons/install_error.html',
                                                  template_values))
         return
 
