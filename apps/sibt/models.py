@@ -74,22 +74,22 @@ class SIBT(App):
     @classmethod
     def get_by_store_url(cls, url):
         app = None
-        www_url = url
 
         if not url:
             return None  # can't get by store_url if no URL given
 
-        (url, www_url) = get_url_variants(url, keep_path=False)
+        urls = get_url_variants(url, keep_path=False)
 
-        app = cls.get(url)
-        if app:
-            return app
+        for url2 in urls:
+            app = cls.get(url2)
+            if app:
+                return app
 
         # "first get by url, then by www_url"
-        app = cls.all().filter('store_url IN', [url, www_url]).get()
+        app = cls.all().filter('store_url IN', urls).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = cls.all().filter('extra_url IN', [url, www_url]).get()
+            app = cls.all().filter('extra_url IN', urls).get()
         return app
 
     @staticmethod
