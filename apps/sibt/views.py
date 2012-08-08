@@ -457,7 +457,7 @@ class AskPageDynamicLoader(URIHandler):
             path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
@@ -681,7 +681,7 @@ class VoteDynamicLoader(URIHandler):
             path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, vote_url='', product_uuids=None,
@@ -858,7 +858,7 @@ class ShowResults(URIHandler):
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -895,7 +895,7 @@ class ShowFBThanks(URIHandler):
 
         path = os.path.join('sibt', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -914,7 +914,7 @@ class ColorboxJSServer(URIHandler):
         path = os.path.join('sibt/js', 'jquery.colorbox.js')
         self.response.headers["Content-Type"] = "text/javascript"
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -937,7 +937,7 @@ class ShowOnUnloadHook(URIHandler):
 
         path = os.path.join('sibt', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -1234,7 +1234,7 @@ class SIBTServeScript(URIHandler):
             'willt_code': link.willt_url_code if link else "",
         }
 
-        path = os.path.join('sibt', 'sibt.js')
+        path = os.path.join('templates/sibt', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
