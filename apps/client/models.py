@@ -97,24 +97,19 @@ class Client(Model, polymodel.PolyModel):
         if not url:
             return None
 
-        www_url = url
+        urls = get_url_variants(url, keep_path=False)
 
-        (url, www_url) = get_url_variants(url, keep_path=False)
-
-        res = cls.get(url) # wild try w/ memcache?
-        if res:
-            return res
-
-        res = cls.get(www_url) # wild try w/ memcache?
-        if res:
-            return res
+        for url2 in urls:
+            res = cls.get(url2) # wild try w/ memcache?
+            if res:
+                return res
 
         # memcache miss?
-        res = db.Query(cls).filter('url IN', [url, www_url]).get()
+        res = db.Query(cls).filter('url IN', urls).get()
         if res:
             return res
         # domain is the less-authoritative field, but try it anyway
-        return db.Query(cls).filter('domain IN', [url, www_url]).get()
+        return db.Query(cls).filter('domain IN', urls).get()
 
     @classmethod
     def get_by_email(cls, email):

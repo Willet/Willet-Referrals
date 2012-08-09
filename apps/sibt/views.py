@@ -144,6 +144,12 @@ class AskDynamicLoader(URIHandler):
 
         # successive steps to obtain the product(s) using any way possible
         products = get_products(urihandler=self)
+        if not app.wosib_enabled:
+            # force-present SIBT mode if WOSIB is not enabled
+            logging.info('reverting to SIBT mode.')
+            # leave template products -> last product
+            products = [Product.get_or_fetch(page_url, app.client)]
+
         if not products[0]:  # we failed to find a single product!
             logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
@@ -185,6 +191,14 @@ class AskDynamicLoader(URIHandler):
         if not page_url: # if somehow it's still missing, fix the missing url
             page_url = products[0].resource_url
 
+
+        # generate an Instance if not exists.
+        if not instance:
+            instance = self.create_instance(app=app, page_url=page_url,
+                                            product_uuids=[x.uuid for x in products],
+                                            sharing_message="",
+                                            user=user)
+
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
@@ -215,6 +229,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
+            'instance': instance,
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
@@ -251,6 +266,46 @@ class AskDynamicLoader(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message="", user=None):
+        """Helper to create an instance without question."""
+        if not user:
+            User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
 
 
 class AskPageDynamicLoader(URIHandler):
@@ -544,6 +599,7 @@ class VoteDynamicLoader(URIHandler):
                          'Assigning whichever user we can get.')
             instance.asker = get_user(urihandler=self)
             instance.put()
+            name = 'your friend'
 
         link = instance.link
         try:
@@ -580,10 +636,16 @@ class VoteDynamicLoader(URIHandler):
             product_img = ''
 
         user_voted = bool(instance.get_votes_count(user=user) > 0)
+        user_voted_what = getattr(
+            SIBTVoteAction.get_by_app_and_instance_and_user(
+                app, instance, user),
+            'vote', '')
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
 
             'evnt': event,
             'product': product,
@@ -594,6 +656,7 @@ class VoteDynamicLoader(URIHandler):
 
             'user': user,
             'user_voted': user_voted,
+            'user_voted_what': user_voted_what,
             'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
@@ -828,6 +891,7 @@ class ShowFBThanks(URIHandler):
 
         template_values = {
             'email': user.get_attr('email'),
+            'user': user,
             'user_uuid': user.uuid,
             'user_cancelled': user_cancelled,
             'incentive_enabled': app.incentive_enabled if app else False

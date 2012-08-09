@@ -45,7 +45,9 @@ class SIBTShuuemuraWelcome(URIHandler):
                                          email=email,
                                          first_name=first_name,
                                          last_name=last_name,
-                                         phone=phone)
+                                         phone=phone,
+                                         wosib_enabled=False,
+                                         bottom_popup_enabled=False)
 
         if success:
             app = SIBT.get_by_url(domain)
