@@ -376,7 +376,7 @@ class SIBTShopify(SIBT, AppShopify):
         """Uses the values dict to generate the sibt css"""
         if not values:
             values = cls.get_default_dict()
-        path = 'apps/sibt/templates/css/sibt_user_style.css'
+        path = 'templates/sibt/css/sibt_user_style.css'
         rendered = template.render(path, values)
         rendered = rendered.replace('\n', '').replace('\r','')
         return rendered
