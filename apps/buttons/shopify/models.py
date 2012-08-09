@@ -8,6 +8,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
+import re
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
@@ -425,6 +426,25 @@ class ButtonsShopify(Buttons, AppShopify):
             logging.info("script_tag = %r" % script_tag)
             if "confirmation.js" in script_tag.get("src", ""):
                 tags.append(script_tag)
+
+        # validate network user names; discard invalid ones.
+        facebook_username_regex = re.compile('^[A-Za-z0-9\.]+$')
+        if social_accounts.get('facebook_username'):
+            if not facebook_username_regex.match(
+                social_accounts['facebook_username']):
+                del social_accounts['facebook_username']
+
+        twitter_username_regex = re.compile('^[A-Za-z0-9_]+$')
+        if social_accounts.get('twitter_username'):
+            if not twitter_username_regex.match(
+                social_accounts['twitter_username']):
+                del social_accounts['twitter_username']
+
+        pinterest_username_regex = re.compile('^[A-Za-z0-9]+$')
+        if social_accounts.get('pinterest_username'):
+            if not pinterest_username_regex.match(
+                social_accounts['pinterest_username']):
+                del social_accounts['pinterest_username']
 
         # Build query string
         query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )

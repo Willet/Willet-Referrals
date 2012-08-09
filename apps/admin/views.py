@@ -4,7 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
-import logging
+import types
 import sys
 
 from django.utils import simplejson as json
@@ -12,12 +12,14 @@ from inspect import getmodule
 
 from google.appengine.api import memcache, taskqueue
 from google.appengine.ext import db
+from google.appengine.ext.db.metadata import Kind
 
 from apps.action.models import Action, ActionTally
 from apps.app.models import App
 
 from util.consts import INSTALLED_APPS
 from util.helpers import url
+from util.logger import logging
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.urihandler import URIHandler
 
@@ -441,3 +443,109 @@ class RealFetch(URIHandler):
             # this item passes
             self.response.out.write ('[%s] %r\n' % (getattr(obj,'uuid', '???'),
                                                     obj))
+
+
+class JohnFuckingZoidbergEditor(URIHandler):
+    """John Fucking Zoidberg is a pretty cool guy.
+
+    Eh is brave and doesnt afraid of anything. (V)(;,,;)(V)
+    """
+    CONTENT_EDITABLE = [basestring, str, unicode, int, float, bool, list, \
+                        long, dict, datetime.datetime, types.NoneType]
+    def get(self, kind, uuid):
+        """Shows an object, a list of objects, or a list of kinds.
+
+        uuid    kind
+                        List of Kinds
+        x       x       Object of that kind (editor view)
+        """
+        if not kind: kind = ''  # if None
+        if not uuid: uuid = ''  # if None
+
+        kind = kind[1:]  # remove /
+        uuid = uuid[1:]  # remove /
+
+        content = ''
+        obj = None
+        props = []
+
+        if not (kind or uuid):
+            logging.debug('getting all kinds')
+            content += 'Classes you can import:\n'
+            for kind in Kind.all():
+                logging.debug('kind = %s' % kind.kind_name)
+                content += '%s\n' % kind.kind_name
+        elif uuid and kind:
+            import_str = 'apps.%s.models' % kind.lower()
+            __import__(import_str, globals(), locals(), [], -1)
+            class_name = getattr(sys.modules[import_str], kind, None)
+            if not class_name:
+                content = 'class not found'
+            else:
+                obj = class_name.get(uuid)
+                if not obj:
+                    content = 'object not found'
+                else:
+                    for prop, value in vars(obj).iteritems():
+                        props.append({'key': prop,
+                                      'type': type(value).__name__,
+                                      'value': repr(value),
+                                      'editable': type(value) in self.CONTENT_EDITABLE})
+
+        else:
+            content = 'either specify kind and uuid or not at all.'
+
+        try:
+            obj_class = obj.__class__.__name__
+        except:
+            obj_class = ''
+
+        template_values = {'obj': obj,
+                           'obj_class': obj_class,
+                           'prop': content,
+                           'props': props}
+        self.response.out.write(self.render_page('drz.html',
+                                template_values))
+
+    def post(self, kind, uuid):
+        """Modify an object based on POST data.
+
+        required:
+        - kind
+        - uuid
+
+        optional:
+        - key
+        - value (WARNING: eval()! protect Zoidberg behind admin login)
+        """
+        if not kind: kind = ''  # if None
+        if not uuid: uuid = ''  # if None
+
+        kind = kind[1:]  # remove /
+        uuid = uuid[1:]  # remove /
+        form_key = self.request.get('key', None)
+        form_val = self.request.get('value', None)
+
+        if not (kind and uuid) or form_key is None or form_val is None:
+            logging.error('wtf')
+            self.error(400)
+            return
+
+        import_str = 'apps.%s.models' % kind.lower()
+        __import__(import_str, globals(), locals(), [], -1)
+        class_name = getattr(sys.modules[import_str], kind, None)
+        if not class_name:
+            logging.error('class not found')
+            self.error(404)  # class not found
+            return
+
+        obj = class_name.get(uuid)
+        if not obj:
+            logging.error('object not found')
+            self.error(404)  # object not found
+            return
+
+        # Go! Go! Go!
+        setattr(obj, form_key, eval(form_val))
+        obj.put()
+        self.error(204)  # woop woop woop woop woop woop
