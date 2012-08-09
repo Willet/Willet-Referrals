@@ -261,25 +261,19 @@ class Product(Model, db.polymodel.PolyModel):
         if not url:
             return None  # can't get by url if no URL given
 
-        (url, www_url) = get_url_variants(url, keep_path=True)
+        urls = get_url_variants(url, keep_path=True)
 
-        data = memcache.get(cls._get_memcache_key(url))
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
+        for url2 in urls:
+            data = memcache.get(cls._get_memcache_key(url2))
+            if data:
+                return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        data = memcache.get(cls._get_memcache_key(www_url))
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
+        for url2 in urls:
+            data = memcache.get(url2)
+            if data:
+                return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        data = memcache.get(url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
-
-        data = memcache.get(www_url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
-
-        product = cls.all().filter('resource_url IN', [url, www_url]).get()
+        product = cls.all().filter('resource_url IN', urls).get()
         return product
 
     @classmethod

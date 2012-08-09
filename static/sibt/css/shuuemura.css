@@ -1,7 +1,8 @@
 html, body {
     background: #fff url('/static/imgs/clean_textile.png');
     color: #444;
-    font-family: 'PT sans', Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
     margin: 0;
     padding: 0;
 }
@@ -36,16 +37,19 @@ h2 a:hover {
 }
 #wrapper {
     background: #fff;
+    margin: 0 auto;
+}
+._1kwrapper {
     width: 1000px;
     margin: 0 auto;
 }
 #header {
     background-color: #000;
-    height: 150px;
+    height: 100px;
 }
 #header .vendor_logo {
     display: block;
-    padding: 60px 0 0 60px;
+    padding: 37px 0 0 0;
 }
 #header .vendor_logo a {
     border: 0;
@@ -58,13 +62,22 @@ h2 a:hover {
 #main_content {
     float: right;
     width: 525px;
-    min-height: 550px;
     text-align: justify;
-    margin: -120px 15px 0 0;
+    margin: 15px 15px 0 0;
+}
+#right-div {
+    float: right;
+    width: 265px;
 }
 #product_img {
     display: block;
     margin: 0 auto;
+    float: left;
+}
+#success_message {
+    background-color: #b0c2d0;
+    padding: 12px 6px;
+    text-align: center;
 }
 #success_message h4 {
     display: none;
@@ -107,6 +120,9 @@ h2 a:hover {
 .center {
     text-align: center;
 }
+.choice {
+    width: 375px;
+}
 .hidden {
     display: none;
 }
@@ -119,8 +135,8 @@ h2 a:hover {
     /* border-radius: 3px; */
 }
 .product-image {
-    max-width: 350px;
-    max-height: 350px;
+    max-width: 250px;
+    max-height: 250px;
     display: block;
     margin: 24px auto;
 }
@@ -134,6 +150,16 @@ h2 a:hover {
 .title_bar>* {
     float: left;
 }
+.emph {
+    font-size: 1.2em;
+}
+.vote_counter {
+    vertical-align: top;
+    line-height: 32px;
+    width:28px;
+    height:32px;
+    display:inline-block;
+}
 .title_bar>img {
     height: 60px;
     width: 50px;
@@ -145,17 +171,11 @@ h2 a:hover {
     margin: 14px 0 0 15px;
 }
 .button {
-    padding: 7px 15px;
-    display: inline;
-    background: #ddd;
-    border: 1px #999 solid;
-    color: #555;
+    display: inline-block;
     cursor: pointer;
-    margin: 6px;
-    font-weight: bold;
-    border-radius: 5px;
-    text-shadow: 1px 1px #fff;
 }
-.button:hover {
-    background: #eee;
+
+img.profile_pic {
+    float: left;
+    margin: 0px 15px 9px 11px;
 }

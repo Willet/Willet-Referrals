@@ -1154,7 +1154,7 @@
             asker.email = $.cookie('asker_email');
 
             // this line will be "None" if user_name is None on the server!
-            {% if user_name %}asker.name = "{{ user_name|escape }}"{% endif %}
+            {% if user_name %}asker.name = "{{ user_name|escape }}";{% endif %}
             {% if user_pic %}asker.pic = "{{ user_pic|escape }}";{% endif %}
             {% if user_email %}asker.email = "{{ user_email|escape }}";{% endif %}
             if (asker.name || asker.pic || asker.email) {
