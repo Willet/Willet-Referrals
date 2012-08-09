@@ -249,18 +249,19 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
+        self.response.headers.add_header('P3P', P3P_HEADER)
         if vendor:
             logging.debug('displaying vendor template for %s' % vendor)
         filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
-        path = os.path.join('sibt', vendor, filename)
+        path = os.path.join('templates/sibt', vendor, filename)
         if os.path.exists(path):
             logging.warn('using template %s' % path)
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
         else:
             logging.warn('vendor template %s not found; using default.' % path)
-            path = os.path.join('sibt', filename)
-
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(self.render_page(path, template_values))
+            self.response.out.write(self.render_page(os.path.join('sibt', filename),
+                                                     template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
@@ -452,12 +453,14 @@ class AskPageDynamicLoader(URIHandler):
 
         # render SIBT/WOSIB
         filename = 'ask-page.html'
-        path = os.path.join('sibt', vendor, filename)
-        if not os.path.exists(path):
-            path = os.path.join('sibt', filename)
-
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(self.render_page(path, template_values))
+
+        if os.path.exists(os.path.join('templates/sibt', vendor, filename)):
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
+        else:
+            path = os.path.join('sibt', filename)
+            self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,

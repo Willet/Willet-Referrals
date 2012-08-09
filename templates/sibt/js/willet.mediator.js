@@ -27,7 +27,7 @@ _willet.mediator = (function (me) {
         return function (params) {
             me.fire(event, params);
         };
-    }
+    };
 
     // trigger an event. fire all functions assigned to that event.
     // params is optional.

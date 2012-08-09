@@ -13,11 +13,11 @@
 
         <script type="text/javascript">
             {# repeated paths to let vendor-based templates load either one #}
-            {% include "js/willet.mediator.js" %}
-            {% include "js/willet.debug.js" %}
-            {% include "js/willet.loader.js" %}
-            {% include "js/willet.analytics.js" %}
-            {% include "js/willet.sibtShareMethods.js" %}
+            {% include "../../sibt/js/willet.mediator.js" %}
+            {% include "../../sibt/js/willet.debug.js" %}
+            {% include "../../sibt/js/willet.loader.js" %}
+            {% include "../../sibt/js/willet.analytics.js" %}
+            {% include "../../sibt/js/willet.sibtShareMethods.js" %}
         </script>
         {% if not embed %}{# intentionally left blank #}{% else %}
             <style>
@@ -1145,7 +1145,7 @@
             asker.email = $.cookie('asker_email');
 
             // this line will be "None" if user_name is None on the server!
-            {% if user_name %}asker.name = "{{ user_name|escape }}"{% endif %}
+            {% if user_name %}asker.name = "{{ user_name|escape }}";{% endif %}
             {% if user_pic %}asker.pic = "{{ user_pic|escape }}";{% endif %}
             {% if user_email %}asker.email = "{{ user_email|escape }}";{% endif %}
             if (asker.name || asker.pic || asker.email) {

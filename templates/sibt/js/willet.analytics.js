@@ -58,7 +58,7 @@ _willet.analytics = (function (me) {
                 }
                 wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
             } catch (e) { // log() is {} on live.
-                wm.fire('error', "We have DROPPED the enemy intelligence: " + e);
+                wm.fire('log', "We have DROPPED the enemy intelligence: " + e);
             }
         {% endif %}
     };

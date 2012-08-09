@@ -191,7 +191,9 @@
     $('#postOnWall').unbind('click').click(function () {
         var button = $(this);
         var oldButtonText = button.html();
-        button.text('Please wait...');
+        try {
+            button.text('Please wait...');
+        } catch (e) {}
 
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
@@ -223,7 +225,9 @@
         // Wub wub wub wub wub wub (V)(;,,;)(V)
         var button = $(this);
         var oldButtonText = button.html();
-        button.text('Please wait...');
+        try {
+            button.text('Please wait...');
+        } catch (e) {}
 
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
