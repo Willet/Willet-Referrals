@@ -147,7 +147,7 @@ class EmailBatch(URIHandler):
                 raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
 
                 # Construct email body
-                body = template.render(Email.template_path('general_mail.html'),
+                body = template.render(Email.template_path('email/general_mail.html'),
                     {
                         'title'        : self.request.get('subject'),
                         'content'      : raw_body_text
