@@ -147,20 +147,27 @@
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
             <div class="step-num">3.</div>
-            <p><strong>Replace</strong> <em>&lt;link rel="canonical"
-                href="&#123;&#123; canonical_url &#125;&#125;" /&gt;</em></p>
-            <img src="/static/reengage/imgs/instructions-header.png">
-            <p>... with this:
-                <textarea style='font-size:13px;
+            <p><strong>After</strong> <em>&lt;link rel="canonical"
+                href="&#123;&#123; canonical_url &#125;&#125;" /&gt;</em>,
+                insert this:
+            <textarea style='font-size:13px;
                                     max-width:275px; width: 245px;
                                     vertical-align: middle; margin-bottom:0px;
                                     height:20px'
-                          type='text'
-                          readonly='readonly'>&#0123;% include &apos;reengage-header&apos; %&#0125;</textarea>
+                      type='text'
+                      readonly='readonly'>&#0123;% include &apos;reengage-header&apos; %&#0125;</textarea>
             </p>
+            <img src="/static/reengage/imgs/instructions-header.png">
+         </div>
+    </div>
 
-            <p>Also,
-             remove all the text between that and <em>"&#123;&#123; content_for_header &#125;&#125;"</em></p>
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                            box-design instruction-step">
+            <div class="step-num">4.</div>
+            <p><strong>Remove</strong> the text between <em>&#0123;% include
+                &apos;reengage-header&apos; %&#0125;</em>
+                and <em>&#123;&#123; content_for_header &#125;&#125;</em></p>
             <img src="/static/reengage/imgs/instructions-content-for-header.png">
 
         </div>
@@ -185,7 +192,7 @@
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
-            <div class="step-num">4.</div>
+            <div class="step-num">5.</div>
             <p>
                 <strong>Click</strong> <em>save</em> near the top of the screen.
             </p>
@@ -197,7 +204,7 @@
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
             <div class="span-10">
-                <div class="step-num">5.</div>
+                <div class="step-num">6.</div>
                 <p class="lower-50">
                     <strong>Under</strong> the <em>Templates</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Templates</em>, try looking under <em>Snippets</em>.
                 </p>
@@ -211,7 +218,7 @@
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
-            <div class="step-num">6.</div>
+            <div class="step-num">7.</div>
             <p>
                 <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
             </p>
@@ -230,7 +237,7 @@
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
-            <div class="step-num">7.</div>
+            <div class="step-num">8.</div>
             <p>
                 <strong>Once </strong>you've picked a spot, add this code:
                 <textarea style='font-size:13px;
@@ -246,7 +253,7 @@
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
-            <div class="step-num">8.</div>
+            <div class="step-num">9.</div>
             <p>
                 <strong>Click</strong> <em>save</em> near the top of the screen.
             </p>
@@ -257,7 +264,7 @@
    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
-            <div class="step-num">9.</div>
+            <div class="step-num">10.</div>
             <p><strong>Check</strong> your inbox.</p>
             <p>You should have received an email about your new account.
                 Follow the instructions in the email.</p>
@@ -268,7 +275,7 @@
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
-            <div class="step-num">10.</div>
+            <div class="step-num">11.</div>
             <p><strong>Set</strong> your password.</p>
             <p>Once you have your password set up, you'll be able to log
                 in.</p>

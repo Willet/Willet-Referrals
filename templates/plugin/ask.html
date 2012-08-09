@@ -983,7 +983,7 @@
                     picture: '{{ product_images|first }}' || "{{ image }}",
                     name:    "{{ product_title|escape }}" || "{{ title|escape }}",
                     caption: '{{ store_domain }}',
-                    description: "{{ product_desc|striptags|escape }}" || $('#shareText').val(),
+                    description: {{ product_desc_json }} || $('#shareText').val(),
                     redirect_uri: '{{ fb_redirect }}'
                 });
             } catch (e) {

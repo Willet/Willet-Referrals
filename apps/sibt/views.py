@@ -241,6 +241,7 @@ class AskDynamicLoader(URIHandler):
             'image': random_image,
            # random_product will be THE product on single-product mode.
             'product_desc': random_product['product_desc'],
+            'product_desc_json': json.dumps(random_product['product_desc']),
             'product_images': product_images,
             'product_title': products[0].title or "",
             'product_uuid': products[0].uuid,  # deprecated
