@@ -59,14 +59,8 @@ class ShowRoutes(URIHandler):
                 logging.warn('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
-        template_values = {
-            'routes': combined_uris
-        }
-        self.response.out.write(self.render_page(
-                'routes.html',
-                template_values,
-            )
-        )
+        self.response.out.write(self.render_page('admin/routes.html',
+                                                 {'routes': combined_uris}))
 
 
 class ManageApps(URIHandler):
@@ -100,11 +94,8 @@ class ManageApps(URIHandler):
             'apps': self.get_app_list()
         }
 
-        self.response.out.write(self.render_page(
-                'manage_apps.html',
-                template_values
-            )
-        )
+        self.response.out.write(self.render_page('admin/manage_apps.html',
+                                                 template_values))
 
     #@admin_required
     def post(self, admin=None):
@@ -174,11 +165,8 @@ class ManageApps(URIHandler):
             'messages': messages
         }
 
-        self.response.out.write(self.render_page(
-                'manage_apps.html',
-                template_values
-            )
-        )
+        self.response.out.write(self.render_page('admin/manage_apps.html',
+                                template_values))
 
 
 class ShowActions(URIHandler):
@@ -187,11 +175,8 @@ class ShowActions(URIHandler):
     def get(self):
         template_values = {}
 
-        self.response.out.write(self.render_page(
-                'actions.html',
-                template_values,
-            )
-        )
+        self.response.out.write(self.render_page('admin/actions.html',
+                                template_values))
 
 
 class GetActionsSince(URIHandler):
@@ -261,8 +246,8 @@ class ReloadURIS(URIHandler):
             'message': message,
             'stats': memcache.get_stats()
         }
-        self.response.out.write(self.render_page('reload_uris.html',
-            template_values))
+        self.response.out.write(self.render_page('admin/reload_uris.html',
+                                template_values))
 
 
 class CheckMBC(URIHandler):
@@ -321,59 +306,7 @@ class ShowMemcacheConsole(URIHandler):
     #@admin_required
     #def get(self, admin):
     def get(self):
-        self.response.out.write(self.render_page(
-                'memcache_console.html', {},
-            )
-        )
-
-
-class EmailEveryone (URIHandler):
-    # TODO: change mass_mail_client.html to call EmailBatch instead of post
-    # TODO: change EmailBatch request into BatchRequest
-    """ Task Queue-based blast email URL. """
-    #@admin_required
-    #def get (self, admin):
-    def get (self):
-        # render the mail client
-        template_values = {}
-        self.response.out.write(self.render_page('mass_mail_client.html', template_values))
-
-    #@admin_required
-    #def post (self, admin):
-    def post (self):
-        batch_size = 100
-        full_name = ''
-
-        logging.info("Sending everyone an email.")
-
-        app_cls = self.request.get('app_cls')
-        target_version = self.request.get('version')
-        subject = self.request.get('subject')
-        body = self.request.get('body')
-
-        logging.info('Requested email:\nApp Class = %s\nApp version = %r\nSubject = %s\nBody = %s'
-                        % (app_cls, target_version, subject, body))
-
-        # Check that we have something to email
-        if not (len(subject) > 0) or not (len(body) > 0):
-            self.error(400) # Bad Request
-            return
-
-        params = {
-            'batch_size':   batch_size,
-            'offset':       0,
-            'app_cls':      app_cls,
-            'subject':      subject,
-            'body':         body
-        }
-        if target_version:
-            params.update({ 'target_version': target_version })
-
-        # Initiate batched emailing
-        taskqueue.add(url=url('EmailBatch'), params=params)
-
-        self.response.headers['Content-Type'] = 'text/plain'
-        return
+        self.response.out.write(self.render_page('admin/memcache_console.html'))
 
 
 class ActionTallyDynamicLoader(URIHandler):
@@ -504,8 +437,8 @@ class JohnFuckingZoidbergEditor(URIHandler):
                            'obj_class': obj_class,
                            'prop': content,
                            'props': props}
-        self.response.out.write(self.render_page('drz.html',
-                                template_values))
+        self.response.out.write(self.render_page('admin/drz.html',
+                                                 template_values))
 
     def post(self, kind, uuid):
         """Modify an object based on POST data.

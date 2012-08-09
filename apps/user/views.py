@@ -61,7 +61,7 @@ class ShowProfilePage(URIHandler):
             }
         self.response.out.write(
             self.render_page(
-                'profile.html',
+                'user/profile.html',
                 template_values
             )
         )

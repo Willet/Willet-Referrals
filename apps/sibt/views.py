@@ -37,9 +37,8 @@ from util.urihandler import obtain, URIHandler
 class ShowBetaPage(URIHandler):
     """Shows the introduction page, containing AJAX functions to create app."""
     def get(self):
-        path = os.path.join('apps/sibt/templates/', 'beta.html')
-        self.response.out.write(template.render(path, {
-            'URL': URL,
+        path = os.path.join('sibt', 'beta.html')
+        self.response.out.write(self.render_page(path, {
             'sibt_version': SIBT.CURRENT_INSTALL_VERSION
         }))
 
@@ -209,12 +208,9 @@ class AskDynamicLoader(URIHandler):
             link = Link.create(page_url, app, origin_domain, user)
 
         template_values = {
-            'URL': URL,
-            'DOMAIN': DOMAIN,
             'page_url': page_url,
 
             'title': "Which One ... Should I Buy This?",
-            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
             'embed': bool(self.request.get('embed', '0') == '1'),
 
@@ -254,18 +250,19 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
+        self.response.headers.add_header('P3P', P3P_HEADER)
         if vendor:
             logging.debug('displaying vendor template for %s' % vendor)
         filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
+        path = os.path.join('templates/sibt', vendor, filename)
         if os.path.exists(path):
             logging.warn('using template %s' % path)
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
         else:
             logging.warn('vendor template %s not found; using default.' % path)
-            path = os.path.join('apps/sibt/templates', filename)
-
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+            self.response.out.write(self.render_page(os.path.join('sibt', filename),
+                                                     template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
@@ -457,12 +454,14 @@ class AskPageDynamicLoader(URIHandler):
 
         # render SIBT/WOSIB
         filename = 'ask-page.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
-        if not os.path.exists(path):
-            path = os.path.join('apps/sibt/templates', filename)
-
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+
+        if os.path.exists(os.path.join('templates/sibt', vendor, filename)):
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
+        else:
+            path = os.path.join('sibt', filename)
+            self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
@@ -681,12 +680,12 @@ class VoteDynamicLoader(URIHandler):
         }
 
         filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
+        path = os.path.join('sibt', vendor, filename)
         if not os.path.exists(path):
-            path = os.path.join('apps/sibt/templates', filename)
+            path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, vote_url='', product_uuids=None,
@@ -809,7 +808,7 @@ class ShowResults(URIHandler):
                 'product_link': product_link
             }
             # Finally, render the HTML!
-            path = os.path.join('apps/sibt/templates/', 'results-uni.html')
+            path = os.path.join('sibt', 'results-uni.html')
         else:
             # SIBT - product YES/NO
             yesses = instance.get_yesses_count()
@@ -859,11 +858,11 @@ class ShowResults(URIHandler):
                 'vote_percentage': vote_percentage,
                 'total_votes': total
             }
-            path = os.path.join('apps/sibt/templates/', 'results.html')
+            path = os.path.join('sibt', 'results.html')
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -898,9 +897,9 @@ class ShowFBThanks(URIHandler):
             'incentive_enabled': app.incentive_enabled if app else False
         }
 
-        path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
+        path = os.path.join('sibt', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -916,10 +915,10 @@ class ColorboxJSServer(URIHandler):
             'target_url': self.request.get('target_url')
         }
 
-        path = os.path.join('apps/sibt/templates/js/', 'jquery.colorbox.js')
+        path = os.path.join('sibt/js', 'jquery.colorbox.js')
         self.response.headers["Content-Type"] = "text/javascript"
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -940,9 +939,9 @@ class ShowOnUnloadHook(URIHandler):
             'evnt': self.request.get('evnt')
         }
 
-        path = os.path.join('apps/sibt/templates/', 'onunloadhook.html')
+        path = os.path.join('sibt', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -1239,7 +1238,7 @@ class SIBTServeScript(URIHandler):
             'willt_code': link.willt_url_code if link else "",
         }
 
-        path = os.path.join('apps/sibt/templates/', 'sibt.js')
+        path = os.path.join('templates/sibt', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
