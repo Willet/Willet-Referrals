@@ -681,7 +681,8 @@ class VoteDynamicLoader(URIHandler):
 
         filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
         path = os.path.join('sibt', vendor, filename)
-        if not os.path.exists(path):
+        if not os.path.exists('templates/%s' % path):
+            logging.debug('vendor template templates/%s not found' % path)
             path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
