@@ -9,7 +9,7 @@ _willet.storage = (function (me) {
     var wm = _willet.mediator || {};
 
     // default actions
-    me.localStorage = localStorage || window.localStorage || null;
+    me.localStorage = window.localStorage || null;
 
     me.get = me.get || function (name, defaultValue) {
         // will always return defaultValue if localStorage is not supported!
