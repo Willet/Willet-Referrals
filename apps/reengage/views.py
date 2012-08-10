@@ -2,6 +2,7 @@ import re
 import urllib
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
+from apps.product.models import Product
 from util.consts import SHOPIFY_APPS
 from util.gaesessions import get_current_session, Session
 from util.urihandler import URIHandler
@@ -373,7 +374,7 @@ class ReEngageButtons(URIHandler):
                 APP_DOMAIN, self.request.GET["url"]
             )
 
-            self.response.out.write(self.render_page('buttons.html', {
+            self.response.out.write(self.render_page('reengage/buttons.html', {
                 "request": self.request.GET
             }))
 
@@ -388,7 +389,6 @@ class ReEngageMagic(URIHandler):
         url = urllib.unquote(uri)
 
         is_facebook  = "facebookexternalhit" in self.get_browser() or self.request.get("facebook")
-        logging.info("Is Facebook? %s (%s)" % (is_facebook, self.get_browser()))
         show_buttons = self.request.get("buttons") == "1"
 
         if show_buttons:
@@ -404,18 +404,36 @@ class ReEngageMagic(URIHandler):
                 APP_DOMAIN, url
             )
 
-            self.response.out.write(self.render_page('buttons.html', {
+            self.response.out.write(self.render_page('reengage/buttons.html', {
                 "request": self.request.GET
             }))
+
+            if not Product.get_by_url(url):
+                user   = User.create()
+                client = Client.create(url, user=user)
+
+                params = dict((k, self.request.GET[k]) for k in required_params)
+                params.update({
+                    "client": client,
+                    "images": [params.get("image")]
+                })
+
+                Product.create(**params)
+
         elif is_facebook:
-            # TODO: Lookup URL
-            self.response.out.write(self.render_page('buttons.html', {
+            product = Product.get_by_url(url)
+            if not product:
+                logging.error("No such product exists: %s" % url)
+                self.error(400)
+                return
+
+            self.response.out.write(self.render_page('reengage/buttons.html', {
                 "request": {
                     "url"        : "http://%s/r/url/%s" % (APP_DOMAIN, url),
-                    "image"      : "http://static.shopify.com/s/files/1/0153/3381/products/7d6a756d4f59a528a38fca3cf7a2c165.jpg?529",
-                    "site"       : "Test",
-                    "title"      : "Test",
-                    "description": "Test"
+                    "image"      : product.images[0],
+                    "site"       : "", # TODO: Site name
+                    "title"      : product.title,
+                    "description": product.description
                 }
             }))
         else:
