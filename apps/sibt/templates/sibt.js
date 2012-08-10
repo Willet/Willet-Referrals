@@ -14,8 +14,20 @@
 
     w._willet = w._willet || {};
     var _willet = w._willet;
+
+    if (_willet.sibt) {
+        // if SIBT has already been loaded on this page, do not load again.
+        if (window.console && window.console.log) {
+            window.console.log(
+                'Warning: Willet SIBT snippet appeared on page more than once'
+            );
+        }
+        return;
+    }
+
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
+    {% include "js/willet.browserdetection.js" %}
     {% include "js/willet.loader.js" %}
     {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}

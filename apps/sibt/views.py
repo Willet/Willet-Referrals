@@ -4,7 +4,6 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
-import logging
 import os
 import random
 import urllib2
@@ -29,6 +28,7 @@ from apps.user.models import User
 from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, SECURE_URL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
+from util.logger import logging
 from util.shopify_helpers import get_domain, get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
@@ -196,6 +196,9 @@ class AskDynamicLoader(URIHandler):
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
+            'page_url': page_url,
+
             'title': "Which One ... Should I Buy This?",
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
@@ -235,9 +238,14 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
+        if vendor:
+            logging.debug('displaying vendor template for %s' % vendor)
         filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
         path = os.path.join('apps/sibt/templates', vendor, filename)
-        if not os.path.exists(path):
+        if os.path.exists(path):
+            logging.warn('using template %s' % path)
+        else:
+            logging.warn('vendor template %s not found; using default.' % path)
             path = os.path.join('apps/sibt/templates', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -529,6 +537,8 @@ class VoteDynamicLoader(URIHandler):
 
         if instance.asker:
             name = instance.asker.name
+            logging.info('asker_name %s '
+                         'coming from instance.asker.name' % name)
         else:  # fix instance by assigning a best-guess user
             logging.warn('Fixing user-less instance. '
                          'Assigning whichever user we can get.')
@@ -805,7 +815,7 @@ class ShowFBThanks(URIHandler):
         user_cancelled = True
         app = None
         post_id = self.request.get('post_id') # from FB
-        user = User.get_by_cookie(self)
+        user = User.get_or_create_by_cookie(self)
         instance = SIBTInstance.get_by_user(user)
         product = None
 
@@ -818,6 +828,7 @@ class ShowFBThanks(URIHandler):
 
         template_values = {
             'email': user.get_attr('email'),
+            'user_uuid': user.uuid,
             'user_cancelled': user_cancelled,
             'incentive_enabled': app.incentive_enabled if app else False
         }
