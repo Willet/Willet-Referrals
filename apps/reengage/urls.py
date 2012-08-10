@@ -12,6 +12,7 @@ urlpatterns = [
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
     (r'/r/reengage/buttons/?', ReEngageButtons),
+    (r'/r/url/(.+)', ReEngageMagic),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),

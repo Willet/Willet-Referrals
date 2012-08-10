@@ -1,3 +1,4 @@
+import re
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from util.consts import SHOPIFY_APPS
@@ -35,6 +36,14 @@ class ReEngageButtons(URIHandler):
                 % required_params)
             self.error(400)
         else:
+            # Remove protocol
+            uri = re.sub(r"https?://", "", self.request.GET["url"])
+
+            # Prefix with our path
+            self.request.GET["url"] = "http://%s/r/url/%s" % (
+                APP_DOMAIN, uri
+            )
+
             self.response.out.write(self.render_page('buttons.html', {
                 "request": self.request.GET
             }))
@@ -352,3 +361,10 @@ class ReEngageCPLServeScript(URIHandler):
 
         self.response.headers.add_header('content-type', 'text/javascript', charset='utf-8')
         self.response.out.write(self.render_page('js/com.js', template_values))
+
+
+class ReEngageMagic(URIHandler):
+    """In order to facilitate our Facebook problems, we forward URLs"""
+    def get(self, uri):
+        logging.info("URI: %s" % uri)
+        self.redirect("http://%s" % uri)
