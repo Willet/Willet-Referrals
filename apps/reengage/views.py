@@ -409,12 +409,8 @@ class ReEngageMagic(URIHandler):
             }))
 
             if not Product.get_by_url(url):
-                user   = User.create()
-                client = Client.create(url, user=user)
-
                 params = dict((k, self.request.GET[k]) for k in required_params)
                 params.update({
-                    "client": client,
                     "images": [params.get("image")]
                 })
 
@@ -427,10 +423,14 @@ class ReEngageMagic(URIHandler):
                 self.error(400)
                 return
 
+            image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
+            if len(product.images) > 0:
+                image = product.images[0]
+
             self.response.out.write(self.render_page('reengage/buttons.html', {
                 "request": {
                     "url"        : "http://%s/r/url/%s" % (APP_DOMAIN, url),
-                    "image"      : product.images[0],
+                    "image"      : image,
                     "site"       : "", # TODO: Site name
                     "title"      : product.title,
                     "description": product.description
