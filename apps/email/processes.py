@@ -38,7 +38,7 @@ class SendEmailAsync(URIHandler):
             "subject"  : subject,
             "html"     : body,
             "from"     : from_address,
-            "fromname" : "Willet",
+            "fromname" : from_address[:from_address.find('@')],
             "bcc"      : FRASER
         }
         if to_name:
