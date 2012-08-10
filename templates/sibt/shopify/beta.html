@@ -1,0 +1,102 @@
+{% extends "../../homepage/base.html" %}
+
+{% block head %}
+    <style>
+        input[type='text'], textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+        div button {
+            position: relative;
+            top: -1px;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var site = $('#site');
+            var site_input = $('#site_input');
+            var install_link = $('#install_link');
+            var install_url = $('#install_url');
+            var input_default = $('#input_default');
+
+            var setDefault = function() {
+                site_input.css('color', 'grey');
+                site_input.val(input_default.val());
+            }
+            var update = function() {
+                var val = site_input.val();
+                var pos = val.search('.myshopify.com');
+                if (pos != -1) {
+                    // user entered storename.myshopify.com into the input
+                    var temp = val.substr(0, pos);
+                    site_input.val(temp)
+                }
+                site.html(site_input.val());
+                install_link.attr('href', install_link.text());
+            }
+            site_input.keypress(function() {
+                update();
+            }).keyup(function() {
+                update();
+            }).keydown(function() {
+                update();
+            }).focus(function() {
+                if (site_input.val() == input_default.val()) {
+                    site_input.val('');
+                }
+                site_input.css('color', 'black');
+            }).blur(function() {
+                if (site_input.val() == '' || site_input.val() == input_default.val()){
+                    setDefault();
+                }
+            });
+            $('#do_install').click(function() {
+                window.location = install_link.attr('href');
+            });
+            setDefault();
+
+            site_input.focus();
+
+        });
+    </script>
+{% endblock head %}
+
+{% block content %}
+
+    <h1 class="span-24 last lower-100 center">Should I Buy This?</h1>
+
+    <div class="span-8 append-1">
+        <p class="span-8 lower-50">
+            Lowering cart abandonment <strong>and</strong> gaining you <strong>new</strong>, <strong>better</strong> customers!
+            <br /><br />
+            Empower your customers to get shopping advice from their friends!
+            <br /><br />
+            Friends come to <strong>your site</strong>, discover your products, and help your initial customer make a decision!
+            <br /><br />
+            <b>100% free</b> for our Beta customers - <b>That's YOU</b>!
+        </p>
+    </div>
+
+    <div class="span-15 last">
+        <iframe style="border: 10px solid #474747; border-radius: 10px;" width="560" height="315" src="http://www.youtube.com/embed/VujD0OOZNvU" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <div class="about prepend-top append-bottom span-24 last center">
+        <h3>Interested? Add it to your store!</h3>
+        <br />
+        <div>
+            <input type="hidden" id="input_default" value="your store name" />
+            Enter <input type="text" id="site_input" value="Your store name" />.myshopify.com
+            <button id="do_install">Install Now</button>
+            <a href="/s/beta" style="display:block">Don't own a Shopify store?</a>
+        </div>
+    </div>
+
+    <div class="about prepend-top append-bottom span-24 last center">
+        or copy your install url manually:<br />
+        <div id="install_url">
+            <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SHOPIFY_API_KEY}}</a>
+        </div>
+    </div>
+
+{% endblock content %}

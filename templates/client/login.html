@@ -1,0 +1,412 @@
+{% extends "../homepage/base.html" %}
+
+{% block head %}
+    <style tyle="text/css">
+        div.input_box {
+            padding: 30px;
+            margin: 20px 0 30px 0;
+            -khtml-border-radius: 15px;
+            -o-border-radius: 15px;
+            -moz-border-radius: 15px;
+            -webkit-border-radius: 15px;
+            border-radius: 15px;
+            /* IE CSS3 support, serious black magic */
+            behavior:url('static/js/PIE.htc');
+        }
+        div.input_box.has_tabs {
+            background: #000000;
+            position: relative;
+            z-index: 2;
+        }
+        div.input_box select {
+            font-size: 1.2em;
+            margin: 0;
+            width: 100%;
+            text-align: center;
+            padding: 2px;
+        }
+
+        div.input_box p {
+            overflow: hidden;
+            clear: both;
+        }
+        div.input_box input {
+
+            width: 170px;
+            float: right;
+            padding: 8px;
+            font-size: 14px;
+            margin: 2px 0;
+        }
+        div.input_box label {
+            font-weight: bold;
+            color: #777;
+            text-align: right;
+            float: left;
+            width: 120px;
+            padding-top: 10px;
+            font-size: 16px;
+        }
+        div.input_box.short_labels label {
+            width: 90px;
+        }
+        div.input_box textarea {
+            width: 170px;
+            height: 60px;
+            float: right;
+            padding: 8px;
+            font-size: 14px;
+            margin: 2px 0;
+        }
+        div.input_box.short_labels input, div.input_box.short_labels textarea {
+            width: 200px;
+        }
+        div.input_box button {
+            width: 100%;
+            margin: 0;
+            border: none;
+            text-align: center;
+            background: #000000;
+            color:#1F7973;
+        }
+        div.input_box button:hover {
+            cursor: pointer;
+            color:red;
+        }
+        div.input_tabs {
+            padding: 0;
+            margin: 20px 0 0 0;
+            width: 100%;
+            position: relative;
+            z-index: 0;
+        }
+        div.input_tabs>div.tab {
+            background: #DEE5EA;
+
+            padding: 10px 0 30px 0;
+            width: 50%;
+            margin: 0;
+            text-align: center;
+            -khtml-border-radius: 15px;
+            -o-border-radius: 15px;
+            -moz-border-radius: 15px;
+            -webkit-border-radius: 15px;
+            border-radius: 15px;
+            /* IE CSS3 support, serious black magic */
+            behavior:url('static/js/PIE.htc');
+        }
+        div.input_tabs>div.selected {
+            background: #000000;
+        }
+
+
+    /* -----------------------------------------------------------------------------
+
+        APROCITY.COM SITE STYLES
+
+    ----------------------------------------------------------------------------- */
+
+    p {
+        font-size: 1.3em;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin-bottom: 20px;
+        line-height: 150%;
+    }
+    p+p {
+        text-indent: 0;
+    }
+    p.title {
+        width: 100%;
+        margin: 0 0 15px 0;
+        text-align: center;
+        color: #FFFFFF;
+        font-size: 20px;
+        text-shadow: 0 1px #FFF;
+        font-family: 'Arvo', arial, serif;
+    }
+    p.last {
+        margin-bottom: 0px;
+
+    }
+    p.attention {
+        font-family: 'Arvo', arial, serif;
+        text-align: center;
+        font-size: 1.8em;
+        line-height: 200%;
+    }
+
+
+
+    .action {
+
+        font-weight: bold;
+        font-size: 18px;
+        text-shadow: 0 1px #FFF;
+        font-family: 'Arvo', arial, serif;
+    }
+
+    a.action {
+        color:black;
+        text-shadow:none;
+    }
+    .action:hover {
+        cursor: pointer;
+        color:red;
+    }
+
+
+    div.input_box {
+        background: #FFFFFF;
+        padding: 30px;
+        margin: 20px 0 30px 0;
+        -khtml-border-radius: 15px;
+        -o-border-radius: 15px;
+        -moz-border-radius: 15px;
+        -webkit-border-radius: 15px;
+        border-radius: 15px;
+        /* IE CSS3 support, serious black magic */
+        behavior:url('static/js/PIE.htc');
+    }
+    div.input_box.has_tabs {
+        margin-top: -40px;
+        position: relative;
+        z-index: 2;
+    }
+    div.input_box select {
+        font-size: 1.2em;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+        padding: 2px;
+    }
+
+
+
+    div.input_box button {
+        width: 100%;
+        margin: 0;
+        border: none;
+        text-align: center;
+        background: white;
+    }
+    div.input_box button:hover {
+        cursor: pointer;
+        color:red;
+    }
+
+
+
+
+    </style>
+    <script type="text/javascript" src="http://www.approcity.com/static/js/jquery-validation-1.8.0/jquery.validate.js"></script>
+    <script type="text/javascript" src="http://www.approcity.com/static/js/sha256.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Decide which form to show first
+            var registered = {{ registered }},
+                $reg = $('#reg'),
+                $sub = $('#sub'),
+                $reg_box = $('#reg_box'),
+                $sub_box = $('#sub_box');
+
+            if (registered) {
+                {% if regErrors %}
+                    $sub_box.hide();
+                {% else %}
+                    $reg_box.hide();
+                {% endif %}
+            } else {
+                $sub_box.hide();
+            }
+            toggleFormType = function (x) {
+                if (x === "create") {
+                    $reg_box.show();
+                    $sub_box.hide();
+                } else {
+                    $reg_box.hide();
+                    $sub_box.show();
+                }
+            }
+            $sub.validate({
+                submitHandler: function (form) {
+                    // Check that fields are not empty, don't proceed if they are
+                    var dont_submit = false;
+
+                    if (form.email.value.length === 0){
+                        $('#email').css("background-color", "pink");
+                        dont_submit = true;
+                    } else {
+                        $('#email').css("background-color", "white");
+                    }
+                    if (form.passphrase.value.length === 0){
+                        $('#passphrase').css("background-color", "pink");
+                        dont_submit = true;
+                    } else {
+                        $('#passphrase').css('background-color', 'white');
+                    }
+                    if (dont_submit) {
+                        return false;
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: '/client/auth',
+                        data: { email: form.email.value,
+                                passphrase: Sha256.hash(form.passphrase.value),
+                                url: form.url.value },
+                        success: function(msg){
+                            window.location.href = msg;
+                        }
+                    });
+                }
+            });
+            $reg.validate({
+                submitHandler: function (form) {
+                    // If any of the fields are empty map will highlight them
+                    // in pink and return at least a single 'true' - grep then
+                    // determines if dont_submit will be true or false
+                    var dont_submit = false;
+
+                    if (form.email.value.length === 0) {
+                        $('#emailReg').css('background-color', 'pink');
+                        dont_submit = true;
+                    } else {
+                        $('#emailReg').css('background-color', 'white');
+                    }
+                    if (form.passphrase.value.length === 0) {
+                        $('#passphraseReg').css('background-color', 'pink');
+                        dont_submit = true;
+                    } else {
+                        $('#passphraseReg').css('background-color', 'white');
+                    }
+                    if (form.passphrase2.value.length === 0) {
+                        $('#passphrase2Reg').css('background-color', 'pink');
+                        dont_submit = true;
+                    } else {
+                        $('#passphrase2Reg').css('background-color', 'white');
+                    }
+
+                    if (dont_submit) {
+                        return false;
+                    }
+                    var dataObj = {
+                        email: form.email.value,
+                        passphrase: Sha256.hash(form.passphrase.value),
+                        passphrase2: Sha256.hash(form.passphrase2.value),
+                        url: form.url.value,
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: '/client/register',
+                        data: dataObj,
+                        success: function(msg, code){
+                            window.location.href = msg;
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="prepend-top center">What's New<br />With You?</h1>
+
+    <div class="center">
+        <p>
+            {{NAME}} is currently in a private beta.
+        </p>
+        <p>
+            For more infomration please contact us at:<br />
+            <a href="mailto:info@wil.lt">info@wil.lt</a>
+        </p>
+
+        <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
+    </div>
+{% endblock left_content %}
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Welcome to {{NAME}}</h1>
+
+    <div class=" prepend-3 prepend-top span-10 last">
+        <div class="span-10">
+            <div id='reg_box'>
+                <div class='input_tabs'>
+                    <div class="left tab selected">
+                        <p class='title'>Create Account</p>
+                    </div>
+                    <div class="right tab">
+                        <a onclick="toggleFormType('login'); return false;" href="" class="action">Login</a>
+                    </div>
+                    <div class='clear'></div>
+                </div>
+                <div class="input_box has_tabs">
+                    <form name="reg" id="reg" method="POST" action="/client/register">
+                        <input type="hidden" name="url" value="{{url}}" />
+                        {% if regErrors %}
+                        <p id="errors">
+                        {% for e in regErrors %}
+                            {{ e }} <br />
+                        {% endfor %}
+                        </p>
+                        {% endif %}
+                        <p>
+                            <label for='emailReg'>Email:</label>
+                            <input name="email" id="emailReg" type="email" class="email" />
+                        </p>
+                        <p>
+                            <label for='passphraseReg'>Password:</label>
+                            <input name="passphrase" id="passphraseReg" type="password" />
+                        </p>
+                        <p>
+                            <label for='passphrase2Reg'>Confirm:</label>
+                            <input name="passphrase2" id="passphrase2Reg" type="password" />
+                        </p>
+                        <p class='last'>
+
+                            <button name="submit_button" type="submit" id="submit_button_register" class='action'>Sign Up!</button>
+
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <div id='sub_box'>
+                <div class='input_tabs'>
+                    <div class="left tab">
+                        <a onclick="toggleFormType('create'); return false;" href="" class="action">Create Account</a>
+                    </div>
+                    <div class="right tab selected">
+                        <p class='title'>Login</p>
+                    </div>
+                    <div class='clear'></div>
+                </div>
+                <div class="input_box has_tabs">
+                    <form name="sub" id="sub" method="POST" action="/client/auth">
+                        <input type="hidden" name="url" value="{{url}}" />
+                        {% if authErrors %}
+                        <p id="errors" class='first'>
+                        {% for e in authErrors %}
+                            {{ e }} <br />
+                        {% endfor %}
+                        </p>
+                        {% endif %}
+                        <p>
+                            <label for='email'>Email:</label>
+                            <input name="email" id="email" type="email" class="email" />
+                        </p>
+                        <p>
+                            <label for='passphrase'>Password:</label>
+                            <input name="passphrase" id="passphrase" type="password" />
+                        </p>
+                        <p class='last'>
+
+                            <button name="submit_button" type="submit" id="submit_button" class='action'>Login</button>
+
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock right_content %}
