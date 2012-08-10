@@ -1,4 +1,5 @@
 import re
+import urllib
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from util.consts import SHOPIFY_APPS
@@ -8,45 +9,6 @@ from util.helpers import   url as build_url
 from apps.reengage.models import *
 
 # TODO: Consider moving some of this to a Context Processor
-
-class ReEngageButtons(URIHandler):
-    """Handles iframe requests (or otherwise) for ReEngage buttons
-
-    Facebook like buttons don't need to be on the domain that they like, but
-    in order for apps to access a like button, they do need to be on the
-    same domain. So, we do shenanigans by embedding the button on a page we
-    own.
-
-    Required Params
-    url        : Canonical URL for the product
-    image      : Image that represents the product
-    site       : Name of the site hosting the product
-    title      : Title of the product
-    description: Description of the product
-
-    Optional Params
-    app_id     : The Facebook app_id to use with the like button: Defaults to '340019906075293'
-    type       : An OpenGraph type. Defaults to 'product'
-    """
-    def get(self):
-        required_params = ["url", "image", "site", "title", "description"]
-
-        if not all(x in self.request.GET for x in required_params):
-            logging.error("Missing one of the following GET params: %s"
-                % required_params)
-            self.error(400)
-        else:
-            # Remove protocol
-            uri = re.sub(r"https?://", "", self.request.GET["url"])
-
-            # Prefix with our path
-            self.request.GET["url"] = "http://%s/r/url/%s" % (
-                APP_DOMAIN, uri
-            )
-
-            self.response.out.write(self.render_page('buttons.html', {
-                "request": self.request.GET
-            }))
 
 class ReEngageAppPage(URIHandler):
     """Display the default 'welcome' page."""
@@ -363,8 +325,83 @@ class ReEngageCPLServeScript(URIHandler):
         self.response.out.write(self.render_page('js/com.js', template_values))
 
 
+class ReEngageButtons(URIHandler):
+    """Handles iframe requests (or otherwise) for ReEngage buttons
+
+    Facebook like buttons don't need to be on the domain that they like, but
+    in order for apps to access a like button, they do need to be on the
+    same domain. So, we do shenanigans by embedding the button on a page we
+    own.
+
+    Required Params
+    url        : Canonical URL for the product
+    image      : Image that represents the product
+    site       : Name of the site hosting the product
+    title      : Title of the product
+    description: Description of the product
+
+    Optional Params
+    app_id     : The Facebook app_id to use with the like button: Defaults to '340019906075293'
+    type       : An OpenGraph type. Defaults to 'product'
+    """
+    def get(self):
+        required_params = ["url", "image", "site", "title", "description"]
+
+        if not all(x in self.request.GET for x in required_params):
+            logging.error("Missing one of the following GET params: %s"
+            % required_params)
+            self.error(400)
+        else:
+            # Prefix with our path
+            self.request.GET["url"] = "http://%s/r/url/%s" % (
+                APP_DOMAIN, self.request.GET["url"]
+            )
+
+            self.response.out.write(self.render_page('buttons.html', {
+                "request": self.request.GET
+            }))
+
+
 class ReEngageMagic(URIHandler):
     """In order to facilitate our Facebook problems, we forward URLs"""
     def get(self, uri):
-        logging.info("URI: %s" % uri)
-        self.redirect("http://%s" % uri)
+        if not uri:
+            # TODO: Error
+            pass
+
+        url = urllib.unquote(uri)
+
+        is_facebook  = "facebookexternalhit" in self.get_browser() or self.request.get("facebook")
+        logging.info("Is Facebook? %s (%s)" % (is_facebook, self.get_browser()))
+        show_buttons = self.request.get("buttons") == "1"
+
+        if show_buttons:
+            # Do buttons stuff
+            required_params = ["image", "site", "title", "description"]
+
+            if not all(x in self.request.GET for x in required_params):
+                logging.error("Missing one of the following GET params: %s" % required_params)
+                self.error(400)
+                return
+
+            self.request.GET["url"] = "http://%s/r/url/%s" % (
+                APP_DOMAIN, url
+            )
+
+            self.response.out.write(self.render_page('buttons.html', {
+                "request": self.request.GET
+            }))
+        elif is_facebook:
+            # TODO: Lookup URL
+            self.response.out.write(self.render_page('buttons.html', {
+                "request": {
+                    "url"        : "http://%s/r/url/%s" % (APP_DOMAIN, url),
+                    "image"      : "http://static.shopify.com/s/files/1/0153/3381/products/7d6a756d4f59a528a38fca3cf7a2c165.jpg?529",
+                    "site"       : "Test",
+                    "title"      : "Test",
+                    "description": "Test"
+                }
+            }))
+        else:
+            # Do redirect stuff
+            self.redirect(url)
