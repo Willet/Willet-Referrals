@@ -132,7 +132,9 @@ class ReEngageShopify(ReEngage, AppShopify):
         use_full_name = False
 
         # Create a new user
-        user = ReEngageAccount(email=email, uuid=generate_uuid(16))
+        # WARNING: wrap with get_or_create
+        user = ReEngageAccount(email=email, uuid=generate_uuid(16),
+                               client=self.client)
         user.reset_password()
 
         # Get verification URL

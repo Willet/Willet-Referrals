@@ -1,0 +1,68 @@
+{% extends "../../homepage/base.html" %}
+
+{% block head %}
+    <style type="text/css">
+        input {
+            width: 75px !important;
+            height: initial;
+            padding: 1px !important;
+            margin: 1px !important;
+        }
+        h4 {
+            padding: 10px;
+            margin: 0px;
+            text-align: left;
+        }
+        h3 {
+            cursor: pointer;
+        }
+        h3.clear {
+            padding-top: 15px;
+        }
+        .grid {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .white {
+            background: rgba(255,255,255,0.7);
+        }
+        .big-text-area {
+            width: 100%;
+            height: 250px;
+        }
+        {{ css }}
+    </style>
+{% endblock head %}
+
+{% block right_head %}
+    <img src='/static/sibt/imgs/editstyle-v3-helper.png' />
+{% endblock right_head %}
+
+{% block content %}
+    <h2 style="margin-top: 100px;">
+        Edit your: <span class="toggle" data-type="button">button</span>
+    </h2>
+    <form method="POST" action="?">
+        <p>V3 button CSS override:</p>
+        <textarea name='willet_button_v3:others' class="big-text-area" data-default="">{{ willet_button_v3.others }}</textarea>
+
+        <p>V3 button.p CSS override:</p>
+        <textarea name='willet_button_v3:p_others' class="big-text-area" data-default="">{{ willet_button_v3.p_others }}</textarea>
+
+        <p>V3 button.button CSS override:</p>
+        <textarea name='willet_button_v3:button_others' class="big-text-area" data-default="">{{ willet_button_v3.button_others }}</textarea>
+
+        <p>V3 button.button:hover CSS override:</p>
+        <textarea name='willet_button_v3:button_hover_others' class="big-text-area" data-default="">{{ willet_button_v3.button_hover_others }}</textarea>
+
+        <p>V3 button.button.img CSS override:</p>
+        <textarea name='willet_button_v3:button_img_others' class="big-text-area" data-default="">{{ willet_button_v3.button_img_others }}</textarea>
+
+        <p>V3 button.button.title CSS override:</p>
+        <textarea name='willet_button_v3:button_title_others' class="big-text-area" data-default="">{{ willet_button_v3.button_title_others }}</textarea>
+
+        <input type='submit' value='Save' />&nbsp;&nbsp;
+        <input type="submit" name="set_to_default" value="Reset" />
+    </form>
+{% endblock content %}
+
