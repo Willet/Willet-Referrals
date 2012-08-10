@@ -24,7 +24,7 @@ class SendEmailAsync(URIHandler):
             before emails are done sending.
         """
 
-        from_address    = self.request.get('from_address')
+        from_address    = self.request.get('from_address', INFO)
         to_address      = self.request.get('to_address')
         subject         = self.request.get('subject')
         body            = self.request.get('body')
@@ -37,7 +37,7 @@ class SendEmailAsync(URIHandler):
             "to"       : to_address,
             "subject"  : subject,
             "html"     : body,
-            "from"     : INFO,
+            "from"     : from_address,
             "fromname" : "Willet",
             "bcc"      : FRASER
         }

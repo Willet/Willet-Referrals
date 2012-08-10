@@ -232,7 +232,9 @@ class DoVote(URIHandler):
         client_email = getattr(getattr(app, 'client', None), 'email',
                                FROM_ADDR)
         if which.lower() == "yes" or which.lower() == "no":  # SIBT
-            logging.info('going to SIBT email shopper.')
+            logging.info('going to SIBT email shopper: '
+                         '%s -> %s.' % (client_email,
+                                        instance.asker.get_attr('email')))
             Email.SIBTVoteNotification(instance=instance, vote_type=which,
                                        from_address=client_email)
         else:
