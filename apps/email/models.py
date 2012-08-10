@@ -12,6 +12,8 @@ from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import get_application_id
 from google.appengine.ext.webapp import template
 
+from apps.product.models import Product
+
 from util.consts import *
 from util.helpers import url
 
@@ -361,9 +363,9 @@ class Email():
 
         product_url = "%s#open=1" % instance.url  # full product link
 
-	try:
+        try:
             product_img = instance.product_img
-            product_img = instance.products[0].images[0]
+            product_img = Product.get(instance.products[0]).images[0]
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
@@ -397,6 +399,7 @@ class Email():
     def SIBTVoteCompletion(instance, product):
         """Vote is over! Send asker an email."""
         client = getattr(instance.app_, 'client', None)
+        winning_products = instance.get_winning_products()
 
         if not instance.asker:
             logging.warn('The deuce? Instance has no asker.')
@@ -421,16 +424,25 @@ class Email():
         name = instance.asker.name or "Savvy Shopper"
         subject = '%s, the votes are in!' % name
 
-        body = template.render(
-            Email.template_path('sibt_voteCompletion.html', client), {
-                'name': name,
-                'product_url': getattr(product, 'resource_url', ''),
-                'vote_url'   : instance.link.get_willt_url(),
-                'product_img': product.images[0],
-                'yesses': yesses,
-                'noes': noes,
-                'buy_it': buy_it,
-                'buy_it_percentage': buy_it_percentage})
+        path = Email.template_path('sibt_voteCompletion.html', client)
+        logging.debug('Email template path = %s' % path)
+
+        body = template.render(path, {
+            'client': client,
+            'name': name,
+            'product_url': getattr(product, 'resource_url', ''),
+            'vote_url'   : instance.link.get_willt_url(),
+            'product_img': product.images[0],
+            'yesses': yesses,
+            'noes': noes,
+            'yesses_and_noes': yesses + noes,
+            'bi_winning': bool(len(winning_products) > 1),
+            'product': instance.products[0],
+            'products': winning_products,  # take note
+            'buy_it': buy_it,
+            'buy_it_percentage': buy_it_percentage,
+            'wosib_mode': bool(len(instance.products) > 1)
+        })
 
         logging.error('Going to send a SIBT email to %s... '
                       '(not actually an error, but worth looking at)' % to_addr)
@@ -537,6 +549,7 @@ class Email():
             replyto_address = from_address  # who would reply to "None"?
         taskqueue.add(
                 url=url('SendEmailAsync'),
+                queue_name='emailer',
                 params={
                     'from_address': from_address,
                     'to_address': to_address,

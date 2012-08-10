@@ -102,7 +102,7 @@ REROUTE_EMAIL = None
 
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 4,
+    'url_count_for_app_and_user': 3,
 }
 
 # controls the number of memcache buckets
@@ -135,7 +135,8 @@ ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
               '216.16.232.86',      # Brian Desktop network drop
               '206.126.92.56',      # Brian House
-              '216.16.232.86'       # TenantWifi
+              '216.16.232.86',      # TenantWifi
+              '64.245.0.218'        # StartupPNP
             ]
 
 # the apps we are using

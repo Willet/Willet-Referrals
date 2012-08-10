@@ -15,6 +15,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from apps.action.models import Action
+from apps.app.models import App
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
@@ -65,6 +66,8 @@ class SIBTSignUp(URIHandler):
             self.error(400)  # malformed URL
             return
 
+        logging.debug('Checking if there is already a user '
+                      'associated with this email.')
         user = User.get_or_create_by_email(email=email,
                                            request_handler=self,
                                            app=None)  # for now
@@ -684,12 +687,15 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
 
     If previous user/client/app objects exist, they will be reused.
     """
+    logging.debug('Checking if there is already a user '
+                  'associated with this email: %s' % email)
     user = User.get_or_create_by_email(email=email,
                                        request_handler=request_handler,
                                        app=None)
     if not user:
         return (False, 'wtf, no user?')
 
+    logging.debug('VendorSignUp user = %r' % user.uuid)
     full_name = "%s %s" % (first_name, last_name)
     user.update(email=email,
                 first_name=first_name,

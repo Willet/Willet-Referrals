@@ -13,5 +13,4 @@ urlpatterns = [
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),
     (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
-    (r'/u/updateFBAccessToken', UpdateFBAccessToken),
 ]

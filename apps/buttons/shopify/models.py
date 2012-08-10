@@ -419,31 +419,32 @@ class ButtonsShopify(Buttons, AppShopify):
             # No installed script tags?
             return
 
-        # Find confirmation.js script
-        tag = None
+        # Find existing confirmation.js scripts
+        tags = []
         for script_tag in results.get("script_tags"):
             logging.info("script_tag = %r" % script_tag)
             if "confirmation.js" in script_tag.get("src", ""):
-                tag = script_tag
-                break
+                tags.append(script_tag)
 
         # Build query string
         query_params = dict( (key, quote(value)) for key, value in social_accounts.items() if value )
         query_params.update({ 'app_uuid': self.uuid })
         qs = urlencode(query_params)
 
-        try:
-            if tag:
-                tag["src"] = "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
-                self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"], payload={"script_tag": tag})
+        # Remove existing instances of confirmation.js
+        for tag in tags:
+            try:
+                self._call_Shopify_API("DELETE", "script_tags/%s.json" % tag.get("id"))
+            except ShopifyAPIError:
+                continue  # If there was a problem, keep trying with other instances
 
-            else:
-                self._call_Shopify_API("POST", "script_tags.json", payload={
-                    'script_tag': {
-                        "event": "onload",
-                        "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
-                    }
-                })
+        try:
+            self._call_Shopify_API("POST", "script_tags.json", payload={
+                'script_tag': {
+                    "event": "onload",
+                    "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                }
+            })
         except ShopifyAPIError:
             logging.error('Error saving social accounts:', exc_info=True)
 

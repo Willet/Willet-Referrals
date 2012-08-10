@@ -3,7 +3,7 @@ html.ask_page {
     font-family: Helvetica, Arial, sans-serif;
     }
     html.ask_page body {
-        background: #f0f0f0 url("/static/imgs/tiles/diagonal.png");
+        background: #f0f0f0 url("/static/imgs/tiles/diagonal-light.png");
         color: #444;
         margin: 0;
         padding: 0;
@@ -32,8 +32,12 @@ html.ask_page {
             color: #fff;
             font-size: 30px;
             font-weight: bold;
-            margin: 38px 0 16px 0;
+            margin: 20px 0 0 0;
             text-shadow: 1px 2px 5px #666;
+        }
+        html.ask_page #oem_panel>.subtitle {
+            font-size: 19px;
+            margin-top: 10px;
     }
     html.ask_page #main_content {
         text-align: center;
@@ -52,6 +56,11 @@ html.ask_page {
     }
     html.ask_page .fb_icon {
         margin: 0 6px 0 -7px;
+    }
+    html.ask_page p.cta {
+        text-shadow: 1px 1px 0 #ddd;
+        font-size: 21px;
+        margin: 36px 0 -24px 0;
     }
     html.ask_page .selected.item {
         display: inline-block;
@@ -96,6 +105,6 @@ html.ask_page {
     html.ask_page footer, html.ask_page .footer {
         color: #999;
         font-size: 10px;
-        margin: 24px 0 0 0;
+        margin: 24px 0;
         text-align: center;
 }
