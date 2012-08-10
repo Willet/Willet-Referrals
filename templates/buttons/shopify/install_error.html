@@ -1,0 +1,20 @@
+{% extends "../../homepage/base.html" %}
+
+{% block head %}
+{# Eliminates possible default content in these blocks #}
+{% endblock head %}
+
+{% block right_head %}
+{# Eliminates possible default content in these blocks #}
+{% endblock right_head %}
+
+{% block content %}
+    <div style="margin-top: 150px">
+        <h1 class="span-24 last center">An error occurred while installing your app.</h1>
+        {% if reason %}
+            <p>Reason:</p>
+            <pre>{{ reason }}</pre>
+        {% endif %}
+        <p>An email has been sent to the team - we are happy to install the app for you!</p>
+    </div>
+{% endblock content %}

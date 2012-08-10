@@ -115,7 +115,7 @@ class ButtonsShopifyUnsubscribe(URIHandler):
         if app:
             unsubscribed = app.unsubscribed
 
-        template_values = self.response.out.write(self.render_page('unsubscribe.html', {
+        template_values = self.response.out.write(self.render_page('admin/unsubscribe.html', {
             'uuid': uuid,
             'unsubscribed': unsubscribed,
             'app_exists': True if app else False
@@ -135,5 +135,5 @@ class ButtonsShopifyUnsubscribe(URIHandler):
             'app_exists': True if app else False
         }
 
-        self.response.out.write(self.render_page('unsubscribe.html',
+        self.response.out.write(self.render_page('admin/unsubscribe.html',
                                                  template_values))

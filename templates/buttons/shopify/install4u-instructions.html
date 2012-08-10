@@ -1,0 +1,125 @@
+{% extends "../../homepage/base.html" %}
+
+{% block head %}
+    <style>
+        p {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 5px;
+        }
+        .instruction-step {
+            background-color: #FFF;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            font-size: 1.0em;
+        }
+        .instruction-step input {
+            margin: 0;
+        }
+        .step-num, .step-warn, .step-info {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            padding: 1px 7px 1px 9px;
+            font-size: 20px;
+            color: #FFF;
+            border-radius: 18px;
+            -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            behavior: ("../js/PIE.htc");
+        }
+        .step-num {
+            background-color: #0496AC;
+        }
+        .step-warn {
+            background-color: #C40000;
+            padding: 0 13px;
+        }
+        .step-info {
+            background-color: #0496AC;
+            padding: 0 13px;
+        }
+    </style>
+{% endblock head %}
+
+{% block header-class %}tall{% endblock %}
+
+{% block content %}
+    <div class="prepend-top span-24 last
+                box-design content-container"
+         style="margin-top: 150px">
+        <h1>Thank you!</h1>
+        <p style="text-align:center">Thank you for your payment!
+            We will install our plugin for you.
+            But first, <b>we need access</b> to your shop:
+        </p>
+
+        <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+            <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                        box-design instruction-step">
+                <div class="step-num">1.</div>
+                <div class="span-10">
+                    <p>Click <a href="{{store_url}}/admin/account"
+                                target="_blank">here</a>
+                    to go to your Shopify account page.</p>
+                </div>
+                <div class="span-3 last">
+                    <img src="/static/buttons/imgs/install4u-1.png" />
+                </div>
+            </div>
+        </div>
+
+        <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+            <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                        box-design instruction-step">
+                <div class="step-num">2.</div>
+                <p>Under <b>Staff Accounts</b>, click on <b>Invite staff member</b>.</p>
+                <img class="span-18" src="/static/buttons/imgs/install4u-2.png" />
+            </div>
+        </div>
+
+        <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+            <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                        box-design instruction-step">
+                <div class="step-num">3.</div>
+                <div class="span-9">
+                    <p>Enter <b>Fraser</b>'s information as follows. You're done!</p>
+                    <input type="text" value="Fraser" />
+                    <input type="text" value="Harris" />
+                    <br />
+                    <input type="text" value="fraser@getwillet.com" />
+                </div>
+                <div class="span-3 last">
+                    <img src="/static/buttons/imgs/install4u-3.png" />
+                </div>
+            </div>
+        </div>
+
+        <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+            <div class="prepend-1 span-18 append-1 last
+                        box-design instruction-step">
+                <div class="step-warn">!</div>
+                <p>Over the next 2 to 24 hours, Fraser will be setting up your buttons.</p>
+                <p>Any questions?
+                    Visit <a target="_blank" href="http://support.willetinc.com">our support website</a>, or
+                    email <a href="mailto:support@getwillet.com">support@getwillet.com</a>.
+                </p>
+            </div>
+        </div>
+
+        </div>
+{% endblock content %}
+
+{% block body-addendum %}
+    <div class="installation-steps">
+        <ul>
+            <li>1. Register Store </li>
+            <li>2. Pick Version </li>
+            <li class="on-this-step">3. Setup ShopConnection (paid)</li>
+        </ul>
+    </div>
+{% endblock body-addendum %}

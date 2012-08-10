@@ -1,0 +1,104 @@
+{% extends "../homepage/base.html" %}
+
+{% block head %}
+<script src="http://platform.tumblr.com/v1/share.js" type="text/javascript"></script>
+
+<style>
+    input[type='text'], textarea {
+        width: 75%;
+        margin-bottom: 5px;
+    }
+    div button {
+        position: relative;
+        top: -1px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var site = $('#site');
+        var site_input = $('#site_input');
+        var install_link = $('#install_link');
+        var install_url = $('#install_url');
+        var input_default = $('#input_default');
+
+        var setDefault = function() {
+            site_input.css('color', 'grey');
+            site_input.val(input_default.val());
+        }
+        var update = function() {
+            var val = site_input.val();
+            var pos = val.search('.myshopify.com');
+            if (pos != -1) {
+                // user entered storename.myshopify.com into the input
+                var temp = val.substr(0, pos);
+                site_input.val(temp)
+            }
+            site.html(site_input.val());
+            install_link.attr('href', install_link.text());
+        }
+        site_input.keypress(function() {
+            update();
+        }).keyup(function() {
+                    update();
+                }).keydown(function() {
+                    update();
+                }).focus(function() {
+                    if (site_input.val() == input_default.val()) {
+                        site_input.val('');
+                    }
+                    site_input.css('color', 'black');
+                }).blur(function() {
+                    if (site_input.val() == '' || site_input.val() == input_default.val()){
+                        setDefault();
+                    }
+                });
+        $('#do_install').click(function() {
+            window.location = install_link.attr('href');
+        });
+        setDefault();
+    });
+</script>
+{% endblock head %}
+
+{% block content %}
+<div class="lower-100 span-24 last
+                                center">
+    <h1>ShopConnection Engage!</h1>
+</div>
+
+<div class="prepend-4 span-6">
+
+</div>
+<div class="prepend-1 span-20 last">
+    <p class="span-20 last">Automatically reach people who 'like' your
+        products.</p>
+    <p class="span-20 append-bottom last">
+        Installation takes no more than 10 minutes and we're here to support you at every step!
+    </p>
+</div>
+
+<div class="about prepend-top append-bottom span-24 last center">
+    <div>
+        <input type="hidden" id="input_default" value="your store name" />
+        Enter <input type="text" id="site_input" value="Your store name" />.myshopify.com
+        <button id="do_install">Install Now</button>
+    </div>
+</div>
+
+<div class="about prepend-top append-bottom span-24 last center">
+    or copy your install url manually:<br />
+    <div id="install_url">
+        <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SHOPIFY_API_KEY}}</a>
+    </div>
+</div>
+{% endblock content %}
+
+{% block body-addendum %}
+<div class="installation-steps">
+    <ul>
+        <li>1. Register Store </li>
+        <li class="on-this-step">2. Setup <em>ShopConnection Engage</em></li>
+        <li>3. Log In</li>
+    </ul>
+</div>
+{% endblock %}

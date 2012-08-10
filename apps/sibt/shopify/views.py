@@ -27,13 +27,16 @@ from util.logger import logging
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
+
 class ShowBetaPage(URIHandler):
     def get(self):
         logging.info(SHOPIFY_APPS)
         logging.info(SHOPIFY_APPS['SIBTShopify'])
         template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
 
-        self.response.out.write(self.render_page('beta.html', template_values))
+        self.response.out.write(self.render_page('sibt/shopify/beta.html',
+                                                 template_values))
+
 
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
@@ -99,7 +102,7 @@ class SIBTShopifyWelcome(URIHandler):
                 'client_uuid' : client.uuid,
                 'new_order_code' : False  # new_order_code (temp disabled)
             }
-            path = 'welcome.html'
+            path = 'sibt/shopify/welcome.html'
 
         except Exception, err:
             logging.error('SIBT install error, may require reinstall (%s)' % err,
@@ -110,7 +113,7 @@ class SIBTShopifyWelcome(URIHandler):
                                subject='Application installation failed')
             template_values = {'URL': URL,
                               'reason': err}
-            path = 'install_error.html'
+            path = 'sibt/shopify/install_error.html'
 
         self.response.out.write(self.render_page(path, template_values))
         return
@@ -178,7 +181,8 @@ class SIBTShopifyEditStyle(URIHandler):
         }
         template_values.update(display_dict)
 
-        self.response.out.write(self.render_page('edit_style.html', template_values))
+        self.response.out.write(self.render_page('sibt/shopify/edit_style.html',
+                                template_values))
 
 class ShowFinishedPage(URIHandler):
     def get(self):
@@ -205,12 +209,8 @@ class ShowFinishedPage(URIHandler):
         template_values['analytics'] = True if app.cached_clicks_count != 0 else False
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(
-            self.render_page(
-                'finished.html',
-                template_values
-            )
-        )
+        self.response.out.write(self.render_page('sibt/shopify/finished.html',
+                                                 template_values))
 
 
 class ShowEditPage(URIHandler):
@@ -303,10 +303,10 @@ class SIBTShopifyProductDetection(URIHandler):
                 'user': user,
                 'sibt_button_id': '_willet_shouldIBuyThisButton',
             }
-            path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+            path = os.path.join('sibt/shopify', 'sibt_product_detection.js')
             self.response.headers.add_header('P3P', P3P_HEADER)
             self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
-            self.response.out.write(template.render(path, template_values))
+            self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -320,8 +320,8 @@ class SIBTShopifyInstallError(URIHandler):
             'URL' : URL,
             'reason': self.request.get('reason', None),
         }
-        path = os.path.join('apps/sibt/shopify/templates/', 'install_error.html')
+        path = os.path.join('sibt/shopify', 'install_error.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
