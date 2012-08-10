@@ -21,7 +21,7 @@
                 'cursor': 'pointer',
                 'click': function () {},  // custom event
                 'select': function (selection) {},  // custom event
-                'hover': function () {},  // custom event
+                'hover': function () {}  // custom event
             };
 
             return this.each(function () { // return: chain
@@ -112,7 +112,7 @@
                     } else {
                         return openDropdown();
                     }
-                }
+                };
 
                 box_onclick = function (event) {
                     event.stopPropagation(); // stop bubbling up, bro

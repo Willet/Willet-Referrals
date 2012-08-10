@@ -13,7 +13,7 @@ class ShowLandingPage(URIHandler):
     def get(self, page):
         """Renders the main template."""
         template_values = {}
-        self.response.out.write(self.render_page('landing.html',
+        self.response.out.write(self.render_page('homepage/landing.html',
                                                  template_values))
 
 class ShowPrivacyPage(URIHandler):
@@ -21,5 +21,5 @@ class ShowPrivacyPage(URIHandler):
     def get(self):
         """Renders the privacy page."""
         template_values = {}
-        self.response.out.write(self.render_page('privacy.html',
+        self.response.out.write(self.render_page('homepage/privacy.html',
                                                  template_values))

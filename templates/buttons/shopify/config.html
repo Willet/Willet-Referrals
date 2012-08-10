@@ -1,0 +1,963 @@
+{% extends "../../homepage/base.html" %}
+
+{% block head %}
+<style>
+    .shopconnection-header {
+        height: 62px;
+        margin: 10px 0;
+    }
+    .shopconnection-header img {
+        border: 1px solid #93BC8B;
+        border-radius: 10px;
+        width: 60px;
+        height: 60px;
+        float: left;
+    }
+    .shopconnection-header h3 {
+        color: #0496AC;
+        text-shadow: 1px 1px 1px #FFF;
+        line-height: 2em;
+        padding-left: 90px;
+        margin: 0;
+    }
+    .box-design form {
+        font-size: 1.5em;
+        padding-bottom: 20px;
+    }
+    .page {
+        margin-top: 30px;
+    }
+    .config-free {
+        display: block;
+    }
+
+    .config-option, .submit {
+        clear: both;
+    }
+
+    .config-option {
+        display: block;
+    }
+    .config-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .left-column {
+        display   : inline-block;
+        text-align: right;
+        width     : 250px;
+    }
+    .left-textarea-column {
+        display: block;
+        float: left;
+        margin-right: 5px;
+        height: 60px;
+        width: 250px;
+        line-height: 60px;
+        text-align: right;
+    }
+
+    input {
+    }
+    textarea {
+        height: 48px;
+        line-height: 24px;
+        font-size: 16px;
+    }
+
+    .buttons {
+        height: 40px;
+    }
+
+    .buttons span {
+        position: relative;
+        top: -9px;
+    }
+
+    .buttons label.disabled {
+        color: #aaa;
+    }
+
+    .submit {
+        text-align: center;
+    }
+    hr.widget-break {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    #unused-buttons,
+    #default-buttons {
+        list-style-type: none;
+        margin: 0;
+        display: inline-block;
+        height: 20px;
+        padding: 2px 2px 4px 2px;
+        min-width: 100px;
+        border: 1px dashed #aaa;
+    }
+
+    #default-buttons li,
+    #unused-buttons li {
+        display: inline-block;
+    }
+
+    .icon span {
+        display: none;
+    }
+
+    li.icon {
+        padding: 1px;
+    }
+
+    span.icon {
+        display: inline-block;
+    }
+
+    .icon {
+        height: 20px;
+        background-repeat: no-repeat;
+        background-position-x: left;
+        background-position-y: center;
+        border: 0 none !important;
+    }
+
+    .icon.Facebook {
+        background-image: url('/static/imgs/sb-config-facebook.png');
+        width: 48px;
+    }
+    .icon.Facebook.buttonCount {
+        background-image: url('/static/imgs/sb-config-facebook-count.png');
+        width: 90px;
+    }
+
+    .icon.Twitter {
+        background-image: url('/static/imgs/sb-config-twitter.png');
+        width: 56px;
+    }
+    .icon.Twitter.buttonCount {
+        background-image: url('/static/imgs/sb-config-twitter-count.png');
+        width: 98px;
+    }
+
+    .icon.GooglePlus {
+        background-image: url('/static/imgs/sb-config-googleplus.png');
+        width: 32px;
+    }
+    .icon.GooglePlus.buttonCount {
+        background-image: url('/static/imgs/sb-config-googleplus-count.png');
+        width: 74px;
+    }
+
+    .icon.Svpply {
+        background-image: url('/static/imgs/sb-config-svpply.png');
+        width: 70px;
+    }
+    .icon.Svpply.buttonCount {
+        background-image: url('/static/imgs/sb-config-svpply.png');
+    }
+
+    .icon.Fancy {
+        background-image: url('/static/imgs/sb-config-fancy.png');
+        width: 56px;
+    }
+    .icon.Fancy.buttonCount {
+        background-image: url('/static/imgs/sb-config-fancy-count.png');
+        width: 96px;
+    }
+
+    .icon.Pinterest {
+        background-image: url('/static/imgs/sb-config-pinterest.png');
+        width: 43px;
+    }
+    .icon.Pinterest.buttonCount {
+        background-image: url('/static/imgs/sb-config-pinterest-count.png');
+        width: 77px;
+    }
+
+    .icon.Tumblr {
+        background-image: url('/static/imgs/sb-config-tumblr.png');
+        width: 62px;
+    }
+    .icon.Tumblr.buttonCount {
+        background-image: url('/static/imgs/sb-config-tumblr.png');
+    }
+
+    .preview {
+        padding: 20px;
+        margin-bottom: 10px;
+        display: block;
+        background-color: #ffa;
+    }
+    .preview>div {
+        text-align: center;
+    }
+
+    #buttons-preview,
+    #confirmation-preview {
+        display: inline-block;
+        border: 1px dotted #000;
+        margin-left: 200px;
+        margin-right: 20px;
+        line-height: initial;
+    }
+
+    .tab-bar {
+        margin-top: 125px;
+        list-style-type: none;
+    }
+    .tab-bar ul {
+        margin: 0;
+        padding: 0;
+    }
+
+    .tab-header {
+        font-family: Merriweather, 'times new roman', times, serif;
+        font-weight: bold;
+        color: #1F454D;
+        -webkit-font-smoothing: antialiased;
+        -moz-font-smoothing: antialiased;
+        -o-font-smoothing: antialiased;
+        font-smoothing: antialiased;
+        background-color: #c6c6c6;
+        padding: 10px;
+        text-align: center;
+        margin: 0 5px 0 0;
+        font-size: 2em;
+        display: inline-block;
+        -webkit-box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
+        -moz-box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
+        box-shadow: -5px -5px 10px 0px rgba(200,200,200,0.5), 5px -5px 10px 0px rgba(200,200,200,0.5);
+        cursor: pointer;
+    }
+    .tab-header.selected {
+        cursor: pointer;
+        position: relative;
+        z-index: 1000;
+        background-color: #F6F6F6;
+        background-image: url('data:image/png;base64,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');
+    }
+    .tab-header a:hover,
+    .tab-header a:active {
+        color: #056380;
+        text-shadow: none;
+    }
+    .tab-header.selected a:hover,
+    .tab-header.selected a:active {
+        cursor: default;
+    }
+
+    select {
+        font-size: 1.3em;
+    }
+
+    #analytics li {
+        margin-left: 15px;
+    }
+
+    .small {
+        font-size: 0.65em;
+    }
+
+    .grabbable {
+        cursor: hand;
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+    }
+
+    .grabbable:active {
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
+    }
+
+    /* JQUERY LOADMARK CSS , with modifications */
+    .loadmask {
+        z-index: 100;
+        position: absolute;
+        top:0;
+        left:0;
+        -moz-opacity: 0.5;
+        opacity: .50;
+        filter: alpha(opacity=50);
+        background-color: #CCC;
+        width: 100%;
+        height: 100%;
+        zoom: 1;
+    }
+    .loadmask-msg {
+        z-index: 20001;
+        position: absolute;
+        top: 200px;
+        left: 138px;
+        min-width: 380px;
+        border: 1px solid #6593CF;
+        background: #C3DAF9;
+        padding: 2px;
+        cursor: default !important;
+        -webkit-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0px 0px 0px transparent;
+        -moz-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0px 0px 0px transparent;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0px 0px 0px transparent;
+    }
+    .loadmask-msg>div {
+        border: 1px solid #A3BAD9;
+        background: #FFF;
+        padding: 20px;
+        min-width: 340px;
+    }
+    .loadmask-msg>div>p {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        line-height: 38px;
+    }
+    .loadmask-msg>div>p>span {
+        display: inline-block;
+        float: right;
+    }
+    .loadmask-msg button {
+        line-height: 15px;
+    }
+    .loadmask-msg button span {
+        line-height: 15px;
+        display: block;
+    }
+    .loadmask-msg h3 {
+        color: #333;
+    }
+    .loadmask-msg a {
+        font-size: 1.3em;
+    }
+    .masked {
+        overflow: hidden !important;
+    }
+    .masked-relative {
+        position: relative !important;
+    }
+    .masked-hidden {
+        visibility: hidden !important;
+    }
+    .field_is_no_good {
+        background-color: #ffd0e0 !important;
+    }
+
+    /* Confirm preview */
+    div.sharing {
+        padding: 0 15px;
+        margin: 10px 0 0 0;
+        background-color:#FFF;
+    }
+
+    div.sharing p {
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    div.sharing ul {
+        list-style-type:none;
+        padding: 0 40px;
+        line-height:40px;
+        margin-bottom: 0;
+    }
+    div.sharing li {
+        display: inline-table;
+        width: 140px;
+        padding: 0px;
+        margin: 0px;
+        height: 20px;
+        line-height: 20px;
+    }
+
+    #confirmation-preview {
+        background-color: #fff;
+    }
+
+    #confirmation-preview p {
+        font-size: 1em;
+    }
+
+</style>
+<!--[if IE 7]>
+<style>
+    .config-option .left-column {
+        display   : inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    #unused-buttons, #default-buttons {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    #default-buttons li, #unused-buttons li {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    .config-option .textbox {
+        position: relative;
+        top: 20px;
+    }
+
+    span.icon {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    #buttons-preview {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    .tab-header {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+    .loadmask-msg button {
+        margin-top: -3px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $(".submit button").click(function () {
+            $("form").submit();
+        });
+    });
+</script>
+<![endif]-->
+<!--[if IE 8]>
+<style>
+    .buttons span {
+        position: relative;
+        top: -29px;
+    }
+</style>
+<![endif]-->
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js" type="text/javascript"></script>
+<script src="/static/js/jquery.qtip-1.0.0-rc3.min.js" type="text/javascript"></script>
+<script src="/static/js/jquery.lightswitch.js" type="text/javascript"></script>
+        {% if not config_enabled %}<script src="/static/js/jquery.loadmask.min.js" type="text/javascript"></script>{% endif %}
+<script>
+    $(document).ready(function () {
+        var redirectToUpgrade,
+            changeTabs,
+            confirmUpdate,
+            maxButtons,
+            update,
+            updateNetworks,
+            updatePreview,
+            maskMessage;
+
+        maskMessage = ""
+            + "<h3>Sorry, only paid users can access this feature</h3>"
+            + "<p>"
+            + "    <span>"
+            + "        <button class='red'>"
+            + "            <span>Upgrade Now</span>"
+            + "        </button>"
+            + "    </span>"
+            + "    <a href='{{ learn_more_url }}'>Learn more</a>"
+            + "</p>";
+
+        var redirectToUpgrade = function () {
+            window.location = "{{ upgrade_url }}";
+        };
+
+        // Get the maximum number of buttons
+        maxButtons = function () {
+            return $("#max-buttons").val() || 3;
+        };
+
+        // update the networks hidden form field
+        updateNetworks = function () {
+            var networks = [],
+                network = "";
+
+            $("#default-buttons > li").each(function (index, item) {
+                if (index < maxButtons()) {
+                    network = $(item).text();
+                    network = $.trim(network);
+                    networks.push(network);
+                } else {
+                    //move element back
+                    $(item).appendTo("#unused-buttons");
+                }
+            });
+            $("input[name='button_order']").val(networks.join(","));
+        };
+
+        // refresh the preview area
+        updatePreview = function (event) {
+            var buttons = $("input[name='button_order']").val().split(","),
+                buttonsDiv = $('#buttons-preview'),
+                buttonsDivPadding = $("#button-padding").val() || 0;
+
+            buttonsDiv.empty();
+
+            $(buttonsDiv).css("padding", buttonsDivPadding + "px");
+
+            $.each(buttons, function (index, elem) {
+                var buttonClass = "icon " + elem,
+                    buttonCount = $("[name=button_count]:checked").val(),
+                    buttonPadding = $("#button-spacing").val() || 0,
+                    newImg;
+
+                newImg = $("<span/>", {
+                    "class": buttonClass,
+                    "border": 0
+                });
+                if (buttonCount === "True") {
+                    $(newImg).addClass("buttonCount");
+                }
+
+                $(newImg).css("margin-right", buttonPadding + "px");
+
+                buttonsDiv.append(newImg);
+            });
+        };
+
+        update = function () {
+            updateNetworks();
+            updatePreview();
+        };
+
+        changeTabs = function(event) {
+            var target = event.currentTarget,
+                page = $(target).find("a").attr("href");
+
+            //remove selection from all the tabs
+            $(".tab-header").removeClass("selected");
+
+            //add selection to this particular tab
+            $(target).addClass("selected");
+
+            //hide all tabs
+            $(".page").hide();
+
+            //show the relevant tab
+            $(page).show();
+
+            {% if not config_enabled %}
+            $(page).find('.mask-target').mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
+            {% endif %}
+
+            event.preventDefault();
+        };
+
+        confirmUpdate = function(network) {
+            var $input  = $("[name="+network+"_username]"),
+                $target = $("#confirmation-preview .item-" + network);
+
+            if($input.val()) {
+                $target.show();
+            } else {
+                $target.hide();
+            }
+        };
+
+        //--------------- UI SETUP ---------------//
+
+        {% if not config_enabled %}
+        // Display a mask if the user has not paid
+        $("#configuration .mask-target").mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
+        {% endif %}
+
+        $("#confirmation-enabled").lightSwitch({
+            "dir": "/static/imgs/jquery-lightswitch/",
+            "change": function (event) {
+                if (event.target.checked) {
+                    $('#confirmation_options').slideDown("slow");
+                } else {
+                    $('#confirmation_options').slideUp("slow");
+                }
+            }
+        });
+
+        // Set the default selected element
+        // We do this in JS because it is cleaner than in the template
+        $("#max-buttons").val({{max_buttons}});
+
+        // Set up the drag and drop areas and constraints
+        $("#default-buttons, #unused-buttons").sortable({
+            connectWith: ".connectedSortable",
+            update: function(event, ui) {
+                update();
+            },
+            receive: function (event, ui) {
+                if ($("#default-buttons > li").length > maxButtons()) {
+                    $(ui.sender).sortable('cancel');
+                    update();
+                }
+            }
+        }).disableSelection();
+
+        // Set up the tooltips
+        $('.help[title]').qtip({
+            content: {
+                text: false
+            },
+            style: 'cream'
+        });
+
+        //--------------- BEHAVIOUR SETUP ---------------//
+
+        // set up handlers
+        $("#button-padding").keyup(update);
+        $("#button-spacing").keyup(update);
+        $("[name=button_count]").change(update);
+        $("#max-buttons").change(update);
+
+        $("[name=twitter_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9_]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
+            confirmUpdate('twitter', event);
+        });
+        $("[name=facebook_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9\.]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
+            confirmUpdate('facebook', event);
+        });
+        $("[name=pinterest_username]").keyup(function(event) {
+            var $this = $(this);
+            if (!$this.val() || /^[A-Z0-9]+$/ig.test($this.val())) {
+                // it's cool
+                $this.removeClass('field_is_no_good');
+            } else {
+                $this.addClass('field_is_no_good');
+            }
+            confirmUpdate('pinterest', event);
+        });
+
+        // Enable tabbing
+        $(".tab-header").not(".tab-ignore").click(changeTabs);
+
+        $('#go_to_shopify').click(function () {
+            window.location = "{{shop_url}}/admin";
+        });
+
+        // Refresh the preview since the page is ready
+        updatePreview();
+        var networks = ['twitter','pinterest','facebook'];
+        for(var i = 0; i < networks.length; i++) {
+            confirmUpdate(networks[i]);
+        }
+    });
+</script>
+{% endblock head %}
+
+{% block header-class %}tall{% endblock %}
+
+{% block content %}
+<div class="span-24 shopconnection-header last">
+    <div class="span-8">
+        <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+        <h3>{{ message }}</h3>
+    </div>
+    <div class="lower-15 span-16 last">
+        <h1>ShopConnection</h1>
+    </div>
+</div>
+
+<div class="prepend-top tab-bar">
+    <ul>
+        <li class="tab-header selected">
+            <a href="#configuration">Control Panel</a>
+            {% if not config_enabled %}
+            <br/><span class="small">(Unavailable in free version)</span>
+            {% endif %}
+        </li>
+        <li class="tab-header">
+            <a href="#analytics">Sharing Report</a>
+            {% if not config_enabled %}
+            <br/><span class="small">(Unavailable in free version)</span>
+            {% endif %}
+        </li>
+        <li class="tab-header tab-ignore">
+            <a href="{{ instructions_url }}">Installation</a>
+            {% if not config_enabled %}
+            <br/><span class="small">&nbsp;</span>
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+<div class="span-24 last box-design content-container"
+     style="margin-top: 0px;">
+    <div id="configuration" class="page prepend-top prepend-3 span-18 append-3 append-bottom last">
+        <div class="box-design mask-target">
+            <form method="POST" action="{{ action }}">
+                <div class="preview">
+                    <div><b>Preview:</b> How the social buttons will appear on product pages.</div>
+                    <span id="buttons-preview"></span>
+                </div>
+                <div class="config-free">
+                    <div class="config-option buttons">
+                        <span class="left-column">
+                            <label for="default-buttons">
+                                Default Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="These buttons will be displayed by default
+                                     when less than three networks are detected.<br/><br/>
+                                     You are limited to selecting 3 buttons.<br/><br/>
+                                     <i>Default: Pinterest, Tumblr, Fancy</i>"
+                                 class="help">
+                        </span>
+                        <ul id="default-buttons" class="connectedSortable">
+                            {% for button in button_order %}
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="config-option buttons">
+                        <span class="left-column">
+                            <label for="unused-buttons"
+                                   class="disabled">
+                                Available Buttons:
+                            </label>
+                        </span>
+                        <ul id="unused-buttons" class="connectedSortable">
+                            {% for button in unused_buttons %}
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <img src="/static/imgs/draganddrop.png"
+                             style="position: relative; top: -10px;">
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Number of Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines the maximum number of
+                                 buttons to be displayed.<br/><br/>
+                                 <i>Default: 3</i>"
+                                 class="help">
+                        </span>
+                        <select id="max-buttons" name="max_buttons">
+                            {% for number in button_range %}
+                            <option value="{{number}}">
+                            {{ number }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="config-option" style="height: 40px;">
+                        <span class="left-column">
+                            <label for="button-count">
+                                Show Button Count:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines whether or not a share count
+                                 should appear next to the share button.<br/><br/>
+                                 <i>Default: Hide</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-count" name="button_count"
+                               type="radio"
+                               value="True"
+                               {% if button_count %}checked{% endif %}/>
+                        <label for="button-count">Show</label>
+                        <input id="no-button-count" name="button_count"
+                               type="radio"
+                               value="False"
+                               {% if not button_count %}checked{% endif %}/>
+                        <label for="no-button-count">Hide</label>
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Button Spacing:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be put between the buttons.<br/><br/>
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-spacing" name="button_spacing"
+                               type="text" value="{{ button_spacing }}"
+                               style="width: 50px;"
+                               class="textbox"/>px
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-padding">
+                                Container Padding:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be around the button container.<br/><br/>
+
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-padding" name="button_padding"
+                               type="text" value="{{ button_padding }}"
+                               style="width: 50px;"
+                               class="textbox"/>px
+                    </div>
+                    <div class="config-option">
+                        <span class="left-textarea-column">
+                            <label for="sharing-message">
+                                Sharing Message:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines what message will be displayed
+                                 when sharing on Twitter or Pinterest.<br/><br/>
+
+                                 <i>Default: I found this on {{shop_url}}</i>"
+                                 class="help">
+                        </span>
+                        <textarea id="sharing-message" name="sharing_message"
+                               class="textbox">{{ sharing_message }}</textarea>
+                    </div>
+                </div>
+                <div class="submit">
+                    <input id="button-order" type="hidden" name="button_order"
+                           value='{{ button_order|join:"," }}' />
+                    <button class="blue">Save</button>
+                </div>
+
+                <hr class="widget-break"/>
+
+                <div class="config-free">
+                    <div class="config-header">
+                        <label for="confirmation-enabled">
+                            Enable Confirmation Widget:
+                        </label>
+                        <img src="/static/imgs/info.png" alt="Help Icon"
+                             title="Add Follow buttons to the final page of the checkout process.
+                                    This is a great way keep customers engaged after the purchase."
+                             class="help">
+                        <input id="confirmation-enabled" name="conf_enabled"
+                               type="checkbox" value="true" {% ifequal confirmation_enabled 'true' %}checked="checked"{% endifequal %}
+                               value="Enable post-purchase Follow widget" class="textbox"/>
+                    </div>
+                    <div id="confirmation_options" style="display:{% ifequal confirmation_enabled 'true' %}block{% else %}none{% endifequal %}">
+                        <div class="preview">
+                            <div><b>Preview:</b> How the 'follow' buttons
+                                will appear on the purchase confirmation
+                                page.</div>
+                            <span id="confirmation-preview">
+                                <div class='sharing'>
+                                    <p>Follow us to get the latest updates:</p>
+                                    <ul>
+                                        <li class="item-facebook" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-facebook.png"/>
+                                        </li>
+                                        <li class="item-pinterest" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-pinterest.png"/>
+                                        </li>
+                                        <li class="item-twitter" style="display: none">
+                                            <img src="/static/imgs/sb-confirm-twitter.png"/>
+                                        </li>
+                                      </ul>
+                                    </div>
+                            </span>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="facebook-username">
+                                    Facebook Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores' Facebook fanpage short-name.<br/><br/>
+
+                                     <i>If empty, Facebook follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            facebook.com/<input id="facebook-username"
+                                    name="facebook_username"
+                                   type="text" value="{{ facebook_username }}"
+                                   class="textbox"/>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="twitter-username">
+                                    Twitter Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores' Twitter account name.<br/><br/>
+
+                                     <i>If empty, Twitter follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            twitter.com/<input id="twitter-username"
+                                    name="twitter_username"
+                                   type="text" value="{{ twitter_username }}"
+                                   class="textbox"/>
+                        </div>
+                        <div class="config-option">
+                            <span class="left-column">
+                                <label for="pinterest-username">
+                                    Pinterest Username:
+                                </label>
+                                <img src="/static/imgs/info.png" alt="Help Icon"
+                                     title="Your stores Pinterest account short-name.<br/><br/>
+
+                                     <i>If empty, Pinterest follow button will not display.</i>"
+                                     class="help">
+                            </span>
+                            pinterest.com/<input id="pinterest-username"
+                                    name="pinterest_username"
+                                   type="text" value="{{ pinterest_username }}"
+                                   class="textbox"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="submit">
+                    <button class="blue">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="analytics" class=" page prepend-top prepend-3 span-18 append-3 append-bottom last"
+        style="display:none">
+        <div class="box-design mask-target">
+            <div style="padding: 20px;">
+            {% include "../../email/smart_buttons_report_content.html" %}
+            </div>
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
+        <div class="box-design" style="padding:20px">
+            <h3 class="center">Have other questions? Visit <a href="http://support.willetinc.com">our support website</a>, or email <a href="mailto:support@getwillet.com">support@getwillet.com</a></h3>
+            <br />
+
+            <div class="center">
+                <button class='blue' id='go_to_shopify'>
+                    <img src="/static/imgs/shopify-bag-36.png" />
+                        <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                            Return to your Store
+                        </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -536,11 +536,11 @@ class Email():
         path if the client does not have special templates.
         """
         if client and client.is_vendor:
-            vendor_path = os.path.join('apps/email/templates', client.name,
+            vendor_path = os.path.join('templates/email', client.name,
                                        path)
             if os.path.exists(vendor_path):
                 return vendor_path
-        return os.path.join('apps/email/templates/', path)
+        return os.path.join('templates/email', path)
 
     @staticmethod
     def send_email(from_address, to_address, subject, body,

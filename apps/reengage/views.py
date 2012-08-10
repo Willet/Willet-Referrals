@@ -17,7 +17,7 @@ class ReEngageAppPage(URIHandler):
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ReEngageShopify']['api_key']
         }
 
-        self.response.out.write(self.render_page('beta.html',
+        self.response.out.write(self.render_page('reengage/beta.html',
                                                  template_values))
 
 
@@ -27,7 +27,6 @@ class ReEngageShopifyWelcome(URIHandler):
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
         client = ClientShopify.get_by_url(shop)
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [client, token, shop]), exc_info=True)
 
         # Fetch or create the app
         app, created = ReEngageShopify.get_or_create(client,token=token)
@@ -72,7 +71,7 @@ class ReEngageInstructions(URIHandler):
 
         login_url = build_url("ReEngageLogin")
 
-        self.response.out.write(self.render_page('instructions.html', {
+        self.response.out.write(self.render_page('reengage/instructions.html', {
             'shop_owner': shop_owner,
             'shop_name' : shop_name,
             'login_url' : login_url,
@@ -83,7 +82,7 @@ class ReEngageInstructions(URIHandler):
 class ReEngageHowTo(URIHandler):
     """Display the instructions page."""
     def get(self):
-        self.response.out.write(self.render_page('howto.html', {}))
+        self.response.out.write(self.render_page('reengage/howto.html', {}))
 
 
 class ReEngageLogin(URIHandler):
@@ -92,18 +91,20 @@ class ReEngageLogin(URIHandler):
         session = get_current_session()
         token  = session.get( 't' )
         shop   = session.get("shop")
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
         client = ClientShopify.get_by_url(shop)
 
+
         # Fetch or create the app
-        app, created = ReEngageShopify.get_or_create(client, token=token)
+        app = None
+        if client:
+            app, created = ReEngageShopify.get_or_create(client, token=token)
 
         if not app:
             pass  # TODO: error
 
         # TODO: if session is already active
 
-        self.response.out.write(self.render_page('login.html', {
+        self.response.out.write(self.render_page('reengage/login.html', {
             "host" : self.request.host_url,
         }))
 
@@ -123,13 +124,25 @@ class ReEngageLogin(URIHandler):
             session = get_current_session()
             session.regenerate_id()
 
+            # steps to fix clientless ReEngageAccounts
+            if not getattr(user, 'client', None):
+                if user.email:
+                    user.client = Client.get_by_email(user.email)
+                    user.put()
+                    logging.info('fixed clientless ReEngageAccount.')
+
+            if not token or token == 'None':
+                token = user.client.token  # which may or may not be correct
+            if not shop or shop == 'None':
+                shop = user.client.url
+
             session['logged_in'] = True
             session['t']         = token
             session['shop']      = shop
 
             self.redirect(build_url("ReEngageQueueHandler", qs={}))
         else:
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "host" : self.request.host_url,
                 "msg": "Username or password incorrect",
                 "cls": "error",
@@ -160,7 +173,7 @@ class ReEngageLogout(URIHandler):
 class ReEngageCreateAccount(URIHandler):
     def get(self):
         """Show the 'create an account' page"""
-        self.response.out.write(self.render_page('login.html', {
+        self.response.out.write(self.render_page('reengage/login.html', {
             "host" : self.request.host_url,
         }))
 
@@ -172,14 +185,14 @@ class ReEngageCreateAccount(URIHandler):
 
         if user and created:  # Activate account
             logging.info("User was created")
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "msg": "You have been sent an email with further instructions.",
                 "cls": "success",
                 "host" : self.request.host_url
             }))
         elif user:  # Account already exists
             logging.info("User already exists")
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "username": username,
                 "msg": "Sorry, that email is already in use.",
                 "host" : self.request.host_url,
@@ -187,7 +200,7 @@ class ReEngageCreateAccount(URIHandler):
             }))
             pass
         else:  # Some mistake
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "username": username,
                 "msg": "There was a problem creating your account.<br/>Please"
                        " try again later",
@@ -199,7 +212,7 @@ class ReEngageCreateAccount(URIHandler):
 class ReEngageResetAccount(URIHandler):
     def get(self):
         """Show the user the 'reset' form"""
-        self.response.out.write(self.render_page('reset.html', {
+        self.response.out.write(self.render_page('reengage/reset.html', {
             "host" : self.request.host_url,
             "show_form": True
         }))
@@ -221,7 +234,7 @@ class ReEngageResetAccount(URIHandler):
                        "to reset your password."
             }
 
-        self.response.out.write(self.render_page('reset.html', context))
+        self.response.out.write(self.render_page('reengage/reset.html', context))
 
 
 class ReEngageVerify(URIHandler):
@@ -264,7 +277,7 @@ class ReEngageVerify(URIHandler):
                 "set_password": True
             }
 
-        self.response.out.write(self.render_page('verify.html', context))
+        self.response.out.write(self.render_page('reengage/verify.html', context))
 
     def post(self):
         """Set the user's new password"""
@@ -303,7 +316,7 @@ class ReEngageVerify(URIHandler):
                 "cls": "success"
             }
 
-        self.response.out.write(self.render_page('verify.html', context))
+        self.response.out.write(self.render_page('reengage/verify.html', context))
 
 
 class ReEngageCPLServeScript(URIHandler):
@@ -312,6 +325,7 @@ class ReEngageCPLServeScript(URIHandler):
         """Required variable: client_uuid."""
         session = get_current_session()
         client = Client.get_by_url(session.get('shop'))
+        logging.debug('shop = %r' % session.get('shop'))
         if not client:
             logging.warn('client not found; exiting')
             self.error(400)
@@ -321,8 +335,10 @@ class ReEngageCPLServeScript(URIHandler):
             'client': client,
         }
 
-        self.response.headers.add_header('content-type', 'text/javascript', charset='utf-8')
-        self.response.out.write(self.render_page('js/com.js', template_values))
+        self.response.headers.add_header('content-type', 'text/javascript',
+                                         charset='utf-8')
+        self.response.out.write(self.render_page('reengage/js/com.js',
+                                                 template_values))
 
 
 class ReEngageButtons(URIHandler):
