@@ -137,7 +137,7 @@ class ReEngageQueueHandler(URIHandler):
         session = get_current_session()
 
         #TODO: Replace with HTML view
-        page = self.render_page('queue.html', {
+        page = self.render_page('reengage/queue.html', {
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             "t": session.get("t"),
             "shop": session.get("shop"),
@@ -261,7 +261,7 @@ class ReEngagePostHandler(URIHandler):
             return
 
         #TODO: Replace with HTML view
-        page = self.render_page('post.html', {})
+        page = self.render_page('reengage/post.html', {})
         self.response.out.write(page)
 
     @session_active
@@ -314,7 +314,7 @@ class ReEngageProductSourceHandler(URIHandler):
         url = self.request.get("url")
 
         #TODO: Replace with HTML view
-        page = self.render_page('product.html', {})
+        page = self.render_page('reengage/product.html', {})
         self.response.out.write(page)
 
     @session_active
