@@ -590,6 +590,6 @@ $(document).ready(function () {
     });
     
     //If any of the times are changed, change data about time
-    $(".dropDownTime").change(changeScheduledTimeInDialog());
+    $(".dropDownTime").change(changeScheduledTimeInDialog);
     /*------ End functions for FB posting schedule dialog ------*/
 });
