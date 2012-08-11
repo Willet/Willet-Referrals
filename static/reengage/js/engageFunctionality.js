@@ -462,6 +462,6 @@ $(document).ready(function () {
     //'new activities' again - eg if user refreshes pg the notice bar should be gone
     //**This functionality is desired but not yet included in the code**
     $(document).on("click", "#closeNotice", function() {
-    	$("#recentActivity").hide();
+        $("#recentActivity").hide();
     });
 });
