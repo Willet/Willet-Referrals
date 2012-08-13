@@ -458,6 +458,12 @@ $(document).ready(function () {
         $(".howToNav.facebook").addClass("selected");
     });
     
+    //Shows and hides the contents of the recent activity notice
+    $(document).on("click", ".newActivitiesText", function() {
+    	$("#newActivitiesTitle").toggleClass("hidden");
+    	$("#newActivities").toggleClass("hidden");
+    });
+    
     //TODO: Closing the recent activity notice should also mean that the user never sees the 
     //'new activities' again - eg if user refreshes pg the notice bar should be gone
     //**This functionality is desired but not yet included in the code**
