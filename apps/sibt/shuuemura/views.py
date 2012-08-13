@@ -30,7 +30,7 @@ class SIBTShuuemuraWelcome(URIHandler):
 
         domain = self.request.get('domain', 'http://shuuemura-usa.com')
         # it was said that these emails go to me
-        email = self.request.get('email', 'info@getwillet.com')
+        email = self.request.get('email', 'no-reply@shuuemura-usa.com')
 
         first_name = self.request.get('first_name', 'Shu Uemura')
         # heheh (his name is actually Uemura Shu)
