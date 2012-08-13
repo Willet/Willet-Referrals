@@ -536,18 +536,31 @@ $(document).ready(function () {
     //For the 'How To' page (howto.html) - sets of instructions are hidden and shown
     //rather than making several different html pages
     $(document).on("click", ".howToNav.overview", function() {
-        $(".howToText").addClass("hidden");
-        $(".howToText.overview").removeClass("hidden");
+        $(".howToText").hide();
+        $(".howToText.overview").show();
 
         $(".howToNav").removeClass("selected");
         $(".howToNav.overview").addClass("selected");
     });
     $(document).on("click", ".howToNav.facebook", function() {
-        $(".howToText").addClass("hidden");
-        $(".howToText.facebook").removeClass("hidden");
+        $(".howToText").hide();
+        $(".howToText.facebook").show();
 
         $(".howToNav").removeClass("selected");
         $(".howToNav.facebook").addClass("selected");
+    });
+    
+    //Shows and hides the contents of the recent activity notice
+    $(document).on("click", ".newActivitiesText", function() {
+        $("#newActivitiesTitle").toggleClass("hidden");
+        $("#newActivities").toggleClass("hidden");
+    });
+    
+    //TODO: Closing the recent activity notice should also mean that the user never sees the 
+    //'new activities' again - eg if user refreshes pg the notice bar should be gone
+    //**This functionality is desired but not yet included in the code**
+    $(document).on("click", "#closeNotice", function() {
+        $("#recentActivity").hide();
     });
     
     /*------ Functions for FB posting schedule dialog ------*/
