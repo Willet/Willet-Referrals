@@ -507,7 +507,8 @@ which has one pixel less height for the white border on top */
 }
 
 #newPostDialog,
-#editTitleDialog { display: none; }
+#editTitleDialog,
+#changeScheduleDialog { display: none; }
 
 #ajax_loader {
     position: fixed;
