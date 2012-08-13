@@ -342,16 +342,14 @@ class ReEngageCPLServeScript(URIHandler):
                                                  template_values))
 
 
-class ReEngageButtons(URIHandler):
+class ReEngageMagic(URIHandler):
     """Handles iframe requests (or otherwise) for ReEngage buttons
 
-    Facebook like buttons don't need to be on the domain that they like, but
-    in order for apps to access a like button, they do need to be on the
-    same domain. So, we do shenanigans by embedding the button on a page we
-    own.
+    Facebook restricts apps to one domain. To get around this restriction, we
+    do use only one domain: ours. This means that we have to pretend that other
+    domains belong to us...
 
     Required Params
-    url        : Canonical URL for the product
     image      : Image that represents the product
     site       : Name of the site hosting the product
     title      : Title of the product
@@ -361,26 +359,6 @@ class ReEngageButtons(URIHandler):
     app_id     : The Facebook app_id to use with the like button: Defaults to '340019906075293'
     type       : An OpenGraph type. Defaults to 'product'
     """
-    def get(self):
-        required_params = ["url", "image", "site", "title", "description"]
-
-        if not all(x in self.request.GET for x in required_params):
-            logging.error("Missing one of the following GET params: %s"
-            % required_params)
-            self.error(400)
-        else:
-            # Prefix with our path
-            self.request.GET["url"] = "http://%s/r/url/%s" % (
-                APP_DOMAIN, self.request.GET["url"]
-            )
-
-            self.response.out.write(self.render_page('reengage/buttons.html', {
-                "request": self.request.GET
-            }))
-
-
-class ReEngageMagic(URIHandler):
-    """In order to facilitate our Facebook problems, we forward URLs"""
     def get(self, uri):
         if not uri:
             # TODO: Error
