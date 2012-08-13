@@ -133,6 +133,7 @@ class Facebook(SocialNetwork):
                 "FROM link_stat "\
                 "WHERE url='%s'" % url
         final_url = "%s?q=%s" % (cls.__fql_url, query)
+        logging.debug(final_url)
         success, content = cls._request(final_url)
 
         reach = {}
