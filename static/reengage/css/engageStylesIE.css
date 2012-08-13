@@ -1,0 +1,10 @@
+/*   Styles for IE, since IE is dumb   */
+
+#box {
+	border: 1px solid #878787;
+	border-top: 0;
+}
+
+#recentActivity {
+	border: 1px solid #b09e3c;
+}

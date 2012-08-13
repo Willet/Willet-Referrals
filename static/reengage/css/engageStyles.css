@@ -36,7 +36,8 @@ a { text-decoration: none; }
 #boxTop,
 li.selected,
 li a,
-#popup {
+#popup,
+.notice {
     -webkit-border-top-left-radius: 5px;
     -moz-border-radius-topleft: 5px;
     border-top-left-radius: 5px;
@@ -62,7 +63,8 @@ li a,
 .roundedBR,
 #box,
 #replaceWithPostContent,
-#popup {
+#popup,
+.notice {
     -webkit-border-bottom-right-radius: 5px;
     -moz-border-radius-bottomright: 5px;
     border-bottom-right-radius: 5px;
@@ -71,7 +73,8 @@ li a,
 .roundedBL,
 #box,
 #categoryBox,
-#popup {
+#popup,
+.notice {
     -webkit-border-bottom-left-radius: 5px;
     -moz-border-radius-bottomleft: 5px;
     border-bottom-left-radius: 5px;
@@ -262,7 +265,6 @@ p#soon {
 
 #box {
     background: #fff;
-    border: 1px solid #3b3b3b;
     border-top: 0;
 }
 
@@ -287,7 +289,7 @@ p#soon {
 
 #detailsBar{
     background: #eaeaea;
-    border-bottom: 1px solid #3b3b3b;
+    border-bottom: 1px solid #878787;
 }
 
 #categoryBar { width: 179px; float: left; }
@@ -363,7 +365,7 @@ which has one pixel less height for the white border on top */
 #replaceWithPosts {
     width: 329px;
     background: #e4e4e4;
-    border-right: 1px solid #3b3b3b;
+    border-right: 1px solid #878787;
     float: left;
     overflow: auto;
 }
@@ -372,7 +374,7 @@ which has one pixel less height for the white border on top */
     width: 329px;
     cursor: pointer;
     border-top: 1px solid #fff;
-    border-bottom: 1px solid #3b3b3b;
+    border-bottom: 1px solid #878787;
     float: left;
     background: #eaeaea;
     color: #000;
@@ -614,6 +616,39 @@ which has one pixel less height for the white border on top */
     padding: 8px 15px;
     font-size: 14px;
     color: #222;
+}
+
+.notice {
+    width: 970px;
+    background: #fdf495;
+    padding: 8px 15px;
+    margin: 15px 0;
+    position: relative;
+    border-top: 1px solid #fff;
+}
+.newActivitiesText .title:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+#newActivities ul {
+    margin: 5px 0 0 15px;
+}
+#closeNotice {
+    margin-top: 2px;
+    float: right;
+    width: 11px;
+    height: 11px;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 11px;
+    background: url('../imgs/close-11x22.png');
+    background-repeat: no-repeat;
+    background-position: bottom;
+    cursor: pointer;
+}
+#closeNotice:hover {
+    background-position: 0 0;
 }
 
 .hidden { display: none; }
