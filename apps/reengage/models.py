@@ -68,70 +68,15 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=True)
-        self.queue_script_tags(script_tags=[{
-            "script_tag": {
-                "src": "%s/r/shopify/load/reengage-buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                    ),
-                "event": "onload"
-            }
-        }])
         self.queue_assets(assets=[{
-            'asset': {
-                'key': 'snippets/reengage-header.liquid',
-                'value': """
-                      <link rel="canonical" href="{{ canonical_url | downcase }}" />
-                      <meta property="og:url" content="{{ canonical_url | downcase }}" />
-                      <meta property="fb:app_id" content="392482400810748">
-                      <meta property="og:type" content="product">
-                      <meta property="og:site_name" content="{{ shop.name | escape }}" />
-
-                      {% if template == 'index' %}
-                       <title>{{ shop.name }}</title>
-                       <meta property="og:title" content="{{ shop.name }}" />
-                      {% elsif template == '404' %}
-                        <title>Page Not Found | {{ shop.name }}</title>
-                        <meta property="og:title" content="Page not found" />
-                      {% else %}
-                       <title>{{ page_title }} | {{ shop.name }}</title>
-                       <meta property="og:title" content="{{ page_title }}" />
-                      {% endif %}
-
-                      {% assign maxmeta = 155 %}
-                      {% if template contains 'product' %}
-                      <meta name="description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
-                      <meta property="og:description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
-                      {% elsif template contains 'page' %}
-                      <meta name="description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
-                      <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
-                      {% elsif template == 'index' and shop.description != '' %}
-                      <meta name="description" content="{{ shop.description }}" />
-                      <meta property="og:description" content="{{ shop.description }}" />
-                      {% endif %}
-
-
-                      {% comment %}
-                        Open Graph tags for Facebook Like buttons
-                      {% endcomment %}
-                      {% if template contains 'product' %}
-                        <meta property="og:image" content="{{ product.featured_image | product_img_url: 'original' }}" />
-                      {% else %}
-                        {% if settings.logo_image == "logo.png" %}
-                          <meta property="og:image" content="{{ 'logo.png' | asset_url }}" />
-                        {% endif %}
-                      {% endif %}
-                    """
-            }
-        }, {
             'asset': {
                 'key': 'snippets/reengage-buttons.liquid',
                 'value': """
-                    {% capture u %}{{ canonical_url | downcase }}{% endcapture %}
-                    {% capture s %}{{ shop.name | escape }}{% endcapture %}
-                    {% capture t %}{% if template == 'index' %}{{ shop.name }}{% elsif template == '404' %}Page Not Found{% else %}{{ page_title }}{% endif %}{% endcapture %}
-                    {% capture d %}{% assign maxmeta = 155 %}{% if template contains 'product' %}{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%26' }}{% elsif template contains 'page' %}{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%26' }}{% elsif template == 'index' and shop.description != '' %}{{ shop.description | replace: '&', '%26' }}{% endif %}{% endcapture %}
-                    {% capture i %}{% if template contains 'product' %}{{ product.featured_image | product_img_url: 'original' }}{% elsif settings.logo_image == "logo.png" %}{{ 'logo.png' | asset_url }}{% endif %}{% endcapture %}
+                    {%% capture u %%}{{ canonical_url | downcase }}{%% endcapture %%}
+                    {%% capture s %%}{{ shop.name | escape }}{%% endcapture %%}
+                    {%% capture t %%}{%% if template == 'index' %%}{{ shop.name }}{%% elsif template == '404' %%}Page Not Found{%% else %%}{{ page_title }}{%% endif %%}{%% endcapture %%}
+                    {%% capture d %%}{%% assign maxmeta = 155 %%}{%% if template contains 'product' %%}{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%%26' }}{%% elsif template contains 'page' %%}{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%%26' }}{%% elsif template == 'index' and shop.description != '' %%}{{ shop.description | replace: '&', '%%26' }}{%% endif %%}{%% endcapture %%}
+                    {%% capture i %%}{%% if template contains 'product' %%}{{ product.featured_image | product_img_url: 'original' }}{%% elsif settings.logo_image == "logo.png" %%}{{ 'logo.png' | asset_url }}{%% endif %%}{%% endcapture %%}
                     <iframe id="_willet_buttons_iframe" src="//%s/r/url/{{u}}?buttons=1&title={{t}}&site={{s}}&image={{i}}&description={{d}}" style="height: 20px;"></iframe>
                 """ % APP_DOMAIN
             }
