@@ -151,6 +151,70 @@ var clickPost = function (uuid) {
     updatePostUI();
 };
 
+//In the change fb schedule dialog, changes the new dates listed at the bottom as the days to be posted
+//      Sample output: if Tuesdays and Thursdays are selected in the dialog,
+//      output will be "Tuesdays and Thursdays"
+var changeScheduledDayInDialog = function () {
+    var days = ""; //Output
+    var numSelected = $("input[name='dayOfWeek']:checked").length; //Number of days checked
+    var count = numSelected; //Number of days left to list
+    
+    //Goes through all checked days, outputs them in a grammatically proper way
+    $("input[name='dayOfWeek']:checked").each(function() {
+        if (days == "") {
+            days += $(this).val();
+        }
+        else if (numSelected == 2) {
+            days += " and " + $(this).val();
+        }
+        else if (count > 1) {
+            days += ", " + $(this).val();
+        }
+        else if (numSelected > 2 && count == 1) {
+            days += ", and " + $(this).val();
+        }
+        
+        count--;
+    });
+    
+    if (days === "") {
+        days = "No days";
+    }
+    
+    $("#days").html(days);
+};
+
+//In the change fb schedule dialog, changes the new times listed at the bottom as the times to be posted
+//      Sample output: if the user selects 2 times, and the two times are 9am and 9pm,
+//      output will be "9am and 9pm"
+var changeScheduledTimeInDialog = function () {
+    //Fetches the number of times per day the user wants posts to go out
+    var numTimes = $("input[name='dropDownNumTimes']:checked").val();
+    
+    //Fetches the times of day the posts will go out
+    var time1 = $("#dropDownTime1").find(":selected").text();
+    
+    if (numTimes > 1) {
+        var time2 = $("#dropDownTime2").find(":selected").text();
+    }
+    if (numTimes > 2) {
+        var time3 = $("#dropDownTime3").find(":selected").text();
+    }
+    
+    //Outputs the times the posts will go out in a grammatically proper way
+    if (numTimes === "1") {
+        var times = time1;
+    }
+    else if (numTimes === "2") {
+        var times = time1 + " and " + time2;
+    }
+    else if (numTimes === "3") {
+        var times = time1 + ", " + time2 + ", and " + time3;
+    }
+    $("#time").html(times);
+}
+
+
 //------jQuery Dialogs------
 
 var alertDialog = function (alertTitle, content) {
@@ -302,6 +366,34 @@ var newTitlePromptDialog = function () {
     });
     $editDialog.dialog("open");
 
+};
+
+var changeSchedulePromptDialog = function() {
+    $("#changeScheduleDialog").dialog({
+        width: 500,
+        buttons: [
+            {
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("destroy");
+                }
+            },
+            {
+                text: "Apply changes",
+                click: function() {
+                    //Check for missing input first (in this case days of the week selected)
+                    if ($("input[name='dayOfWeek']:checked").length === 0) {
+                        alertDialog("Warning - schedule not changed!", "Select days of the week for your post to be published!");
+                    }
+                    //If no missing input, apply the new schedule defined in the dialog
+                    else {
+                        //TODO: insert stuff here to ACTUALLY change the dates the posts are posted
+                        $(this).dialog("destroy");
+                    }
+                }
+            }
+        ]
+    });
 };
 
 
@@ -457,4 +549,47 @@ $(document).ready(function () {
         $(".howToNav").removeClass("selected");
         $(".howToNav.facebook").addClass("selected");
     });
+    
+    /*------ Functions for FB posting schedule dialog ------*/
+    //Making the FB schedule change dialog appear
+    $(document).on("click", "#changeSchedule", function() {
+        changeSchedulePromptDialog();
+        changeScheduledTimeInDialog();
+    });
+    
+    //In dialog, if days of the week are changed, change data about days of week 
+    $("input[name='dayOfWeek']").change(function() {
+        changeScheduledDayInDialog();
+    });
+    
+    //In dialog, if the number of post times are changed, change data, and display/hide slots to choose times
+    //For each case some default times are chosen
+    $("input[name='dropDownNumTimes']").change(function() {
+        var selectedVal = $(this).val();
+        
+        if (selectedVal === "1") {
+            $("#time2").hide();
+            $("#time3").hide();
+            $("#dropDownTime1").val("12");
+        }
+        else if (selectedVal === "2") {
+            $("#time2").show();
+            $("#time3").hide();
+            $("#dropDownTime1").val("6");
+            $("#dropDownTime2").val("18");
+        }
+        else if (selectedVal === "3") {
+            $("#time2").show();
+            $("#time3").show();
+            $("#dropDownTime1").val("6");
+            $("#dropDownTime2").val("12");
+            $("#dropDownTime3").val("18");
+        }
+        
+        changeScheduledTimeInDialog();
+    });
+    
+    //If any of the times are changed, change data about time
+    $(".dropDownTime").change(changeScheduledTimeInDialog);
+    /*------ End functions for FB posting schedule dialog ------*/
 });
