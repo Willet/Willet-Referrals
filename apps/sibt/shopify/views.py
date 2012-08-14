@@ -51,7 +51,7 @@ class SIBTShopifyWelcome(URIHandler):
             client = self.get_client() # May be None if not authenticated
 
             token = self.request.get('t') # token
-            if not token:  # manually hitting rf.rs/s/shopify
+            if not token:  # manually hitting social-referral.appspot.com/s/shopify
                 self.redirect('/')
 
             # update client token (needed when reinstalling)
