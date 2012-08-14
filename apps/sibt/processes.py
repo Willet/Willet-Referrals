@@ -746,5 +746,5 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone,
                        'sibt_version': app.version,
                        'new_order_code': False}
 
-    return (True, request_handler.render_page('templates/vendor_include.js',
+    return (True, request_handler.render_page('sibt/vendor_include.js',
                                               template_values))
