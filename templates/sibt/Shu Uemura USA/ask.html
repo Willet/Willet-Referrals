@@ -1,5 +1,13 @@
 {% extends "../../plugin/ask.html" %}
 
+{% block required_js_tags %}
+    {% include "../../sibt/js/willet.mediator.js" %}
+    {% include "../../sibt/js/willet.debug.js" %}
+    {% include "../../sibt/js/willet.loader.js" %}
+    {% include "../../sibt/js/willet.analytics.js" %}
+    {% include "../../sibt/js/willet.sibtShareMethods.js" %}
+{% endblock required_js_tags %}
+
 {% block styles %}
     <style>
         html, body {

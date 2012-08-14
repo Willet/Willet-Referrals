@@ -1,6 +1,6 @@
  <POLICY name="sample"
-   discuri="http://www.rf.rs/cookiepolicy.html"
-   opturi="http://www.rf.rs/opt.html">
+   discuri="http://social-referral.appspot.com/cookiepolicy.html"
+   opturi="http://social-referral.appspot.com/opt.html">
    <ENTITY>
      <DATA-GROUP>
        <DATA ref="#business.name">Willet, Inc.</DATA>
@@ -11,7 +11,7 @@
    <ACCESS><none/></ACCESS>
    <DISPUTES-GROUP>
      <DISPUTES resolution-type="service"
-      service="http://www.rf.rs/privacy.html"
+      service="http://social-referral.appspot.com/privacy.html"
       short-description="Please contact our customer service desk with
                          privacy concerns by emailing Support@getWillet.com."/>
 

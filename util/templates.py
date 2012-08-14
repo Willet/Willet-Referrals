@@ -16,6 +16,7 @@ import django
 
 from util.consts import TEMPLATE_DIRS, USING_DEV_SERVER
 
+
 def render(template_path, template_dict, use_consts=True, template_dirs=()):
     """Renders the template at the given path with the given dict of
     values.

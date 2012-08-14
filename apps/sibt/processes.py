@@ -498,7 +498,7 @@ class SendFriendAsks(URIHandler):
                 logging.debug('product image = %s' % product_image)
             except (TypeError, IndexError):
                 logging.warn('Could not get product image')
-                product_image = 'http://rf.rs/static/imgs/blank.png' # blank
+                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
             #--- Start with sharing to FB friends ---#
@@ -746,5 +746,5 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone,
                        'sibt_version': app.version,
                        'new_order_code': False}
 
-    return (True, request_handler.render_page('templates/vendor_include.js',
+    return (True, request_handler.render_page('sibt/vendor_include.js',
                                               template_values))
