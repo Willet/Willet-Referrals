@@ -130,8 +130,8 @@ class Link(Model):
     def get_willt_url(self):
         appname = get_application_id() # e.g. brian-willet
         if appname == APP_LIVE:
-            # you see, rf.rs links don't actually work unless it is on live server
-            return 'http://rf.rs/' + self.willt_url_code
+            # you see, social-referral.appspot.com links don't actually work unless it is on live server
+            return 'http://social-referral.appspot.com/' + self.willt_url_code
         else:
             # if testing, just output the testing domain
             return 'http://' + DOMAIN + '/' + self.willt_url_code

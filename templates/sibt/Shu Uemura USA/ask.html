@@ -1,0 +1,266 @@
+{% extends "../../plugin/ask.html" %}
+
+{% block required_js_tags %}
+    {% include "../../sibt/js/willet.mediator.js" %}
+    {% include "../../sibt/js/willet.debug.js" %}
+    {% include "../../sibt/js/willet.loader.js" %}
+    {% include "../../sibt/js/willet.analytics.js" %}
+    {% include "../../sibt/js/willet.sibtShareMethods.js" %}
+{% endblock required_js_tags %}
+
+{% block styles %}
+    <style>
+        html, body {
+            background-image: url('/static/imgs/tiles/diagonal-light.png');
+            font-family: 'helvetica neue', helvetica, arial, sans-serif;
+        }
+        .content.narrow {
+            margin: 10px 5%;
+        }
+        .title_bar {
+            background-color: #000;
+            color: #fff;
+            font-family: 'helvetica extended', helvetica, arial, sans-serif;
+            font-size: 45px;
+            padding: 10px 0 5px 10px;
+            }
+            .title_bar > div {
+                margin: auto;
+            }
+            .title_bar > * {
+                float: none;
+        }
+        .message {
+            margin: 30px;
+        }
+        .button > .title {
+            white-space: inherit;
+            margin-left: 20px;
+        }
+        .product_img {
+            border: 1px black solid;
+            width: 200px;
+            height: 200px;
+            margin: 10px 25px 25px 25px;
+        }
+        #showChooseScreen, #postOnWall {
+            margin-top: 20px;
+        }
+        #showChooseScreen > img, #postOnWall > img {
+            width: 16px;
+            height: 16px;
+            border: none;
+            background-color: transparent;
+            margin: 5px 5px 2px -6px;
+        }
+    </style>
+{% endblock styles %}
+
+{% block screens %}
+    <!--                          Splash Screen                             -->
+
+    <div id="splash">
+        <div class="title_bar">
+            <span>
+                <!-- byapss ask.css's direct descendant selector, div>img -->
+                <img src="/static/sibt/imgs/sibt-shu-logo.png"
+                     style="padding: 9px"
+                     alt="shu uemura" title="shu uemura">
+            </span>
+        </div>
+        <div class="content narrow">
+            <p style="margin-top:23px;">
+                Ask your friends if they like this item:
+                <b>{{ products.0.title }}</b>
+            </p>
+            <img class="product_img" alt="product" src="{{ product_images|first }}"
+                 style="float: left;" />
+            <p>&nbsp;</p>
+            <img id="postOnWall"
+                 alt="Share on your wall"
+                 title="Share on your wall"
+                 style="margin: 30px 0 0 57px;cursor:pointer;"
+                 src="/static/sibt/imgs/SHU-share-on-wall2-180x32.png" />
+            <img id="showChooseScreen"
+                 alt="Message to friends"
+                 style="margin: 20px 0 0 57px;cursor:pointer;"
+                 src="/static/sibt/imgs/SHU-message-to-friends2-180x32.png" />
+        </div>
+    </div>
+{% endblock screens %}
+
+{% block js_globals %}
+    var options = [
+        // Could use template here
+        {
+            title: "Do you like this?",
+            text: "{{ AB_share_text|escape }}"
+        },
+        {
+            title: "Does anyone own this?",
+            text: "I need help!  Does anyone own this? Let me know here:"
+        }
+    ];
+{% endblock js_globals %}
+
+{% block ajax_methods %}
+    // Sends analytic data point to server
+    var storeAnalytics = function(evnt) {
+        _willet.mediator.fire('storeAnalytics', evnt);
+    };
+
+    // Sends information to server to ask friends & handles response
+    var sendMessages = function() {
+        var payload, friend_info, asker_info,
+            msg   = $("#shareText").val(),
+            error = false;
+
+        // Gather up friend info, recording if a friend has an error
+        friend_info = getFriendsInfo(); // either null or [...]
+
+        // Gather asker info
+        asker_info = asker.getAskerInfo(); // either null or [...]
+
+        console.log('Asker: '+asker_info+' Friends: '+friend_info+' Error:'+error);
+
+        if (friend_info && friend_info.length > 0 && asker_info && asker_info.length > 1) {
+            // Clean up UI to show loader gif
+            showScreen('asking');
+
+            // No errors with friends, submit!
+            var payload = {
+                user_name: "{{user_name}}",
+                user_uuid: "{{user_uuid}}",
+                app_uuid: "{{app_uuid}}",
+                product_uuid: "{{ product_uuid }}",
+                products: "{{ product_uuid }}",
+                fb_access_token: fbAccessToken,
+                fb_id: fbIdentity,
+                friends: JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                asker: JSON.stringify(asker_info),
+                msg: msg,
+                default_msg: "{{AB_share_text|escape}}",
+                instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
+                willt_code: "{{willt_code}}"
+            };
+
+            $.ajax({
+                url: "{{ URL }}{% url SendFriendAsks %}",
+                type: 'post',
+                dataType: 'json',
+                data: payload,
+                success: function () {
+                    // Success
+                    updateEmailAddress();
+                    showScreen('success');
+                },
+                error: function (resp, status) {
+                    // Bad Request
+                    if (resp && resp.data && resp.data.message) {
+                        $('.error_message').innerHTML(resp.data.message);
+                    }
+                    showScreen('failure');
+                }
+            });
+        }
+    };
+
+    var createSIBTInstance = function (callback, params) {
+        // either creates or updates a SIBT instance (server decides)
+        var url = '//{{ DOMAIN }}{% url StartSIBTInstance %}';
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                'app_uuid': '{{ app.uuid }}',
+                'page_url': '{{ page_url }}',
+
+                // if provided, use existing instance
+                'instance_uuid': '{{ instance.uuid }}',
+
+                // if provided, use existing link
+                'code': '{{ willt_code }}',
+                'products': '{{ product_uuid }}'
+            },
+            success: function () {
+                return callback(params);
+            }
+        });
+    };
+
+{% endblock ajax_methods %}
+
+{% block js_functions %}
+{% endblock js_functions %}
+
+{% block js_init %}
+
+    // unbind original click behaviour with Shu Uemura specific codes.
+    $('#postOnWall').unbind('click').click(function () {
+        var button = $(this);
+        var oldButtonText = button.html();
+        try {
+            button.text('Please wait...');
+        } catch (e) {}
+
+        var fbInstanceCallback = function () {
+            button.html(oldButtonText);
+            _willet.mediator.fire('postOnWall', {
+                'name': 'Do you like this?',
+                'link': '{{ share_url }}',
+                'caption': 'Do you like this?',
+                'description': '{{ AB_share_text }}',
+                'picture': '{{ products.0.image }}' ||
+                            '//{{ DOMAIN }}/static/imgs/noimage.png',
+                'redirect_uri': '{{ fb_redirect }}'
+            }).fire('redirectWindow');  // fire remainders
+        };
+
+        // determine if we should show the FB popup right now
+        // or after creating an instance.
+        if ('{{ instance.uuid }}') {  // '' if instance didn't exist
+            // run callback while creating
+            createSIBTInstance();
+            fbInstanceCallback();
+        } else {
+            // run callback after creating
+            createSIBTInstance(fbInstanceCallback);
+        }
+    });
+
+    // unbind original click behaviour with Shu Uemura specific codes.
+    $('#showChooseScreen').unbind('click').click(function () {
+        // Wub wub wub wub wub wub (V)(;,,;)(V)
+        var button = $(this);
+        var oldButtonText = button.html();
+        try {
+            button.text('Please wait...');
+        } catch (e) {}
+
+        var fbInstanceCallback = function () {
+            button.html(oldButtonText);
+            _willet.mediator.fire('sendToFriends', {
+                'name': 'Do you like this?',
+                'link': '{{ share_url }}',
+                'caption': 'Do you like this?',
+                'description': '{{ AB_share_text }}',
+                'picture': '{{ products.0.image }}' ||
+                            '//{{ DOMAIN }}/static/imgs/noimage.png',
+                'redirect_uri': '{{ fb_redirect }}'
+            }).fire('redirectWindow');  // fire remainders
+        };
+
+        // determine if we should show the FB popup right now
+        // or after creating an instance.
+        if ('{{ instance.uuid }}') {  // '' if instance didn't exist
+            // run callback while creating
+            createSIBTInstance();
+            fbInstanceCallback();
+        } else {
+            // run callback after creating
+            createSIBTInstance(fbInstanceCallback);
+        }
+    });
+
+    showScreen('splash');
+{% endblock js_init %}

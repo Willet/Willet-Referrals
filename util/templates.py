@@ -16,6 +16,7 @@ import django
 
 from util.consts import TEMPLATE_DIRS, USING_DEV_SERVER
 
+
 def render(template_path, template_dict, use_consts=True, template_dirs=()):
     """Renders the template at the given path with the given dict of
     values.
@@ -42,13 +43,13 @@ def load(path, template_dirs=()):
     """
 
     abspath = os.path.abspath(path)
-    #logging.debug("abspath = %r" % abspath)
+    logging.debug("abspath = %r" % abspath)
     if USING_DEV_SERVER:
         template = None  # force fetching of the template file
     else:
         template = template_cache.get(abspath, None)
 
-    #logging.debug("template = %r" % template)
+    logging.debug("template = %r" % template)
     if not template:
         directory, file_name = os.path.split(abspath)
         #logging.debug("d,f = %r" % [directory, file_name])
