@@ -237,3 +237,29 @@ var deletePost = function (uuid) {
         }
     }));
 };
+
+var updateSchedule = function(uuid, days, times, timezone) {
+    //TODO: uuid should be required, but isn't for now.
+
+    var url = '{% url ReEngageScheduleJSONHandler %}';
+    $.ajax($.extend({}, jsonTemplate, {
+        'url': url,
+        'type': 'PUT',
+        'dataType': 'json',
+        'data': JSON.stringify({
+            'days': days,
+            'times': times
+        }),
+        'cache': false,
+        'success': function () {
+            // show the saved indicator for 2 seconds, then hide it
+            $('#postSaveIndicator').show();
+            setTimeout(function() {
+                $('#postSaveIndicator').fadeOut('slow');
+            }, 2000);
+
+            loadQueues(client.apps[0]);
+            updateQueueUI(uuid);
+        }
+    }));
+}

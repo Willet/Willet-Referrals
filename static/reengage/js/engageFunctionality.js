@@ -387,7 +387,33 @@ var changeSchedulePromptDialog = function() {
                     }
                     //If no missing input, apply the new schedule defined in the dialog
                     else {
-                        //TODO: insert stuff here to ACTUALLY change the dates the posts are posted
+                        var days = [],
+                            times = [],
+                            day_map = {
+                                "Mondays"   : 1,
+                                "Tuesdays"  : 2,
+                                "Wednesdays": 3,
+                                "Thursdays" : 4,
+                                "Fridays"   : 5,
+                                "Saturdays" : 6,
+                                "Sundays"   : 7
+                            };
+
+                        $("input[name='dayOfWeek']:checked").each(function() {
+                            var day           = $(this).val(),
+                                converted_day = day_map[day] || "";
+                            days.push(converted_day);
+                        })
+
+                        $(".dropDownTime:visible").each(function() {
+                            var hour = $(this).val(),
+                                time = "" + hour + ":00";
+                            times.push(time);
+                        })
+
+                        // TODO: Timezone
+                        // TODO: Queue UUID
+                        updateSchedule("", days, times);
                         $(this).dialog("destroy");
                     }
                 }

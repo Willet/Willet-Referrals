@@ -363,7 +363,8 @@ class ReEngageScheduleJSONHandler(URIHandler):
 
         try:
             data = json.loads(self.request.body)
-        except Exception:
+        except Exception, e:
+            logging.error("Unable to parse JSON: %s" % e)
             self.error(400)
             return
 
@@ -371,6 +372,7 @@ class ReEngageScheduleJSONHandler(URIHandler):
         times = data.get("times")
 
         if not (days or times):
+            logging.error("No days or times")
             self.error(400)
             return
 
@@ -397,8 +399,4 @@ class ReEngageScheduleJSONHandler(URIHandler):
         schedule.put()
 
         self.error(204)
-
-
-
-
 
