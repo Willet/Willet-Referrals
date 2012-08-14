@@ -498,7 +498,7 @@ class SendFriendAsks(URIHandler):
                 logging.debug('product image = %s' % product_image)
             except (TypeError, IndexError):
                 logging.warn('Could not get product image')
-                product_image = 'http://rf.rs/static/imgs/blank.png' # blank
+                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
             #--- Start with sharing to FB friends ---#
