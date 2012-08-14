@@ -1,6 +1,11 @@
 # TODO: Do these need to be models, or can we leave them as a service?
 import logging
+import urllib
+import urllib2
+
 from urllib import urlencode
+from xml.dom import minidom
+
 from google.appengine.api.urlfetch import fetch, InvalidURLError
 from util.consts import SHOPIFY_APPS, APP_DOMAIN
 from django.utils import simplejson as json
@@ -41,7 +46,7 @@ class SocialNetwork():
         except InvalidURLError:
             return False, "Problem making request. Invalid URL"
         except Exception, e:
-            return False, "Problem making request. Not sure why...\n%s" % e
+            return False, "Problem making request. Not sure why: %r" % e
 
         if not any(x in response.headers["content-type"] for x in cls._response_types):
             return False, "Invalid content type: %s\n%s" % (
@@ -151,6 +156,27 @@ class Facebook(SocialNetwork):
             logging.error("FB Page Error: %s", content)
 
         return reach
+
+    @classmethod
+    def get_reach_count(cls, url):
+        """facebok only: use lower-level url call to retrieve a number:
+        number of shares of a given product url.
+
+        """
+        params = {'query': "SELECT total_count FROM link_stat WHERE "
+                           "url='%s'" % url}
+
+        # apparently, only the xml version works
+        request_object = urllib2.Request(
+            'https://api.facebook.com/method/fql.query',
+            urllib.urlencode(params))
+        response = urllib2.urlopen(request_object)
+        contents = response.read()
+        return minidom.parseString(contents)\
+                      .childNodes[0]\
+                      .getElementsByTagName('link_stat')[0]\
+                      .getElementsByTagName('total_count')[0]\
+                      .firstChild.nodeValue
 
     @classmethod
     def _get_access_token(cls):

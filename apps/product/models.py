@@ -144,6 +144,10 @@ class Product(Model, db.polymodel.PolyModel):
     title = db.StringProperty()  # name of the product
     type = db.StringProperty(indexed=False)  # The type of product
 
+    # where a "reach" is defined as a comment/like/share about this product,
+    # this score is the total of that.
+    reach_score = db.IntegerProperty(default=0, indexed=False)
+
     _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
