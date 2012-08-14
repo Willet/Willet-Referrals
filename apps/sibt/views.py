@@ -98,11 +98,11 @@ class AskDynamicLoader(URIHandler):
 
         if not app:
             logging.error("Could not find SIBT app for %s" % store_url)
-            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            self.response.out.write("Please register at http://social-referral.appspot.com/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
             logging.error("SIBT app has no client. Probably uninstall.")
-            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            self.response.out.write("Please register at http://social-referral.appspot.com/s/shopify/beta to use this product.")
             return
         logging.debug("app = %r" % app)
 
@@ -359,11 +359,11 @@ class AskPageDynamicLoader(URIHandler):
 
         if not app:
             logging.error("Could not find SIBT app for %s" % store_url)
-            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            self.response.out.write("Please register at http://social-referral.appspot.com/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
             logging.error("SIBT app has no client. Probably uninstall.")
-            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            self.response.out.write("Please register at http://social-referral.appspot.com/s/shopify/beta to use this product.")
             return
         logging.debug("app = %r" % app)
 
@@ -561,7 +561,7 @@ class VoteDynamicLoader(URIHandler):
 
             if not app:
                 logging.error("Could not find SIBT app for %s" % store_url)
-                self.response.out.write("Please register at http://rf.rs/s/shopify/beta "
+                self.response.out.write("Please register at http://social-referral.appspot.com/s/shopify/beta "
                                         "to use this product.")
                 return
 
@@ -641,6 +641,12 @@ class VoteDynamicLoader(URIHandler):
                 app, instance, user),
             'vote', '')
 
+        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
+        path = os.path.join('sibt', vendor, filename)
+        if not os.path.exists('templates/%s' % path):
+            logging.debug('vendor template templates/%s not found' % path)
+            path = os.path.join('sibt', filename)
+
         template_values = {
             'URL': URL,
             'DOMAIN': DOMAIN,
@@ -678,12 +684,6 @@ class VoteDynamicLoader(URIHandler):
                                  'store_url': app.store_url,
                                  'embed': 1})
         }
-
-        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
-        path = os.path.join('sibt', vendor, filename)
-        if not os.path.exists('templates/%s' % path):
-            logging.debug('vendor template templates/%s not found' % path)
-            path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(self.render_page(path, template_values))
@@ -1101,7 +1101,7 @@ class SIBTServeScript(URIHandler):
         if not app and not client:
             # neither app not client: we have no business with you
             self.response.out.write('/* no account for %s! '
-                                    'Go to http://rf.rs to get an account. */' % store_url)
+                                    'Go to http://social-referral.appspot.com to get an account. */' % store_url)
             return
         logging.info('using %r and %r as app and client.' % (app, client))
 

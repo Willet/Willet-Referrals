@@ -510,6 +510,10 @@ which has one pixel less height for the white border on top */
 #editTitleDialog,
 #changeScheduleDialog { display: none; }
 
+#changeScheduleDialog table {
+    margin: 0 auto;
+}
+
 #ajax_loader {
     position: fixed;
     right: 48%;
