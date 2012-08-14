@@ -40,7 +40,7 @@ class OrderJSLoader(URIHandler):
         }
 
         # Finally, render the JS!
-        path = os.path.join('apps/order/templates/', 'order.js')
+        path = os.path.join('order', 'order.js')
 
         self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'

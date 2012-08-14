@@ -20,7 +20,6 @@ urlpatterns = [
     (r'/admin/sibt_reset/',             SIBTReset),
     (r'/admin/updateStore',             UpdateStore),
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
-    (r'/email/everyone',                EmailEveryone),
     (r'/email/someone',                 EmailSomeone),
     (r'/email/clientsidemessage',       ClientSideMessage),
     (r'/admin/db_integrity_check',      DBIntegrityCheck),

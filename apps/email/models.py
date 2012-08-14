@@ -272,7 +272,8 @@ class Email():
 
     @staticmethod
     def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
-                vote_url, product=None, products=None, asker_img=None):
+                vote_url, product=None, products=None, asker_img=None,
+                **kwargs):
         """Please, supply products as their objects.
 
         Supplying a products list of more than one item will trigger WOSIB
@@ -300,7 +301,7 @@ class Email():
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
-            product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+            product_img = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
 
         if len(products) > 1:  # WOSIB mode
             template_file = 'wosib_ask.html'
@@ -327,7 +328,7 @@ class Email():
             'product_img': product_img
         })
 
-        Email.send_email(from_address=FROM_ADDR,
+        Email.send_email(from_address=kwargs.get('from_address', FROM_ADDR),
                          to_address=to_addr,
                          to_name=to_name.title(),
                          replyto_address=from_addr,
@@ -336,7 +337,7 @@ class Email():
 
 
     @staticmethod
-    def SIBTVoteNotification(instance, vote_type):
+    def SIBTVoteNotification(instance, vote_type, **kwargs):
         """Send an "A friend Voted!" email to the asker.
 
         vote_type is a string.
@@ -370,7 +371,7 @@ class Email():
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
             product_img = instance.product_img or \
-                          'http://rf.rs/static/imgs/blank.png' # blank
+                          'http://social-referral.appspot.com/static/imgs/blank.png' # blank
 
         logging.info("product_url, product_img = %r" % [product_url,
                                                         product_img])
@@ -390,13 +391,14 @@ class Email():
 
         logging.error('Going to send a SIBT email to %s... '
                       '(not actually an error, but worth looking at)' % to_addr)
-        Email.send_email(from_address=FROM_ADDR,
+        Email.send_email(from_address=kwargs.get('from_address', FROM_ADDR),
                          to_address=to_addr,
                          subject=subject,
                          body=body)
 
+
     @staticmethod
-    def SIBTVoteCompletion(instance, product):
+    def SIBTVoteCompletion(instance, product, **kwargs):
         """Vote is over! Send asker an email."""
         client = getattr(instance.app_, 'client', None)
         winning_products = instance.get_winning_products()
@@ -446,15 +448,16 @@ class Email():
 
         logging.error('Going to send a SIBT email to %s... '
                       '(not actually an error, but worth looking at)' % to_addr)
-        Email.send_email(from_address=FROM_ADDR,
+        Email.send_email(from_address=kwargs.get('from_address', FROM_ADDR),
                          to_address=to_addr,
                          subject=subject,
                          body=body,
                          to_name=name)
 
+
     @staticmethod
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                 client, asker_img= None, products=None):
+                 client, asker_img= None, products=None, **kwargs):
         """Please, supply products as their objects."""
         subject = "Can I get your advice?"
         to_first_name = from_first_name = ''
@@ -485,15 +488,16 @@ class Email():
             }
         )
 
-        Email.send_email(from_address=FROM_ADDR,
+        Email.send_email(from_address=kwargs.get('from_address', FROM_ADDR),
                          to_address=to_addr,
                          to_name=to_name.title(),
                          replyto_address=from_addr,
                          subject=subject,
                          body=body)
 
+
     @staticmethod
-    def WOSIBVoteNotification(instance, product):
+    def WOSIBVoteNotification(instance, product, **kwargs):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
         # pass roduct is a Product object.
@@ -522,7 +526,7 @@ class Email():
 
         logging.error('Going to send a WOSIB email to %s... '
                       '(not actually an error, but worth looking at)' % to_addr)
-        Email.send_email(from_address=FROM_ADDR,
+        Email.send_email(from_address=kwargs.get('from_address', FROM_ADDR),
                          to_address=to_addr,
                          subject=subject,
                          body=body,
@@ -536,11 +540,11 @@ class Email():
         path if the client does not have special templates.
         """
         if client and client.is_vendor:
-            vendor_path = os.path.join('apps/email/templates', client.name,
+            vendor_path = os.path.join('templates/email', client.name,
                                        path)
             if os.path.exists(vendor_path):
                 return vendor_path
-        return os.path.join('apps/email/templates/', path)
+        return os.path.join('templates/email', path)
 
     @staticmethod
     def send_email(from_address, to_address, subject, body,
