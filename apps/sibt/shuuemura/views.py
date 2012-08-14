@@ -28,8 +28,9 @@ class SIBTShuuemuraWelcome(URIHandler):
         # vendor-agnostic below this line
         logging.info('SIBTShuuemuraWelcome: trying to create app')
 
+        # QA servers: http://qa.shu.inspreview.com, http://staging.shuuemura-usa.com
         domain = self.request.get('domain', 'http://shuuemura-usa.com')
-        # it was said that these emails go to me
+
         email = self.request.get('email', 'no-reply@shuuemura-usa.com')
 
         first_name = self.request.get('first_name', 'Shu Uemura')

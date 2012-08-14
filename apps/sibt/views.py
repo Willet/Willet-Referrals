@@ -641,6 +641,12 @@ class VoteDynamicLoader(URIHandler):
                 app, instance, user),
             'vote', '')
 
+        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
+        path = os.path.join('sibt', vendor, filename)
+        if not os.path.exists('templates/%s' % path):
+            logging.debug('vendor template templates/%s not found' % path)
+            path = os.path.join('sibt', filename)
+
         template_values = {
             'URL': URL,
             'DOMAIN': DOMAIN,
@@ -678,12 +684,6 @@ class VoteDynamicLoader(URIHandler):
                                  'store_url': app.store_url,
                                  'embed': 1})
         }
-
-        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
-        path = os.path.join('sibt', vendor, filename)
-        if not os.path.exists('templates/%s' % path):
-            logging.debug('vendor template templates/%s not found' % path)
-            path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(self.render_page(path, template_values))

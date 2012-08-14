@@ -5,7 +5,7 @@
         <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
         <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
         <link href="/static/reengage/css/jquery-ui-1.8.21.ReEngage.css" rel="stylesheet" type="text/css"/>
-        
+
         <!--[if IE]>
         <link href="/static/reengage/css/engageStylesIE.css" rel="stylesheet" type="text/css">
         <![endif]-->
@@ -47,25 +47,27 @@
                 <img alt="Loading" src="/static/imgs/loading.gif"
                      style="padding: 20px;" />
             </div>
-            
-            <div class="notice shadow" id="recentActivity">
-                
-                <div id="closeNotice"></div>
-                <span id="newActivitiesTitle" class="newActivitiesText">
-                    <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
-                        <b>Recent activity (2 new)</b>
-                    </span><br>
-                </span>
-                <span id="newActivities" class="hidden newActivitiesText">
-                    <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
-                        <b>Recent activity (2 new)</b>
-                    </span><br>
-                    <ul>
-                        <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
-                        <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
-                    </ul>
-                </span>
-            </div>
+
+            {% if recent_activities %}
+                <div class="notice shadow" id="recentActivity">
+
+                    <div id="closeNotice"></div>
+                    <span id="newActivitiesTitle" class="newActivitiesText">
+                        <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
+                            <b>Recent activity (2 new)</b>
+                        </span><br>
+                    </span>
+                    <span id="newActivities" class="hidden newActivitiesText">
+                        <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
+                            <b>Recent activity (2 new)</b>
+                        </span><br>
+                        <ul>
+                            <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
+                            <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
+                        </ul>
+                    </span>
+                </div>
+            {% endif %}
 
             <div id="break">
                 <div class="button" id="newPost">
