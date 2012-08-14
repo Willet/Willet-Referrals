@@ -7,6 +7,7 @@ from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from apps.client.models import Client
+from apps.reengage.social_networks import Facebook
 
 from util.helpers import generate_uuid
 from util.model import Model
@@ -146,7 +147,7 @@ class Product(Model, db.polymodel.PolyModel):
 
     # where a "reach" is defined as a comment/like/share about this product,
     # this score is the total of that.
-    reach_score = db.IntegerProperty(default=0, indexed=False)
+    reach_score = db.IntegerProperty(default=-1, indexed=True)
 
     _memcache_fields = ['resource_url', 'shopify_id']
 
@@ -327,3 +328,27 @@ class Product(Model, db.polymodel.PolyModel):
 
     # turn into attribute
     collections = property(_get_collections, _set_collections, _del_collections)
+
+    def get_facebook_reach(self, force=False, url=''):
+        """use the Facebook request class to retrieve the number of shares/
+        comments/what_have_you for this product. If the product has a url
+        (resource_url), it will be used for the query.
+
+        If force is true, then this product will have
+
+        Default: 0
+        """
+        # check if reach score is already there, and return it unless
+        # it is being forced.
+        if not force and getattr(self, 'reach_score', -1) > -1:
+            return self.reach_score
+
+        url = url or getattr(self, 'resource_url', '')
+        if not url:
+            return 0
+        reach_count = int(Facebook.get_reach_count(url)) or 0
+
+        self.reach_score = reach_count
+        self.put_later()
+
+        return reach_count

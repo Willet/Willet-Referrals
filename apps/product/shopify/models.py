@@ -11,7 +11,6 @@ from google.appengine.datastore import entity_pb
 from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
-from apps.reengage.social_networks import Facebook
 
 from util.errors import ShopifyAPIError
 from util.helpers import generate_uuid
@@ -366,18 +365,3 @@ class ProductShopify(Product):
             Just add it here """
         self.resource_url = url
         self.put()
-
-    def get_facebook_reach(self, force=False, url=''):
-        """use the Facebook request class to retrieve the number of shares/
-        comments/what_have_you for this product. If the product has a url
-        (resource_url), it will be used for the query.
-
-        If force is true, then this product will have
-
-        Default: 0
-        """
-        url = url or getattr(self, 'resource_url', '')
-        if not url:
-            return 0
-        reach_count = Facebook.get_reach_count(url)
-        return int(reach_count) or 0

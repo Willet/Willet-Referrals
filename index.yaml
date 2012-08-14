@@ -46,6 +46,13 @@ indexes:
   - name: client
   - name: used
 
+- kind: Product
+  properties:
+  - name: class
+  - name: client
+  - name: reach_score
+    direction: desc
+
 - kind: SharePeriod
   properties:
   - name: app_uuid

@@ -5,11 +5,12 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
+import logging
+
 from decimal import *
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.user.models import *
 from util.consts import *
 from util.logger import logging
 from util.mailchimp import MailChimp
@@ -191,3 +192,11 @@ class Client(Model, polymodel.PolyModel):
                     # thrown when results is not iterable (eg bool)
                     logging.info('Unsubscribed %s from %s OK: %r' % (self.email, list_name, resp))
         return
+
+    def get_top_products(self, count=3):
+        """retrieve the most "popular" products from the datastore.
+
+        Exact methodology can be found by looking by "get_reach"
+        You can't use Product here because that's somehow a circular import
+        """
+        return [p for p in self.products[0].__class__.all().filter('client =', self).order('-reach_score').fetch(limit=count)]
