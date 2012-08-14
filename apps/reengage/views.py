@@ -1,5 +1,8 @@
+import re
+import urllib
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
+from apps.product.models import Product
 from util.consts import SHOPIFY_APPS
 from util.gaesessions import get_current_session, Session
 from util.urihandler import URIHandler
@@ -15,7 +18,7 @@ class ReEngageAppPage(URIHandler):
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ReEngageShopify']['api_key']
         }
 
-        self.response.out.write(self.render_page('beta.html',
+        self.response.out.write(self.render_page('reengage/beta.html',
                                                  template_values))
 
 
@@ -25,7 +28,6 @@ class ReEngageShopifyWelcome(URIHandler):
         token  = self.request.get( 't' )
         shop   = self.request.get("shop")
         client = ClientShopify.get_by_url(shop)
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [client, token, shop]), exc_info=True)
 
         # Fetch or create the app
         app, created = ReEngageShopify.get_or_create(client,token=token)
@@ -70,7 +72,7 @@ class ReEngageInstructions(URIHandler):
 
         login_url = build_url("ReEngageLogin")
 
-        self.response.out.write(self.render_page('instructions.html', {
+        self.response.out.write(self.render_page('reengage/instructions.html', {
             'shop_owner': shop_owner,
             'shop_name' : shop_name,
             'login_url' : login_url,
@@ -81,7 +83,7 @@ class ReEngageInstructions(URIHandler):
 class ReEngageHowTo(URIHandler):
     """Display the instructions page."""
     def get(self):
-        self.response.out.write(self.render_page('howto.html', {}))
+        self.response.out.write(self.render_page('reengage/howto.html', {}))
 
 
 class ReEngageLogin(URIHandler):
@@ -90,7 +92,6 @@ class ReEngageLogin(URIHandler):
         session = get_current_session()
         token  = session.get( 't' )
         shop   = session.get("shop")
-        logging.debug('[RE] %s.%s: %r' % (self.__class__.__name__, 'get', [session, token, shop]), exc_info=True)
         client = ClientShopify.get_by_url(shop)
 
 
@@ -104,7 +105,7 @@ class ReEngageLogin(URIHandler):
 
         # TODO: if session is already active
 
-        self.response.out.write(self.render_page('login.html', {
+        self.response.out.write(self.render_page('reengage/login.html', {
             "host" : self.request.host_url,
         }))
 
@@ -142,7 +143,7 @@ class ReEngageLogin(URIHandler):
 
             self.redirect(build_url("ReEngageQueueHandler", qs={}))
         else:
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "host" : self.request.host_url,
                 "msg": "Username or password incorrect",
                 "cls": "error",
@@ -173,7 +174,7 @@ class ReEngageLogout(URIHandler):
 class ReEngageCreateAccount(URIHandler):
     def get(self):
         """Show the 'create an account' page"""
-        self.response.out.write(self.render_page('login.html', {
+        self.response.out.write(self.render_page('reengage/login.html', {
             "host" : self.request.host_url,
         }))
 
@@ -185,14 +186,14 @@ class ReEngageCreateAccount(URIHandler):
 
         if user and created:  # Activate account
             logging.info("User was created")
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "msg": "You have been sent an email with further instructions.",
                 "cls": "success",
                 "host" : self.request.host_url
             }))
         elif user:  # Account already exists
             logging.info("User already exists")
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "username": username,
                 "msg": "Sorry, that email is already in use.",
                 "host" : self.request.host_url,
@@ -200,7 +201,7 @@ class ReEngageCreateAccount(URIHandler):
             }))
             pass
         else:  # Some mistake
-            self.response.out.write(self.render_page('login.html', {
+            self.response.out.write(self.render_page('reengage/login.html', {
                 "username": username,
                 "msg": "There was a problem creating your account.<br/>Please"
                        " try again later",
@@ -212,7 +213,7 @@ class ReEngageCreateAccount(URIHandler):
 class ReEngageResetAccount(URIHandler):
     def get(self):
         """Show the user the 'reset' form"""
-        self.response.out.write(self.render_page('reset.html', {
+        self.response.out.write(self.render_page('reengage/reset.html', {
             "host" : self.request.host_url,
             "show_form": True
         }))
@@ -234,7 +235,7 @@ class ReEngageResetAccount(URIHandler):
                        "to reset your password."
             }
 
-        self.response.out.write(self.render_page('reset.html', context))
+        self.response.out.write(self.render_page('reengage/reset.html', context))
 
 
 class ReEngageVerify(URIHandler):
@@ -277,7 +278,7 @@ class ReEngageVerify(URIHandler):
                 "set_password": True
             }
 
-        self.response.out.write(self.render_page('verify.html', context))
+        self.response.out.write(self.render_page('reengage/verify.html', context))
 
     def post(self):
         """Set the user's new password"""
@@ -316,7 +317,7 @@ class ReEngageVerify(URIHandler):
                 "cls": "success"
             }
 
-        self.response.out.write(self.render_page('verify.html', context))
+        self.response.out.write(self.render_page('reengage/verify.html', context))
 
 
 class ReEngageCPLServeScript(URIHandler):
@@ -335,5 +336,84 @@ class ReEngageCPLServeScript(URIHandler):
             'client': client,
         }
 
-        self.response.headers.add_header('content-type', 'text/javascript', charset='utf-8')
-        self.response.out.write(self.render_page('js/com.js', template_values))
+        self.response.headers.add_header('content-type', 'text/javascript',
+                                         charset='utf-8')
+        self.response.out.write(self.render_page('reengage/js/com.js',
+                                                 template_values))
+
+
+class ReEngageMagic(URIHandler):
+    """Handles iframe requests (or otherwise) for ReEngage buttons
+
+    Facebook restricts apps to one domain. To get around this restriction, we
+    do use only one domain: ours. This means that we have to pretend that other
+    domains belong to us...
+
+    Required Params
+    image      : Image that represents the product
+    site       : Name of the site hosting the product
+    title      : Title of the product
+    description: Description of the product
+
+    Optional Params
+    app_id     : The Facebook app_id to use with the like button: Defaults to '340019906075293'
+    type       : An OpenGraph type. Defaults to 'product'
+    """
+    def get(self, uri):
+        if not uri:
+            # TODO: Error
+            pass
+
+        url = urllib.unquote(uri)
+
+        is_facebook  = "facebookexternalhit" in self.get_browser() or self.request.get("facebook")
+        show_buttons = self.request.get("buttons") == "1"
+
+        if show_buttons:
+            # Do buttons stuff
+            required_params = ["image", "site", "title", "description"]
+
+            if not all(x in self.request.GET for x in required_params):
+                logging.error("Missing one of the following GET params: %s" % required_params)
+                self.error(400)
+                return
+
+            self.request.GET["url"] = "http://%s/r/url/%s" % (
+                APP_DOMAIN, url
+            )
+
+            self.response.out.write(self.render_page('reengage/buttons.html', {
+                "request": self.request.GET
+            }))
+
+            if not Product.get_by_url(url):
+                params = dict((k, self.request.GET[k]) for k in required_params)
+                params.update({
+                    "images": [params.get("image")]
+                })
+
+                Product.create(**params)
+
+        elif is_facebook:
+            product = Product.get_by_url(url)
+            if not product:
+                logging.error("No such product exists: %s" % url)
+                self.error(400)
+                return
+
+            image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
+            if len(product.images) > 0:
+                image = product.images[0]
+
+            self.response.out.write(self.render_page('reengage/buttons.html', {
+                "request": {
+                    "url"        : "http://%s/r/url/%s" % (APP_DOMAIN, url),
+                    "image"      : image,
+                    "site"       : "", # TODO: Site name
+                    "title"      : product.title,
+                    "description": product.description
+                }
+            }))
+        else:
+            # Do redirect stuff
+            self.redirect(url)

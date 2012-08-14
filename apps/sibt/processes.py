@@ -17,7 +17,7 @@ from google.appengine.ext import db
 from apps.action.models import Action
 from apps.app.models import App
 from apps.client.models import Client
-from apps.email.models import Email
+from apps.email.models import Email, FROM_ADDR
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.sibt.actions import SIBTShowAction, SIBTUserAction, SIBTVoteAction
@@ -229,16 +229,22 @@ class DoVote(URIHandler):
             instance.increment_yesses()
 
         # Tell the Asker they got a vote!
+        client_email = getattr(getattr(app, 'client', None), 'email',
+                               FROM_ADDR)
         if which.lower() == "yes" or which.lower() == "no":  # SIBT
-            logging.info('going to SIBT email shopper.')
-            Email.SIBTVoteNotification(instance=instance, vote_type=which)
+            logging.info('going to SIBT email shopper: '
+                         '%s -> %s.' % (client_email,
+                                        instance.asker.get_attr('email')))
+            Email.SIBTVoteNotification(instance=instance, vote_type=which,
+                                       from_address=client_email)
         else:
             logging.info('going to WOSIB email shopper.')
             try:
                 product = Product.get(which)  # note that None is okay here.
             except:
                 product = None
-            Email.WOSIBVoteNotification(instance=instance, product=product)
+            Email.WOSIBVoteNotification(instance=instance, product=product,
+                                        from_address=client_email)
 
         self.response.out.write('ok')
 
@@ -314,8 +320,11 @@ class RemoveExpiredSIBTInstance(URIHandler):
 
             products = instance.products
             if products and len(products):
+                client_email = getattr(getattr(instance.app_, 'client', None), 'email',
+                                       FROM_ADDR)
                 Email.SIBTVoteCompletion(instance=instance,
-                                         product=Product.get(products[0]))
+                                         product=Product.get(products[0]),
+                                         from_address=client_email)
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
@@ -489,7 +498,7 @@ class SendFriendAsks(URIHandler):
                 logging.debug('product image = %s' % product_image)
             except (TypeError, IndexError):
                 logging.warn('Could not get product image')
-                product_image = 'http://rf.rs/static/imgs/blank.png' # blank
+                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
             #--- Start with sharing to FB friends ---#
@@ -528,6 +537,8 @@ class SendFriendAsks(URIHandler):
             #--- Second do email friends ---#
 
             if email_friends: # [] is falsy
+                client_email = getattr(getattr(app, 'client', None), 'email',
+                                       FROM_ADDR)
                 for (_, fname, femail) in email_friends:
                     try:
                         Email.SIBTAsk(client=app.client,
@@ -539,7 +550,8 @@ class SendFriendAsks(URIHandler):
                                       vote_url=link.get_willt_url(),
                                       product=product or None,
                                       products=products or [],
-                                      asker_img=a['pic'])
+                                      asker_img=a['pic'],
+                                      from_address=client_email)
                     except Exception, e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email',
@@ -734,5 +746,5 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone,
                        'sibt_version': app.version,
                        'new_order_code': False}
 
-    return (True, request_handler.render_page('templates/vendor_include.js',
+    return (True, request_handler.render_page('sibt/vendor_include.js',
                                               template_values))

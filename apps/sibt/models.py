@@ -170,7 +170,7 @@ class SIBT(App):
                 pass
 
         if not img:
-            img = "http://rf.rs/static/imgs/noimage-willet.png"
+            img = "http://social-referral.appspot.com/static/imgs/noimage-willet.png"
 
         # Now, make the object
         instance = SIBTInstance(key_name=uuid,
@@ -227,7 +227,7 @@ class SIBTInstance(Model):
 
     # URL of the product image (deprecated v11+)
     product_img = db.LinkProperty(required=False,
-                                  default="http://rf.rs/static/imgs/noimage-willet.png",
+                                  default="http://social-referral.appspot.com/static/imgs/noimage-willet.png",
                                   indexed=False)
 
     # use self.get_products() to get products as objects
