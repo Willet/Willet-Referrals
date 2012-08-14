@@ -67,7 +67,8 @@ class URIHandler(webapp.RequestHandler):
 
         return user
 
-    def render_page(self, template_file_name, content_template_values, template_path=None):
+    def render_page(self, template_file_name, content_template_values=None,
+                    template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
@@ -79,23 +80,29 @@ class URIHandler(webapp.RequestHandler):
                            'DOMAIN': DOMAIN,
                            'NAME': NAME,
                            'client': client}
-        merged_values = dict(template_values)
-        merged_values.update(content_template_values)
+
+        if not content_template_values:
+            content_template_values = {}
+
+        # overwrite default values with specified ones
+        template_values.update(content_template_values)
 
         path = os.path.join('templates/', template_file_name)
 
         app_path = self.get_app_path()
 
+        '''
         if template_path != None:
             logging.info('got template_path: %s' % template_path)
             path = os.path.join(template_path, path)
         elif app_path != None:
             path = os.path.join(app_path, path)
+        '''
 
         logging.info("Rendering %s" % path)
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers.add_header('X-Powered-By', 'Beer')
-        return render(path, merged_values)
+        return render(path, template_values)
 
     def get_app_path(self):
         module = inspect.getmodule(self).__name__

@@ -18,7 +18,7 @@ cron:
 # SOME SIBT SHIT WE DONT CARE ABOUT
 - description: scan for expired SIBT votes
   url: /s/getExpired
-  schedule: every 5 minutes
+  schedule: every 15 minutes
 
 # Smart-buttons
 # Disabled, for now
@@ -39,7 +39,7 @@ cron:
 
 - description: hourly action tallying
   url: /a/tally
-  schedule: every 5 minutes
+  schedule: every 10 minutes
 
 # enable this cron to kill old actions. intensive!
 #- description: Clean old actions

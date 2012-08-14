@@ -2,7 +2,7 @@
 import logging
 from urllib import urlencode
 from google.appengine.api.urlfetch import fetch, InvalidURLError
-from util.consts import SHOPIFY_APPS
+from util.consts import SHOPIFY_APPS, APP_DOMAIN
 from django.utils import simplejson as json
 
 class SocialNetwork():
@@ -44,17 +44,45 @@ class SocialNetwork():
             return False, "Problem making request. Not sure why...\n%s" % e
 
         if not any(x in response.headers["content-type"] for x in cls._response_types):
-            return False, "Invalid content type: %s" % response.headers["content-type"]
+            return False, "Invalid content type: %s\n%s" % (
+                response.headers["content-type"], response.content
+            )
 
         if not int(response.status_code) in cls._response_codes:
-            return False, "Invalid status code: %s" % response.status_code
+            return False, "Invalid status code: %s\n%s" % (
+                response.status_code, response.content
+            )
 
         # Other checks?
 
         return True, response.content
 
     @classmethod
-    def _render_message(cls, message):
+    def _render_message(cls, message, **kwargs):
+        """Replace post tags with their values."""
+        # first do product
+        product = kwargs.get("product")
+        product_tag = '(product)'
+        product_name = getattr(product, 'title', False)
+        if product and product_name:
+            if message.find(product_tag) >= 0:
+                logging.info('replacing product tag')
+                message = message.replace(product_tag, product_name)
+        else:
+            logging.warn('product has no title :(')
+
+        # then do collection
+        collection = kwargs.get("collection")
+        collection_tag = '(category)'  # humans call them categories
+        collection_name = getattr(collection, 'collection_name', False)
+        if collection and collection_name:
+            if message.find(collection_tag) >= 0:
+                logging.info('replacing collection tag')
+                message = message.replace(collection_tag, collection_name)
+        else:
+            logging.warn('collection has no name :(')
+
+        logging.info('message became %s' % message)
         return message
 
 
@@ -76,16 +104,19 @@ class Facebook(SocialNetwork):
         logging.info("Product: %s" % product)
 
         url     = product.resource_url  # Assume this is a canonical URL
-        logging.info("Page url: %s" % url)
-        page_id = cls._get_page_id(url)
+        our_url = "http://%s/r/url/%s" % (APP_DOMAIN, url)
+        logging.info("Page url: %s" % our_url)
+        page_id = cls._get_page_id(our_url)
         logging.info("Page Id: %s" % page_id)
 
         token   = cls._get_access_token()
         logging.info("Token: %s" % token)
 
+        message = cls._render_message(post.content, product=product)
+        logging.info("Message: %s" % message)
+
         logging.info("Title: %s" % post.title)
         message = cls._render_message(post.content)
-
 
         success, content = cls._request(cls.__destination_url, "POST", {
             "id"          : page_id,

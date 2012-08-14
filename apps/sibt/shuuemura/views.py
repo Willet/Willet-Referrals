@@ -30,7 +30,7 @@ class SIBTShuuemuraWelcome(URIHandler):
 
         domain = self.request.get('domain', 'http://shuuemura-usa.com')
         # it was said that these emails go to me
-        email = self.request.get('email', 'brian@getwillet.com')
+        email = self.request.get('email', 'no-reply@shuuemura-usa.com')
 
         first_name = self.request.get('first_name', 'Shu Uemura')
         # heheh (his name is actually Uemura Shu)
@@ -45,7 +45,9 @@ class SIBTShuuemuraWelcome(URIHandler):
                                          email=email,
                                          first_name=first_name,
                                          last_name=last_name,
-                                         phone=phone)
+                                         phone=phone,
+                                         wosib_enabled=False,
+                                         bottom_popup_enabled=False)
 
         if success:
             app = SIBT.get_by_url(domain)

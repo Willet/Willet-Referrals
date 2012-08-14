@@ -37,9 +37,8 @@ from util.urihandler import obtain, URIHandler
 class ShowBetaPage(URIHandler):
     """Shows the introduction page, containing AJAX functions to create app."""
     def get(self):
-        path = os.path.join('apps/sibt/templates/', 'beta.html')
-        self.response.out.write(template.render(path, {
-            'URL': URL,
+        path = os.path.join('sibt', 'beta.html')
+        self.response.out.write(self.render_page(path, {
             'sibt_version': SIBT.CURRENT_INSTALL_VERSION
         }))
 
@@ -144,6 +143,12 @@ class AskDynamicLoader(URIHandler):
 
         # successive steps to obtain the product(s) using any way possible
         products = get_products(urihandler=self)
+        if not app.wosib_enabled:
+            # force-present SIBT mode if WOSIB is not enabled
+            logging.info('reverting to SIBT mode.')
+            # leave template products -> last product
+            products = [Product.get_or_fetch(page_url, app.client)]
+
         if not products[0]:  # we failed to find a single product!
             logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
@@ -185,6 +190,14 @@ class AskDynamicLoader(URIHandler):
         if not page_url: # if somehow it's still missing, fix the missing url
             page_url = products[0].resource_url
 
+
+        # generate an Instance if not exists.
+        if not instance:
+            instance = self.create_instance(app=app, page_url=page_url,
+                                            product_uuids=[x.uuid for x in products],
+                                            sharing_message="",
+                                            user=user)
+
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
         # we get an instance.
@@ -195,12 +208,9 @@ class AskDynamicLoader(URIHandler):
             link = Link.create(page_url, app, origin_domain, user)
 
         template_values = {
-            'URL': URL,
-            'DOMAIN': DOMAIN,
             'page_url': page_url,
 
             'title': "Which One ... Should I Buy This?",
-            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'evnt': 'SIBTShowingAsk',
             'embed': bool(self.request.get('embed', '0') == '1'),
 
@@ -215,6 +225,7 @@ class AskDynamicLoader(URIHandler):
             'user_uuid': self.request.get('user_uuid'),
 
             'AB_share_text': "Should I buy this? Please let me know!",
+            'instance': instance,
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
@@ -230,6 +241,7 @@ class AskDynamicLoader(URIHandler):
             'image': random_image,
            # random_product will be THE product on single-product mode.
             'product_desc': random_product['product_desc'],
+            'product_desc_json': json.dumps(random_product['product_desc']),
             'product_images': product_images,
             'product_title': products[0].title or "",
             'product_uuid': products[0].uuid,  # deprecated
@@ -238,19 +250,60 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
+        self.response.headers.add_header('P3P', P3P_HEADER)
         if vendor:
             logging.debug('displaying vendor template for %s' % vendor)
         filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
+        path = os.path.join('templates/sibt', vendor, filename)
         if os.path.exists(path):
             logging.warn('using template %s' % path)
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
         else:
             logging.warn('vendor template %s not found; using default.' % path)
-            path = os.path.join('apps/sibt/templates', filename)
-
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+            self.response.out.write(self.render_page(os.path.join('sibt', filename),
+                                                     template_values))
         return
+
+    def create_instance(self, app, page_url, product_uuids=None,
+                        sharing_message="", user=None):
+        """Helper to create an instance without question."""
+        if not user:
+            User.get_or_create_by_cookie(self, app)
+
+        logging.debug('domain = %r' % get_domain(page_url))
+        # the href will change as soon as the instance is done being created!
+        link = Link.create(targetURL=page_url,
+                           app=app,
+                           domain=get_shopify_url(page_url),
+                           user=user)
+
+        product = Product.get_or_fetch(page_url, app.client)  # None
+        if not product_uuids:
+            try:
+                product_uuids = [product.uuid]  # [None]
+            except AttributeError:
+                product_uuids = []
+        instance = app.create_instance(user=user,
+                                       end=None,
+                                       link=link,
+                                       dialog="",
+                                       img="",
+                                       motivation=None,
+                                       sharing_message="",
+                                       products=product_uuids)
+
+        # after creating the instance, switch the link's URL right back to the
+        # instance's vote page
+        link.target_url = urlunsplit([PROTOCOL,
+                                      DOMAIN,
+                                      url('VoteDynamicLoader'),
+                                      ('instance_uuid=%s' % instance.uuid),
+                                      ''])
+        logging.info("link.target_url changed to %s" % link.target_url)
+        link.put()
+
+        return instance
 
 
 class AskPageDynamicLoader(URIHandler):
@@ -401,12 +454,14 @@ class AskPageDynamicLoader(URIHandler):
 
         # render SIBT/WOSIB
         filename = 'ask-page.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
-        if not os.path.exists(path):
-            path = os.path.join('apps/sibt/templates', filename)
-
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+
+        if os.path.exists(os.path.join('templates/sibt', vendor, filename)):
+            self.response.out.write(self.render_page(os.path.join('sibt', vendor, filename),
+                                                     template_values))
+        else:
+            path = os.path.join('sibt', filename)
+            self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
@@ -544,6 +599,7 @@ class VoteDynamicLoader(URIHandler):
                          'Assigning whichever user we can get.')
             instance.asker = get_user(urihandler=self)
             instance.put()
+            name = 'your friend'
 
         link = instance.link
         try:
@@ -580,10 +636,16 @@ class VoteDynamicLoader(URIHandler):
             product_img = ''
 
         user_voted = bool(instance.get_votes_count(user=user) > 0)
+        user_voted_what = getattr(
+            SIBTVoteAction.get_by_app_and_instance_and_user(
+                app, instance, user),
+            'vote', '')
 
         template_values = {
             'URL': URL,
+            'DOMAIN': DOMAIN,
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
 
             'evnt': event,
             'product': product,
@@ -594,6 +656,7 @@ class VoteDynamicLoader(URIHandler):
 
             'user': user,
             'user_voted': user_voted,
+            'user_voted_what': user_voted_what,
             'asker_name': name or "your friend",
             'asker_pic': instance.asker.get_attr('pic'),
             'is_asker': user.key() == instance.asker.key(),
@@ -617,12 +680,13 @@ class VoteDynamicLoader(URIHandler):
         }
 
         filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
-        path = os.path.join('apps/sibt/templates', vendor, filename)
-        if not os.path.exists(path):
-            path = os.path.join('apps/sibt/templates', filename)
+        path = os.path.join('sibt', vendor, filename)
+        if not os.path.exists('templates/%s' % path):
+            logging.debug('vendor template templates/%s not found' % path)
+            path = os.path.join('sibt', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
     def create_instance(self, app, page_url, vote_url='', product_uuids=None,
@@ -745,7 +809,7 @@ class ShowResults(URIHandler):
                 'product_link': product_link
             }
             # Finally, render the HTML!
-            path = os.path.join('apps/sibt/templates/', 'results-uni.html')
+            path = os.path.join('sibt', 'results-uni.html')
         else:
             # SIBT - product YES/NO
             yesses = instance.get_yesses_count()
@@ -795,11 +859,11 @@ class ShowResults(URIHandler):
                 'vote_percentage': vote_percentage,
                 'total_votes': total
             }
-            path = os.path.join('apps/sibt/templates/', 'results.html')
+            path = os.path.join('sibt', 'results.html')
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -828,14 +892,15 @@ class ShowFBThanks(URIHandler):
 
         template_values = {
             'email': user.get_attr('email'),
+            'user': user,
             'user_uuid': user.uuid,
             'user_cancelled': user_cancelled,
             'incentive_enabled': app.incentive_enabled if app else False
         }
 
-        path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
+        path = os.path.join('sibt', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -851,10 +916,10 @@ class ColorboxJSServer(URIHandler):
             'target_url': self.request.get('target_url')
         }
 
-        path = os.path.join('apps/sibt/templates/js/', 'jquery.colorbox.js')
+        path = os.path.join('sibt/js', 'jquery.colorbox.js')
         self.response.headers["Content-Type"] = "text/javascript"
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -875,9 +940,9 @@ class ShowOnUnloadHook(URIHandler):
             'evnt': self.request.get('evnt')
         }
 
-        path = os.path.join('apps/sibt/templates/', 'onunloadhook.html')
+        path = os.path.join('sibt', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page(path, template_values))
         return
 
 
@@ -1174,7 +1239,7 @@ class SIBTServeScript(URIHandler):
             'willt_code': link.willt_url_code if link else "",
         }
 
-        path = os.path.join('apps/sibt/templates/', 'sibt.js')
+        path = os.path.join('templates/sibt', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
