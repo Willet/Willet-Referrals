@@ -19,7 +19,7 @@ class ReEngageCron(URIHandler):
         self.post()
 
     def post(self):
-        today   = datetime.datetime.today()
+        today   = datetime.datetime.utcnow()
         weekday = today.weekday()
 
         schedules = ReEngageSchedule.all()\

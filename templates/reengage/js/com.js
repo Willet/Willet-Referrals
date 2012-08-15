@@ -252,8 +252,9 @@ var updateSchedule = function(uuid, days, times, timezone) {
         'type': 'PUT',
         'dataType': 'json',
         'data': JSON.stringify({
-            'days': days,
-            'times': times
+            'days' : days,
+            'times': times,
+            'tz'   : timezone
         }),
         'cache': false,
         'success': function () {

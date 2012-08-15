@@ -370,9 +370,19 @@ class ReEngageScheduleJSONHandler(URIHandler):
 
         days  = data.get("days")
         times = data.get("times")
+        tz    = data.get("tz", "0:00")
 
         if not (days or times):
             logging.error("No days or times")
+            self.error(400)
+            return
+
+        #Validate timezone
+        try:
+            tz_hour, tz_minutes = [int(x) for x in tz.split(":")]
+            offset = datetime.timedelta(hours=tz_hour, minutes=tz_minutes)
+        except Exception, e:
+            logging.info("Invalid timezone format: %s", e)
             self.error(400)
             return
 
@@ -386,7 +396,7 @@ class ReEngageScheduleJSONHandler(URIHandler):
         #Validate times
         try:
             for index, value in enumerate(times):
-                t_time    = datetime.datetime.strptime(value, "%H:%M")
+                t_time       = datetime.datetime.strptime(value, "%H:%M") - offset
                 times[index] = datetime.time(t_time.hour, t_time.minute)
             logging.info("%s" % times)
         except ValueError, e:
@@ -396,6 +406,7 @@ class ReEngageScheduleJSONHandler(URIHandler):
 
         schedule.days  = days
         schedule.times = times
+        schedule.tz    = tz
         schedule.put()
 
         response = schedule.to_obj()

@@ -427,6 +427,7 @@ var changeSchedulePromptDialog = function() {
                     else {
                         var days = [],
                             times = [],
+                            tz,
                             day_map = {
                                 "Mondays"   : 1,
                                 "Tuesdays"  : 2,
@@ -449,9 +450,11 @@ var changeSchedulePromptDialog = function() {
                             times.push(time);
                         })
 
+                        tz = $("#DropDownTimezone").val();
+
                         // TODO: Timezone
                         // TODO: Queue UUID
-                        updateSchedule("", days, times);
+                        updateSchedule("", days, times, tz);
                         $(this).dialog("destroy");
                     }
                 }

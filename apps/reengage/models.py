@@ -194,9 +194,11 @@ class ReEngageSchedule(Model):
     days  = A list of integers representing days of the week.
             1 = Monday, 7 = Sunday (as in date.isoweekday)
     times = A list of times that a post may occur at.
+    tz    = Timezone, specified as HH:MM
     """
     days     = db.ListProperty(int, default=[1,2,3,4,5]) #Weekdays, isoweekday
     times    = db.ListProperty(datetime.time, default=[datetime.time(12)])
+    tz       = db.StringProperty(default="0:00")
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
