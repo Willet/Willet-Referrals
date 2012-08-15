@@ -192,7 +192,7 @@ class Facebook(SocialNetwork):
         number of shares of a given product url.
 
         """
-        return cls.get_reach(url)['total_count']
+        return cls.get_reach(url).get('total_count', 0)
 
     @classmethod
     def _get_access_token(cls):
