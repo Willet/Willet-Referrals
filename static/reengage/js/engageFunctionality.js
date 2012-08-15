@@ -81,6 +81,8 @@ var updateScheduleUI = function (days, times) {
         days_string,
         times_string,
         day,
+        time,
+        hour,
         i;
 
     $("input[name='dayOfWeek']").attr("checked", false).trigger("change");
@@ -90,10 +92,15 @@ var updateScheduleUI = function (days, times) {
         $("input[name='dayOfWeek'][value='" + day + "']").attr("checked", "checked").trigger("change");
     }
 
-    for (i=0; i < times.length; i++) {
-        schedule_times.push(times[i])
-    }
     $("input[name='dropDownNumTimes'][value='" + times.length +"']").attr("checked", "checked").trigger("change");
+    for (i=0; i < times.length; i++) {
+        time = times[i]
+        hour = time.split(":")[0]
+
+        schedule_times.push(times[i])
+        $("#dropDownTime" + (i+1)).val(hour);
+    }
+
 
     days_string  = schedule_days.join(", ")
     times_string = schedule_times.join(", ")
