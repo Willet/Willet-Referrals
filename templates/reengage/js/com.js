@@ -123,7 +123,8 @@ var loadQueues = function (app, queue, callback) {
                     'uuid': data[i].uuid,
                     'app': app,  // "owner" in DB
                     'activePosts': data[i].activePosts,  // "queued" in DB
-                    'expiredPosts': data[i].expiredPosts  // "expired" in DB
+                    'expiredPosts': data[i].expiredPosts,  // "expired" in DB
+                    'schedule': data[i].schedule
                 };
                 queues.push(queue);
             }
@@ -260,7 +261,6 @@ var updateSchedule = function(uuid, days, times, timezone) {
 
             loadQueues(client.apps[0]);
             updateQueueUI(uuid);
-            updateScheduleUI(days, times);
         }
     }));
 }

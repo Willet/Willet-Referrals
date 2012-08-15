@@ -304,13 +304,25 @@ class ReEngageQueue(Model):
             except:
                 continue
 
+        if not self.schedule:
+            self.schedule = ReEngageSchedule.get_or_create(self)
+            self.put()
+
+        try:
+            schedule = to_dict(self.schedule)
+        except:
+            # TODO: If we can't get the schedule, what should we do?
+            schedule = ""
+            pass
+
         return {
             "key": "queues",
             "value": {
                 "uuid"         : self.uuid,
                 "app"          : self.app_.uuid,
                 "activePosts"  : posts,
-                "expiredPosts" : expired
+                "expiredPosts" : expired,
+                "schedule"     : schedule
             }
         }
 
