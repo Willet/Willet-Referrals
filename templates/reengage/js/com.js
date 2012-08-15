@@ -88,7 +88,7 @@ var loadApps = function (client, callback) {
                     'queue': {
                         'uuid': data[i].queue  // MVP single queue
                     },
-                    'queues': [],  // you can choose to load it
+                    'queues': []  // you can choose to load it
                 };
                 apps.push(app);
                 for (var i2 = 0; i2 < app.queues.length; ++i2) {
@@ -132,8 +132,10 @@ var loadQueues = function (app, queue, callback) {
             updateQueueUI($(".post.selected").data("uuid"));
 
             // update the schedule
-            var schedule = client.apps[0].queues[0].schedule;
-            updateScheduleUI(schedule.days, schedule.times);
+            var schedule       = client.apps[0].queues[0].schedule;
+            var adjusted_times = convertStringsFromTimeZone(schedule.times, schedule.tz);
+
+            updateScheduleUI(schedule.days, adjusted_times);
         },
         callback
     );
@@ -269,3 +271,38 @@ var updateSchedule = function(uuid, days, times, timezone) {
         }
     }));
 }
+
+var convertStringsFromTimeZone = function(list, offset) {
+    // obj is assumed to be an array of strings
+    // e.g. (["03:30", "4:30"], "12:00" to ["15:30", "16:30"]
+    var adj_hour, adj_minute,
+        hour, i, minute, time, times,
+        tz_hour, tz_minute;
+
+    tz_hour   = parseInt(offset.split(":")[0],10);
+    tz_minute = parseInt(offset.split(":")[1],10);
+
+    times = [];
+    for (i = 0; i < list.length; i++) {
+        time   = list[i];
+        hour   = parseInt(time.split(":")[0],10);
+        minute = parseInt(time.split(":")[1],10);
+
+        adj_minute = minute + tz_minute;
+        adj_hour   = hour + tz_hour + parseInt(adj_minute/60);
+
+        // The modulus operator (%) preserves sign.
+        // So, we make sure the result is positive...
+
+        adj_minute = (adj_minute + 60) % 60;
+        adj_hour   = (adj_hour   + 24) % 24;
+
+        if (adj_minute < 10) {
+            adj_minute = "0" + adj_minute;
+        }
+
+        times.push("" + adj_hour + ":" + adj_minute);
+    }
+
+    return times;
+};

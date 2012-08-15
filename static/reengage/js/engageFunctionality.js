@@ -94,10 +94,10 @@ var updateScheduleUI = function (days, times) {
 
     $("input[name='dropDownNumTimes'][value='" + times.length +"']").attr("checked", "checked").trigger("change");
     for (i=0; i < times.length; i++) {
-        time = times[i]
-        hour = time.split(":")[0]
+        time = times[i];
+        hour = parseInt(time.split(":")[0]);
 
-        schedule_times.push(times[i])
+        schedule_times.push(times[i]);
         $("#dropDownTime" + (i+1)).val(hour);
     }
 
@@ -452,7 +452,6 @@ var changeSchedulePromptDialog = function() {
 
                         tz = $("#DropDownTimezone").val();
 
-                        // TODO: Timezone
                         // TODO: Queue UUID
                         updateSchedule("", days, times, tz);
                         $(this).dialog("destroy");
