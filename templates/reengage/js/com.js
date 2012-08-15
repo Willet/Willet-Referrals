@@ -130,6 +130,10 @@ var loadQueues = function (app, queue, callback) {
             }
             app.queues = queues;
             updateQueueUI($(".post.selected").data("uuid"));
+
+            // update the schedule
+            var schedule = client.apps[0].queues[0].schedule;
+            updateScheduleUI(schedule.days, schedule.times);
         },
         callback
     );

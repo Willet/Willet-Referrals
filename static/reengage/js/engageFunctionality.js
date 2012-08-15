@@ -109,8 +109,7 @@ var updateQueueUI = function (selectedPostUUID) {
 
     var queueArea = $('#replaceHiddenPost'),
         emptyQueueArea = $('#replaceTextWithPosts'),
-        serverPosts = client.apps[0].queues[0].activePosts,
-        schedule = client.apps[0].queues[0].schedule;
+        serverPosts = client.apps[0].queues[0].activePosts;
 
     // reset the array of posts displayed.
     queueArea.empty();
@@ -126,8 +125,6 @@ var updateQueueUI = function (selectedPostUUID) {
         queueArea.hide();
         emptyQueueArea.show();
     }
-
-    updateScheduleUI(schedule.days, schedule.times);
 
     // reset selection (if the selected post was deleted)
     $('.post').removeClass('selected');
@@ -589,6 +586,7 @@ $(document).ready(function () {
 
     // start the stuff
     loadClient();
+
     setInterval(function () {
         updateQueueUI($('.post.selected').data('uuid'));
     }, 5000);
