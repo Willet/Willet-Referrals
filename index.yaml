@@ -48,7 +48,6 @@ indexes:
 
 - kind: Product
   properties:
-  - name: class
   - name: client
   - name: reach_score
     direction: desc

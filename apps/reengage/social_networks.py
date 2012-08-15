@@ -172,11 +172,13 @@ class Facebook(SocialNetwork):
             urllib.urlencode(params))
         response = urllib2.urlopen(request_object)
         contents = response.read()
-        return minidom.parseString(contents)\
+        total_count = minidom.parseString(contents)\
                       .childNodes[0]\
                       .getElementsByTagName('link_stat')[0]\
                       .getElementsByTagName('total_count')[0]\
                       .firstChild.nodeValue
+        logging.debug('Facebook.get_reach_count: total_count = %d' % total_count)
+        return total_count
 
     @classmethod
     def _get_access_token(cls):

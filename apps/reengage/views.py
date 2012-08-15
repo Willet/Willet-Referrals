@@ -350,7 +350,7 @@ class ReEngageMagic(URIHandler):
     domains belong to us...
 
     Required Params
-    image      : Image that represents the product
+    images     : Image that represents the product
     site       : Name of the site hosting the product
     title      : Title of the product
     description: Description of the product
@@ -371,7 +371,7 @@ class ReEngageMagic(URIHandler):
 
         if show_buttons:
             # Do buttons stuff
-            required_params = ["image", "site", "title", "description"]
+            required_params = ["images", "site", "title", "description"]
 
             if not all(x in self.request.GET for x in required_params):
                 logging.error("Missing one of the following GET params: %s" % required_params)
@@ -386,13 +386,17 @@ class ReEngageMagic(URIHandler):
                 "request": self.request.GET
             }))
 
-            if not Product.get_by_url(url):
+            product = Product.get_by_url(url)
+            if not product:
                 params = dict((k, self.request.GET[k]) for k in required_params)
                 params.update({
-                    "images": [params.get("image")]
+                    "images": [params.get("images")]
                 })
 
-                Product.create(**params)
+                product = Product.create(**params)
+
+            logging.debug('saving fb reach (if needed)')
+            product.get_facebook_reach(force=False)
 
         elif is_facebook:
             product = Product.get_by_url(url)
@@ -400,6 +404,10 @@ class ReEngageMagic(URIHandler):
                 logging.error("No such product exists: %s" % url)
                 self.error(400)
                 return
+
+            # if the product has cached no reach value, get one now
+            logging.debug('saving fb reach (if needed)')
+            product.get_facebook_reach(force=False)
 
             image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
             if len(product.images) > 0:

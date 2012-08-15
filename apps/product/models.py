@@ -204,9 +204,12 @@ class Product(Model, db.polymodel.PolyModel):
 
     @staticmethod
     def create(title, description='', images=None, tags=None, price=0.0,
-               client=None, resource_url='', type='', collection_uuids=None):
+               client=None, resource_url='', type='', collection_uuids=None,
+               site=None):
         """Creates a product in the datastore.
            Accepts datastore fields, returns Product object.
+
+           what is site?
         """
         if images == None:
             images = []
@@ -336,18 +339,22 @@ class Product(Model, db.polymodel.PolyModel):
 
         If force is true, then this product will have
 
-        Default: 0
+        Default: -1 ("not applicable")
         """
         # check if reach score is already there, and return it unless
         # it is being forced.
         if not force and getattr(self, 'reach_score', -1) > -1:
+            logging.info('product already has a reach score'
+                         ' (%d)' % self.reach_score)
             return self.reach_score
 
         url = url or getattr(self, 'resource_url', '')
         if not url:
-            return 0
+            logging.info('product has no url; cannot get reach score.')
+            return -1
         reach_count = int(Facebook.get_reach_count(url)) or 0
 
+        logging.info('saving reach of %d' % reach_count)
         self.reach_score = reach_count
         self.put_later()
 

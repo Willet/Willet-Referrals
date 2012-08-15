@@ -199,4 +199,7 @@ class Client(Model, polymodel.PolyModel):
         Exact methodology can be found by looking by "get_reach"
         You can't use Product here because that's somehow a circular import
         """
-        return [p for p in self.products[0].__class__.all().filter('client =', self).order('-reach_score').fetch(limit=count)]
+        # return [p for p in self.products[0].__class__.all().filter('client =', self).order('-reach_score').fetch(limit=count)]
+        from apps.product.models import Product
+        logging.debug('self.products = %r' % self.products)
+        return Product.all().filter('client =', self).order('-reach_score').fetch(limit=count)
