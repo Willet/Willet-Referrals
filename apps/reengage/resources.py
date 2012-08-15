@@ -398,5 +398,7 @@ class ReEngageScheduleJSONHandler(URIHandler):
         schedule.times = times
         schedule.put()
 
-        self.error(204)
+        response = schedule.to_obj()
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
 

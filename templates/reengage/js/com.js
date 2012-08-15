@@ -260,6 +260,7 @@ var updateSchedule = function(uuid, days, times, timezone) {
 
             loadQueues(client.apps[0]);
             updateQueueUI(uuid);
+            updateScheduleUI(days, times);
         }
     }));
 }

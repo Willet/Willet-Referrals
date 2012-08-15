@@ -73,6 +73,31 @@ var createNewPost = function (params, first) {
     return params.uuid;
 };
 
+var updateScheduleUI = function (days, times) {
+    var day_map = ["", "Mondays", "Tuesdays", "Wednesdays", "Thursdays",
+        "Fridays", "Saturdays", "Sundays"],
+        schedule_days  = [],
+        schedule_times = [],
+        days_string,
+        times_string,
+        i;
+
+    for (i=0; i < days.length; i++) {
+        schedule_days.push(day_map[days[i]])
+    }
+
+    for (i=0; i < times.length; i++) {
+        schedule_times.push(times[i])
+    }
+
+    days_string  = schedule_days.join(", ")
+    times_string = schedule_times.join(", ")
+
+    $("#displayDaySchedule").html(days_string);
+    $("#displayTimeSchedule").html(times_string);
+    //$("#displayTZSchedule");
+};
+
 var updateQueueUI = function (selectedPostUUID) {
     // Outputs post titles and dates in replaceWithPosts, aka main box area
 
