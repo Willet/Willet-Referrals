@@ -252,7 +252,7 @@ class ProductShopify(Product):
             # Create the product URL
             # {client.url}/products/{handle}
 
-            url = "%s/products/%s" % (client.domain, data.get("handle"))
+            url = "%s/products/%s" % (client.domain.lower(), data.get("handle"))
             data["url"] = url
 
         # Now, update it with info.

@@ -5,7 +5,6 @@ from apps.product.shopify.processes import *
 
 urlpatterns = [
     # Views
-    (r'/skype', SkypeCallTestingService),
 
     # Processes
     (r'/product/shopify/webhook/create', CreateProductShopify),

@@ -217,7 +217,10 @@ class Product(Model, db.polymodel.PolyModel):
             tags = []
 
         # set uuid to its most "useful" hash.
-        uu_format = "%s-%s" % (client.domain, title)
+        try:
+            uu_format = "%s-%s" % (client.domain, title)
+        except AttributeError, err:
+            uu_format = generate_uuid(16)
         uuid = Product.build_secondary_key(uu_format)
 
         product = Product(key_name=uuid,
@@ -236,11 +239,23 @@ class Product(Model, db.polymodel.PolyModel):
 
     @staticmethod
     def get_or_create(title, description='', images=None, tags=None, price=0.0,
-                      client=None, resource_url='', type=''):
+                      client=None, resource_url='', type='', uuid=''):
+        """Tries to look up a product.
+
+        If none is found, create based on the same parameters.
+        """
         if images == None:
             images = []
         if tags == None:
             tags = []
+
+        product = Product.get(uuid)
+        if product:
+            return product
+
+        product = Product.get_by_url(resource_url)
+        if product:
+            return product
 
         if client and client.domain and title:  # can check for existence
             uu_format = "%s-%s" % (client.domain, title)

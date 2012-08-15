@@ -386,17 +386,20 @@ class ReEngageMagic(URIHandler):
                 "request": self.request.GET
             }))
 
+            client = Client.get_by_url(url)
             product = Product.get_by_url(url)
-            if not product:
-                params = dict((k, self.request.GET[k]) for k in required_params)
-                params.update({
-                    "images": [params.get("images")]
-                })
+            if not product and client:
+                product = Product.get_or_create(client=client,
+                                                images=self.request.get('images', []),
+                                                resource_url=url,
+                                                title=self.request.get('title', ''),
+                                                description=self.request.get('description', ''))
+            elif not product and not client:
+                logging.warn('not product and not client')
 
-                product = Product.create(**params)
-
-            logging.debug('saving fb reach (if needed)')
-            product.get_facebook_reach(force=False)
+            if product:
+                logging.debug('saving fb reach (if needed)')
+                product.get_facebook_reach(force=False)
 
         elif is_facebook:
             product = Product.get_by_url(url)

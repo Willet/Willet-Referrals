@@ -163,8 +163,9 @@ class Facebook(SocialNetwork):
         number of shares of a given product url.
 
         """
-        params = {'query': "SELECT total_count FROM link_stat WHERE "
-                           "url='%s'" % url}
+        query = "SELECT total_count FROM link_stat WHERE url='%s'" % url
+        logging.debug('query = %s' % query)
+        params = {'query': query}
 
         # apparently, only the xml version works
         request_object = urllib2.Request(
@@ -173,11 +174,12 @@ class Facebook(SocialNetwork):
         response = urllib2.urlopen(request_object)
         contents = response.read()
         total_count = minidom.parseString(contents)\
-                      .childNodes[0]\
-                      .getElementsByTagName('link_stat')[0]\
-                      .getElementsByTagName('total_count')[0]\
-                      .firstChild.nodeValue
-        logging.debug('Facebook.get_reach_count: total_count = %d' % total_count)
+                             .childNodes[0]\
+                             .getElementsByTagName('link_stat')[0]\
+                             .getElementsByTagName('total_count')[0]\
+                             .firstChild.nodeValue
+        logging.debug('%r' % total_count)
+        logging.debug('Facebook.get_reach_count: total_count = %d' % int(total_count))
         return total_count
 
     @classmethod
