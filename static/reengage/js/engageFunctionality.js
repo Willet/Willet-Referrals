@@ -80,10 +80,14 @@ var updateScheduleUI = function (days, times) {
         schedule_times = [],
         days_string,
         times_string,
+        day,
         i;
 
+    $("input[name='dayOfWeek']").attr("checked", false).trigger("change");
     for (i=0; i < days.length; i++) {
-        schedule_days.push(day_map[days[i]])
+        day = day_map[days[i]];
+        schedule_days.push(day)
+        $("input[name='dayOfWeek'][value='" + day + "']").attr("checked", "checked").trigger("change");
     }
 
     for (i=0; i < times.length; i++) {
@@ -93,6 +97,7 @@ var updateScheduleUI = function (days, times) {
     days_string  = schedule_days.join(", ")
     times_string = schedule_times.join(", ")
 
+    // Update display strings
     $("#displayDaySchedule").html(days_string);
     $("#displayTimeSchedule").html(times_string);
     //$("#displayTZSchedule");
