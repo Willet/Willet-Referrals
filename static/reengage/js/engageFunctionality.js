@@ -93,6 +93,7 @@ var updateScheduleUI = function (days, times) {
     for (i=0; i < times.length; i++) {
         schedule_times.push(times[i])
     }
+    $("input[name='dropDownNumTimes'][value='" + times.length +"']").attr("checked", "checked").trigger("change");
 
     days_string  = schedule_days.join(", ")
     times_string = schedule_times.join(", ")
