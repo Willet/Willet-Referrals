@@ -712,7 +712,10 @@ _willet.sibt = (function (me) {
                     src: '{{URL}}{% url CreateProduct %}?' + $.param(data),
                     css: {'display':'none'}
                 }).appendTo(document);
-                wm.fire('log', 'sent product request');
+                // wm.fire('log', 'sent product request'); // reverse once shu uemura is done testing
+                try {
+                    console.log('sent product request');
+                } catch (e) {}
             }
         } catch (e) {
             wm.fire('error', "failed to save product! " + e);

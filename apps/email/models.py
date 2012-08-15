@@ -301,7 +301,7 @@ class Email():
         except (TypeError, IndexError), err:
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
-            product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+            product_img = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
 
         if len(products) > 1:  # WOSIB mode
             template_file = 'wosib_ask.html'
@@ -371,7 +371,7 @@ class Email():
             logging.debug('error while getting product_img: %s' % err,
                           exc_info=True)
             product_img = instance.product_img or \
-                          'http://rf.rs/static/imgs/blank.png' # blank
+                          'http://social-referral.appspot.com/static/imgs/blank.png' # blank
 
         logging.info("product_url, product_img = %r" % [product_url,
                                                         product_img])

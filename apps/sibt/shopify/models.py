@@ -179,7 +179,7 @@ class SIBTShopify(SIBT, AppShopify):
         """Installs this app."""
 
         # SIBT2 (cart page snippet)
-        wosib_script_src = """<!-- START Willet (http://rf.rs) Cart snippet -->
+        wosib_script_src = """<!-- START Willet (http://social-referral.appspot.com) Cart snippet -->
             <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
                 var _willet_wosib_script = "//%s%s?store_url={{ shop.permanent_domain }}";
@@ -203,7 +203,7 @@ class SIBTShopify(SIBT, AppShopify):
         # SIBT2 (multiple products)
         if self.version == '10':
             willet_snippet = """
-                <!-- START Willet (http://rf.rs) Product page snippet -->
+                <!-- START Willet (http://social-referral.appspot.com) Product page snippet -->
                 <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
                     data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
                     data-price="{{ product.price | money }}" data-page_source="product"
@@ -228,7 +228,7 @@ class SIBTShopify(SIBT, AppShopify):
                 </script>
                 <!-- END Willet SIBT for Shopify -->""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
         elif self.version == '3': # sweet buttons has different on-page snippet.
-            script_src = """<!-- START willet (http://rf.rs) sibt for Shopify -->
+            script_src = """<!-- START willet (http://social-referral.appspot.com) sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;
@@ -255,7 +255,7 @@ class SIBTShopify(SIBT, AppShopify):
                 </div>
                 <!-- END Willet SIBT for Shopify -->"""
         else:
-            script_src = """<!-- START willet (http://rf.rs) sibt for Shopify -->
+            script_src = """<!-- START willet (http://social-referral.appspot.com) sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;

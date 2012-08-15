@@ -109,7 +109,7 @@ class IncrementCodeCounter(URIHandler):
 class CreateLink(URIHandler):
     """Creates a Link object that rediects to a given url.
 
-    URL defaults to http://rf.rs (to allow Links to be created prior
+    URL defaults to http://social-referral.appspot.com (to allow Links to be created prior
                                   to knowledge of destination)
     """
     def post(self):
@@ -121,7 +121,7 @@ class CreateLink(URIHandler):
         This controller also supports GET. The GET version will
         redirect the browser to said URL.
         """
-        url = self.request.get('url', 'http://rf.rs')
+        url = self.request.get('url', 'http://social-referral.appspot.com')
         app = App.get(self.request.get('app_uuid', '')) or None
         code = self.request.get('code', '')
         link = create_link(url, app, code)
