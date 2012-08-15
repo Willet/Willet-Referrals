@@ -73,7 +73,7 @@ var createNewPost = function (params, first) {
     return params.uuid;
 };
 
-var updateScheduleUI = function (days, times) {
+var updateScheduleUI = function (days, times, tz) {
     var day_map = ["", "Mondays", "Tuesdays", "Wednesdays", "Thursdays",
         "Fridays", "Saturdays", "Sundays"],
         schedule_days  = [],
@@ -108,7 +108,7 @@ var updateScheduleUI = function (days, times) {
     // Update display strings
     $("#displayDaySchedule").html(days_string);
     $("#displayTimeSchedule").html(times_string);
-    //$("#displayTZSchedule");
+    $("#displayTZSchedule").html(tz);
 };
 
 var updateQueueUI = function (selectedPostUUID) {

@@ -135,7 +135,7 @@ var loadQueues = function (app, queue, callback) {
             var schedule       = client.apps[0].queues[0].schedule;
             var adjusted_times = convertStringsFromTimeZone(schedule.times, schedule.tz);
 
-            updateScheduleUI(schedule.days, adjusted_times);
+            updateScheduleUI(schedule.days, adjusted_times, schedule.tz);
         },
         callback
     );
