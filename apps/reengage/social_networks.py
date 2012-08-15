@@ -137,33 +137,17 @@ class Facebook(SocialNetwork):
     @classmethod
     def get_reach(cls, url):
         """Gets a URL's 'reach' using FQL."""
-        query = "SELECT url, normalized_url, share_count, like_count, "\
-                "comment_count, total_count, commentsbox_count, "\
-                "comments_fbid, click_count "\
-                "FROM link_stat "\
-                "WHERE url='%s'" % url
-        final_url = "%s?q=%s" % (cls.__fql_url, query)
-        logging.debug(final_url)
-        success, content = cls._request(final_url)
+        def get_node_val(node, key, default=None):
+            """helper function(node, 'node'): <node>abc</node> => abc."""
+            try:
+                return node.getElementsByTagName(key)[0].firstChild.nodeValue
+            except:
+                return default
 
         reach = {}
-
-        if success:
-            data = content.get("data")
-            if data:
-                reach = data[0]
-        else:
-            logging.error("FB Page Error: %s", content)
-
-        return reach
-
-    @classmethod
-    def get_reach_count(cls, url):
-        """facebok only: use lower-level url call to retrieve a number:
-        number of shares of a given product url.
-
-        """
-        query = "SELECT total_count FROM link_stat WHERE url='%s'" % url
+        query = "SELECT url, normalized_url, share_count, like_count, "\
+                "comment_count, total_count, commentsbox_count, "\
+                "comments_fbid, click_count FROM link_stat WHERE url='%s'" % url
         logging.debug('query = %s' % query)
         params = {'query': query}
 
@@ -172,15 +156,43 @@ class Facebook(SocialNetwork):
             'https://api.facebook.com/method/fql.query',
             urllib.urlencode(params))
         response = urllib2.urlopen(request_object)
+
+        # parse the xml
         contents = response.read()
-        total_count = minidom.parseString(contents)\
-                             .childNodes[0]\
-                             .getElementsByTagName('link_stat')[0]\
-                             .getElementsByTagName('total_count')[0]\
-                             .firstChild.nodeValue
-        logging.debug('%r' % total_count)
-        logging.debug('Facebook.get_reach_count: total_count = %d' % int(total_count))
-        return total_count
+        pub_node = minidom.parseString(contents).childNodes[0]\
+                          .getElementsByTagName('link_stat')[0]
+
+        # get the node values and build a dict to return
+        prod_url = get_node_val(pub_node, 'url')
+        normalized_url = get_node_val(pub_node, 'normalized_url')
+        share_count = get_node_val(pub_node, 'share_count')
+        like_count = get_node_val(pub_node, 'like_count')
+        comment_count = get_node_val(pub_node, 'comment_count')
+        click_count = get_node_val(pub_node, 'click_count')
+        total_count = get_node_val(pub_node, 'total_count')
+        commentsbox_count = get_node_val(pub_node, 'commentsbox_count')
+        comments_fbid = get_node_val(pub_node, 'comments_fbid')
+
+        reach = {'prod_url': prod_url,
+                 'normalized_url': normalized_url,
+                 'share_count': int(share_count),
+                 'like_count': int(like_count),
+                 'comment_count': int(comment_count),
+                 'click_count': int(click_count),
+                 'total_count': int(total_count),
+                 'commentsbox_count': int(commentsbox_count),
+                 'comments_fbid': comments_fbid}
+
+        logging.debug('reach = %r' % reach)
+        return reach
+
+    @classmethod
+    def get_reach_count(cls, url):
+        """facebok only: use lower-level url call to retrieve a number:
+        number of shares of a given product url.
+
+        """
+        return cls.get_reach(url)['total_count']
 
     @classmethod
     def _get_access_token(cls):

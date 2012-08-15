@@ -159,10 +159,11 @@ class ClientShopify(Client):
             products = details['products']
         except:
             # details will not have ['products'] if response is incorrect.
-            raise RemoteError (resp.status, resp.reason, products)
+            raise RemoteError(resp.status, resp.reason, products)
 
         for p in products:
-            ProductShopify.create_from_json(self, p)
+            product = ProductShopify.create_from_json(self, p)
+            product.get_facebook_reach()
 
     @property
     def lead_score(self):

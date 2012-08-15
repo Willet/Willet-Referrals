@@ -147,7 +147,7 @@ class Product(Model, db.polymodel.PolyModel):
 
     # where a "reach" is defined as a comment/like/share about this product,
     # this score is the total of that.
-    reach_score = db.IntegerProperty(default=-1, indexed=True)
+    reach_score = db.IntegerProperty(default=0, indexed=True)
 
     _memcache_fields = ['resource_url', 'shopify_id']
 
@@ -204,12 +204,9 @@ class Product(Model, db.polymodel.PolyModel):
 
     @staticmethod
     def create(title, description='', images=None, tags=None, price=0.0,
-               client=None, resource_url='', type='', collection_uuids=None,
-               site=None):
+               client=None, resource_url='', type='', collection_uuids=None):
         """Creates a product in the datastore.
            Accepts datastore fields, returns Product object.
-
-           what is site?
         """
         if images == None:
             images = []
@@ -243,6 +240,7 @@ class Product(Model, db.polymodel.PolyModel):
         """Tries to look up a product.
 
         If none is found, create based on the same parameters.
+        client is actually required.
         """
         if images == None:
             images = []
@@ -352,13 +350,14 @@ class Product(Model, db.polymodel.PolyModel):
         comments/what_have_you for this product. If the product has a url
         (resource_url), it will be used for the query.
 
-        If force is true, then this product will have
+        If force is true or cached reach is 0, then this product will have its
+        reach re-fetched every time this function is called.
 
-        Default: -1 ("not applicable")
+        Default: 0
         """
         # check if reach score is already there, and return it unless
         # it is being forced.
-        if not force and getattr(self, 'reach_score', -1) > -1:
+        if not force and getattr(self, 'reach_score', 0) > 0:
             logging.info('product already has a reach score'
                          ' (%d)' % self.reach_score)
             return self.reach_score
@@ -366,7 +365,7 @@ class Product(Model, db.polymodel.PolyModel):
         url = url or getattr(self, 'resource_url', '')
         if not url:
             logging.info('product has no url; cannot get reach score.')
-            return -1
+            return 0
         reach_count = int(Facebook.get_reach_count(url)) or 0
 
         logging.info('saving reach of %d' % reach_count)

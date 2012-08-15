@@ -371,7 +371,7 @@ class ReEngageMagic(URIHandler):
 
         if show_buttons:
             # Do buttons stuff
-            required_params = ["images", "site", "title", "description"]
+            required_params = ["images", "title", "description"]
 
             if not all(x in self.request.GET for x in required_params):
                 logging.error("Missing one of the following GET params: %s" % required_params)
@@ -412,7 +412,7 @@ class ReEngageMagic(URIHandler):
             logging.debug('saving fb reach (if needed)')
             product.get_facebook_reach(force=False)
 
-            image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
+            image = "http://%s/static/imgs/noimage-willet.png" % APP_DOMAIN
             if len(product.images) > 0:
                 image = product.images[0]
 
