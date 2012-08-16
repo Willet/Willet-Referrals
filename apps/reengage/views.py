@@ -350,7 +350,7 @@ class ReEngageMagic(URIHandler):
     domains belong to us...
 
     Required Params
-    image      : Image that represents the product
+    images     : Image that represents the product
     site       : Name of the site hosting the product
     title      : Title of the product
     description: Description of the product
@@ -371,7 +371,7 @@ class ReEngageMagic(URIHandler):
 
         if show_buttons:
             # Do buttons stuff
-            required_params = ["image", "site", "title", "description"]
+            required_params = ["images", "title", "description"]
 
             if not all(x in self.request.GET for x in required_params):
                 logging.error("Missing one of the following GET params: %s" % required_params)
@@ -386,13 +386,20 @@ class ReEngageMagic(URIHandler):
                 "request": self.request.GET
             }))
 
-            if not Product.get_by_url(url):
-                params = dict((k, self.request.GET[k]) for k in required_params)
-                params.update({
-                    "images": [params.get("image")]
-                })
+            client = Client.get_by_url(url)
+            product = Product.get_by_url(url)
+            if not product and client:
+                product = Product.get_or_create(client=client,
+                                                images=self.request.get('images', []),
+                                                resource_url=url,
+                                                title=self.request.get('title', ''),
+                                                description=self.request.get('description', ''))
+            elif not product and not client:
+                logging.warn('not product and not client')
 
-                Product.create(**params)
+            if product:
+                logging.debug('saving fb reach (if needed)')
+                product.get_facebook_reach(force=False)
 
         elif is_facebook:
             product = Product.get_by_url(url)
@@ -401,7 +408,11 @@ class ReEngageMagic(URIHandler):
                 self.error(400)
                 return
 
-            image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
+            # if the product has cached no reach value, get one now
+            logging.debug('saving fb reach (if needed)')
+            product.get_facebook_reach(force=False)
+
+            image = "http://%s/static/imgs/noimage-willet.png" % APP_DOMAIN
             if len(product.images) > 0:
                 image = product.images[0]
 

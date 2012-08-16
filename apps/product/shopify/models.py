@@ -11,6 +11,7 @@ from google.appengine.datastore import entity_pb
 from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
+
 from util.errors import ShopifyAPIError
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
@@ -251,7 +252,7 @@ class ProductShopify(Product):
             # Create the product URL
             # {client.url}/products/{handle}
 
-            url = "%s/products/%s" % (client.domain, data.get("handle"))
+            url = "%s/products/%s" % (client.domain.lower(), data.get("handle"))
             data["url"] = url
 
         # Now, update it with info.
