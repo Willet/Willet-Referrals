@@ -68,7 +68,7 @@ var createNewPost = function (params, first) {
     createPostElement(params, first);
 
     updateQueueUI(params.uuid);
-    createPost(params.queueUUID, params.title, params.content, first);
+    createPost(params.title, params.content, first);
 
     return params.uuid;
 };
@@ -220,20 +220,20 @@ var fillNavTree = function () {
 
     // Populates 'Categories' section with category and product names
     // Currently no back end exists, for now filler category/product names are created
-    
+
     var categories = []; // Array of the shop's categories
-    
+
     // This loop creates filler category and product names
     // TODO: delete this once back end is done
     for (var i = 0; i < 10; i++) {
         categories[i] = []; // Array of the category's products
         categories[i].title = "Category " + i;
-        
+
         for (var j = 0; j < 5; j++) {
             categories[i][j] = "Product " + i + "." + j;
         }
     }
-    
+
     // Fills in the category names
     // TODO: fetch actual category names
     for (var i = 0; i < categories.length; i++) {
@@ -242,7 +242,7 @@ var fillNavTree = function () {
             "html": "<div class='first slab category'><span id='categoryArrow'></span>" + categories[i].title + "</div>"
         }));
     }
-    
+
     // Fills in the product names
     // TODO: fetch actual product names
     for (var i = 0; i < categories.length; i++) {
@@ -253,7 +253,7 @@ var fillNavTree = function () {
             }));
         }
     }
-    
+
     // {% endif %}
 };
 
@@ -330,7 +330,6 @@ var newPostConfirm = function () {
                     } else {
                         //Create post, make lightbox disappear, update queue
                         var uuid = createNewPost({
-                            'queueUUID': window.activeQueueUUID,
                             'uuid': randomUUID(),
                             'title': title,
                             'content': 'Example content',
@@ -440,8 +439,8 @@ var changeSchedulePromptDialog = function() {
 
 $(document).ready(function () {
     $("#IEWarning").hide(); //Warning will only show up if scripts are blocked
-    
-    
+
+
     fillNavTree(); //Fills 'categories' section with category and product names
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
@@ -451,14 +450,14 @@ $(document).ready(function () {
 
         alertDialog(title, content);
     });
-    
+
     // Hides or shows all categories if arrow by 'All Categories' is clicked
     // 'All Categories' is open by default (as defined in the html)
     $(document).on("click", "#allCategories #categoryArrow", function() {
         $(this).parents().eq(2).children().toggleClass("hidden");
         $("#allContainer").show();
     });
-    
+
     // Opens and closes tree branches if arrow is clicked
     // Controls all but the 'All Categories' selector
     $(document).on("click", "#categoryArrow", function() {
@@ -466,14 +465,14 @@ $(document).ready(function () {
         $(this).parent().parent().children().toggleClass("hidden");
         $(".first.slab").show();
     });
-    
+
     // Selects the clicked item in the nav tree
     // TODO: make this change the content displayed on the rest of the dashboard
     $(document).on("click", ".slab", function() {
         $(".slab").removeClass("selected");
         $(this).addClass("selected");
     });
-    
+
 
     //When 'New Post' is clicked
     $("#newPost").on("click", function () {

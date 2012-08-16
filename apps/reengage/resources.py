@@ -4,6 +4,7 @@ import logging
 import webob
 import cgi
 
+from apps.client.models import Client
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
 
@@ -152,14 +153,25 @@ class ReEngageQueueHandler(URIHandler):
     @session_active
     def get(self):
         """Get all queued elements for a shop"""
+        queue = None
         session = get_current_session()
+
+        app = ReEngageShopify.get_by_url(session.get("shop"))
+        if app:
+            queue = app.queues[0]
+
+        # if queue_uuid is specified, operate on that specific one
+        queue_uuid = self.request.get('queue_uuid', '')
+        if queue_uuid:
+            queue = ReEngageQueue.get(queue_uuid)
 
         #TODO: Replace with HTML view
         page = self.render_page('reengage/queue.html', {
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             "t": session.get("t"),
             "shop": session.get("shop"),
-            "host" : self.request.host_url
+            "host" : self.request.host_url,
+            'queue': queue
         })
         self.response.out.write(page)
 
