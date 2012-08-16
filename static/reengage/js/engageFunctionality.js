@@ -212,7 +212,50 @@ var changeScheduledTimeInDialog = function () {
         var times = time1 + ", " + time2 + ", and " + time3;
     }
     $("#time").html(times);
-}
+};
+
+var fillNavTree = function () {
+
+    // {% if collections %}
+
+    // Populates 'Categories' section with category and product names
+    // Currently no back end exists, for now filler category/product names are created
+    
+    var categories = []; // Array of the shop's categories
+    
+    // This loop creates filler category and product names
+    // TODO: delete this once back end is done
+    for (var i = 0; i < 10; i++) {
+        categories[i] = []; // Array of the category's products
+        categories[i].title = "Category " + i;
+        
+        for (var j = 0; j < 5; j++) {
+            categories[i][j] = "Product " + i + "." + j;
+        }
+    }
+    
+    // Fills in the category names
+    // TODO: fetch actual category names
+    for (var i = 0; i < categories.length; i++) {
+        $("#categoryBox").append($("<div />", {
+            "class": "categoryContainer",
+            "html": "<div class='first slab category'><span id='categoryArrow'></span>" + categories[i].title + "</div>"
+        }));
+    }
+    
+    // Fills in the product names
+    // TODO: fetch actual product names
+    for (var i = 0; i < categories.length; i++) {
+        for (var j = 0; j < categories[i].length; j++) {
+            $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
+                "class": "categoryChild slab hidden",
+                "html": categories[i][j]
+            }));
+        }
+    }
+    
+    // {% endif %}
+};
 
 
 //------jQuery Dialogs------
@@ -397,6 +440,9 @@ var changeSchedulePromptDialog = function() {
 
 $(document).ready(function () {
     $("#IEWarning").hide(); //Warning will only show up if scripts are blocked
+    
+    
+    fillNavTree(); //Fills 'categories' section with category and product names
 
     //For features whose links are visible, but whose functionalities aren't part of the MVP
     $(".comingSoon").on("click", function () {
@@ -405,6 +451,29 @@ $(document).ready(function () {
 
         alertDialog(title, content);
     });
+    
+    // Hides or shows all categories if arrow by 'All Categories' is clicked
+    // 'All Categories' is open by default (as defined in the html)
+    $(document).on("click", "#allCategories #categoryArrow", function() {
+        $(this).parents().eq(2).children().toggleClass("hidden");
+        $("#allContainer").show();
+    });
+    
+    // Opens and closes tree branches if arrow is clicked
+    // Controls all but the 'All Categories' selector
+    $(document).on("click", "#categoryArrow", function() {
+        $(this).toggleClass("open");
+        $(this).parent().parent().children().toggleClass("hidden");
+        $(".first.slab").show();
+    });
+    
+    // Selects the clicked item in the nav tree
+    // TODO: make this change the content displayed on the rest of the dashboard
+    $(document).on("click", ".slab", function() {
+        $(".slab").removeClass("selected");
+        $(this).addClass("selected");
+    });
+    
 
     //When 'New Post' is clicked
     $("#newPost").on("click", function () {
