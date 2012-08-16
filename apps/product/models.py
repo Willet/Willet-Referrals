@@ -7,6 +7,7 @@ from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from apps.client.models import Client
+from apps.reengage.social_networks import Facebook
 
 from util.helpers import generate_uuid
 from util.model import Model
@@ -144,6 +145,10 @@ class Product(Model, db.polymodel.PolyModel):
     title = db.StringProperty()  # name of the product
     type = db.StringProperty(indexed=False)  # The type of product
 
+    # where a "reach" is defined as a comment/like/share about this product,
+    # this score is the total of that.
+    reach_score = db.IntegerProperty(default=0, indexed=True)
+
     _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
@@ -209,7 +214,10 @@ class Product(Model, db.polymodel.PolyModel):
             tags = []
 
         # set uuid to its most "useful" hash.
-        uu_format = "%s-%s" % (client.domain, title)
+        try:
+            uu_format = "%s-%s" % (client.domain, title)
+        except AttributeError, err:
+            uu_format = generate_uuid(16)
         uuid = Product.build_secondary_key(uu_format)
 
         product = Product(key_name=uuid,
@@ -228,11 +236,24 @@ class Product(Model, db.polymodel.PolyModel):
 
     @staticmethod
     def get_or_create(title, description='', images=None, tags=None, price=0.0,
-                      client=None, resource_url='', type=''):
+                      client=None, resource_url='', type='', uuid=''):
+        """Tries to look up a product.
+
+        If none is found, create based on the same parameters.
+        client is actually required.
+        """
         if images == None:
             images = []
         if tags == None:
             tags = []
+
+        product = Product.get(uuid)
+        if product:
+            return product
+
+        product = Product.get_by_url(resource_url)
+        if product:
+            return product
 
         if client and client.domain and title:  # can check for existence
             uu_format = "%s-%s" % (client.domain, title)
@@ -323,3 +344,32 @@ class Product(Model, db.polymodel.PolyModel):
 
     # turn into attribute
     collections = property(_get_collections, _set_collections, _del_collections)
+
+    def get_facebook_reach(self, force=False, url=''):
+        """use the Facebook request class to retrieve the number of shares/
+        comments/what_have_you for this product. If the product has a url
+        (resource_url), it will be used for the query.
+
+        If force is true or cached reach is 0, then this product will have its
+        reach re-fetched every time this function is called.
+
+        Default: 0
+        """
+        # check if reach score is already there, and return it unless
+        # it is being forced.
+        if not force and getattr(self, 'reach_score', 0) > 0:
+            logging.info('product already has a reach score'
+                         ' (%d)' % self.reach_score)
+            return self.reach_score
+
+        url = url or getattr(self, 'resource_url', '')
+        if not url:
+            logging.info('product has no url; cannot get reach score.')
+            return 0
+        reach_count = int(Facebook.get_reach_count(url)) or 0
+
+        logging.info('saving reach of %d' % reach_count)
+        self.reach_score = reach_count
+        self.put_later()
+
+        return reach_count

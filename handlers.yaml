@@ -15,7 +15,8 @@ handlers:
   script: util/db_queues.py
 
 - url: /favicon.ico
-  static_dir: static/imgs
+  static_files: static/imgs/favicon.ico
+  upload: static/imgs/favicon.ico
 
 - url: /w3c
   static_dir: w3c/
