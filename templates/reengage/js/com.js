@@ -103,7 +103,6 @@ var loadApps = function (client, callback) {
     );
 };
 
-// @unused in MVP
 var loadQueues = function (app, queue, callback) {
     // returns nothing.
     ajaxRequest(
@@ -128,6 +127,7 @@ var loadQueues = function (app, queue, callback) {
                 queues.push(queue);
             }
             app.queues = queues;
+            window.activeQueueUUID = queues[0].uuid;
             updateQueueUI($(".post.selected").data("uuid"));
         },
         callback
@@ -167,13 +167,14 @@ var loadPosts = function (queue, callback) {
     );
 };
 
-var createPost = function (title, content, first, uuid) {
+var createPost = function (queueUUID, title, content, first, uuid) {
     // creates a post on the server. reloads the queue.
     $.ajax({
         'url': '{% url ReEngageQueueJSONHandler %}',
         'type': "POST",
         'dataType': 'json',
         'data': {
+            'queue_uuid': queueUUID,
             'title': title,
             'content': content,
             'method': (first? 'prepend' : 'append')

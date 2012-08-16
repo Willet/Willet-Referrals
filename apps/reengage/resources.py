@@ -9,7 +9,7 @@ from apps.reengage.social_networks import Facebook
 
 from util.consts import ADMIN_IPS, USING_DEV_SERVER
 from util.gaesessions import get_current_session
-from util.helpers import generate_uuid, url as build_url
+from util.helpers import generate_uuid, get_list_item, url as build_url
 from util.urihandler import URIHandler
 
 #TODO: Error handling
@@ -35,8 +35,12 @@ def session_active(fn):
     return wrapped
 
 
-def get_queue():
-    """Obtains a queue using the provided shop url"""
+def get_queues(uuid=None, name=''):
+    """Obtains a queue using the provided shop url.
+
+    If a uuid is specified, returns an queue instead of a list of queues.
+    If a name is specified, returns an queue instead of a list of queues.
+    """
     session = get_current_session()
     store_url = session.get("shop")
     if not store_url:
@@ -46,8 +50,16 @@ def get_queue():
     if not app:
         return None
 
+    if uuid:
+        queue = ReEngageQueue.get(uuid) or None
+        return queue
+
+    if name:
+        queue = ReEngageQueue.get_by_app_and_name(app=app, name=name) or None
+        return queue
+
     queue, created = ReEngageQueue.get_or_create(app)
-    return queue
+    return [queue]
 
 
 def get_post(uuid):
@@ -69,7 +81,9 @@ class ReEngageQueueJSONHandler(URIHandler):
         queue = ReEngageQueue.get(self.request.get('queue_uuid'))
         if not queue:
             session = get_current_session()
-            queue = get_queue()
+            queues = get_queues()
+            queue = get_list_item(queues, 0)
+
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -84,8 +98,9 @@ class ReEngageQueueJSONHandler(URIHandler):
     def post(self):
         """Create a new post element in the queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -106,8 +121,10 @@ class ReEngageQueueJSONHandler(URIHandler):
         post.put()
 
         if method == "append":
+            logging.debug('appending post %r to %r' % (post, queue))
             queue.append(post)
         else:
+            logging.debug('prepending post %r to %r' % (post, queue))
             queue.prepend(post)
 
         response = post.to_obj()
@@ -117,8 +134,9 @@ class ReEngageQueueJSONHandler(URIHandler):
     def delete(self):
         """Delete all post elements in this queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -149,8 +167,9 @@ class ReEngageQueueHandler(URIHandler):
     def post(self):
         """Create a new post element in the queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))
@@ -181,8 +200,9 @@ class ReEngageQueueHandler(URIHandler):
     def delete(self):
         """Delete all post elements in this queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))

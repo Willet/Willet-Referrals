@@ -68,7 +68,7 @@ var createNewPost = function (params, first) {
     createPostElement(params, first);
 
     updateQueueUI(params.uuid);
-    createPost(params.title, params.content, first);
+    createPost(params.queueUUID, params.title, params.content, first);
 
     return params.uuid;
 };
@@ -158,7 +158,7 @@ var changeScheduledDayInDialog = function () {
     var days = ""; //Output
     var numSelected = $("input[name='dayOfWeek']:checked").length; //Number of days checked
     var count = numSelected; //Number of days left to list
-    
+
     //Goes through all checked days, outputs them in a grammatically proper way
     $("input[name='dayOfWeek']:checked").each(function() {
         if (days == "") {
@@ -173,14 +173,14 @@ var changeScheduledDayInDialog = function () {
         else if (numSelected > 2 && count == 1) {
             days += ", and " + $(this).val();
         }
-        
+
         count--;
     });
-    
+
     if (days === "") {
         days = "No days";
     }
-    
+
     $("#days").html(days);
 };
 
@@ -190,17 +190,17 @@ var changeScheduledDayInDialog = function () {
 var changeScheduledTimeInDialog = function () {
     //Fetches the number of times per day the user wants posts to go out
     var numTimes = $("input[name='dropDownNumTimes']:checked").val();
-    
+
     //Fetches the times of day the posts will go out
     var time1 = $("#dropDownTime1").find(":selected").text();
-    
+
     if (numTimes > 1) {
         var time2 = $("#dropDownTime2").find(":selected").text();
     }
     if (numTimes > 2) {
         var time3 = $("#dropDownTime3").find(":selected").text();
     }
-    
+
     //Outputs the times the posts will go out in a grammatically proper way
     if (numTimes === "1") {
         var times = time1;
@@ -225,14 +225,12 @@ var alertDialog = function (alertTitle, content) {
             title: alertTitle,
             'modal': true,
             'width': 400,
-            buttons: [
-                {
-                    text: "Ok",
-                    click: function() {
-                        $(this).dialog("destroy");
-                    }
+            buttons: [{
+                text: "Ok",
+                click: function() {
+                    $(this).dialog("destroy");
                 }
-            ]
+            }]
         });
 
     $dialog.dialog('open');
@@ -246,22 +244,19 @@ var confirmDialog = function (confirmTitle, content, ifOk) {
             autoOpen: false,
             title: confirmTitle,
             'modal': true,
-            buttons: [
-                {
-                    text: "Cancel",
-                    click: function() {
-                        $(this).dialog("destroy");
-                    }
-                },
-                {
-                    text: "Ok",
-                    className: "clickOnEnter",
-                    click: function() {
-                        $(this).dialog("destroy");
-                        ifOk();
-                    }
+            buttons: [{
+                text: "Cancel",
+                click: function() {
+                    $(this).dialog("destroy");
                 }
-            ]
+            }, {
+                text: "Ok",
+                className: "clickOnEnter",
+                click: function() {
+                    $(this).dialog("destroy");
+                    ifOk();
+                }
+            }]
         });
 
     $dialog.dialog('open');
@@ -292,6 +287,7 @@ var newPostConfirm = function () {
                     } else {
                         //Create post, make lightbox disappear, update queue
                         var uuid = createNewPost({
+                            'queueUUID': window.activeQueueUUID,
                             'uuid': randomUUID(),
                             'title': title,
                             'content': 'Example content',
@@ -549,37 +545,37 @@ $(document).ready(function () {
         $(".howToNav").removeClass("selected");
         $(".howToNav.facebook").addClass("selected");
     });
-    
+
     //Shows and hides the contents of the recent activity notice
     $(document).on("click", ".newActivitiesText", function() {
         $("#newActivitiesTitle").toggleClass("hidden");
         $("#newActivities").toggleClass("hidden");
     });
-    
-    //TODO: Closing the recent activity notice should also mean that the user never sees the 
+
+    //TODO: Closing the recent activity notice should also mean that the user never sees the
     //'new activities' again - eg if user refreshes pg the notice bar should be gone
     //**This functionality is desired but not yet included in the code**
     $(document).on("click", "#closeNotice", function() {
         $("#recentActivity").hide();
     });
-    
+
     /*------ Functions for FB posting schedule dialog ------*/
     //Making the FB schedule change dialog appear
     $(document).on("click", "#changeSchedule", function() {
         changeSchedulePromptDialog();
         changeScheduledTimeInDialog();
     });
-    
-    //In dialog, if days of the week are changed, change data about days of week 
+
+    //In dialog, if days of the week are changed, change data about days of week
     $("input[name='dayOfWeek']").change(function() {
         changeScheduledDayInDialog();
     });
-    
+
     //In dialog, if the number of post times are changed, change data, and display/hide slots to choose times
     //For each case some default times are chosen
     $("input[name='dropDownNumTimes']").change(function() {
         var selectedVal = $(this).val();
-        
+
         if (selectedVal === "1") {
             $("#time2").hide();
             $("#time3").hide();
@@ -598,10 +594,10 @@ $(document).ready(function () {
             $("#dropDownTime2").val("12");
             $("#dropDownTime3").val("18");
         }
-        
+
         changeScheduledTimeInDialog();
     });
-    
+
     //If any of the times are changed, change data about time
     $(".dropDownTime").change(changeScheduledTimeInDialog);
     /*------ End functions for FB posting schedule dialog ------*/

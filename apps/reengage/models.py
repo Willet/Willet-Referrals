@@ -12,6 +12,7 @@ from google.appengine.ext import db
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
+from apps.product.models import Product, ProductCollection
 # from apps.reengage.shopify.models import ReEngageShopify
 from apps.user.models import User
 
@@ -190,9 +191,18 @@ class ReEngageShopify(ReEngage, AppShopify):
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
-    app_    = db.ReferenceProperty(App, collection_name='queues')
-    queued   = db.ListProperty(unicode, indexed=False)
-    expired  = db.ListProperty(unicode, indexed=False)
+    app_ = db.ReferenceProperty(App, collection_name='queues')
+    name = db.StringProperty(indexed=True)
+
+    # queued[ posts]
+    queued = db.ListProperty(unicode, indexed=False)
+    # expired[ posts]
+    expired = db.ListProperty(unicode, indexed=False)
+
+    # use get_products() to get a total list of products.
+    # to save time,
+    collection_uuids = db.ListProperty(unicode, indexed=False)
+    product_uuids = db.ListProperty(unicode, indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -201,12 +211,18 @@ class ReEngageQueue(Model):
 
     def prepend(self, obj):
         """Puts a post at the front of the list"""
+        if not self.queued:
+            self.queued = []
         self.queued.insert(0, unicode(obj.uuid))
+        logging.debug('self.queued = %r' % self.queued)
         self.put()
 
     def append(self, obj):
         """Puts a post at the end of the list"""
+        if not self.queued:
+            self.queued = []
         self.queued.append(unicode(obj.uuid))
+        logging.debug('self.queued = %r' % self.queued)
         self.put()
 
     def remove_all(self):
@@ -265,18 +281,51 @@ class ReEngageQueue(Model):
         }
 
     def get_products(self):
-        """Get products associated with this queue
+        """Get products associated with this queue."""
+        total_product_uuids = self.product_uuids
+        collections = [ProductCollection.get(x) for x in self.collection_uuids]
 
-        Note: since queues are only associated with an app, at the moment,
-        we can only get all products associated with a particular client."""
-        logging.info("Client: %s" % self.app_.client)
+        # add all product uuids to the totals list.
+        for collection in collections:
+            col_prod_uuids = [x.uuid for x in collection.products]
+            total_product_uuids.extend(col_prod_uuids)
 
-        products = self.app_.client.products
+        # unique-ify it, then return objects
+        total_product_uuids = list(frozenset(total_product_uuids))
+        return [Product.get(x) for x in total_product_uuids]
 
-        if products:
-            return products
-        else:
-            return []
+    def add_products(self, value):
+        """given value (either a Product or ProductCollection object),
+        add it to either product_uuids or collection_uuids, respectively.
+        """
+        if isinstance(value, Product):
+            self.product_uuids.append(value.uuid)
+            self.product_uuids = list(frozenset(self.product_uuids))
+
+        elif isinstance(value, ProductCollection):
+            self.collection_uuids.extend([x.uuid for x in value.products])
+            self.collection_uuids = list(frozenset(self.collection_uuids))
+
+        self.put_later()
+
+    def clear_products(self):
+        """empties product_uuids and collection_uuids."""
+        self.product_uuids = []
+        self.collection_uuids = []
+        self.put_later()
+
+
+    @classmethod
+    def get_by_app_and_name(cls, app, name):
+        """Find a queue based on app and name. To save space,
+        this lookup is not indexed.
+
+        default: None
+        """
+        queues = app.queues
+        for queue in queues:
+            if queue.name == name:
+                return queue
 
     @classmethod
     def get_by_url(cls, url):
