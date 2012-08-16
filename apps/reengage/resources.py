@@ -157,8 +157,9 @@ class ReEngageQueueHandler(URIHandler):
         session = get_current_session()
 
         app = ReEngageShopify.get_by_url(session.get("shop"))
-        if app:
-            queue = app.queues[0]
+        # if app:
+        #     queue = app.queues[0]
+        queue = get_list_item(get_queues(), 0)
 
         # if queue_uuid is specified, operate on that specific one
         queue_uuid = self.request.get('queue_uuid', '')

@@ -214,50 +214,6 @@ var changeScheduledTimeInDialog = function () {
     $("#time").html(times);
 };
 
-var fillNavTree = function () {
-
-    // {% if collections %}
-
-    // Populates 'Categories' section with category and product names
-    // Currently no back end exists, for now filler category/product names are created
-
-    var categories = []; // Array of the shop's categories
-
-    // This loop creates filler category and product names
-    // TODO: delete this once back end is done
-    for (var i = 0; i < 10; i++) {
-        categories[i] = []; // Array of the category's products
-        categories[i].title = "Category " + i;
-
-        for (var j = 0; j < 5; j++) {
-            categories[i][j] = "Product " + i + "." + j;
-        }
-    }
-
-    // Fills in the category names
-    // TODO: fetch actual category names
-    for (var i = 0; i < categories.length; i++) {
-        $("#categoryBox").append($("<div />", {
-            "class": "categoryContainer",
-            "html": "<div class='first slab category'><span id='categoryArrow'></span>" + categories[i].title + "</div>"
-        }));
-    }
-
-    // Fills in the product names
-    // TODO: fetch actual product names
-    for (var i = 0; i < categories.length; i++) {
-        for (var j = 0; j < categories[i].length; j++) {
-            $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
-                "class": "categoryChild slab hidden",
-                "html": categories[i][j]
-            }));
-        }
-    }
-
-    // {% endif %}
-};
-
-
 //------jQuery Dialogs------
 
 var alertDialog = function (alertTitle, content) {

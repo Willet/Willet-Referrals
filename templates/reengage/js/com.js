@@ -237,3 +237,53 @@ var deletePost = function (uuid) {
         }
     }));
 };
+
+var fillNavTree = function () {
+    // Populates 'Categories' section with category and product names
+    // Currently no back end exists, for now filler category/product names are created
+
+    // {% if client.collections %}
+        var categories = [{% for collection in client.collections %}
+            {
+                'uuid': '{{ collection.uuid }}',
+                'collection_name': '{{ collection.collection_name }}',
+                'products': [{% for product in collection.products %}
+                    {
+                        'uuid': '{{ product.uuid }}',
+                        'shopify_id': '{{ product.shopify_id|default:"0" }}',
+                        'title': '{{ product.title|striptags|escape|default:"(no name)" }}',
+                        'description': '{{ product.description|striptags|escape|default:"(no description)" }}',
+                        'image': '{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}',
+                        'reach_score': '{{ product.reach_score }}'
+                    }
+                    {% if not forloop.last %},{% endif %}
+                {% endfor %}]
+            }
+            {% if not forloop.last %},{% endif %}
+        {% endfor %}];
+
+        // Fills in the category names
+        for (var i = 0; i < categories.length; i++) {
+            $("#categoryBox").append($("<div />", {
+                "class": "categoryContainer",
+                "html": "<div class='first slab category'>" +
+                        "<span id='categoryArrow'></span>" +
+                        categories[i].collection_name + "</div>"
+            }));
+        }
+
+        // Fills in the product names
+        // TODO: fetch actual product names
+        for (var i = 0; i < categories.length; i++) {
+            for (var j = 0; j < categories[i].products.length; j++) {
+                $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
+                    "class": "categoryChild slab hidden",
+                    "html": "(" + categories[i].products[j].reach_score +
+                            ") " + categories[i].products[j].title
+                }));
+            }
+        }
+    // {% else %}
+        console.log('wtf?');
+    // {% endif %}
+};

@@ -96,6 +96,11 @@ class ClientShopify(Client):
                       params={'client_uuid': uuid,
                               'app_type': app_type})
 
+        # Query the Shopify API to dl all Products
+        taskqueue.add(url=build_url('FetchShopifyCollections'),
+                      params={'store_url': url_,
+                              'force': True})
+
         return store
 
     @staticmethod
