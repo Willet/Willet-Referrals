@@ -4,7 +4,7 @@
         <script>
             // patchwork to let every function work off this queue
             // (and only this queue)
-            window.activeQueueUUID = '{{ queue.uuid }}';
+            window.activeQueueUUID = '{{ app.queue.uuid }}';
         </script>
         <title>SecondFunnel ReEngage&trade;</title>
         <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
@@ -130,7 +130,7 @@
                     <div id="categoryBox">
                         <div id='allContainer'>
                             <div id='allCategories' class='first slab selected'
-                                 data-queue_uuid='{{ queue.uuid }}'>
+                                 data-queue_uuid='{{ app.queue.uuid }}'>
                                 <span id='categoryArrow' class='open'></span>
                                 All Categories
                             </div>

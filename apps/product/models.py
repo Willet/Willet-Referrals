@@ -127,6 +127,53 @@ class ProductCollection(Model, db.polymodel.PolyModel):
     # turn into attribute
     products = property(_get_products, _set_products, _del_products)
 
+    def _get_or_create_queue(self):
+        """return a queue that corresponds to this collection."""
+        logging.debug('called _get_or_create_queue')
+        try:
+            if self.queue_ref:
+                logging.debug('found built-in ref')
+                return self.queue_ref
+        except db.ReferencePropertyResolveError, err:
+            pass
+
+        if not self.client:
+            raise AttributeError('cannot make queue for None-client product')
+
+        # could not import globally :(
+        from apps.reengage.models import ReEngageQueue, ReEngageShopify
+        queue_name = self._get_associated_queue_name()
+        queue = ReEngageQueue.get_by_client_and_name(self.client,
+                                                     queue_name)
+        logging.debug('got queue? %r' % queue)
+        if queue:  # found queue, use it
+            logging.debug('returning %r' % queue)
+            return queue
+
+        # queue not found, suck it up and return one
+        logging.debug('found nothing of significance')
+        app = ReEngageShopify.get_by_client_and_name(self.client,
+                                                    'ReEngageShopify')
+        logging.debug('got app? %r' % app)
+        queue = ReEngageQueue.create(app_=app,
+                                     name=queue_name,
+                                     collection_uuids=[self.uuid],
+                                     uuid=generate_uuid(16))
+        self.queue_ref = queue
+        self.put_later()
+        logging.debug('returning queue %r' % queue)
+        return queue
+
+    # turn into attribute
+    queue = property(_get_or_create_queue)
+
+    def _get_associated_queue_name(self):
+        """."""
+        queue_name = '%s-%s-%s' % ('ReEngageQueue',
+                                   self.__class__.__name__,
+                                   self.uuid)
+        return queue_name
+
 
 class Product(Model, db.polymodel.PolyModel):
     """Stores information about a store's product."""
@@ -391,10 +438,10 @@ class Product(Model, db.polymodel.PolyModel):
         except db.ReferencePropertyResolveError, err:
             pass
 
-        # could not import globally :(
         if not self.client:
             raise AttributeError('cannot make queue for None-client product')
 
+        # could not import globally :(
         from apps.reengage.models import ReEngageQueue, ReEngageShopify
         queue_name = self._get_associated_queue_name()
         queue = ReEngageQueue.get_by_client_and_name(self.client,

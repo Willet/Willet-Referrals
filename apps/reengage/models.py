@@ -56,6 +56,9 @@ class ReEngage(App):
 
 
 class ReEngageShopify(ReEngage, AppShopify):
+    """use .queue to get the app's main queue, and
+           .queues to get a list of queues associated with this app
+    """
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReEngageShopify, self).__init__(*args, **kwargs)
@@ -186,6 +189,14 @@ class ReEngageShopify(ReEngage, AppShopify):
                     logging.error('encountered error with reinstall',
                                   exc_info=True)
         return app, created
+
+    def _get_own_queue(self):
+        """get the app's main queue."""
+        return ReEngageQueue.get_by_app_and_name(
+            self, "%s-%s-%s" % ('ReEngageQueue', self.__class__.__name__,
+                                self.uuid))
+    # turn into attribute
+    queue = property(_get_own_queue)
 
 
 class ReEngageQueue(Model):
@@ -356,7 +367,10 @@ class ReEngageQueue(Model):
             return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, app_=app)
+        queue = cls(uuid=uuid, app_=app,
+                    name="%s-%s-%s" % (cls.__name__,
+                                       app.__class__.__name__,
+                                       app.uuid))
         queue.put()
 
         return (queue, True)

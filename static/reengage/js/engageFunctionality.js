@@ -637,9 +637,12 @@ $(document).ready(function () {
     // click category/product to show its queue
     $('#allCategories, .category, .categoryChild').click(function () {
         // update window.activeQueueUUID and refresh the UI.
-        console.log($(this).data('queue_uuid'));
-        window.activeQueueUUID = $(this).data('queue_uuid');
-        updateQueueUI($(".post.selected").data("uuid"));
+        var queue_uuid = $(this).data('queue_uuid');
+        console.log(queue_uuid);
+        if (queue_uuid) {
+            window.activeQueueUUID = queue_uuid;
+            updateQueueUI($(".post.selected").data("uuid"));
+        }
     });
     /*------ End functions for FB posting schedule dialog ------*/
 });

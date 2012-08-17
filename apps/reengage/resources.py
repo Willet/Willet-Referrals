@@ -85,12 +85,13 @@ class ReEngageQueuesJSONHandler(URIHandler):
 
         client = Client.get(self.request.get('client_uuid'))
         if client:
-            logging.debug('adding products\' queues')
-            queues.extend([p.queue for p in client.products])
+            client_queues = [p.queue for p in client.products]
+            logging.debug('adding products\' queues: %r' % client_queues)
+            queues.extend(client_queues)
 
         app = ReEngageShopify.get(self.request.get('app_uuid'))
         if app:
-            logging.debug('adding app\'s queues')
+            logging.debug('adding app\'s queues: %r' % app.queues)
             queues.extend(app.queues)
 
         if not queues:
@@ -202,7 +203,7 @@ class ReEngageQueueHandler(URIHandler):
         app = ReEngageShopify.get_by_url(session.get("shop"))
         # if app:
         #     queue = app.queues[0]
-        queue = get_list_item(get_queues(), 0)
+        queue = get_list_item(app.queues, 0)
 
         # if queue_uuid is specified, operate on that specific one
         queue_uuid = self.request.get('queue_uuid', '')
@@ -215,7 +216,8 @@ class ReEngageQueueHandler(URIHandler):
             "t": session.get("t"),
             "shop": session.get("shop"),
             "host" : self.request.host_url,
-            'queue': queue
+            'queue': queue,
+            'app': app
         })
         self.response.out.write(page)
 

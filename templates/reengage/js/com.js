@@ -248,7 +248,7 @@ var fillNavTree = function () {
             {
                 'uuid': '{{ collection.uuid }}',
                 'collection_name': '{{ collection.collection_name }}',
-                /* corresponding */ 'queue_uuid': '{{ collection.queue.uuid }}',
+                'queue_uuid': '{{ collection.queue.uuid }}', // corresponding
                 'products': [{% for product in collection.products %}
                     {
                         'uuid': '{{ product.uuid }}',
@@ -257,7 +257,7 @@ var fillNavTree = function () {
                         'description': '{{ product.description|striptags|escape|default:"(no description)" }}',
                         'image': '{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}',
                         'reach_score': '{{ product.reach_score }}',
-                        /* corresponding */ 'queue_uuid': '{{ product.queue.uuid }}'
+                        'queue_uuid': '{{ product.queue.uuid }}' // corresponding
                     }
                     {% if not forloop.last %},{% endif %}
                 {% endfor %}]
@@ -269,13 +269,12 @@ var fillNavTree = function () {
         for (var i = 0; i < categories.length; i++) {
             $("#categoryBox").append($("<div />", {
                 "class": "categoryContainer",
-                "html": "<div class='first slab category'>" +
+                "html": "<div class='first slab category" +
+                        "' data-queue_uuid='" + categories[i].queue_uuid +
+                        "' data-uuid='" + categories[i].uuid +
+                        "'>" +
                         "<span id='categoryArrow'></span>" +
-                        categories[i].collection_name + "</div>",
-                'data': {
-                    'uuid': categories[i].uuid,
-                    'queue_uuid': categories[i].queue_uuid
-                }
+                        categories[i].collection_name + "</div>"
             }));
         }
 
