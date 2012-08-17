@@ -78,7 +78,16 @@ var updateQueueUI = function (selectedPostUUID) {
 
     var queueArea = $('#replaceHiddenPost'),
         emptyQueueArea = $('#replaceTextWithPosts'),
-        serverPosts = client.apps[0].queues[0].activePosts;
+        serverPosts = [];
+
+    for (var i = 0; i < client.apps[0].queues.length; i++) {
+        console.log(client.apps[0].queues[i].uuid, window.activeQueueUUID);
+        if (client.apps[0].queues[i].uuid == window.activeQueueUUID) {
+            serverPosts = client.apps[0].queues[i].activePosts;
+            console.log(serverPosts);
+            break;
+        }
+    }
 
     // reset the array of posts displayed.
     queueArea.empty();
@@ -624,5 +633,13 @@ $(document).ready(function () {
 
     //If any of the times are changed, change data about time
     $(".dropDownTime").change(changeScheduledTimeInDialog);
+
+    // click category/product to show its queue
+    $('#allCategories, .category, .categoryChild').click(function () {
+        // update window.activeQueueUUID and refresh the UI.
+        console.log($(this).data('queue_uuid'));
+        window.activeQueueUUID = $(this).data('queue_uuid');
+        updateQueueUI($(".post.selected").data("uuid"));
+    });
     /*------ End functions for FB posting schedule dialog ------*/
 });

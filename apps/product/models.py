@@ -7,6 +7,7 @@ from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from apps.client.models import Client
+# from apps.reengage.models import ReEngageQueue
 from apps.reengage.social_networks import Facebook
 
 from util.helpers import generate_uuid
@@ -30,6 +31,7 @@ class ProductCollection(Model, db.polymodel.PolyModel):
 
     # Client.collections is a ReferenceProperty
     client = db.ReferenceProperty(db.Model, collection_name='collections')
+    queue = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -128,6 +130,7 @@ class Product(Model, db.polymodel.PolyModel):
     """Stores information about a store's product."""
     created = db.DateTimeProperty(auto_now_add=True)
     client = db.ReferenceProperty(Client, collection_name='products')
+    queue = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
 
     # should NOT be accessed, use .collections instead;
     # it is public only because GAE does not save underscored properties.

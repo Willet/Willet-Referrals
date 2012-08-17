@@ -284,7 +284,7 @@ p#soon {
 
 #boxTopRight {
     float: right;
-    padding: 15px
+    padding: 18px
 }
 
 #detailsBar{
@@ -347,11 +347,11 @@ which has one pixel less height for the white border on top */
 }
 
 .slab.selected,
-.slab:hover { 
-    background: #e2e2e2; cursor: pointer; 
+.slab:hover {
+    background: #e2e2e2; cursor: pointer;
 }
-.slab.selected { 
-    font-weight: bold; 
+.slab.selected {
+    font-weight: bold;
 }
 #allCategories {
     padding: 8px 15px 8px 7px;
@@ -359,7 +359,7 @@ which has one pixel less height for the white border on top */
 .categoryChild {
     padding: 8px 15px 8px 40px;
 }
-        
+
 #categoryArrow,
 #categoryArrow.open {
     margin-top: 1px;

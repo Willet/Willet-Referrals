@@ -109,7 +109,7 @@ var loadQueues = function (app, queue, callback) {
         '{% url ReEngageQueueJSONHandler %}',
         {
             'app_uuid': (app && app.uuid) || '', // not used (one-app-one-queue MVP)
-            'queue_uuid': (queue && queue.uuid) || '' // not used (one-app-one-queue MVP)
+            'queue_uuid': (queue && queue.uuid) || ''
         },
         function (response) {
             // normally returns an array, but not yet
@@ -247,6 +247,7 @@ var fillNavTree = function () {
             {
                 'uuid': '{{ collection.uuid }}',
                 'collection_name': '{{ collection.collection_name }}',
+                /* corresponding */ 'queue_uuid': '{{ collection.queue.uuid }}',
                 'products': [{% for product in collection.products %}
                     {
                         'uuid': '{{ product.uuid }}',
@@ -254,7 +255,8 @@ var fillNavTree = function () {
                         'title': '{{ product.title|striptags|escape|default:"(no name)" }}',
                         'description': '{{ product.description|striptags|escape|default:"(no description)" }}',
                         'image': '{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}',
-                        'reach_score': '{{ product.reach_score }}'
+                        'reach_score': '{{ product.reach_score }}',
+                        /* corresponding */ 'queue_uuid': '{{ product.queue.uuid }}'
                     }
                     {% if not forloop.last %},{% endif %}
                 {% endfor %}]
@@ -268,18 +270,25 @@ var fillNavTree = function () {
                 "class": "categoryContainer",
                 "html": "<div class='first slab category'>" +
                         "<span id='categoryArrow'></span>" +
-                        categories[i].collection_name + "</div>"
+                        categories[i].collection_name + "</div>",
+                'data': {
+                    'uuid': categories[i].uuid,
+                    'queue_uuid': categories[i].queue_uuid
+                }
             }));
         }
 
         // Fills in the product names
-        // TODO: fetch actual product names
         for (var i = 0; i < categories.length; i++) {
             for (var j = 0; j < categories[i].products.length; j++) {
                 $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
                     "class": "categoryChild slab hidden",
                     "html": "(" + categories[i].products[j].reach_score +
-                            ") " + categories[i].products[j].title
+                            ") " + categories[i].products[j].title,
+                    'data': {
+                        'uuid': categories[i].products[j].uuid,
+                        'queue_uuid': categories[i].products[j].queue_uuid
+                    }
                 }));
             }
         }
