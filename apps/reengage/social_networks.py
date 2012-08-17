@@ -7,7 +7,7 @@ from urllib import urlencode
 from xml.dom import minidom
 
 from google.appengine.api.urlfetch import fetch, InvalidURLError
-from util.consts import SHOPIFY_APPS, APP_DOMAIN
+from util.consts import SHOPIFY_APPS
 from django.utils import simplejson as json
 
 class SocialNetwork():
@@ -49,14 +49,10 @@ class SocialNetwork():
             return False, "Problem making request. Not sure why: %r" % e
 
         if not any(x in response.headers["content-type"] for x in cls._response_types):
-            return False, "Invalid content type: %s\n%s" % (
-                response.headers["content-type"], response.content
-            )
+            return False, "Invalid content type: %s" % response.headers["content-type"]
 
         if not int(response.status_code) in cls._response_codes:
-            return False, "Invalid status code: %s\n%s" % (
-                response.status_code, response.content
-            )
+            return False, "Invalid status code: %s" % response.status_code
 
         # Other checks?
 
@@ -109,9 +105,8 @@ class Facebook(SocialNetwork):
         logging.info("Product: %s" % product)
 
         url     = product.resource_url  # Assume this is a canonical URL
-        our_url = "http://%s/r/url/%s" % (APP_DOMAIN, url)
-        logging.info("Page url: %s" % our_url)
-        page_id = cls._get_page_id(our_url)
+        logging.info("Page url: %s" % url)
+        page_id = cls._get_page_id(url)
         logging.info("Page Id: %s" % page_id)
 
         token   = cls._get_access_token()

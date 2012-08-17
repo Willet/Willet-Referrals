@@ -11,7 +11,6 @@ urlpatterns = [
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
-    (r'/r/url/(.+)', ReEngageMagic),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),

@@ -208,6 +208,8 @@ class Product(Model, db.polymodel.PolyModel):
         """Creates a product in the datastore.
            Accepts datastore fields, returns Product object.
         """
+        if not client:
+            raise AttributeError("Must have client")
         if images == None:
             images = []
         if tags == None:
