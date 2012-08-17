@@ -13,6 +13,7 @@ from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
 # from apps.reengage.shopify.models import ReEngageShopify
+from apps.product.models import Product
 from apps.user.models import User
 
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN, URL
@@ -70,10 +71,7 @@ class ReEngageShopify(ReEngage, AppShopify):
         self.queue_webhooks(product_hooks_too=True)
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/r/shopify/load/reengage-buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                    ),
+                "src": "%s/r/reengage/js/buttons.js" % URL,
                 "event": "onload"
             }
         }])
@@ -234,8 +232,9 @@ class ReEngageShopify(ReEngage, AppShopify):
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
     app_    = db.ReferenceProperty(App, collection_name='queues')
-    queued   = db.ListProperty(unicode, indexed=False)
-    expired  = db.ListProperty(unicode, indexed=False)
+    cohorts = db.ListProperty(unicode, indexed=False)
+    queued  = db.ListProperty(unicode, indexed=False)
+    expired = db.ListProperty(unicode, indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -320,6 +319,15 @@ class ReEngageQueue(Model):
             return products
         else:
             return []
+
+    def get_latest_cohort(self):
+        if not self.cohorts:
+            # TODO: What to do when no cohort?
+            pass
+
+        cohort = ReEngageCohort.get(self.cohorts[-1])
+
+        return cohort
 
     @classmethod
     def get_by_url(cls, url):
@@ -448,3 +456,49 @@ class ReEngageAccount(User):
             return (user, True)
         else:
             return (None, False)
+
+
+class ReEngageCohort(Model):
+    """Represents a queue within ReEngage"""
+    queue         = db.ReferenceProperty(Model, collection_name='cohorts')
+    message_index = db.IntegerProperty(default=0)
+    active        = db.BooleanProperty(default=True, indexed=True)
+    created       = db.DateTimeProperty()
+    completed     = db.DateTimeProperty()
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageCohort, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def get_by_product_url(cls, url):
+        """It is a bit of a pain to get a cohort given a URL. We need to hop
+        around a bit...
+
+        url     -> product
+        product -> queue
+        queue   -> cohort
+        """
+        product = Product.get_by_url(url)
+        logging.info("Product: %s" % product)
+
+
+        if not product:
+            return None
+
+        queues = ReEngageQueue.all().filter("product_uuids =", product.uuid)\
+            .fetch(limit=1000)
+        logging.info("Queues: %s" % queues)
+
+        if not queues:
+            return None
+
+        # There should be exactly one queue that has only this product id
+        queue = filter(lambda x: len(x.product_uuids) == 1, queues)[0]
+        logging.info("Queue: %s" % queue)
+
+        if not queue:
+            return None
+
+        return queue.get_latest_cohort()

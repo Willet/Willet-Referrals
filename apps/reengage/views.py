@@ -337,3 +337,30 @@ class ReEngageCPLServeScript(URIHandler):
                                          charset='utf-8')
         self.response.out.write(self.render_page('reengage/js/com.js',
                                                  template_values))
+
+
+class ReEngageServeButtonsScript(URIHandler):
+    """Serves the ReEngage buttons script"""
+    def get(self):
+        referrer = os.environ.get('HTTP_REFERER')
+
+        if not referrer:
+            # TODO: What do we do? We don't know where we came from!
+            pass
+
+        # Get cohort by URL... how?
+        cohort    = ReEngageCohort.get_by_product_url(referrer)
+        cohort_id = ""
+        if hasattr(cohort, "uuid"):
+            cohort_id = cohort_id
+
+        # Serve the script
+        template_values = {
+            "cohort_id": cohort_id
+        }
+        self.response.headers.add_header(
+            'content-type', 'text/javascript', charset='utf-8'
+        )
+        self.response.out.write(
+            self.render_page('reengage/js/reengage-buttons.js', template_values)
+        )

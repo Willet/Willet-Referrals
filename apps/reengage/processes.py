@@ -62,3 +62,43 @@ class ReEngageCron(URIHandler):
             queue.expired.append(post_uuid)
             queue.queued.remove(post_uuid)
             queue.put()
+
+
+"""
+    # How would this extend to Users? Does that matter for a marketing plan?
+    # User level stuff matters for analytics, certainly, It matters for
+    Scheduler
+
+        schedules = get_schedules(days=today.weekday, times=today.hour)
+
+        for schedule in schedules:
+            marketing_plan = schedule.get_marketing_plan(if_active=True)
+
+            cohorts = marketing_plan.get_cohorts(if_active=True)
+
+            for cohort in cohorts:
+                plan_length = len(marketing_plan.message)
+
+                message_index = cohort.message_index
+                if message_index >= plan_length:
+                    cohort.active = False
+                    continue
+
+                for product in marketing_plan.products:
+                    post_message(
+                        marketing_plan.message[message_index],
+                        product,
+                        cohort
+                    )
+
+                cohort.message_index += 1
+                if cohort.message_index >= plan_length:
+                    cohort.active = False
+
+
+            # Always create a new cohort at the end of a schedule
+            marketing_plan.add_cohort(create_cohort())
+
+
+    ...
+"""
