@@ -31,7 +31,9 @@ class ProductCollection(Model, db.polymodel.PolyModel):
 
     # Client.collections is a ReferenceProperty
     client = db.ReferenceProperty(db.Model, collection_name='collections')
-    queue = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
+
+    # use .queue to access this object (which autocreates a 1:1 queue)
+    queue_ref = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -130,7 +132,9 @@ class Product(Model, db.polymodel.PolyModel):
     """Stores information about a store's product."""
     created = db.DateTimeProperty(auto_now_add=True)
     client = db.ReferenceProperty(Client, collection_name='products')
-    queue = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
+
+    # use .queue to access this object (which autocreates a 1:1 queue)
+    queue_ref = db.ReferenceProperty(db.Model)  # if you don't need it, don't use it
 
     # should NOT be accessed, use .collections instead;
     # it is public only because GAE does not save underscored properties.
@@ -376,3 +380,50 @@ class Product(Model, db.polymodel.PolyModel):
         self.put_later()
 
         return reach_count
+
+    def _get_or_create_queue(self):
+        """return a queue that corresponds to this product."""
+        logging.debug('called _get_or_create_queue')
+        try:
+            if self.queue_ref:
+                logging.debug('found built-in ref')
+                return self.queue_ref
+        except db.ReferencePropertyResolveError, err:
+            pass
+
+        # could not import globally :(
+        if not self.client:
+            raise AttributeError('cannot make queue for None-client product')
+
+        from apps.reengage.models import ReEngageQueue, ReEngageShopify
+        queue_name = self._get_associated_queue_name()
+        queue = ReEngageQueue.get_by_client_and_name(self.client,
+                                                    queue_name)
+        logging.debug('got queue? %r' % queue)
+        if queue:  # found queue, use it
+            logging.debug('returning %r' % queue)
+            return queue
+
+        # queue not found, suck it up and return one
+        logging.debug('found nothing of significance')
+        app = ReEngageShopify.get_by_client_and_name(self.client,
+                                                    'ReEngageShopify')
+        logging.debug('got app? %r' % app)
+        queue = ReEngageQueue.create(app_=app,
+                                        name=queue_name,
+                                        product_uuids=[self.uuid],
+                                        uuid=generate_uuid(16))
+        self.queue_ref = queue
+        self.put_later()
+        logging.debug('returning queue %r' % queue)
+        return queue
+
+    # turn into attribute
+    queue = property(_get_or_create_queue)
+
+    def _get_associated_queue_name(self):
+        """."""
+        queue_name = '%s-%s-%s' % ('ReEngageQueue',
+                                   self.__class__.__name__,
+                                   self.uuid)
+        return queue_name

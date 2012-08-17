@@ -140,9 +140,9 @@ class ReEngageShopify(ReEngage, AppShopify):
         app = cls(key_name=uuid,
                   uuid=uuid,
                   client=client,
-                  store_name=client.name, # Store name
+                  store_name=client.name,  # Store name
                   store_url=client.url,  # Store url
-                  store_id=client.id,   # Store id
+                  store_id=client.id,  # Store id
                   store_token=app_token)
         app.put()
 
@@ -199,7 +199,6 @@ class ReEngageQueue(Model):
     expired = db.ListProperty(unicode, indexed=False)
 
     # use get_products() to get a total list of products.
-    # to save time,
     collection_uuids = db.ListProperty(unicode, indexed=False)
     product_uuids = db.ListProperty(unicode, indexed=False)
 
@@ -327,6 +326,19 @@ class ReEngageQueue(Model):
                 return queue
 
     @classmethod
+    def get_by_client_and_name(cls, client, name):
+        """same as get_by_app_and_name, except with even more reads."""
+        logging.debug('called get_by_client_and_name')
+        try:
+            for app in client.apps:
+                queue = cls.get_by_app_and_name(app, name)
+                if queue:
+                    return queue
+        except Exception, err:
+            logging.error('%s' % err, exc_info=True)
+        return None
+
+    @classmethod
     def get_by_url(cls, url):
         """Find a queue based on the store url"""
         app   = ReEngageShopify.get_by_url(url)
@@ -348,6 +360,15 @@ class ReEngageQueue(Model):
         queue.put()
 
         return (queue, True)
+
+    @classmethod
+    def create(cls, **kwargs):
+        """Simple wrapper around init."""
+        logging.debug('called %r.create' % cls.__name__)
+        kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
+        queue = cls(**kwargs)
+        queue.put()
+        return queue
 
     def _validate_self(self):
         return True
