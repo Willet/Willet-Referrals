@@ -72,12 +72,55 @@ def get_post(uuid):
     return post
 
 
+class ReEngageQueuesJSONHandler(URIHandler):
+    """A resource for accessing queues using JSON"""
+    @session_active
+    def get(self):
+        """Get all queued elements for a shop
+
+        Unless a queue_uuid is found, in which case it will be used.
+        You'll still need to be logged in, though.
+        """
+        queues = []
+
+        client = Client.get(self.request.get('client_uuid'))
+        if client:
+            logging.debug('adding products\' queues')
+            queues.extend([p.queue for p in client.products])
+
+        app = ReEngageShopify.get(self.request.get('app_uuid'))
+        if app:
+            logging.debug('adding app\'s queues')
+            queues.extend(app.queues)
+
+        if not queues:
+            session = get_current_session()
+            queues = get_queues()
+
+        if not queues:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.error(404)
+            return
+
+        # build json response for "a bunch of queues"
+        response = {'key': 'queues',
+                    'value': []}
+        for queue in queues:
+            response['value'].append(queue.to_obj()['value'])
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
+
+
 class ReEngageQueueJSONHandler(URIHandler):
     """A resource for accessing queues using JSON"""
     @session_active
     def get(self):
-        """Get all queued elements for a shop"""
-        """Unless a queue_uuid is found, in which case it will be used. You'll still need to be logged in, though"""
+        """Get all queued elements for a shop
+
+        Unless a queue_uuid is found, in which case it will be used.
+        You'll still need to be logged in, though.
+        """
 
         queue = ReEngageQueue.get(self.request.get('queue_uuid'))
         if not queue:

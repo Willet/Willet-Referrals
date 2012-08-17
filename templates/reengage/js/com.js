@@ -106,14 +106,15 @@ var loadApps = function (client, callback) {
 var loadQueues = function (app, queue, callback) {
     // returns nothing.
     ajaxRequest(
-        '{% url ReEngageQueueJSONHandler %}',
+        '{% url ReEngageQueuesJSONHandler %}',
         {
-            'app_uuid': (app && app.uuid) || '', // not used (one-app-one-queue MVP)
+            'app_uuid': (app && app.uuid) || '',
+            'client_uuid': (client && client.uuid) || '',
             'queue_uuid': (queue && queue.uuid) || ''
         },
         function (response) {
             // normally returns an array, but not yet
-            var data = [response.queues || {}];  // data is a list of queues
+            var data = response.queues || {};  // data is a list of queues
 
             var queues = [];  // reset
             for (var i = 0; i < data.length; i++) {
