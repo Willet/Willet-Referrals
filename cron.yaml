@@ -34,7 +34,7 @@ cron:
 
 - description:
   url: /r/shopify/cron/start
-  schedule: every 1 hours
+  schedule: every 5 minutes
   timezone: GMT
 
 - description: hourly action tallying

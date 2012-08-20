@@ -22,12 +22,22 @@ class ReEngageCron(URIHandler):
         today   = datetime.datetime.utcnow()
         weekday = today.weekday()
 
+        logging.info("Current time: %s" % today)
+        logging.info("Current day: %s" % weekday)
+        logging.info("Current hour: %s" % today.strftime("%H"))
+
+        # Warning: This limit is way, way too low for the app.
+        # Each category and product have a separate schedule...
+        # TODO: Allow this to scale to an arbitrary number of schedules
         schedules = ReEngageSchedule.all()\
                     .filter('days = ', weekday)\
-                    .filter('times = ', today.hour)
+                    .filter('times = ', today.strftime("%H:00")).fetch\
+            (limit=100)
+
+        logging.info("Schedules: %s" % schedules)
 
         for schedule in schedules:
-            queue = schedule.queue
+            queue = schedule.queue.get()
             if not queue.queued:
                 logging.info("No messages queued, continuing...")
                 continue
@@ -42,7 +52,10 @@ class ReEngageCron(URIHandler):
             params        = {"post": uuid}
             retry_options = {"task_retry_limit": 0}
 
+            logging.info("Products:")
+
             for product in products:
+                logging.info("Scheduling posts...")
                 params.update({"product": product.uuid})
                 taskqueue.add(queue_name='buttonsEmail', url=url,
                               params=params, retry_options=retry_options)
@@ -111,6 +124,7 @@ class ReEngagePostProduct(URIHandler):
         product_uuid = self.request.get("product")
 
         try:
+            logging.info("Preparing post...")
             post = ReEngagePost.get(post_uuid)
             product = ProductCollection.get(product_uuid)
 

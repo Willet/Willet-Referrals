@@ -397,7 +397,10 @@ class ReEngageScheduleJSONHandler(URIHandler):
         try:
             for index, value in enumerate(times):
                 t_time       = datetime.datetime.strptime(value, "%H:%M") - offset
-                times[index] = datetime.time(t_time.hour, t_time.minute)
+                times[index] = unicode(
+                                datetime.time(t_time.hour, t_time.minute)\
+                                .strftime("%H:%M")
+                )
             logging.info("%s" % times)
         except ValueError, e:
             logging.info("Couldn't parse times: %s" % e)
