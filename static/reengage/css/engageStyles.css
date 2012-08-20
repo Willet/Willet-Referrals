@@ -356,9 +356,18 @@ which has one pixel less height for the white border on top */
 #allCategories {
     padding: 8px 15px 8px 7px;
 }
-.categoryChild {
-    padding: 8px 15px 8px 40px;
+
+.categoryChild .reach_score {
+    float: right;
+    margin-right: 10px;
+    font-weight: bold;
 }
+
+.categoryChild .title {
+    margin: 8px 15px 8px 20px;
+}
+
+
 
 #categoryArrow,
 #categoryArrow.open {

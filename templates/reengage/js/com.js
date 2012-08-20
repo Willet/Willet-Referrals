@@ -278,16 +278,24 @@ var fillNavTree = function () {
             }));
         }
 
+
+        var products;
+        var sort_products = function(a, b) {
+            //assume that a and b have reach scores...
+            return b.reach_score - a.reach_score;
+        };
+
         // Fills in the product names
         for (var i = 0; i < categories.length; i++) {
-            for (var j = 0; j < categories[i].products.length; j++) {
+            products = categories[i].products.sort(sort_products);
+            for (var j = 0; j < products.length; j++) {
                 $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
                     "class": "categoryChild slab hidden",
-                    "html": "(" + categories[i].products[j].reach_score +
-                            ") " + categories[i].products[j].title,
+                    "html": "<div class='reach_score'>" + products[j].reach_score + "</div>" +
+                            "<div class='title'>" + products[j].title + "</div>",
                     'data': {
-                        'uuid': categories[i].products[j].uuid,
-                        'queue_uuid': categories[i].products[j].queue_uuid
+                        'uuid': products[j].uuid,
+                        'queue_uuid': products[j].queue_uuid
                     }
                 }));
             }
