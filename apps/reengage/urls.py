@@ -23,7 +23,8 @@ urlpatterns = [
 
     # Re-engage Pseudo-resources
     (r'/r/shopify/queues$', ReEngageQueueHandler),
-    (r'/r/shopify/queues\.json', ReEngageQueueJSONHandler),
+    (r'/r/shopify/queue\.json', ReEngageQueueJSONHandler),
+    (r'/r/shopify/queues\.json', ReEngageQueuesJSONHandler),
     (r'/r/shopify/product?', ReEngageProductSourceHandler),
     (r'/r/shopify/product\.json', ReEngageProductSourceJSONHandler),
     (r'/r/shopify/post/(\w+)', ReEngagePostHandler),

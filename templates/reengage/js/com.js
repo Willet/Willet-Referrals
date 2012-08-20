@@ -103,18 +103,18 @@ var loadApps = function (client, callback) {
     );
 };
 
-// @unused in MVP
 var loadQueues = function (app, queue, callback) {
     // returns nothing.
     ajaxRequest(
-        '{% url ReEngageQueueJSONHandler %}',
+        '{% url ReEngageQueuesJSONHandler %}',
         {
-            'app_uuid': (app && app.uuid) || '', // not used (one-app-one-queue MVP)
-            'queue_uuid': (queue && queue.uuid) || '' // not used (one-app-one-queue MVP)
+            'app_uuid': (app && app.uuid) || '',
+            'client_uuid': (client && client.uuid) || '',
+            'queue_uuid': (queue && queue.uuid) || ''
         },
         function (response) {
             // normally returns an array, but not yet
-            var data = [response.queues || {}];  // data is a list of queues
+            var data = response.queues || {};  // data is a list of queues
 
             var queues = [];  // reset
             for (var i = 0; i < data.length; i++) {
@@ -174,6 +174,7 @@ var createPost = function (title, content, first, uuid) {
         'type': "POST",
         'dataType': 'json',
         'data': {
+            'queue_uuid': window.activeQueueUUID,
             'title': title,
             'content': content,
             'method': (first? 'prepend' : 'append')
@@ -236,4 +237,70 @@ var deletePost = function (uuid) {
             updatePostUI();
         }
     }));
+};
+
+var fillNavTree = function () {
+    // Populates 'Categories' section with category and product names
+    // Currently no back end exists, for now filler category/product names are created
+
+    // {% if client.collections %}
+        var categories = [{% for collection in client.collections %}
+            {
+                'uuid': '{{ collection.uuid }}',
+                'collection_name': '{{ collection.collection_name }}',
+                'queue_uuid': '{{ collection.queue.uuid }}', // corresponding
+                'products': [{% for product in collection.products %}
+                    {
+                        'uuid': '{{ product.uuid }}',
+                        'shopify_id': '{{ product.shopify_id|default:"0" }}',
+                        'title': '{{ product.title|striptags|escape|default:"(no name)" }}',
+                        'description': '{{ product.description|striptags|escape|default:"(no description)" }}',
+                        'image': '{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}',
+                        'reach_score': '{{ product.reach_score }}',
+                        'queue_uuid': '{{ product.queue.uuid }}' // corresponding
+                    }
+                    {% if not forloop.last %},{% endif %}
+                {% endfor %}]
+            }
+            {% if not forloop.last %},{% endif %}
+        {% endfor %}];
+
+        // Fills in the category names
+        for (var i = 0; i < categories.length; i++) {
+            $("#categoryBox").append($("<div />", {
+                "class": "categoryContainer",
+                "html": "<div class='first slab category" +
+                        "' data-queue_uuid='" + categories[i].queue_uuid +
+                        "' data-uuid='" + categories[i].uuid +
+                        "'>" +
+                        "<span id='categoryArrow'></span>" +
+                        categories[i].collection_name + "</div>"
+            }));
+        }
+
+
+        var products;
+        var sort_products = function(a, b) {
+            //assume that a and b have reach scores...
+            return b.reach_score - a.reach_score;
+        };
+
+        // Fills in the product names
+        for (var i = 0; i < categories.length; i++) {
+            products = categories[i].products.sort(sort_products);
+            for (var j = 0; j < products.length; j++) {
+                $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
+                    "class": "categoryChild slab hidden",
+                    "html": "<div class='reach_score'>" + products[j].reach_score + "</div>" +
+                            "<div class='title'>" + products[j].title + "</div>",
+                    'data': {
+                        'uuid': products[j].uuid,
+                        'queue_uuid': products[j].queue_uuid
+                    }
+                }));
+            }
+        }
+    // {% else %}
+        console.log('wtf?');
+    // {% endif %}
 };

@@ -4,12 +4,13 @@ import logging
 import webob
 import cgi
 
+from apps.client.models import Client
 from apps.reengage.models import ReEngagePost, ReEngageShopify, ReEngageQueue
 from apps.reengage.social_networks import Facebook
 
 from util.consts import ADMIN_IPS, USING_DEV_SERVER
 from util.gaesessions import get_current_session
-from util.helpers import generate_uuid, url as build_url
+from util.helpers import generate_uuid, get_list_item, url as build_url
 from util.urihandler import URIHandler
 
 #TODO: Error handling
@@ -35,8 +36,12 @@ def session_active(fn):
     return wrapped
 
 
-def get_queue():
-    """Obtains a queue using the provided shop url"""
+def get_queues(uuid=None, name=''):
+    """Obtains a queue using the provided shop url.
+
+    If a uuid is specified, returns an queue instead of a list of queues.
+    If a name is specified, returns an queue instead of a list of queues.
+    """
     session = get_current_session()
     store_url = session.get("shop")
     if not store_url:
@@ -46,8 +51,16 @@ def get_queue():
     if not app:
         return None
 
+    if uuid:
+        queue = ReEngageQueue.get(uuid) or None
+        return queue
+
+    if name:
+        queue = ReEngageQueue.get_by_app_and_name(app=app, name=name) or None
+        return queue
+
     queue, created = ReEngageQueue.get_or_create(app)
-    return queue
+    return [queue]
 
 
 def get_post(uuid):
@@ -59,17 +72,63 @@ def get_post(uuid):
     return post
 
 
+class ReEngageQueuesJSONHandler(URIHandler):
+    """A resource for accessing queues using JSON"""
+    @session_active
+    def get(self):
+        """Get all queued elements for a shop
+
+        Unless a queue_uuid is found, in which case it will be used.
+        You'll still need to be logged in, though.
+        """
+        queues = []
+
+        client = Client.get(self.request.get('client_uuid'))
+        if client:
+            client_queues = [p.queue for p in client.products]
+            logging.debug('adding products\' queues: %r' % client_queues)
+            queues.extend(client_queues)
+
+        app = ReEngageShopify.get(self.request.get('app_uuid'))
+        if app:
+            logging.debug('adding app\'s queues: %r' % app.queues)
+            queues.extend(app.queues)
+
+        if not queues:
+            session = get_current_session()
+            queues = get_queues()
+
+        if not queues:
+            logging.error("Could not find queue. Store URL: %s" %
+                          session.get("shop"))
+            self.error(404)
+            return
+
+        # build json response for "a bunch of queues"
+        response = {'key': 'queues',
+                    'value': []}
+        for queue in queues:
+            response['value'].append(queue.to_obj()['value'])
+        self.respondJSON(response.get("value"),
+                         response_key=response.get("key"))
+
+
 class ReEngageQueueJSONHandler(URIHandler):
     """A resource for accessing queues using JSON"""
     @session_active
     def get(self):
-        """Get all queued elements for a shop"""
-        """Unless a queue_uuid is found, in which case it will be used. You'll still need to be logged in, though"""
+        """Get all queued elements for a shop
+
+        Unless a queue_uuid is found, in which case it will be used.
+        You'll still need to be logged in, though.
+        """
 
         queue = ReEngageQueue.get(self.request.get('queue_uuid'))
         if not queue:
             session = get_current_session()
-            queue = get_queue()
+            queues = get_queues()
+            queue = get_list_item(queues, 0)
+
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -84,8 +143,9 @@ class ReEngageQueueJSONHandler(URIHandler):
     def post(self):
         """Create a new post element in the queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -106,8 +166,10 @@ class ReEngageQueueJSONHandler(URIHandler):
         post.put()
 
         if method == "append":
+            logging.debug('appending post %r to %r' % (post, queue))
             queue.append(post)
         else:
+            logging.debug('prepending post %r to %r' % (post, queue))
             queue.prepend(post)
 
         response = post.to_obj()
@@ -117,8 +179,9 @@ class ReEngageQueueJSONHandler(URIHandler):
     def delete(self):
         """Delete all post elements in this queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                           session.get("shop"))
@@ -134,14 +197,27 @@ class ReEngageQueueHandler(URIHandler):
     @session_active
     def get(self):
         """Get all queued elements for a shop"""
+        queue = None
         session = get_current_session()
+
+        app = ReEngageShopify.get_by_url(session.get("shop"))
+        # if app:
+        #     queue = app.queues[0]
+        queue = get_list_item(app.queues, 0)
+
+        # if queue_uuid is specified, operate on that specific one
+        queue_uuid = self.request.get('queue_uuid', '')
+        if queue_uuid:
+            queue = ReEngageQueue.get(queue_uuid)
 
         #TODO: Replace with HTML view
         page = self.render_page('reengage/queue.html', {
             'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             "t": session.get("t"),
             "shop": session.get("shop"),
-            "host" : self.request.host_url
+            "host" : self.request.host_url,
+            'queue': queue,
+            'app': app
         })
         self.response.out.write(page)
 
@@ -149,8 +225,9 @@ class ReEngageQueueHandler(URIHandler):
     def post(self):
         """Create a new post element in the queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))
@@ -181,8 +258,9 @@ class ReEngageQueueHandler(URIHandler):
     def delete(self):
         """Delete all post elements in this queue"""
         session = get_current_session()
+        uuid = self.request.get('queue_uuid', '')
 
-        queue = get_queue()
+        queue = get_queues(uuid=uuid)
         if not queue:
             logging.error("Could not find queue. Store URL: %s" %
                          session.get("shop"))
