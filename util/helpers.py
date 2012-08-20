@@ -97,6 +97,14 @@ def common_items(list1, list2):
     return frozenset(list1) & frozenset(list2)
 
 
+def get_list_item(list_obj, index):
+    """get list_obj[index] without an exception."""
+    try:
+        return list_obj[index]
+    except IndexError:
+        return None
+
+
 def get_target_url(referrer):
     """ Clean up a URL to only contain protocol://domain.com/file.htm """
     target = ""
