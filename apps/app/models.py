@@ -87,6 +87,18 @@ class App(Model, polymodel.PolyModel):
         return cls.all().filter('client =', client).get()
 
     @classmethod
+    def get_by_client_and_name(cls, client, class_name):
+        """like get_by_client, but returns the first one of a given class."""
+        apps = cls.all().filter('client =', client).fetch(limit=10)
+        if not apps:
+            return None
+        for app in apps:
+            if app.__class__.__name__ == class_name:
+                return app
+
+        return None
+
+    @classmethod
     def get_by_url(cls, store_url):
         """Fetch an app via the store's url. This app can be of any type,
         and of any subclass. Use subclass-specific get_by_url functions
