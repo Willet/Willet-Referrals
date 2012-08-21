@@ -40,6 +40,11 @@ class CreateProduct(URIHandler):
         title = self.request.get("title")
         type_ = self.request.get("type", "")
 
+        if resource_url:
+            logging.info("Old resource URL: %s" % resource_url)
+            resource_url = resource_url.split('?')[0].strip('/')
+            logging.info("New resource URL: %s" % resource_url)
+
         if not images[0] and self.request.get("image", ""):
             # thus, image url field must be non-empty
             images = [self.request.get("image")] # this is a list of one object

@@ -1051,7 +1051,7 @@ class SIBTServeScript(URIHandler):
         product_title = 'false'  # must be a javascript variable
         product_description = 'false'  # must be a javascript variable
         show_top_bar_ask = False
-        store_url = get_shopify_url(self.request.get('store_url'))
+        store_url = get_shopify_url(self.request.get('store_url')).lower()
         template_values = {}
         tracked_urls = []
         unsure_multi_view = False  # deprecated
@@ -1063,7 +1063,7 @@ class SIBTServeScript(URIHandler):
         page_url = get_shopify_url(self.request.get('url')) or \
                    get_shopify_url(self.request.get('page_url')) or \
                    get_shopify_url(self.request.headers.get('referer', ''))
-        page_url = page_url.split('#')[0]  # clean up window.location
+        page_url = page_url.split('#')[0].lower()  # clean up window.location
         if not page_url:
             # serve comment instead of status code (let customers see it)
             self.response.out.write('/* missing URL */')
