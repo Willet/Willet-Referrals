@@ -31,5 +31,6 @@ urlpatterns = [
     (r'/r/shopify/post/(\w+)\.json', ReEngagePostJSONHandler),
 
     # Re-engage processes (beta)
-    (r'/r/shopify/cron/?', ReEngageCron),
+    (r'/r/shopify/cron/start/?', ReEngageCron),
+    (r'/r/shopify/cron/post/?',  ReEngageCronPostMessage),
 ]

@@ -253,8 +253,8 @@ class ReEngageQueue(Model):
     expired = db.ListProperty(unicode, indexed=False)
 
     # use get_products() to get a total list of products.
-    collection_uuids = db.ListProperty(unicode, indexed=False)
-    product_uuids = db.ListProperty(unicode, indexed=False)
+    collection_uuids = db.ListProperty(unicode, indexed=True)
+    product_uuids = db.ListProperty(unicode, indexed=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -393,13 +393,38 @@ class ReEngageQueue(Model):
         return None
 
     def get_latest_cohort(self):
-        if not self.cohorts:
-            # TODO: What to do when no cohort?
-            pass
+        logging.info("Cohorts: %s" % self.cohorts)
 
-        cohort = ReEngageCohort.get(self.cohorts[-1])
+        if not self.cohorts:
+            # Must be the first time. Create a cohort.
+            cohort_uuid = generate_uuid(16)
+            cohort = ReEngageCohort(
+                uuid  = cohort_uuid,
+                queue = self
+            )
+            cohort.put()
+
+            self.cohorts.append(unicode(cohort_uuid))
+            self.put()
+        else:
+            cohort_uuid = self.cohorts[-1]
+
+
+        cohort = ReEngageCohort.get(cohort_uuid)
+        logging.info("Cohort: %s" % cohort)
 
         return cohort
+
+    def get_cohorts(self, include_inactive=False):
+        # Returns a list of associated cohorts
+        cohorts = ReEngageCohort.all().filter("queue =", self)
+
+        if not include_inactive:
+            cohorts.filter("active =", True)
+
+        result = cohorts.fetch(limit=100)
+
+        return result
 
     @classmethod
     def get_by_url(cls, url):
@@ -419,10 +444,14 @@ class ReEngageQueue(Model):
             return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, app_=app,
-                    name="%s-%s-%s" % (cls.__name__,
-                                       app.__class__.__name__,
-                                       app.uuid))
+        name = "%s-%s-%s" % (cls.__name__, app.__class__.__name__, app.uuid)
+
+        # TODO: Refactor this mess
+        queue = cls(
+            uuid = uuid,
+            app_ = app,
+            name = name,
+        )
         queue.put()
 
         return (queue, True)
@@ -547,13 +576,16 @@ class ReEngageCohort(Model):
     queue         = db.ReferenceProperty(Model, collection_name='cohorts')
     message_index = db.IntegerProperty(default=0)
     active        = db.BooleanProperty(default=True, indexed=True)
-    created       = db.DateTimeProperty()
+    created       = db.DateTimeProperty(auto_now=True)
     completed     = db.DateTimeProperty()
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(ReEngageCohort, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     @classmethod
     def get_by_product_url(cls, url):
@@ -586,3 +618,4 @@ class ReEngageCohort(Model):
             return None
 
         return queue.get_latest_cohort()
+

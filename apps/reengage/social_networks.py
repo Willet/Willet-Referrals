@@ -104,8 +104,15 @@ class Facebook(SocialNetwork):
         product = kwargs.get("product")
         logging.info("Product: %s" % product)
 
-        url     = product.resource_url  # Assume this is a canonical URL
+        cohort  = kwargs.get("cohort")
+        logging.info("Cohort: %s" % cohort)
+
+        # Assume this is a canonical URL
+        url     = product.resource_url
+        if cohort:
+            url = "%s/%s" % (url, cohort.uuid)
         logging.info("Page url: %s" % url)
+
         page_id = cls._get_page_id(url)
         logging.info("Page Id: %s" % page_id)
 
@@ -113,10 +120,8 @@ class Facebook(SocialNetwork):
         logging.info("Token: %s" % token)
 
         message = cls._render_message(post.content, product=product)
-        logging.info("Message: %s" % message)
-
         logging.info("Title: %s" % post.title)
-        message = cls._render_message(post.content)
+        logging.info("Message: %s" % message)
 
         success, content = cls._request(cls.__destination_url, "POST", {
             "id"          : page_id,

@@ -1,20 +1,20 @@
 import logging
 import datetime
 from google.appengine.ext import db
-from apps.reengage.models import ReEngageQueue, ReEngagePost
+from google.appengine.api import taskqueue
+from apps.reengage.models import ReEngageQueue, ReEngagePost, ReEngageCohort
 from apps.reengage.social_networks import Facebook, SocialNetwork
+from util.helpers import generate_uuid, url
 from util.urihandler import URIHandler
 
 POST_CLASSES = {
     Facebook.__name__: Facebook,
 }
 
-class ReEngageCron(URIHandler):
+class ReEngageOldCron(URIHandler):
     def get(self):
         self.post()
 
-    # TODO: This probably needs to use task queues...
-    # TODO: How to make scheduling more flexible
     def post(self):
         """Posts all queue content to facebook on weekdays"""
         today = datetime.datetime.today()
@@ -64,41 +64,74 @@ class ReEngageCron(URIHandler):
             queue.put()
 
 
-"""
-    # How would this extend to Users? Does that matter for a marketing plan?
-    # User level stuff matters for analytics, certainly, It matters for
-    Scheduler
+class ReEngageCron(URIHandler):
+    def get(self):
+        self.post()
 
-        schedules = get_schedules(days=today.weekday, times=today.hour)
+    def post(self):
 
-        for schedule in schedules:
-            marketing_plan = schedule.get_marketing_plan(if_active=True)
+        # For the moment, assume that this represents all queues
+        # ... It does not, but we'll replace this with .run() or a cursor
+        #     or something else shortly
+        marketing_plans = ReEngageQueue.all().fetch(limit=1000)
 
-            cohorts = marketing_plan.get_cohorts(if_active=True)
+        for marketing_plan in marketing_plans:
+            cohorts     = marketing_plan.get_cohorts()
+            plan_length = len(marketing_plan.queued)
 
             for cohort in cohorts:
-                plan_length = len(marketing_plan.message)
-
                 message_index = cohort.message_index
                 if message_index >= plan_length:
                     cohort.active = False
+                    cohort.put()
                     continue
 
-                for product in marketing_plan.products:
-                    post_message(
-                        marketing_plan.message[message_index],
-                        product,
-                        cohort
-                    )
-
-                cohort.message_index += 1
-                if cohort.message_index >= plan_length:
-                    cohort.active = False
-
+                taskqueue.add(url=url('ReEngageCronPost'), params={
+                    "index"      : message_index,
+                    "plan_uuid"  : marketing_plan.uuid,
+                    "cohort_uuid": cohort.uuid
+                })
 
             # Always create a new cohort at the end of a schedule
-            marketing_plan.add_cohort(create_cohort())
+            uuid = generate_uuid(16)
+            cohort = ReEngageCohort(
+                queue = marketing_plan,
+                uuid  = uuid
+            )
+            cohort.put()
+
+            marketing_plan.cohorts.append(unicode(uuid))
+            marketing_plan.put()
 
 
-    ...
-"""
+
+class ReEngageCronPostMessage(URIHandler):
+    def get(self):
+        self.post()
+
+    def post(self):
+        index       = self.request.get("index")
+        plan_uuid   = self.request.get("plan_uuid")
+        cohort_uuid = self.request.get("cohort_uuid")
+
+        marketing_plan = ReEngageQueue.get(plan_uuid)
+        cohort         = ReEngageCohort.get(cohort_uuid)
+
+        post_uuid      = marketing_plan.queued[index]
+        plan_length    = len(marketing_plan.queued)
+
+        for product in marketing_plan.products:
+            post = ReEngagePost.get(post_uuid)
+            try:
+                cls = POST_CLASSES.get(post.network, SocialNetwork)
+                cls.post(post, product=product, cohort=cohort)
+            except NotImplementedError:
+                logging.error("No 'post' method for class %s" % cls)
+            except Exception, e:
+                # Problem posting, no OpenGraph tag?
+                logging.error("Problem posting. Probably no OG tag for %s" % product.uuid)
+
+        cohort.message_index += 1
+        if cohort.message_index >= plan_length:
+            cohort.active = False
+        cohort.put()

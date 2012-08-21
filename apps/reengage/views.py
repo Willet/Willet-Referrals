@@ -352,7 +352,9 @@ class ReEngageServeButtonsScript(URIHandler):
         cohort    = ReEngageCohort.get_by_product_url(referrer)
         cohort_id = ""
         if hasattr(cohort, "uuid"):
-            cohort_id = cohort_id
+            cohort_id = cohort.uuid
+
+        logging.info("Cohort id: %s" % cohort_id)
 
         # Serve the script
         template_values = {
