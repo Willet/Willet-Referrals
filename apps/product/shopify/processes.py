@@ -5,70 +5,68 @@ import logging
 from django.utils import simplejson as json
 
 from apps.app.shopify.models import App  # reengage
-from apps.app.shopify.models import AppShopify
-from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
-from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify, ProductShopifyCollection
 
 from util.shopify_helpers import get_shopify_url
-from util.urihandler import obtain, URIHandler
-
+from util.urihandler import URIHandler
 
 class CreateProductShopify(URIHandler):
     """Create a Shopify product"""
     def post(self):
-        logging.info("HEADERS : %s %r" % (
-            self.request.headers,
-            self.request.headers
-            )
-        )
+        self.create_product(self.request)
 
-        store_url = get_shopify_url(self.request.headers['X-Shopify-Shop-Domain'])
+    @staticmethod
+    def create_product(request):
+        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+        store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
         logging.info("store: %s " % store_url)
         client = ClientShopify.get_by_url(store_url)
 
         # Grab the data about the product from Shopify
-        product = json.loads(self.request.body)
+        product = json.loads(request.body)
 
-        ProductShopify.create_from_json(client, product)
-
+        new_product = ProductShopify.create_from_json(client, product)
+        return new_product
 
 class UpdateProductShopify(URIHandler):
     """Update a Shopify product"""
     def post(self):
-        logging.info("HEADERS : %s %r" % (
-            self.request.headers,
-            self.request.headers
-            )
-        )
+        self.update(self.request)
 
-        store_url = "http://%s" % self.request.headers['X-Shopify-Shop-Domain']
+    @staticmethod
+    def update_product(request):
+        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+        store_url = "http://%s" % request.headers['X-Shopify-Shop-Domain']
         logging.info("store: %s " % store_url)
-        store_url = get_shopify_url(self.request.headers['X-Shopify-Shop-Domain'])
+        store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
 
         # Grab the data about the product from Shopify
-        data = json.loads(self.request.body)
+        data = json.loads(request.body)
         product = ProductShopify.get_by_shopify_id(str(data['id']))
 
         if product:
             product.update_from_json(data)
         else:
-            client = ClientShopify.get_by_url(store_url)
-            ProductShopify.create_from_json(client, data)
+            client  = ClientShopify.get_by_url(store_url)
+            product = ProductShopify.create_from_json(client, data)
+
+        return product
 
 
 class DeleteProductShopify(URIHandler):
     """Delete a Shopify product"""
     def post(self):
-        logging.info("HEADERS : %s %r" % (
-            self.request.headers,
-            self.request.headers
-            )
-        )
+        self.delete_product(self.request)
+
+    @staticmethod
+    def delete_product(request):
+        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
 
         # Grab the data about the product from Shopify
-        data = json.loads(self.request.body)
+        data = json.loads(request.body)
 
         product = ProductShopify.get_by_shopify_id(str(data['id']))
 

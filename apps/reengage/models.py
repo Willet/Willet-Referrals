@@ -71,8 +71,24 @@ class ReEngageShopify(ReEngage, AppShopify):
         """ Install ReEngage scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
-        # Install yourself in the Shopify store
-        self.queue_webhooks(product_hooks_too=True)
+        # Don't use the product hooks: Use our own version.
+        # In all likelihood, our version will just call the existing product hooks
+        # If we knew the order they are executed in, we could avoid this
+        self.queue_webhooks(webhooks=[
+            # Install the "Product Creation" webhook
+            { "webhook": { "address": "%s/r/shopify/webhook/create" % (URL),
+                               "format": "json", "topic": "products/create" }
+            },
+            # Install the "Product Update" webhook
+            { "webhook": { "address": "%s/r/shopify/webhook/update" % (URL),
+                               "format": "json", "topic": "products/update" }
+            },
+            # Install the "Product Delete" webhook
+            { "webhook": { "address": "%s/r/shopify/webhook/delete" % (URL),
+                               "format": "json", "topic": "products/delete" }
+            }
+        ])
+
         self.queue_script_tags(script_tags=[{
             "script_tag": {
                 "src": "%s/r/reengage/js/buttons.js" % URL,
@@ -446,7 +462,6 @@ class ReEngageQueue(Model):
         uuid = generate_uuid(16)
         name = "%s-%s-%s" % (cls.__name__, app.__class__.__name__, app.uuid)
 
-        # TODO: Refactor this mess
         queue = cls(
             uuid = uuid,
             app_ = app,

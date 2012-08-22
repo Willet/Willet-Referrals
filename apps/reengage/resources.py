@@ -13,9 +13,6 @@ from util.gaesessions import get_current_session
 from util.helpers import generate_uuid, get_list_item, url as build_url
 from util.urihandler import URIHandler
 
-#TODO: Error handling
-#TODO: It is stupid duplicating logic between JSON and non-JSON handlers. Fix this
-
 def session_active(fn):
     """Decorator for checking if a session is active and a user is logged in."""
     def wrapped(*args, **kwargs):
