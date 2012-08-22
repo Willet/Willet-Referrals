@@ -233,7 +233,7 @@ class AskDynamicLoader(URIHandler):
 
             'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
-            'share_url': link.get_willt_url(), # page_url
+            'share_url': link.target_url, # page_url
 
             'store_domain': store_url,
             'target_url': page_url,
@@ -878,7 +878,7 @@ class ShowFBThanks(URIHandler):
         incentive_enabled = False
         user_cancelled = True
         app = None
-        post_id = self.request.get('post_id') # from FB
+        post_id = self.request.get('post_id') or self.request.get('success') # from FB
         user = User.get_or_create_by_cookie(self)
         instance = SIBTInstance.get_by_user(user)
         product = None
