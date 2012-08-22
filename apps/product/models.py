@@ -234,12 +234,16 @@ class Product(Model, db.polymodel.PolyModel):
         if tags == None:
             tags = []
 
-        if client and client.domain and title:  # can check for existence
-            uu_format = "%s-%s" % (client.domain, title)
-            uuid = Product.build_secondary_key(uu_format)
-            product = Product.get(uuid)
-            if product:
-                return product
+        #if client and client.domain and title:  # can check for existence
+        #    uu_format = "%s-%s" % (client.domain, title)
+        #    uuid = Product.build_secondary_key(uu_format)
+        #    product = Product.get(uuid)
+        #    if product:
+        #        return product
+
+        product = Product.get_by_url(resource_url)
+        if product:
+            return product
 
         product = Product.create(title=title,
                                  description=description,

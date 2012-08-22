@@ -211,7 +211,9 @@
                             'products': product_uuids.join(',')
                         },
                         success: function () {
-                            return callback(params);
+                            if(callback) {
+                                return callback(params);
+                            }
                         }
                     });
                 };
