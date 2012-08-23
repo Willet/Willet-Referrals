@@ -11,68 +11,83 @@ from apps.product.shopify.models import ProductShopify, ProductShopifyCollection
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
+def create_product(request):
+    logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+    store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
+    logging.info("store: %s " % store_url)
+    client = ClientShopify.get_by_url(store_url)
+
+    # Grab the data about the product from Shopify
+    product = json.loads(request.body)
+
+    new_product = ProductShopify.create_from_json(client, product)
+    return new_product
+
+def update_product(request):
+    logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+    store_url = "http://%s" % request.headers['X-Shopify-Shop-Domain']
+    logging.info("store: %s " % store_url)
+    store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
+
+    # Grab the data about the product from Shopify
+    data = json.loads(request.body)
+    product = ProductShopify.get_by_shopify_id(str(data['id']))
+
+    if product:
+        product.update_from_json(data)
+    else:
+        client  = ClientShopify.get_by_url(store_url)
+        product = ProductShopify.create_from_json(client, data)
+
+    return product
+
+def delete_product(request):
+    logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+    # Grab the data about the product from Shopify
+    data = json.loads(request.body)
+
+    product = ProductShopify.get_by_shopify_id(str(data['id']))
+
+    # Delete the product from our DB.
+    if product:
+        product.delete()
+
+def create_collection(request):
+    update_collection(request)
+
+def update_collection(request):
+    logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+
+    store_url = request.headers['X-Shopify-Shop-Domain']
+    app       = App.get_by_url(store_url)
+
+    # TODO: Verify that this works for non-custom collections as well.
+    collections = ProductShopifyCollection.fetch(app=app)
+    return collections
+
+def delete_collection(request):
+    logging.info("HEADERS : %s %r" % (request.headers, request.headers))
+    # TODO: Delete collection
+
 class CreateProductShopify(URIHandler):
     """Create a Shopify product"""
     def post(self):
-        self.create_product(self.request)
+        create_product(self.request)
 
-    @staticmethod
-    def create_product(request):
-        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
-
-        store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
-        logging.info("store: %s " % store_url)
-        client = ClientShopify.get_by_url(store_url)
-
-        # Grab the data about the product from Shopify
-        product = json.loads(request.body)
-
-        new_product = ProductShopify.create_from_json(client, product)
-        return new_product
 
 class UpdateProductShopify(URIHandler):
     """Update a Shopify product"""
     def post(self):
-        self.update(self.request)
-
-    @staticmethod
-    def update_product(request):
-        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
-
-        store_url = "http://%s" % request.headers['X-Shopify-Shop-Domain']
-        logging.info("store: %s " % store_url)
-        store_url = get_shopify_url(request.headers['X-Shopify-Shop-Domain'])
-
-        # Grab the data about the product from Shopify
-        data = json.loads(request.body)
-        product = ProductShopify.get_by_shopify_id(str(data['id']))
-
-        if product:
-            product.update_from_json(data)
-        else:
-            client  = ClientShopify.get_by_url(store_url)
-            product = ProductShopify.create_from_json(client, data)
-
-        return product
+        update_product(self.request)
 
 
 class DeleteProductShopify(URIHandler):
     """Delete a Shopify product"""
     def post(self):
-        self.delete_product(self.request)
-
-    @staticmethod
-    def delete_product(request):
-        logging.info("HEADERS : %s %r" % (request.headers, request.headers))
-
-        # Grab the data about the product from Shopify
-        data = json.loads(request.body)
-
-        product = ProductShopify.get_by_shopify_id(str(data['id']))
-
-        # Delete the product from our DB.
-        if product:
-            product.delete()
+        delete_product(self.request)
 
 
 class FetchShopifyProducts(URIHandler):

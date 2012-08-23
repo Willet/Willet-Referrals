@@ -74,18 +74,36 @@ class ReEngageShopify(ReEngage, AppShopify):
         # Don't use the product hooks: Use our own version.
         # In all likelihood, our version will just call the existing product hooks
         # If we knew the order they are executed in, we could avoid this
-        self.queue_webhooks(webhooks=[
-            # Install the "Product Creation" webhook
-            { "webhook": { "address": "%s/r/shopify/webhook/create" % (URL),
-                               "format": "json", "topic": "products/create" }
-            },
-            # Install the "Product Update" webhook
-            { "webhook": { "address": "%s/r/shopify/webhook/update" % (URL),
-                               "format": "json", "topic": "products/update" }
-            },
-            # Install the "Product Delete" webhook
-            { "webhook": { "address": "%s/r/shopify/webhook/delete" % (URL),
-                               "format": "json", "topic": "products/delete" }
+        self.queue_webhooks(webhooks=[{
+            "webhook": {
+                    "address": "%s/r/shopify/webhook/product/create" % (URL),
+                    "format": "json", "topic": "products/create"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/product/update" % (URL),
+                    "format": "json", "topic": "products/update"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/product/delete" % (URL),
+                    "format": "json", "topic": "products/delete"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/create" % (URL),
+                    "format": "json", "topic": "collections/create"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/update" % (URL),
+                    "format": "json", "topic": "collections/update"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/delete" % (URL),
+                    "format": "json", "topic": "collections/delete"
+                }
             }
         ])
 
