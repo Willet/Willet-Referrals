@@ -340,7 +340,7 @@
                                 'name': 'Not sure which one I should buy!',
                                 'link': '{{ share_url }}',
                                 'caption': 'Not sure which one I should buy!',
-                                'description': '{{ AB_share_text }}',
+                                'description': "{{ product_desc|escape }}" || "{{AB_share_text|escape}}",
                                 'picture': getSelectedProducts()[0].attr('src') ||
                                            '//{{ DOMAIN }}/static/imgs/noimage.png',
                                 'redirect_uri': '{{ fb_redirect }}'
