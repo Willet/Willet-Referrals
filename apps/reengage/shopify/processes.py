@@ -38,7 +38,7 @@ class CreateReEngageCollectionsShopify(URIHandler):
 class UpdateReEngageCollectionsShopify(URIHandler):
     """Update a Shopify collection"""
     def post(self):
-        update_collection(self.request)
+        update_collection(self.request, force_update=True)
 
 
 class DeleteReEngageCollectionsShopify(URIHandler):

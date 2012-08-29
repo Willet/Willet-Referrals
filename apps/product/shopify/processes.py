@@ -58,14 +58,14 @@ def delete_product(request):
 def create_collection(request):
     update_collection(request)
 
-def update_collection(request):
+def update_collection(request, force_update=False):
     logging.info("HEADERS : %s %r" % (request.headers, request.headers))
 
     store_url = request.headers['X-Shopify-Shop-Domain']
     app       = App.get_by_url(store_url)
 
     # TODO: Verify that this works for non-custom collections as well.
-    collections = ProductShopifyCollection.fetch(app=app)
+    collections = ProductShopifyCollection.fetch(app=app, force_update=force_update)
     return collections
 
 def delete_collection(request):
