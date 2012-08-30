@@ -364,7 +364,11 @@ which has one pixel less height for the white border on top */
 }
 
 .categoryChild .title {
-    margin: 8px 15px 8px 20px;
+    padding: 8px 15px 8px 20px;
+}
+
+.categoryChild .reach_score {
+    padding: 8px 0px 0px 0px;
 }
 
 
