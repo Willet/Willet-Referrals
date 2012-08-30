@@ -86,7 +86,7 @@ class ReEngageCron(URIHandler):
                     cohort.put()
                     continue
 
-                taskqueue.add(url=url('ReEngageCronPost'), params={
+                taskqueue.add(url=url('ReEngageCronPostMessage'), params={
                     "index"      : message_index,
                     "plan_uuid"  : marketing_plan.uuid,
                     "cohort_uuid": cohort.uuid
