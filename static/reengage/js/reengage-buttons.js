@@ -192,8 +192,8 @@ _willet.util = {
         // Will render templates with simple substitions
         // Inputs:
         //    template - a string representing an HTML template, with variables
-        //               of the form: [[ var_name ]] and condtionals of the form
-        //               [% if var_name %] ... [% endif %]
+        //               of the form: {{ var_name }} and condtionals of the form
+        //               {% if var_name %} ... {% endif %}
         //               Note: does not support nested if's, and must be exactly
         //                     the form above (no extra whitespace)
         //    values - a object literal, with keys corresponding to template variables,
@@ -201,12 +201,12 @@ _willet.util = {
         // Return:
         //    rendered template <string>
 
-        var ifStatementRe = /\[% if [\w\-]+ %\]/g,
-            ifPrefixLen = '[% if '.length,
-            endifLen = '[% endif %]'.length,
+        var ifStatementRe = /\{% if [\w\-]+ %\}/g,
+            ifPrefixLen = '{% if '.length,
+            endifLen = '{% endif %}'.length,
             startIndex, endIndex, contionalIndex, varName;
 
-        // First handle conditionals of the form [% if var_name %] ... [% endif %]
+        // First handle conditionals of the form {% if var_name %} ... {% endif %}
         // Note: strings are passed by value, so we can modify template without affecting
         //       the base templates
         conditionalIndex = template.search(ifStatementRe);
@@ -216,12 +216,12 @@ _willet.util = {
 
             if (values[varName]) {
                 // if variable name exists, strip conditional statements & leave code
-                template = template.replace('[% if '+varName+' %]', '');
-                template = template.replace('[% endif %]','');
+                template = template.replace('{% if '+varName+' %}', '');
+                template = template.replace('{% endif %}','');
             } else {
                 // if variable doesn't exist, strip conditional & contents
                 startIndex = conditionalIndex;
-                endIndex = template.indexOf('[% endif %]',startIndex)+endifLen;
+                endIndex = template.indexOf('{% endif %}',startIndex)+endifLen;
                 template = template.replace( template.substring(startIndex, endIndex), '');
             }
 
@@ -229,10 +229,10 @@ _willet.util = {
             conditionalIndex = template.search(re);
         }
 
-        // Second handle variables of the form [[ var_name ]]
+        // Second handle variables of the form {{ var_name }}
         for (var i in values) {
             if (values.hasOwnProperty(i)) {
-                template = template.replace('[[ '+ i +' ]]', values[i]);
+                template = template.replace('{{ '+ i +' }}', values[i]);
             }
         }
         return template;
@@ -755,7 +755,7 @@ _willet.networks = (function (willet) {
                     fb.setAttribute('data-layout', 'button_count');
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
-                    fb.setAttribute('data-href', params.canonicalUrl + "/{{cohort_id}}");
+                    fb.setAttribute('data-href', params.canonicalUrl);
                     var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
                              +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
