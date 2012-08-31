@@ -7,12 +7,10 @@ from apps.reengage.views import *
 urlpatterns = [
     # Re-engage handlers (beta)
     (r'/r/reengage/js/com.js', ReEngageCPLServeScript),
-    (r'/r/reengage/js/buttons.js', ReEngageServeButtonsScript),
     (r'/r/shopify/beta/?', ReEngageAppPage),
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
-    (r'/r/shopify/referrer/?', ReEngageServeButtonsScript),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),
@@ -32,5 +30,6 @@ urlpatterns = [
 
     # Re-engage processes (beta)
     (r'/r/shopify/cron/start/?', ReEngageCron),
-    (r'/r/shopify/cron/post/?',  ReEngageCronPostMessage),
+    (r'/r/shopify/cron/post/?', ReEngageCronPostMessage),
+    (r'/r/shopify/cron/snippets/?', ReEngageUpdateSnippets),
 ]

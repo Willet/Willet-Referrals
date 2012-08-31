@@ -71,6 +71,9 @@ class ReEngageShopify(ReEngage, AppShopify):
         """ Install ReEngage scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
+        # Create cohort for asset
+        cohort_id = ReEngageCohortID.create()
+
         # Don't use the product hooks: Use our own version.
         # In all likelihood, our version will just call the existing product hooks
         # If we knew the order they are executed in, we could avoid this
@@ -114,6 +117,14 @@ class ReEngageShopify(ReEngage, AppShopify):
             }
         }])
         self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/leadspeaker-canonical-url.liquid',
+                'value': """
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                """ % (cohort_id.uuid, cohort_id.uuid)
+            }
+        }, {
             'asset': {
                 'key': 'snippets/reengage-header.liquid',
                 'value': """
@@ -211,6 +222,19 @@ class ReEngageShopify(ReEngage, AppShopify):
             )
 
         return
+
+    def update_canonical_url(self, cohort_id):
+        self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/leadspeaker-canonical-url.liquid',
+                'value': """
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                """ % (cohort_id, cohort_id)
+            }
+        }])
+
+        self.install_queued()
 
     @classmethod
     def create_app(cls, client, app_token):
@@ -426,29 +450,6 @@ class ReEngageQueue(Model):
             logging.error('%s' % err, exc_info=True)
         return None
 
-    def get_latest_cohort(self):
-        logging.info("Cohorts: %s" % self.cohorts)
-
-        if not self.cohorts:
-            # Must be the first time. Create a cohort.
-            cohort_uuid = generate_uuid(16)
-            cohort = ReEngageCohort(
-                uuid  = cohort_uuid,
-                queue = self
-            )
-            cohort.put()
-
-            self.cohorts.append(unicode(cohort_uuid))
-            self.put()
-        else:
-            cohort_uuid = self.cohorts[-1]
-
-
-        cohort = ReEngageCohort.get(cohort_uuid)
-        logging.info("Cohort: %s" % cohort)
-
-        return cohort
-
     def get_cohorts(self, include_inactive=False):
         # Returns a list of associated cohorts
         cohorts = ReEngageCohort.all().filter("queue =", self)
@@ -456,6 +457,7 @@ class ReEngageQueue(Model):
         if not include_inactive:
             cohorts.filter("active =", True)
 
+        # What do we expect is the longest a campaign will run?
         result = cohorts.fetch(limit=100)
 
         return result
@@ -604,12 +606,36 @@ class ReEngageAccount(User):
             return (None, False)
 
 
+class ReEngageCohortID(Model):
+    """"""
+    created = db.DateTimeProperty(auto_now=True)
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageCohortID, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
+
+    @classmethod
+    def get_latest(cls):
+        return cls.all().order("-created").get()
+
+    @classmethod
+    def create(cls):
+        uuid = generate_uuid(16)
+        obj = cls(uuid=uuid, key_name=uuid)
+        obj.put()
+        return obj
+
+
 class ReEngageCohort(Model):
-    """Represents a queue within ReEngage"""
-    queue         = db.ReferenceProperty(Model, collection_name='cohorts')
+    """Represents a queue/cohort association within ReEngage"""
+    queue         = db.ReferenceProperty(Model, collection_name='cohort')
+    cohort_id     = db.ReferenceProperty(Model, collection_name='cohorts')
     message_index = db.IntegerProperty(default=0)
     active        = db.BooleanProperty(default=True, indexed=True)
-    created       = db.DateTimeProperty(auto_now=True)
     completed     = db.DateTimeProperty()
 
     def __init__(self, *args, **kwargs):
@@ -621,34 +647,8 @@ class ReEngageCohort(Model):
         return True
 
     @classmethod
-    def get_by_product_url(cls, url):
-        """It is a bit of a pain to get a cohort given a URL. We need to hop
-        around a bit...
-
-        url     -> product
-        product -> queue
-        queue   -> cohort
-        """
-        product = Product.get_by_url(url)
-        logging.info("Product: %s" % product)
-
-
-        if not product:
-            return None
-
-        queues = ReEngageQueue.all().filter("product_uuids =", product.uuid)\
-            .fetch(limit=1000)
-        logging.info("Queues: %s" % queues)
-
-        if not queues:
-            return None
-
-        # There should be exactly one queue that has only this product id
-        queue = filter(lambda x: len(x.product_uuids) == 1, queues)[0]
-        logging.info("Queue: %s" % queue)
-
-        if not queue:
-            return None
-
-        return queue.get_latest_cohort()
-
+    def create(cls, queue, cohort_id=None):
+        uuid = generate_uuid(16)
+        obj = cls(uuid=uuid, key_name=uuid, queue=queue, cohort_id=cohort_id)
+        obj.put()
+        return obj
