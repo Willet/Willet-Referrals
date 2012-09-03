@@ -756,10 +756,10 @@ _willet.networks = (function (willet) {
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
                     fb.setAttribute('data-href', params.canonicalUrl);
-                    var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
-                             +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
+                    //var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
+                    //         +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
-                    button.appendChild(style);
+                    //button.appendChild(style);
 
                     return button;
                 },
@@ -1086,7 +1086,7 @@ _willet = (function (me, config) {
 
         MAX_BUTTONS = 3,
         DEFAULT_BUTTONS = ['Facebook', 'Twitter', 'Pinterest'],
-        DEFAULT_COUNT = 'false',
+        DEFAULT_COUNT = 'true',
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
         DEFAULT_ALIGNMENT = 'left',

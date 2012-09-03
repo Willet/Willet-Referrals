@@ -200,7 +200,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
-            Email.welcomeClient("ShopConnection Engage", email, name, store,
+            Email.welcomeClient("SecondFunnel LeadSpeaker", email, name, store,
                                 use_full_name=use_full_name,
                                 additional_data={"url": full_url})
 

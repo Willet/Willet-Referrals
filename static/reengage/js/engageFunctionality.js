@@ -595,8 +595,8 @@ $(document).ready(function () {
     /*------ Functions for FB posting schedule dialog ------*/
     //Making the FB schedule change dialog appear
     $(document).on("click", "#changeSchedule", function() {
-        changeSchedulePromptDialog();
-        changeScheduledTimeInDialog();
+        //changeSchedulePromptDialog();
+        //changeScheduledTimeInDialog();
     });
 
     //In dialog, if days of the week are changed, change data about days of week

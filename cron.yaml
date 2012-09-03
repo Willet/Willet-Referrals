@@ -35,7 +35,7 @@ cron:
 # Cron jobs aren't terribly flexible for our tasks...
 - description:
   url: /r/shopify/cron/start
-  schedule: every monday 0:00
+  schedule: every monday 1:00
   timezone: America/Toronto
 
 - description: hourly action tallying
