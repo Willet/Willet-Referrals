@@ -16,6 +16,8 @@ class ReEngageCron(URIHandler):
 
     def post(self):
 
+        # WARNING: This will definitely blow up (exceed soft memory limit) on apps. It might not be obvious now, though.
+        # TODO: Make this more performant
         # For the moment, assume that this represents all queues
         # ... It does not, but we'll replace this with .run() or a cursor
         #     or something else shortly
@@ -85,7 +87,7 @@ class ReEngageCronPostMessage(URIHandler):
         cohort.message_index += 1
         if cohort.message_index >= plan_length:
             cohort.active = False
-        cohort.put()
+        cohort.put_later()
 
 
 class ReEngageUpdateSnippets(URIHandler):

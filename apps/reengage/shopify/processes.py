@@ -4,6 +4,10 @@ from apps.product.shopify.processes import \
     create_collection, update_collection, delete_collection
 from util.urihandler import URIHandler
 
+#TODO: We should just get_or_create the product, then create the queue as
+# necessary. No need to call _get_or_create queue, as it will be called when we
+# try to access it
+
 class CreateReEngageProductShopify(URIHandler):
     """Create a Shopify product"""
     def post(self):

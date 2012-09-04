@@ -74,9 +74,8 @@ class ReEngageShopify(ReEngage, AppShopify):
         # Create cohort for asset
         cohort_id = ReEngageCohortID.create()
 
-        # Don't use the product hooks: Use our own version.
-        # In all likelihood, our version will just call the existing product hooks
-        # If we knew the order they are executed in, we could avoid this
+        # TODO: We should use 'product_hooks_too', and then our hooks should
+        # only create a queue if one doesn't exist.
         self.queue_webhooks(webhooks=[{
             "webhook": {
                     "address": "%s/r/shopify/webhook/product/create" % (URL),
@@ -138,10 +137,10 @@ class ReEngageShopify(ReEngage, AppShopify):
                        <title>{{ shop.name }}</title>
                        <meta property="og:title" content="{{ shop.name }}" />
                       {% elsif template == '404' %}
-                        <title>Page Not Found | {{ shop.name }}</title>
+                        <title>Page Not Found | {{ shop.name | escape }}</title>
                         <meta property="og:title" content="Page not found" />
                       {% else %}
-                       <title>{{ page_title }} | {{ shop.name }}</title>
+                       <title>{{ page_title }} | {{ shop.name | escape }}</title>
                        <meta property="og:title" content="{{ page_title }}" />
                       {% endif %}
 
@@ -153,8 +152,8 @@ class ReEngageShopify(ReEngage, AppShopify):
                       <meta name="description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
                       <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
                       {% elsif template == 'index' and shop.description != '' %}
-                      <meta name="description" content="{{ shop.description }}" />
-                      <meta property="og:description" content="{{ shop.description }}" />
+                      <meta name="description" content="{{ shop.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ shop.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
                       {% endif %}
 
 
@@ -191,18 +190,6 @@ class ReEngageShopify(ReEngage, AppShopify):
         })
 
         full_url = "https://%s%s" % (APP_DOMAIN, link)
-
-        if REROUTE_EMAIL:
-            Email.welcomeFraser(app_name="ReEngageShopify",
-                                to_addr=email,
-                                name=name,
-                                store_name=store,
-                                store_url=self.store_url)
-        else:
-            # Fire off "personal" email from Fraser
-            Email.welcomeClient("SecondFunnel LeadSpeaker", email, name, store,
-                                use_full_name=use_full_name,
-                                additional_data={"url": full_url})
 
         # Email DevTeam
         Email.emailDevTeam(
@@ -607,7 +594,8 @@ class ReEngageAccount(User):
 
 
 class ReEngageCohortID(Model):
-    """"""
+    """Represents the identifier string assigned to a weekly cohort.
+    """
     created = db.DateTimeProperty(auto_now=True)
 
     def __init__(self, *args, **kwargs):
