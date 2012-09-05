@@ -1,15 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html class="ReEngage">
+<html class="LeadSpeaker">
     <head>
         <script>
             // patchwork to let every function work off this queue
             // (and only this queue)
             window.activeQueueUUID = '{{ app.queue.uuid }}';
         </script>
-        <title>SecondFunnel ReEngage&trade;</title>
+        <title>SecondFunnel LeadSpeaker&trade;</title>
         <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
         <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
-        <link href="/static/reengage/css/jquery-ui-1.8.21.ReEngage.css" rel="stylesheet" type="text/css"/>
+        <link href="/static/reengage/css/jquery-ui-1.8.21.LeadSpeaker.css" rel="stylesheet" type="text/css"/>
 
         <!--[if IE]>
         <link href="/static/reengage/css/engageStylesIE.css" rel="stylesheet" type="text/css">
@@ -25,7 +25,9 @@
         <div id="banner" class="shadow">
             <div id="bannerBody">
                 <div id="bannerTitle">
-                    <h1><b>Engage</b> // {{ client.name|default:"Your Store" }}</h1>
+                    <h1><img src="/static/imgs/leadspeaker-logo-simple.png"
+                             class="logo"/>
+                        <b>LeadSpeaker</b> // {{ client.name|default:"Your Store" }}</h1>
                 </div>
                 <div id="bannerRight">
                     <ul id="bannerRightObj">
@@ -42,7 +44,8 @@
                 <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
                 <div id="IEWarning">
                     <br>
-                    <b>To use Engage, please allow the scripts on the page to run. </b><br><br>
+                    <b>To use LeadSpeaker, please allow the scripts on the page
+                        to run.</b><br><br>
                     Our website is completely secure.<br><br>
                     For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
                 </div>
@@ -94,15 +97,14 @@
                 <div id="boxTop">
                     <div class="boxTopNav">
                         <ul class="boxTopNav">
-                            <li><b>Queued Posts</b></li>
-                            <li class="comingSoon"><a href="#">Past
-                                Posts</a></li>
+                            <li><b>Marketing Plans</b></li>
                         </ul>
                     </div>
                     <div id="boxTopRight">
                         <p id="boxTopSchedule"><i>
-                            Posting schedule: Weekdays at 12:00pm (noon) EST
-                            (<a id="changeSchedule" href="#">change</a>)
+                            Posting schedule: Mondays at 1:00am EST
+                            (<a id="changeSchedule"
+                                class="comingSoon" href="#">change</a>)
                         </i></p>
                     </div>
                 </div>

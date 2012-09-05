@@ -59,7 +59,7 @@ class ProductShopifyCollection(ProductCollection):
         return obj
 
     @classmethod
-    def fetch(cls, app=None, app_uuid=None):
+    def fetch(cls, app=None, app_uuid=None, force_update=False):
         """Obtains a list of collections for a client from Shopify.
 
         Also fetches the products associated with this collection.
@@ -112,7 +112,9 @@ class ProductShopifyCollection(ProductCollection):
             collections.append(collection)
 
         for collection in collections:
-            collection.get_or_fetch_products(app=app, app_uuid=app_uuid)
+            collection.get_or_fetch_products(
+                app=app, app_uuid=app_uuid, force_update=force_update
+            )
             collection.put()  # save them all
 
         return collections
@@ -190,9 +192,10 @@ class ProductShopifyCollection(ProductCollection):
 
         return products
 
-    def get_or_fetch_products(self, app=None, app_uuid=None):
+    def get_or_fetch_products(self, app=None, app_uuid=None,
+                              force_update=False):
         """Retrieve Shopify products under this collection."""
-        if not self.products:
+        if not self.products or force_update:
             self.products = self.fetch_products(app=app, app_uuid=app_uuid)
             self.put()  # commitment last
         return self.products

@@ -16,7 +16,15 @@ p { font-size: 13px; }
 h1 {
     font-size: 30px;
     font-weight: normal;
-    text-shadow: 1px 1px rgba(255,255,255,0.3)
+    text-shadow: 1px 1px rgba(255,255,255,0.3);
+    line-height: 55px;
+}
+
+.logo {
+    height: 55px;
+    float: left;
+    border: 0px;
+    padding-right: 10px;
 }
 
 body { background: #e4e4e4; }
@@ -364,7 +372,11 @@ which has one pixel less height for the white border on top */
 }
 
 .categoryChild .title {
-    margin: 8px 15px 8px 20px;
+    padding: 8px 15px 8px 20px;
+}
+
+.categoryChild .reach_score {
+    padding: 8px 0px 0px 0px;
 }
 
 
