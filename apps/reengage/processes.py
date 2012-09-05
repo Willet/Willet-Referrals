@@ -97,6 +97,8 @@ class ReEngageUpdateSnippets(URIHandler):
     def post(self):
         latest_cohort_id = ReEngageCohortID.get_latest()
 
+        # WARNING: This will definitely blow up (exceed soft memory limit) on apps. It might not be obvious now, though.
+        # TODO: Make this more performant
         # For the moment, assume that this represents all apps
         # ... It does not, but we'll replace this with .run() or a cursor
         #     or something else shortly

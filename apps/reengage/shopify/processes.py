@@ -4,9 +4,8 @@ from apps.product.shopify.processes import \
     create_collection, update_collection, delete_collection
 from util.urihandler import URIHandler
 
-#TODO: We should just get_or_create the product, then create the queue as
-# necessary. No need to call _get_or_create queue, as it will be called when we
-# try to access it
+#TODO: We should just get_or_create the product instead of duplicating
+# existing webhooks
 
 class CreateReEngageProductShopify(URIHandler):
     """Create a Shopify product"""
@@ -14,8 +13,8 @@ class CreateReEngageProductShopify(URIHandler):
         logging.info("Calling method...")
         product = create_product(self.request)
         logging.info("Creating product... %s" % product)
-        product._get_or_create_queue()
-        logging.info("Product queue... %s" % product.queue)
+        queue = product.queue
+        logging.info("Product queue... %s" % queue)
 
 
 class UpdateReEngageProductShopify(URIHandler):
@@ -23,8 +22,8 @@ class UpdateReEngageProductShopify(URIHandler):
     def post(self):
         product = update_product(self.request)
         logging.info("Creating product... %s" % product)
-        product._get_or_create_queue()
-        logging.info("Product queue... %s" % product.queue)
+        queue = product.queue
+        logging.info("Product queue... %s" % queue)
 
 
 class DeleteReEngageProductShopify(URIHandler):
