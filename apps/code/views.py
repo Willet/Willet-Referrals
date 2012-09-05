@@ -29,11 +29,3 @@ class ShowClientDiscountCodes(URIHandler):
 
         for code in client.discount_codes:
             self.response.out.write('%s\n' % code.uuid)
-
-
-class SCSSTest(URIHandler):
-    def get(self):
-        from scss.scss import Scss
-        css = Scss()
-        return_value = css.compile("a { color: red + blue; }")
-        self.response.out.write(return_value)
