@@ -21,32 +21,6 @@ from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN, URL
 from util.helpers import to_dict, generate_uuid, url
 from util.model import Model
 
-class TwitterAssociation(Model):
-    #app_uuid = db.StringProperty(indexed=True)
-    url      = db.StringProperty(indexed=True)
-    handles  = db.StringListProperty()
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
-        super(TwitterAssociation, self).__init__(*args, **kwargs)
-
-    def _validate_self(self):
-        pass
-
-    @classmethod
-    def get_or_create(cls, url):
-        result = cls.all().filter('url =', url).get()
-
-        if result:
-            return result, False
-
-        result = cls(url=url, handles=[])
-        result.put()
-
-        return result, True
-
-
 class ReEngage(App):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -125,10 +99,15 @@ class ReEngageShopify(ReEngage, AppShopify):
             }
         }, {
             'asset': {
-                'key': 'snippets/reengage-header.liquid',
+                'key': 'snippets/leadspeaker-header.liquid',
                 'value': """
-                      <link rel="canonical" href="{{ canonical_url | downcase }}" />
-                      <meta property="og:url" content="{{ canonical_url | downcase }}" />
+
+                      {% if template contains 'product' %}
+                          {% include 'leadspeaker-canonical-url' %}
+                      {% else %}
+                          <link rel="canonical" href="{{ canonical_url | downcase }}" />
+                          <meta property="og:url" content="{{ canonical_url | downcase }}" />
+                      {% endif %}
                       <meta property="fb:app_id" content="392482400810748">
                       <meta property="og:type" content="product">
                       <meta property="og:site_name" content="{{ shop.name | escape }}" />
@@ -190,6 +169,18 @@ class ReEngageShopify(ReEngage, AppShopify):
         })
 
         full_url = "https://%s%s" % (APP_DOMAIN, link)
+
+        if REROUTE_EMAIL:
+            Email.welcomeFraser(app_name="ReEngageShopify",
+                                to_addr=email,
+                                name=name,
+                                store_name=store,
+                                store_url=self.store_url)
+        else:
+            # Fire off "personal" email from Fraser
+            Email.welcomeClient("ShopConnection Engage", email, name, store,
+                                use_full_name=use_full_name,
+                                additional_data={"url": full_url})
 
         # Email DevTeam
         Email.emailDevTeam(
