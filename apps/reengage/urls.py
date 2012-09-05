@@ -11,7 +11,6 @@ urlpatterns = [
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
-    (r'/r/url/(.+)', ReEngageMagic),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),
@@ -30,5 +29,7 @@ urlpatterns = [
     (r'/r/shopify/post/(\w+)\.json', ReEngagePostJSONHandler),
 
     # Re-engage processes (beta)
-    (r'/r/shopify/cron/?', ReEngageCron),
+    (r'/r/shopify/cron/start/?', ReEngageCron),
+    (r'/r/shopify/cron/post/?', ReEngageCronPostMessage),
+    (r'/r/shopify/cron/snippets/?', ReEngageUpdateSnippets),
 ]
