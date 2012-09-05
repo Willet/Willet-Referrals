@@ -20,7 +20,7 @@ from util.helpers import url
 INFO = "info@getwillet.com"
 FRASER = 'fraser@getwillet.com'
 BRIAN = "brian@getwillet.com"
-NICK = 'nick@getwillet.com'
+NICK = 'nick@willetinc.com'
 
 DEV_TEAM = '%s, %s, %s' % (FRASER, NICK, BRIAN)
 FROM_ADDR = INFO
@@ -95,7 +95,7 @@ class Email():
                   <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
                   <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
 
-        elif app_name == 'ShopConnection Engage':
+        elif app_name == 'SecondFunnel LeadSpeaker':
             body += """<p>Thanks for installing <i>%s</i>!  We are excited to see
                         your store, %s, getting the exposure it deserves.</p>
                         <p>Please <a href="%s">activate your new account</a> to
@@ -188,10 +188,10 @@ class Email():
 
         full_url = "https://%s%s" % (APP_DOMAIN, link)
 
-        subject = "ShopConnection ReEngage: Account Activation"
+        subject = "SecondFunnel LeadSpeaker: Account Activation"
         body = """
                 <p>Hi,</p>
-                <p>Please click this link to activate your ReEngage
+                <p>Please click this link to activate your LeadSpeaker
                 account.</p>
                 <p>
                     <a href="%s">Activate your account</a>

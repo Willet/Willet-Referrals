@@ -101,6 +101,17 @@
     </h3>
 </div>
 
+
+<!--
+
+! Uninstall Shop Connection
+- Do whatever is necessary to add support person
+    - In 24-48 hours, we set things up
+- Check your inbox for account setup information
+- Setup your account, and login
+
+-->
+
 <div class="prepend-top span-24 last
                             box-design content-container" >
     <h1>Integration Guide for {{shop_name}}</h1>
@@ -112,7 +123,7 @@
             <p><strong>Uninstall</strong> ShopConnection, if it is
                 installed.</p>
             <p>At the moment, ShopConnection causes
-                problems when it is installed with ReEngage. To uninstall,
+                problems when it is installed with LeadSpeaker. To uninstall,
                 visit the <a href="http://{{store_url}}/admin" target="_blank">Shopify
                 administration panel</a>.</p>
         </div>
@@ -120,136 +131,57 @@
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
-                                    box-design instruction-step">
+                        box-design instruction-step">
             <div class="step-num">1.</div>
-            <p><strong>Visit</strong> the <a href="http://{{store_url}}/admin" target="_blank">
-                Shopify administration panel</a></p>
-            <p>Open the <em>Template Editor</em> under <em>Themes</em></p>
-            <img class="span-18" src="/static/imgs/template_editor.png">
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
             <div class="span-10">
-                <div class="step-num">2.</div>
-                <p class="lower-50">
-                    <strong>Under</strong> the <em>Templates</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Templates</em>, try looking under <em>Snippets</em>.
-                </p>
+                <p>Click <a href="{{store_url}}/admin/account"
+                            target="_blank">here</a>
+                    to go to your Shopify account page.</p>
             </div>
-            <div class="prepend-2 span-6 last">
-                <img src="/static/imgs/snippets_product.png" />
+            <div class="span-3 last">
+                <img src="/static/buttons/imgs/install4u-1.png" />
             </div>
         </div>
     </div>
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                        box-design instruction-step">
+            <div class="step-num">2.</div>
+            <p>Under <b>Staff Accounts</b>, click on <b>Invite staff member</b>.</p>
+            <img class="span-18" src="/static/buttons/imgs/install4u-2.png" />
+        </div>
+    </div>
+
+    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                        box-design instruction-step">
             <div class="step-num">3.</div>
-            <p>
-                <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
-            </p>
-            <img class="span-18" src="/static/imgs/form.png" />
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-warn">!</div>
-            <p>Having trouble finding your cart?  Some templates keep the cart separate as a snippet.  Your <i>product.liquid</i> includes this snippet wherever the cart is supposed to be.  Look through your template snippets, searching each for 'cart' or 'form'.</p>
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-num">4.</div>
-            <p>
-                <strong>Once </strong>you've picked a spot, add this code:
-                <textarea style='font-size:13px;
-                                    max-width:275px; width: 245px;
-                                    vertical-align: middle; margin-bottom:0px;
-                                    height:20px'
-                          type='text'
-                          readonly='readonly'>&#0123;% include 'reengage-buttons' %&#0125;</textarea>
-            </p>
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-warn">!</div>
-            <p>This will reset your 'Like' count. Don't worry, we are working
-                to fix this as soon as possible :)
-            </p>
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-num">5.</div>
-            <p>
-                <strong>Click</strong> <em>save</em> near the top of the screen.
-            </p>
-            <img class="span-18" src="/static/imgs/save.png" />
-        </div>
-    </div>
-
-   <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
-                                    box-design instruction-step">
-            <div class="step-num">6.</div>
-            <p><strong>Check</strong> your inbox.</p>
-            <p>You should have received an email about your new account.
-                Follow the instructions in the email.</p>
-            <img src="/static/reengage/imgs/instructions-email.png" />
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
-                                    box-design instruction-step">
-            <div class="step-num">7.</div>
-            <p><strong>Set</strong> your password.</p>
-            <p>Once you have your password set up, you'll be able to log
-                in.</p>
-            <img src="/static/reengage/imgs/instructions-login.png" />
-        </div>
-    </div>
-
-    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-        <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
-            <div class="step-num">&#x2713;</div>
-            <p>
-                <strong>Log in</strong> to <em>ReEngage ShopConnection</em>
-            </p>
-            <div class="center lower-15">
-                <button class='blue' id='next_page'>
-                    <img src="/static/imgs/shopify-bag-36.png" />
-                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                        Log In
-                    </span>
-                </button>
+            <div class="span-9">
+                <p>Enter <b>Fraser</b>'s information as follows. You're done!</p>
+                <input type="text" value="Fraser" />
+                <input type="text" value="Harris" />
+                <br />
+                <input type="text" value="fraser@getwillet.com" />
+            </div>
+            <div class="span-3 last">
+                <img src="/static/buttons/imgs/install4u-3.png" />
             </div>
         </div>
     </div>
 
     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
         <div class="prepend-1 span-18 append-1 last
-                                    box-design instruction-step">
+                        box-design instruction-step">
             <div class="step-warn">!</div>
-            <p><b>Having trouble?</b> Visit
-                <a target="_blank" href="http://support.willetinc.com">our support website</a>, or email <a href="mailto:support@getwillet.com">support@getwillet.com</a></p>
+            <p>Over the next 24 to 48 hours, Fraser will be setting up
+                LeadSpeaker</p>
+            <p>Any questions?
+                Visit <a target="_blank" href="http://support.willetinc.com">our support website</a>, or
+                email <a href="mailto:support@getwillet.com">support@getwillet.com</a>.
+            </p>
         </div>
     </div>
-
-
 
     <div class="lower-15 prepend-top span-24 append-bottom last"></div>
 </div>
@@ -259,7 +191,8 @@
 <div class="installation-steps">
     <ul>
         <li>1. Register Store </li>
-        <li class="on-this-step">2. Setup <em>ShopConnection Engage</em></li>
+        <li class="on-this-step">2. Setup
+            <em>SecondFunnel LeadSpeaker</em></li>
         <li>3. Log In</li>
     </ul>
 </div>
