@@ -7,6 +7,7 @@ urlpatterns = [
     # views
     (r'/code/list', ShowClientDiscountCodes),
     (r'/code/dispense', DispenseClientDiscountCode),
+    (r'/code/test.css', SCSSTest),
 
     # processes
     (r'/code/import', ImportDiscountCodes)
