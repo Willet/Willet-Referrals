@@ -1,394 +1,377 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html class="LeadSpeaker">
-    <head>
-        <script>
-            // patchwork to let every function work off this queue
-            // (and only this queue)
-            window.activeQueueUUID = '{{ app.queue.uuid }}';
-        </script>
-        <title>SecondFunnel LeadSpeaker&trade;</title>
-        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
-        <link href="/static/reengage/css/engageStyles.css" rel="stylesheet" type="text/css">
-        <link href="/static/reengage/css/jquery-ui-1.8.21.LeadSpeaker.css" rel="stylesheet" type="text/css"/>
+{% extends "reengage/base.html" %}
 
-        <!--[if IE]>
-        <link href="/static/reengage/css/engageStylesIE.css" rel="stylesheet" type="text/css">
-        <![endif]-->
+{% block extra_head %}
+    <link href="/static/reengage/css/jquery-ui-1.8.21.LeadSpeaker.css" rel="stylesheet" type="text/css"/>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
-        <script src="/r/reengage/js/com.js" type="text/javascript"></script>
-        <script src="/static/reengage/js/engageFunctionality.js" type="text/javascript"></script>
-    </head>
-    <body>
+    <script type="text/javascript">
+        // patchwork to let every function work off this queue
+        // (and only this queue)
+        window.activeQueueUUID = '{{ app.queue.uuid }}';
+    </script>
+{% endblock %}
 
-        <div id="banner" class="shadow">
-            <div id="bannerBody">
-                <div id="bannerTitle">
-                    <h1><img src="/static/imgs/leadspeaker-logo-simple.png"
-                             class="logo"/>
-                        <b>LeadSpeaker</b> // {{ client.name|default:"Your Store" }}</h1>
-                </div>
-                <div id="bannerRight">
-                    <ul id="bannerRightObj">
-                        <li><a href="./queues">Home</a></li>
-                        <li><a href="./how_to">Instructions</a></li>
-                        <li><a href="./logout">Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+{% block extra_js_includes %}
+    <script src="/r/reengage/js/com.js" type="text/javascript"></script>
 
-        <div id="body">
-            <div id="innerBody">
-                <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
-                <div id="IEWarning">
-                    <br>
-                    <b>To use LeadSpeaker, please allow the scripts on the page
-                        to run.</b><br><br>
-                    Our website is completely secure.<br><br>
-                    For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
-                </div>
-            </div>
+    <script type='text/javascript'>
+        var _ues = {
+        host:'info.userecho.com',
+        forum:'13956',
+        lang:'en',
+        tab_icon_show:false,
+        tab_corner_radius:6,
+        tab_font_size:16,
+        tab_image_hash:'RmVlZGJhY2s%3D',
+        tab_alignment:'right',
+        tab_text_color:'#FFFFFF',
+        tab_bg_color:'#21779C',
+        tab_hover_color:'#F45C5C'
+        };
 
-            <div id="ajax_loader">
-                <img alt="Loading" src="/static/imgs/loading.gif"
-                     style="padding: 20px;" />
-            </div>
+        (function() {
+            var _ue = document.createElement('script'); _ue.type = 'text/javascript'; _ue.async = true;
+            _ue.src = ('https:' == document.location.protocol ? 'https://s3.amazonaws.com/' : 'http://') + 'cdn.userecho.com/js/widget-1.4.gz.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(_ue, s);
+        })();
+    </script>
+{% endblock %}
 
-            {% if recent_activities %}
-                <div class="notice shadow" id="recentActivity">
+{% block banner_subtitle %}
+     // {{ client.name|default:"Your Store" }}
+{% endblock %}
 
-                    <div id="closeNotice"></div>
-                    <span id="newActivitiesTitle" class="newActivitiesText">
-                        <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
-                            <b>Recent activity (2 new)</b>
-                        </span><br>
-                    </span>
-                    <span id="newActivities" class="hidden newActivitiesText">
-                        <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
-                            <b>Recent activity (2 new)</b>
-                        </span><br>
-                        <ul>
-                            <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
-                            <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
-                        </ul>
-                    </span>
-                </div>
-            {% endif %}
+{% banner_right %}
+    <ul id="bannerRightObj">
+        <li><a href="./queues">Home</a></li>
+        <li><a href="./how_to">Instructions</a></li>
+        <li><a href="./logout">Logout</a></li>
+    </ul>
+{% endblock %}
 
-            <div id="break">
-                <div class="button" id="newPost">
-                    + New Post
-                </div>
-                <div id="breakNav">
-                    <ul class="breakNav" style="text-align: center">
-                        <li class="selected"><b>Facebook</b></li>
-                        <li class="comingSoon"><a href="#">Twitter</a></li>
-                        <li class="comingSoon"><a href="#">Pinterest</a></li>
-                        <li class="comingSoon"><a href="#">Email</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Divided into sections of: 180px, 330px, 490px -->
-            <div id="box" class="shadow">
-
-                <div id="boxTop">
-                    <div class="boxTopNav">
-                        <ul class="boxTopNav">
-                            <li><b>Marketing Plans</b></li>
-                        </ul>
-                    </div>
-                    <div id="boxTopRight">
-                        <p id="boxTopSchedule"><i>
-                            Posting schedule: Mondays at 1:00am EST
-                            (<a id="changeSchedule"
-                                class="comingSoon" href="#">change</a>)
-                        </i></p>
-                    </div>
-                </div>
-
-                <div id="detailsBar" class="details">
-                    <div id="categoryBar">
-                        <div id="categories">Categories</div>
-                    </div>
-                    <div id="postBar">
-                        <div id="date">Date</div>
-                        <div id="title">Title</div>
-                    </div>
-                    <div id="postContentBar">
-                        <div id="selectedTitle">
-                            <!-- Value changes depending on which post is selected -->
-                            <span id="selectedTitleContent">Post Title Here</span>
-
-                            <!-- Hidden initially, shown when postQueue.length > 0 -->
-                            <span id='editTitle'>(<a href='#'>edit</a>)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mainBox">
-                    <div id="categoryBox">
-                        <div id='allContainer'>
-                            <div id='allCategories' class='first slab selected'
-                                 data-queue_uuid='{{ app.queue.uuid }}'>
-                                <span id='categoryArrow' class='open'></span>
-                                All Categories
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="replaceWithPosts">
-                        <div id="replaceTextWithPosts"><p>
-                            Make a new Facebook post by clicking the 'New Post' button!<br><br>
-                            The posts you create here will be seen by any of your visitors who 'liked' a product.
-                        </p></div>
-
-                        <div id="replaceHiddenPost"></div>
-                    </div>
-
-                    <div id="replaceWithPostContent">
-
-                        <!-- Shown initially, hidden when postQueue.length > 0 -->
-                        <div id="replaceTextWithPostContent">
-                            Selected Facebook post contents will appear here
-                        </div>
-
-                        <!-- Hidden initially, shown when postQueue.length > 0 -->
-                        <div id='postContentContainer'>
-                            <div id='postKind'>
-
-                                <!-- No back end for 'typeofcontent' for current version
-
-                               What kind of content is this?
-                               <select id='postKind'>
-                                   <option value='type1' [[ ifType1 ]]>Type 1</option>
-                                   <option value='type2' [[ ifType2 ]]>Type 2</option>
-                                   <option value='type3' [[ ifType3 ]]>Type 3</option>
-                               </select>
-                               <br><br> -->
-
-                                Facebook post content:
-                            </div>
-                            <div id='postGuts'>
-                                <textarea rows='4' cols='100' id='postContent'></textarea>
-                            </div>
-                            <!--
-                            <div id='postEmbed'>
-                                <input type='button' value='Embed a photo or video' />
-                            </div>
-                            -->
-                            <br><br>
-                            <div id='postSave' class='button'>
-                                Save Changes
-                            </div>
-                            <div id="postSaveIndicator" class="saved">Saved</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--Dialogs-->
-        <div id="newPostDialog" title="New Post">
-            New post name: <br><br>
-                <input type="text" id="newPostTitle" class="enableEnterPress" maxLength="50" value="" /><br><br>
-            <div id="endOrBeginning">
-                Should this post be added to the end or the beginning of the queue? <br><br>
-                    <input type="radio" name="first" value="last" checked="checked" />End<br>
-                    <input type="radio" name="first" value="first" />Beginning<br><br>
-            </div>
-        </div>
-
-        <div id="editTitleDialog" title="Edit Title">
-            Enter a new title for your post: <br><br>
-                <input type="text" id="editTitleInput" class="enableEnterPress" maxLength="50" value="" /><br><br>
-        </div>
-
-        <div id="changeScheduleDialog" title="Change Facebook Posting Schedule" class="facebook">
-            Select the days of the week you would like your posts to go out:
-            <table>
-                <tr>
-                    <td><input type="checkbox" name="dayOfWeek" value="Sundays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Mondays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Tuesdays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Wednesdays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Thursdays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Fridays" class="facebook" /></td>
-                    <td><input type="checkbox" name="dayOfWeek" value="Saturdays" class="facebook" /></td>
-                </tr>
-                <tr>
-                    <td align="center">S</td>
-                    <td align="center">M</td>
-                    <td align="center">T</td>
-                    <td align="center">W</td>
-                    <td align="center">Th</td>
-                    <td align="center">F</td>
-                    <td align="center">S</td>
-                </tr>
-            </table>
+{% block content %}
+    <div id="innerBody">
+        <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
+        <div id="IEWarning">
             <br>
+            <b>To use LeadSpeaker, please allow the scripts on the page
+                to run.</b><br><br>
+            Our website is completely secure.<br><br>
+            For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
+        </div>
+    </div>
 
-            <!-- Time zone info gotten from the internet.
-                 TODO: Some time zone functionality should be implemented eventually
-                 Currently this time zone drop down does nothing -->
-            Select your time zone:
-                <select name="DropDownTimezone" id="DropDownTimezone" class="facebook">
-                      <option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
-                      <option value="-11.0">(GMT -11:00) Midway Island, Samoa</option>
-                      <option value="-10.0">(GMT -10:00) Hawaii</option>
-                      <option value="-9.0">(GMT -9:00) Alaska</option>
-                      <option value="-8.0">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
-                      <option value="-7.0">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
-                      <option value="-6.0">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
-                      <option value="-5.0">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
-                      <option value="-4.0">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
-                      <option value="-3.5">(GMT -3:30) Newfoundland</option>
-                      <option value="-3.0">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
-                      <option value="-2.0">(GMT -2:00) Mid-Atlantic</option>
-                      <option value="-1.0">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
-                      <option value="0.0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
-                      <option value="1.0">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
-                      <option value="2.0">(GMT +2:00) Kaliningrad, South Africa</option>
-                      <option value="3.0">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
-                      <option value="3.5">(GMT +3:30) Tehran</option>
-                      <option value="4.0">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
-                      <option value="4.5">(GMT +4:30) Kabul</option>
-                      <option value="5.0">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
-                      <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
-                      <option value="5.75">(GMT +5:45) Kathmandu</option>
-                      <option value="6.0">(GMT +6:00) Almaty, Dhaka, Colombo</option>
-                      <option value="7.0">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
-                      <option value="8.0">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
-                      <option value="9.0">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
-                      <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
-                      <option value="10.0">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
-                      <option value="11.0">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
-                      <option value="12.0">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
-                </select>
-            <br><br>
-            How many times a day would you like posts to be sent out?<br>
-                <input type="radio" name="dropDownNumTimes" value="1" checked="checked" />1<br>
-                <input type="radio" name="dropDownNumTimes" value="2" />2<br>
-                <input type="radio" name="dropDownNumTimes" value="3" />3<br>
-            <br>
-            Select the times that the posts will be sent out: <br><br>
-            <div id="time1">First time:
-                <select name="DropDownTime1" id="dropDownTime1" class="dropDownTime facebook">
-                    <option value="0">Midnight</option>
-                    <option value="1">1am</option>
-                    <option value="2">2am</option>
-                    <option value="3">3am</option>
-                    <option value="4">4am</option>
-                    <option value="5">5am</option>
-                    <option value="6">6am</option>
-                    <option value="7">7am</option>
-                    <option value="8">8am</option>
-                    <option value="9">9am</option>
-                    <option value="10">10am</option>
-                    <option value="11">11am</option>
-                    <option value="12" selected="selected">Noon</option>
-                    <option value="13">1pm</option>
-                    <option value="14">2pm</option>
-                    <option value="15">3pm</option>
-                    <option value="16">4pm</option>
-                    <option value="17">5pm</option>
-                    <option value="18">6pm</option>
-                    <option value="19">7pm</option>
-                    <option value="20">8pm</option>
-                    <option value="21">9pm</option>
-                    <option value="22">10pm</option>
-                    <option value="23">11pm</option>
-                </select>
-                <br>
-            </div>
-            <div id="time2" class="hidden">Second time:
-                <select name="DropDownTime2" id="dropDownTime2" class="dropDownTime facebook">
-                    <option value="0">Midnight</option>
-                    <option value="1">1am</option>
-                    <option value="2">2am</option>
-                    <option value="3">3am</option>
-                    <option value="4">4am</option>
-                    <option value="5">5am</option>
-                    <option value="6">6am</option>
-                    <option value="7">7am</option>
-                    <option value="8">8am</option>
-                    <option value="9">9am</option>
-                    <option value="10">10am</option>
-                    <option value="11">11am</option>
-                    <option value="12">Noon</option>
-                    <option value="13">1pm</option>
-                    <option value="14">2pm</option>
-                    <option value="15">3pm</option>
-                    <option value="16">4pm</option>
-                    <option value="17">5pm</option>
-                    <option value="18">6pm</option>
-                    <option value="19">7pm</option>
-                    <option value="20">8pm</option>
-                    <option value="21">9pm</option>
-                    <option value="22">10pm</option>
-                    <option value="23">11pm</option>
-                </select>
-                <br>
-            </div>
-            <div id="time3" class="hidden">Third time:
-                <select name="DropDownTime3" id="dropDownTime3" class="dropDownTime facebook">
-                    <option value="0">Midnight</option>
-                    <option value="1">1am</option>
-                    <option value="2">2am</option>
-                    <option value="3">3am</option>
-                    <option value="4">4am</option>
-                    <option value="5">5am</option>
-                    <option value="6">6am</option>
-                    <option value="7">7am</option>
-                    <option value="8">8am</option>
-                    <option value="9">9am</option>
-                    <option value="10">10am</option>
-                    <option value="11">11am</option>
-                    <option value="12">Noon</option>
-                    <option value="13">1pm</option>
-                    <option value="14">2pm</option>
-                    <option value="15">3pm</option>
-                    <option value="16">4pm</option>
-                    <option value="17">5pm</option>
-                    <option value="18">6pm</option>
-                    <option value="19">7pm</option>
-                    <option value="20">8pm</option>
-                    <option value="21">9pm</option>
-                    <option value="22">10pm</option>
-                    <option value="23">11pm</option>
-                </select>
-                <br>
-            </div>
-            <br><br>
+    <div id="ajax_loader">
+        <img alt="Loading" src="/static/imgs/loading.gif"
+             style="padding: 20px;" />
+    </div>
 
-            <b>Your newly scheduled times:</b><br>
-            <div id="newScheduledTimes">
-                <span id="days" class="facebook">No days</span> at <span id="time" class="facebook">no times</span>.
+    {% if recent_activities %}
+        <div class="notice shadow" id="recentActivity">
+
+            <div id="closeNotice"></div>
+            <span id="newActivitiesTitle" class="newActivitiesText">
+                <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
+                    <b>Recent activity (2 new)</b>
+                </span><br>
+            </span>
+            <span id="newActivities" class="hidden newActivitiesText">
+                <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
+                    <b>Recent activity (2 new)</b>
+                </span><br>
+                <ul>
+                    <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
+                    <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
+                </ul>
+            </span>
+        </div>
+    {% endif %}
+
+    <div id="break">
+        <div class="button" id="newPost">
+            + New Post
+        </div>
+        <div id="breakNav">
+            <ul class="breakNav" style="text-align: center">
+                <li class="selected"><b>Facebook</b></li>
+                <li class="comingSoon"><a href="#">Twitter</a></li>
+                <li class="comingSoon"><a href="#">Pinterest</a></li>
+                <li class="comingSoon"><a href="#">Email</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Divided into sections of: 180px, 330px, 490px -->
+    <div id="box" class="shadow">
+
+        <div id="boxTop">
+            <div class="boxTopNav">
+                <ul class="boxTopNav">
+                    <li><b>Marketing Plans</b></li>
+                </ul>
+            </div>
+            <div id="boxTopRight">
+                <p id="boxTopSchedule"><i>
+                    Posting schedule: Mondays at 1:00am EST
+                    (<a id="changeSchedule"
+                        class="comingSoon" href="#">change</a>)
+                </i></p>
             </div>
         </div>
 
-        <script type='text/javascript'>
-            var _ues = {
-            host:'info.userecho.com',
-            forum:'13956',
-            lang:'en',
-            tab_icon_show:false,
-            tab_corner_radius:6,
-            tab_font_size:16,
-            tab_image_hash:'RmVlZGJhY2s%3D',
-            tab_alignment:'right',
-            tab_text_color:'#FFFFFF',
-            tab_bg_color:'#21779C',
-            tab_hover_color:'#F45C5C'
-            };
+        <div id="detailsBar" class="details">
+            <div id="categoryBar">
+                <div id="categories">Categories</div>
+            </div>
+            <div id="postBar">
+                <div id="date">Date</div>
+                <div id="title">Title</div>
+            </div>
+            <div id="postContentBar">
+                <div id="selectedTitle">
+                    <!-- Value changes depending on which post is selected -->
+                    <span id="selectedTitleContent">Post Title Here</span>
 
-            (function() {
-                var _ue = document.createElement('script'); _ue.type = 'text/javascript'; _ue.async = true;
-                _ue.src = ('https:' == document.location.protocol ? 'https://s3.amazonaws.com/' : 'http://') + 'cdn.userecho.com/js/widget-1.4.gz.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(_ue, s);
-            })();
-        </script>
-    </body>
-</html>
+                    <!-- Hidden initially, shown when postQueue.length > 0 -->
+                    <span id='editTitle'>(<a href='#'>edit</a>)</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainBox">
+            <div id="categoryBox">
+                <div id='allContainer'>
+                    <div id='allCategories' class='first slab selected'
+                         data-queue_uuid='{{ app.queue.uuid }}'>
+                        <span id='categoryArrow' class='open'></span>
+                        All Categories
+                    </div>
+                </div>
+            </div>
+
+            <div id="replaceWithPosts">
+                <div id="replaceTextWithPosts"><p>
+                    Make a new Facebook post by clicking the 'New Post' button!<br><br>
+                    The posts you create here will be seen by any of your visitors who 'liked' a product.
+                </p></div>
+
+                <div id="replaceHiddenPost"></div>
+            </div>
+
+            <div id="replaceWithPostContent">
+
+                <!-- Shown initially, hidden when postQueue.length > 0 -->
+                <div id="replaceTextWithPostContent">
+                    Selected Facebook post contents will appear here
+                </div>
+
+                <!-- Hidden initially, shown when postQueue.length > 0 -->
+                <div id='postContentContainer'>
+                    <div id='postKind'>
+
+                        <!-- No back end for 'typeofcontent' for current version
+
+                       What kind of content is this?
+                       <select id='postKind'>
+                           <option value='type1' [[ ifType1 ]]>Type 1</option>
+                           <option value='type2' [[ ifType2 ]]>Type 2</option>
+                           <option value='type3' [[ ifType3 ]]>Type 3</option>
+                       </select>
+                       <br><br> -->
+
+                        Facebook post content:
+                    </div>
+                    <div id='postGuts'>
+                        <textarea rows='4' cols='100' id='postContent'></textarea>
+                    </div>
+                    <!--
+                    <div id='postEmbed'>
+                        <input type='button' value='Embed a photo or video' />
+                    </div>
+                    -->
+                    <br><br>
+                    <div id='postSave' class='button'>
+                        Save Changes
+                    </div>
+                    <div id="postSaveIndicator" class="saved">Saved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!--Dialogs-->
+    <div id="newPostDialog" title="New Post">
+        New post name: <br><br>
+            <input type="text" id="newPostTitle" class="enableEnterPress" maxLength="50" value="" /><br><br>
+        <div id="endOrBeginning">
+            Should this post be added to the end or the beginning of the queue? <br><br>
+                <input type="radio" name="first" value="last" checked="checked" />End<br>
+                <input type="radio" name="first" value="first" />Beginning<br><br>
+        </div>
+    </div>
+
+    <div id="editTitleDialog" title="Edit Title">
+        Enter a new title for your post: <br><br>
+            <input type="text" id="editTitleInput" class="enableEnterPress" maxLength="50" value="" /><br><br>
+    </div>
+
+    <div id="changeScheduleDialog" title="Change Facebook Posting Schedule" class="facebook">
+        Select the days of the week you would like your posts to go out:
+        <table>
+            <tr>
+                {% with "Sundays Mondays Tuesdays Wednesdays Thursdays Fridays Saturdays" as list %}
+                    {% for day in list.split %}
+                        <td><input type="checkbox" name="dayOfWeek" value="{{ day }}" class="facebook" /></td>
+                    {% endfor %}
+                {% endwith %}
+            </tr>
+            <tr>
+                {% with "S M T W Th F S" as list %}
+                    {% for day_short in list.split %}
+                        <td align="center">{{ day_short }}</td>
+                    {% endfor %}
+                {% endwith %}
+            </tr>
+        </table>
+        <br>
+
+        <!-- Time zone info gotten from the internet.
+             TODO: Some time zone functionality should be implemented eventually
+             Currently this time zone drop down does nothing -->
+        Select your time zone:
+            <select name="DropDownTimezone" id="DropDownTimezone" class="facebook">
+                  <option value="-12.0">(GMT -12:00) Eniwetok, Kwajalein</option>
+                  <option value="-11.0">(GMT -11:00) Midway Island, Samoa</option>
+                  <option value="-10.0">(GMT -10:00) Hawaii</option>
+                  <option value="-9.0">(GMT -9:00) Alaska</option>
+                  <option value="-8.0">(GMT -8:00) Pacific Time (US &amp; Canada)</option>
+                  <option value="-7.0">(GMT -7:00) Mountain Time (US &amp; Canada)</option>
+                  <option value="-6.0">(GMT -6:00) Central Time (US &amp; Canada), Mexico City</option>
+                  <option value="-5.0">(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima</option>
+                  <option value="-4.0">(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz</option>
+                  <option value="-3.5">(GMT -3:30) Newfoundland</option>
+                  <option value="-3.0">(GMT -3:00) Brazil, Buenos Aires, Georgetown</option>
+                  <option value="-2.0">(GMT -2:00) Mid-Atlantic</option>
+                  <option value="-1.0">(GMT -1:00 hour) Azores, Cape Verde Islands</option>
+                  <option value="0.0">(GMT) Western Europe Time, London, Lisbon, Casablanca</option>
+                  <option value="1.0">(GMT +1:00 hour) Brussels, Copenhagen, Madrid, Paris</option>
+                  <option value="2.0">(GMT +2:00) Kaliningrad, South Africa</option>
+                  <option value="3.0">(GMT +3:00) Baghdad, Riyadh, Moscow, St. Petersburg</option>
+                  <option value="3.5">(GMT +3:30) Tehran</option>
+                  <option value="4.0">(GMT +4:00) Abu Dhabi, Muscat, Baku, Tbilisi</option>
+                  <option value="4.5">(GMT +4:30) Kabul</option>
+                  <option value="5.0">(GMT +5:00) Ekaterinburg, Islamabad, Karachi, Tashkent</option>
+                  <option value="5.5">(GMT +5:30) Bombay, Calcutta, Madras, New Delhi</option>
+                  <option value="5.75">(GMT +5:45) Kathmandu</option>
+                  <option value="6.0">(GMT +6:00) Almaty, Dhaka, Colombo</option>
+                  <option value="7.0">(GMT +7:00) Bangkok, Hanoi, Jakarta</option>
+                  <option value="8.0">(GMT +8:00) Beijing, Perth, Singapore, Hong Kong</option>
+                  <option value="9.0">(GMT +9:00) Tokyo, Seoul, Osaka, Sapporo, Yakutsk</option>
+                  <option value="9.5">(GMT +9:30) Adelaide, Darwin</option>
+                  <option value="10.0">(GMT +10:00) Eastern Australia, Guam, Vladivostok</option>
+                  <option value="11.0">(GMT +11:00) Magadan, Solomon Islands, New Caledonia</option>
+                  <option value="12.0">(GMT +12:00) Auckland, Wellington, Fiji, Kamchatka</option>
+            </select>
+        <br><br>
+        How many times a day would you like posts to be sent out?<br>
+            <input type="radio" name="dropDownNumTimes" value="1" checked="checked" />1<br>
+            <input type="radio" name="dropDownNumTimes" value="2" />2<br>
+            <input type="radio" name="dropDownNumTimes" value="3" />3<br>
+        <br>
+        Select the times that the posts will be sent out: <br><br>
+        <div id="time1">First time:
+            <select name="DropDownTime1" id="dropDownTime1" class="dropDownTime facebook">
+                <option value="0">Midnight</option>
+                <option value="1">1am</option>
+                <option value="2">2am</option>
+                <option value="3">3am</option>
+                <option value="4">4am</option>
+                <option value="5">5am</option>
+                <option value="6">6am</option>
+                <option value="7">7am</option>
+                <option value="8">8am</option>
+                <option value="9">9am</option>
+                <option value="10">10am</option>
+                <option value="11">11am</option>
+                <option value="12" selected="selected">Noon</option>
+                <option value="13">1pm</option>
+                <option value="14">2pm</option>
+                <option value="15">3pm</option>
+                <option value="16">4pm</option>
+                <option value="17">5pm</option>
+                <option value="18">6pm</option>
+                <option value="19">7pm</option>
+                <option value="20">8pm</option>
+                <option value="21">9pm</option>
+                <option value="22">10pm</option>
+                <option value="23">11pm</option>
+            </select>
+            <br>
+        </div>
+        <div id="time2" class="hidden">Second time:
+            <select name="DropDownTime2" id="dropDownTime2" class="dropDownTime facebook">
+                <option value="0">Midnight</option>
+                <option value="1">1am</option>
+                <option value="2">2am</option>
+                <option value="3">3am</option>
+                <option value="4">4am</option>
+                <option value="5">5am</option>
+                <option value="6">6am</option>
+                <option value="7">7am</option>
+                <option value="8">8am</option>
+                <option value="9">9am</option>
+                <option value="10">10am</option>
+                <option value="11">11am</option>
+                <option value="12">Noon</option>
+                <option value="13">1pm</option>
+                <option value="14">2pm</option>
+                <option value="15">3pm</option>
+                <option value="16">4pm</option>
+                <option value="17">5pm</option>
+                <option value="18">6pm</option>
+                <option value="19">7pm</option>
+                <option value="20">8pm</option>
+                <option value="21">9pm</option>
+                <option value="22">10pm</option>
+                <option value="23">11pm</option>
+            </select>
+            <br>
+        </div>
+        <div id="time3" class="hidden">Third time:
+            <select name="DropDownTime3" id="dropDownTime3" class="dropDownTime facebook">
+                <option value="0">Midnight</option>
+                <option value="1">1am</option>
+                <option value="2">2am</option>
+                <option value="3">3am</option>
+                <option value="4">4am</option>
+                <option value="5">5am</option>
+                <option value="6">6am</option>
+                <option value="7">7am</option>
+                <option value="8">8am</option>
+                <option value="9">9am</option>
+                <option value="10">10am</option>
+                <option value="11">11am</option>
+                <option value="12">Noon</option>
+                <option value="13">1pm</option>
+                <option value="14">2pm</option>
+                <option value="15">3pm</option>
+                <option value="16">4pm</option>
+                <option value="17">5pm</option>
+                <option value="18">6pm</option>
+                <option value="19">7pm</option>
+                <option value="20">8pm</option>
+                <option value="21">9pm</option>
+                <option value="22">10pm</option>
+                <option value="23">11pm</option>
+            </select>
+            <br>
+        </div>
+        <br><br>
+
+        <b>Your newly scheduled times:</b><br>
+        <div id="newScheduledTimes">
+            <span id="days" class="facebook">No days</span> at <span id="time" class="facebook">no times</span>.
+        </div>
+    </div>
+{% endblock %}
