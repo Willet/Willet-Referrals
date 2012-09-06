@@ -129,7 +129,8 @@ TEMPLATE_DIRS = (
 ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
                  'fraser.harris@gmail.com', 'fraser@getwillet.com',
                  'b2lai@uwaterloo.ca', 'lpppppl@gmail.com', 'brian@getwillet.com',
-                 'nicholas.terwoord@gmail.com', 'nick@getwillet.com', 'nick@willetinc.com' ]
+                 'nicholas.terwoord@gmail.com', 'nick@getwillet.com', 'nick@willetinc.com',
+                 'gri@willetinc.com', 'grigory.kruglov@gmail.com']
 
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
