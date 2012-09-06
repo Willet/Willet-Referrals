@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <link href="/static/reengage/css/jquery-ui-1.8.21.LeadSpeaker.css" rel="stylesheet" type="text/css"/>
+
+    <script type="text/javascript">
+        // patchwork to let every function work off this queue
+        // (and only this queue)
+        window.activeQueueUUID = '{{ app.queue.uuid }}';
+    </script>
+{% endblock %}
+
+{% block extra_js_includes %}
+    <script src="/r/reengage/js/com.js" type="text/javascript"></script>
+
+    <script type='text/javascript'>
+        var _ues = {
+        host:'info.userecho.com',
+        forum:'13956',
+        lang:'en',
+        tab_icon_show:false,
+        tab_corner_radius:6,
+        tab_font_size:16,
+        tab_image_hash:'RmVlZGJhY2s%3D',
+        tab_alignment:'right',
+        tab_text_color:'#FFFFFF',
+        tab_bg_color:'#21779C',
+        tab_hover_color:'#F45C5C'
+        };
+
+        (function() {
+            var _ue = document.createElement('script'); _ue.type = 'text/javascript'; _ue.async = true;
+            _ue.src = ('https:' == document.location.protocol ? 'https://s3.amazonaws.com/' : 'http://') + 'cdn.userecho.com/js/widget-1.4.gz.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(_ue, s);
+        })();
+    </script>
+{% endblock %}
+
+{% block banner_subtitle %}
+     // {{ client.name|default:"Your Store" }}
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block banner_right %}
+    <ul id="bannerRightObj">
+        <li><a href="./queues">Home</a></li>
+        <li><a href="./how_to">Instructions</a></li>
+        <li><a href="./logout">Logout</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <div id="innerBody">
+        <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
+        <div id="IEWarning">
+            <br>
+            <b>To use LeadSpeaker, please allow the scripts on the page
+                to run.</b><br><br>
+            Our website is completely secure.<br><br>
+            For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
+        </div>
+    </div>
+
+    <div id="ajax_loader">
+        <img alt="Loading" src="/static/imgs/loading.gif"
+             style="padding: 20px;" />
+    </div>
+
+    {% if recent_activities %}
+        <div class="notice shadow" id="recentActivity">
+
+            <div id="closeNotice"></div>
+            <span id="newActivitiesTitle" class="newActivitiesText">
+                <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
+                    <b>Recent activity (2 new)</b>
+                </span><br>
+            </span>
+            <span id="newActivities" class="hidden newActivitiesText">
+                <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
+                    <b>Recent activity (2 new)</b>
+                </span><br>
+                <ul>
+                    <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
+                    <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
+                </ul>
+            </span>
+        </div>
+    {% endif %}
+
+    <div id="break">
+        {% block content_top_actions %}{% endblock %}
+
+        <nav id="breakNav">
+            {% block content_nav %}{% endblock %}
+        </nav>
+    </div>
+
+    <!-- Divided into sections of: 180px, 330px, 490px -->
+    <div id="box" class="shadow">
+
+        <div id="boxTop">
+            <div class="boxTopNav">
+                <ul class="boxTopNav">
+                    <li><b>{% block content_inner_title %}{% endblock %}</b></li>
+                </ul>
+            </div>
+            <div id="boxTopRight">
+                <p id="boxTopSchedule">
+                    {% block box_top_title %}{% endblock %}
+                </p>
+            </div>
+        </div>
+
+        <div id="detailsBar" class="details">
+            {% block content_details_bar %}{% endblock %}
+        </div>
+
+        <div id="mainBox">
+            {% block content_inner %}{% endblock %}
+        </div>
+    </div>
+
+    {% block content_dialogues %}{% endblock %}
+{% endblock %}

@@ -1,206 +1,112 @@
-{% extends "base.html" %}
+{% extends "base_system.html" %}
 
-{% block extra_head %}
-    <link href="/static/reengage/css/jquery-ui-1.8.21.LeadSpeaker.css" rel="stylesheet" type="text/css"/>
 
-    <script type="text/javascript">
-        // patchwork to let every function work off this queue
-        // (and only this queue)
-        window.activeQueueUUID = '{{ app.queue.uuid }}';
-    </script>
+{% block content_top_actions %}
+    <div class="button" id="newPost">
+        + New Post
+    </div>
 {% endblock %}
 
-{% block extra_js_includes %}
-    <script src="/r/reengage/js/com.js" type="text/javascript"></script>
-
-    <script type='text/javascript'>
-        var _ues = {
-        host:'info.userecho.com',
-        forum:'13956',
-        lang:'en',
-        tab_icon_show:false,
-        tab_corner_radius:6,
-        tab_font_size:16,
-        tab_image_hash:'RmVlZGJhY2s%3D',
-        tab_alignment:'right',
-        tab_text_color:'#FFFFFF',
-        tab_bg_color:'#21779C',
-        tab_hover_color:'#F45C5C'
-        };
-
-        (function() {
-            var _ue = document.createElement('script'); _ue.type = 'text/javascript'; _ue.async = true;
-            _ue.src = ('https:' == document.location.protocol ? 'https://s3.amazonaws.com/' : 'http://') + 'cdn.userecho.com/js/widget-1.4.gz.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(_ue, s);
-        })();
-    </script>
-{% endblock %}
-
-{% block banner_subtitle %}
-     // {{ client.name|default:"Your Store" }}
-{% endblock %}
-
-{% block banner_right %}
-    <ul id="bannerRightObj">
-        <li><a href="./queues">Home</a></li>
-        <li><a href="./how_to">Instructions</a></li>
-        <li><a href="./logout">Logout</a></li>
+{% block content_nav %}
+    <ul class="breakNav" style="text-align: center">
+        <li class="selected"><b>Facebook</b></li>
+        <li class="comingSoon"><a href="#">Twitter</a></li>
+        <li class="comingSoon"><a href="#">Pinterest</a></li>
+        <li class="comingSoon"><a href="#">Email</a></li>
     </ul>
 {% endblock %}
 
-{% block content %}
-    <div id="innerBody">
-        <!-- JQuery will hide this - but if IE blocked scripts, this will show up as a helpful hint for IE users -->
-        <div id="IEWarning">
-            <br>
-            <b>To use LeadSpeaker, please allow the scripts on the page
-                to run.</b><br><br>
-            Our website is completely secure.<br><br>
-            For a better experience, use Chrome or Firefox instead of Internet Explorer!<br><br>
+{% block content_inner_title %}Marketing Plans{% endblock %}
+
+{% block box_top_info %}
+    <i>
+        Posting schedule: Mondays at 1:00am EST
+        (<a id="changeSchedule"
+        class="comingSoon" href="#">change</a>)
+    </i>
+{% endblock %}
+
+{% block content_details_bar %}
+    <div id="categoryBar">
+        <div id="categories">Categories</div>
+    </div>
+    <div id="postBar">
+        <div id="date">Date</div>
+        <div id="title">Title</div>
+    </div>
+    <div id="postContentBar">
+        <div id="selectedTitle">
+            <!-- Value changes depending on which post is selected -->
+            <span id="selectedTitleContent">Post Title Here</span>
+
+            <!-- Hidden initially, shown when postQueue.length > 0 -->
+            <span id='editTitle'>(<a href='#'>edit</a>)</span>
         </div>
     </div>
+{% endblock %}
 
-    <div id="ajax_loader">
-        <img alt="Loading" src="/static/imgs/loading.gif"
-             style="padding: 20px;" />
-    </div>
-
-    {% if recent_activities %}
-        <div class="notice shadow" id="recentActivity">
-
-            <div id="closeNotice"></div>
-            <span id="newActivitiesTitle" class="newActivitiesText">
-                <span class="title"><img src="/static/reengage/imgs/notice-arrow-closed-8x9.png">
-                    <b>Recent activity (2 new)</b>
-                </span><br>
-            </span>
-            <span id="newActivities" class="hidden newActivitiesText">
-                <span class="title"><img src="/static/reengage/imgs/notice-arrow-open-8x9.png">
-                    <b>Recent activity (2 new)</b>
-                </span><br>
-                <ul>
-                    <li>Facebook post "Insert title here" broadcasted on Aug 1 at noon</li>
-                    <li>Facebook post "Insert some other title here" broadcasted on Aug 2 at noon</li>
-                </ul>
-            </span>
-        </div>
-    {% endif %}
-
-    <div id="break">
-        <div class="button" id="newPost">
-            + New Post
-        </div>
-        <div id="breakNav">
-            <ul class="breakNav" style="text-align: center">
-                <li class="selected"><b>Facebook</b></li>
-                <li class="comingSoon"><a href="#">Twitter</a></li>
-                <li class="comingSoon"><a href="#">Pinterest</a></li>
-                <li class="comingSoon"><a href="#">Email</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Divided into sections of: 180px, 330px, 490px -->
-    <div id="box" class="shadow">
-
-        <div id="boxTop">
-            <div class="boxTopNav">
-                <ul class="boxTopNav">
-                    <li><b>Marketing Plans</b></li>
-                </ul>
-            </div>
-            <div id="boxTopRight">
-                <p id="boxTopSchedule"><i>
-                    Posting schedule: Mondays at 1:00am EST
-                    (<a id="changeSchedule"
-                        class="comingSoon" href="#">change</a>)
-                </i></p>
-            </div>
-        </div>
-
-        <div id="detailsBar" class="details">
-            <div id="categoryBar">
-                <div id="categories">Categories</div>
-            </div>
-            <div id="postBar">
-                <div id="date">Date</div>
-                <div id="title">Title</div>
-            </div>
-            <div id="postContentBar">
-                <div id="selectedTitle">
-                    <!-- Value changes depending on which post is selected -->
-                    <span id="selectedTitleContent">Post Title Here</span>
-
-                    <!-- Hidden initially, shown when postQueue.length > 0 -->
-                    <span id='editTitle'>(<a href='#'>edit</a>)</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="mainBox">
-            <div id="categoryBox">
-                <div id='allContainer'>
-                    <div id='allCategories' class='first slab selected'
-                         data-queue_uuid='{{ app.queue.uuid }}'>
-                        <span id='categoryArrow' class='open'></span>
-                        All Categories
-                    </div>
-                </div>
-            </div>
-
-            <div id="replaceWithPosts">
-                <div id="replaceTextWithPosts"><p>
-                    Make a new Facebook post by clicking the 'New Post' button!<br><br>
-                    The posts you create here will be seen by any of your visitors who 'liked' a product.
-                </p></div>
-
-                <div id="replaceHiddenPost"></div>
-            </div>
-
-            <div id="replaceWithPostContent">
-
-                <!-- Shown initially, hidden when postQueue.length > 0 -->
-                <div id="replaceTextWithPostContent">
-                    Selected Facebook post contents will appear here
-                </div>
-
-                <!-- Hidden initially, shown when postQueue.length > 0 -->
-                <div id='postContentContainer'>
-                    <div id='postKind'>
-
-                        <!-- No back end for 'typeofcontent' for current version
-
-                       What kind of content is this?
-                       <select id='postKind'>
-                           <option value='type1' [[ ifType1 ]]>Type 1</option>
-                           <option value='type2' [[ ifType2 ]]>Type 2</option>
-                           <option value='type3' [[ ifType3 ]]>Type 3</option>
-                       </select>
-                       <br><br> -->
-
-                        Facebook post content:
-                    </div>
-                    <div id='postGuts'>
-                        <textarea rows='4' cols='100' id='postContent'></textarea>
-                    </div>
-                    <!--
-                    <div id='postEmbed'>
-                        <input type='button' value='Embed a photo or video' />
-                    </div>
-                    -->
-                    <br><br>
-                    <div id='postSave' class='button'>
-                        Save Changes
-                    </div>
-                    <div id="postSaveIndicator" class="saved">Saved</div>
-                </div>
+{% block content_inner %}
+    <div id="categoryBox">
+        <div id='allContainer'>
+            <div id='allCategories' class='first slab selected'
+                 data-queue_uuid='{{ app.queue.uuid }}'>
+                <span id='categoryArrow' class='open'></span>
+                All Categories
             </div>
         </div>
     </div>
 
+    <div id="replaceWithPosts">
+        <div id="replaceTextWithPosts"><p>
+            Make a new Facebook post by clicking the 'New Post' button!<br><br>
+            The posts you create here will be seen by any of your visitors who 'liked' a product.
+        </p></div>
+
+        <div id="replaceHiddenPost"></div>
+    </div>
+
+    <div id="replaceWithPostContent">
+
+        <!-- Shown initially, hidden when postQueue.length > 0 -->
+        <div id="replaceTextWithPostContent">
+            Selected Facebook post contents will appear here
+        </div>
+
+        <!-- Hidden initially, shown when postQueue.length > 0 -->
+        <div id='postContentContainer'>
+            <div id='postKind'>
+
+                <!-- No back end for 'typeofcontent' for current version
+
+               What kind of content is this?
+               <select id='postKind'>
+                   <option value='type1' [[ ifType1 ]]>Type 1</option>
+                   <option value='type2' [[ ifType2 ]]>Type 2</option>
+                   <option value='type3' [[ ifType3 ]]>Type 3</option>
+               </select>
+               <br><br> -->
+
+                Facebook post content:
+            </div>
+            <div id='postGuts'>
+                <textarea rows='4' cols='100' id='postContent'></textarea>
+            </div>
+            <!--
+            <div id='postEmbed'>
+                <input type='button' value='Embed a photo or video' />
+            </div>
+            -->
+            <br><br>
+            <div id='postSave' class='button'>
+                Save Changes
+            </div>
+            <div id="postSaveIndicator" class="saved">Saved</div>
+        </div>
+    </div>
+{% endblock %}
 
 
-    <!--Dialogs-->
+{% block content_dialogues %}
     <div id="newPostDialog" title="New Post">
         New post name: <br><br>
             <input type="text" id="newPostTitle" class="enableEnterPress" maxLength="50" value="" /><br><br>
