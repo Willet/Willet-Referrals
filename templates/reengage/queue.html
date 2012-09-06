@@ -220,18 +220,38 @@
         Select the days of the week you would like your posts to go out:
         <table>
             <tr>
+                {% comment %}
                 {% with "Sundays Mondays Tuesdays Wednesdays Thursdays Fridays Saturdays" as list %}
                     {% for day in list.split %}
                         <td><input type="checkbox" name="dayOfWeek" value="{{ day }}" class="facebook" /></td>
                     {% endfor %}
                 {% endwith %}
+                {% endcomment %}
+
+                <td><input type="checkbox" name="dayOfWeek" value="Sundays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Mondays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Tuesdays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Wednesdays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Thursdays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Fridays" class="facebook" /></td>
+                <td><input type="checkbox" name="dayOfWeek" value="Saturdays" class="facebook" /></td>
             </tr>
             <tr>
+                {% comment %}
                 {% with "S M T W Th F S" as list %}
                     {% for day_short in list.split %}
                         <td align="center">{{ day_short }}</td>
                     {% endfor %}
                 {% endwith %}
+                {% endcomment %}
+
+                <td align="center">S</td>
+                <td align="center">M</td>
+                <td align="center">T</td>
+                <td align="center">W</td>
+                <td align="center">Th</td>
+                <td align="center">F</td>
+                <td align="center">S</td>
             </tr>
         </table>
         <br>
