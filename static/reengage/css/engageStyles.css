@@ -193,6 +193,11 @@ li a,
     float: left;
     width: 700px;
     padding: 20px 0 20px 0;
+    color: #fff;
+}
+
+#bannerTitle h1 {
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.8);
 }
 
 #bannerRight, .breakNav {
