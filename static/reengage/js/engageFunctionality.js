@@ -81,10 +81,8 @@ var updateQueueUI = function (selectedPostUUID) {
         serverPosts = [];
 
     for (var i = 0; i < client.apps[0].queues.length; i++) {
-        console.log(client.apps[0].queues[i].uuid, window.activeQueueUUID);
         if (client.apps[0].queues[i].uuid == window.activeQueueUUID) {
             serverPosts = client.apps[0].queues[i].activePosts;
-            console.log(serverPosts);
             break;
         }
     }
@@ -638,7 +636,6 @@ $(document).ready(function () {
     $('#allCategories, .category, .categoryChild').click(function () {
         // update window.activeQueueUUID and refresh the UI.
         var queue_uuid = $(this).data('queue_uuid');
-        console.log(queue_uuid);
         if (queue_uuid) {
             window.activeQueueUUID = queue_uuid;
             updateQueueUI($(".post.selected").data("uuid"));
