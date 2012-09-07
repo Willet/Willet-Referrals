@@ -367,6 +367,8 @@ class ReEngageSetupFB(URIHandler):
                 app.fb_app_id = fb_app_id
                 app.fb_secret = fb_secret
                 app.put()
+
+                app.update_fb_app_id_snippet()
             except Exception, e:
                 values.update({
                     "msg": "There was a problem setting the FB properties: %s" % e

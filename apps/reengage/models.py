@@ -49,7 +49,7 @@ class ReEngageShopify(ReEngage, AppShopify):
         app_name = self.__class__.__name__
 
         # Create cohort for asset
-        cohort_id = ReEngageCohortID.create()
+        cohort_id = ReEngageCohortID.get_latest()
 
         # TODO: We should use 'product_hooks_too', and then our hooks should
         # only create a queue if one doesn't exist.
@@ -94,6 +94,13 @@ class ReEngageShopify(ReEngage, AppShopify):
         }])
         self.queue_assets(assets=[{
             'asset': {
+                'key': 'snippets/leadspeaker-fb-id.liquid',
+                'value': """
+                    <meta property="fb:app_id" content="%s">
+                """ % (self.fb_app_id)
+            }
+        }, {
+            'asset': {
                 'key': 'snippets/leadspeaker-canonical-url.liquid',
                 'value': """
                     <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
@@ -111,7 +118,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                           <link rel="canonical" href="{{ canonical_url | downcase }}" />
                           <meta property="og:url" content="{{ canonical_url | downcase }}" />
                       {% endif %}
-                      <meta property="fb:app_id" content="392482400810748">
+                      {% include 'leadspeaker-fb-id' %}
                       <meta property="og:type" content="product">
                       <meta property="og:site_name" content="{{ shop.name | escape }}" />
 
@@ -181,7 +188,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
-            Email.welcomeClient("ShopConnection Engage", email, name, store,
+            Email.welcomeClient("SecondFunnel LeadSpeaker", email, name, store,
                                 use_full_name=use_full_name,
                                 additional_data={"url": full_url})
 
@@ -204,7 +211,7 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         return
 
-    def update_canonical_url(self, cohort_id):
+    def update_canonical_url_snippet(self, cohort_id):
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/leadspeaker-canonical-url.liquid',
@@ -216,6 +223,19 @@ class ReEngageShopify(ReEngage, AppShopify):
         }])
 
         self.install_queued()
+
+    def update_fb_app_id_snippet(self):
+        self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/leadspeaker-fb-id.liquid',
+                'value': """
+                    <meta property="fb:app_id" content="%s">
+                """ % (self.fb_app_id)
+            }
+        }])
+
+        self.install_queued()
+
 
     @classmethod
     def create_app(cls, client, app_token):
@@ -602,7 +622,12 @@ class ReEngageCohortID(Model):
 
     @classmethod
     def get_latest(cls):
-        return cls.all().order("-created").get()
+        latest = cls.all().order("-created").get()
+
+        if not latest:
+            latest = cls.create()
+
+        return latest
 
     @classmethod
     def create(cls):

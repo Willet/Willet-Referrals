@@ -121,4 +121,4 @@ class ReEngageUpdateSnippets(URIHandler):
         apps = ReEngageShopify.all().fetch(1000)
 
         for app in apps:
-            app.update_canonical_url(latest_cohort_id.uuid)
+            app.update_canonical_url_snippet(latest_cohort_id.uuid)
