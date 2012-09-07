@@ -5,6 +5,7 @@ from util.gaesessions import get_current_session, Session
 from util.urihandler import URIHandler
 from util.helpers import   url as build_url
 from apps.reengage.models import *
+from apps.reengage.resources import session_active
 
 # TODO: Consider moving some of this to a Context Processor
 
@@ -85,6 +86,7 @@ class ReEngageHowTo(URIHandler):
 
 class ReEngageAnalytics(URIHandler):
     """Display the analytics page"""
+    @session_active
     def get(self):
         self.response.out.write(self.render_page('reengage/analytics.html', {}))
 
