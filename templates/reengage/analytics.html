@@ -1,0 +1,41 @@
+{% extends "base_system.html" %}
+
+{% block content_title %}
+    Dashboard // Analytics
+{% endblock %}
+
+{% block content_top_actions %}
+    <div class="button" id="newPost">
+        Refresh
+    </div>
+{% endblock %}
+
+{% block content_nav %}
+    <ul class="breakNav" style="text-align: center">
+        <li claas="selected"><b>Analytics</b></li>
+        <li><a href="{% url ReEngageQueueHandler %}">Facebook</a></li>
+        <li class="comingSoon"><a href="#">Twitter</a></li>
+        <li class="comingSoon"><a href="#">Pinterest</a></li>
+        <li class="comingSoon"><a href="#">Email</a></li>
+    </ul>
+{% endblock %}
+
+{% block content_inner_title %}Data Analytics{% endblock %}
+
+{% block box_top_info %}
+    <i>
+        Next schedule refresh: 20:00pm EST
+        (<a id="changeSchedule"
+        class="comingSoon" href="#">manual refresh</a>)
+    </i>
+{% endblock %}
+
+{% block content_details_bar %}
+{% endblock %}
+
+{% block content_inner %}
+{% endblock %}
+
+
+{% block content_dialogues %}
+{% endblock %}
