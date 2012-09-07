@@ -116,7 +116,12 @@ class Facebook(SocialNetwork):
         page_id = cls._get_page_id(url)
         logging.info("Page Id: %s" % page_id)
 
-        token   = cls._get_access_token()
+        client_id     = kwargs.get("client_id")
+        client_secret = kwargs.get("client_secret")
+
+        token   = cls._get_access_token(client_id=client_id,
+                                        client_secret=client_secret)
+
         logging.info("Token: %s" % token)
 
         message = cls._render_message(post.content, product=product)
@@ -195,13 +200,20 @@ class Facebook(SocialNetwork):
         return cls.get_reach(url).get('total_count', 0)
 
     @classmethod
-    def _get_access_token(cls):
+    def _get_access_token(cls, client_id=None, client_secret=None):
         """Obtains an access token for a FB application."""
+
+        if client_id == None:
+            client_id = SHOPIFY_APPS["ReEngageShopify"]["facebook"]["app_id"]
+
+        if client_secret == None:
+            client_secret = SHOPIFY_APPS["ReEngageShopify"]["facebook"]["app_secret"]
+
         success, content = cls._request(cls.__access_token_url, "POST", {
             "grant_type"   : "client_credentials",
             "redirect_uri" : cls.__access_token_url,
-            "client_id"    : SHOPIFY_APPS["ReEngageShopify"]["facebook"]["app_id"],
-            "client_secret": SHOPIFY_APPS["ReEngageShopify"]["facebook"]["app_secret"]
+            "client_id"    : client_id,
+            "client_secret": client_secret
         })
 
         token = None
