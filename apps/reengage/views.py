@@ -83,6 +83,12 @@ class ReEngageHowTo(URIHandler):
         self.response.out.write(self.render_page('reengage/howto.html', {}))
 
 
+class ReEngageAnalytics(URIHandler):
+    """Display the analytics page"""
+    def get(self):
+        self.response.out.write(self.render_page('reengage/analytics.html', {}))
+
+
 class ReEngageLogin(URIHandler):
     def get(self):
         """Display the login page"""
