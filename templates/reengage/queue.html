@@ -1,5 +1,12 @@
 {% extends "base_system.html" %}
 
+{% block extra_js_includes %}
+    <script src="/static/reengage/js/engageFunctionality.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block content_title %}
+    Dashboard
+{% endblock %}
 
 {% block content_top_actions %}
     <div class="button" id="newPost">
