@@ -337,3 +337,39 @@ class ReEngageCPLServeScript(URIHandler):
                                          charset='utf-8')
         self.response.out.write(self.render_page('reengage/js/com.js',
                                                  template_values))
+
+
+class ReEngageSetupFB(URIHandler):
+    """Display the instructions page."""
+    def get(self):
+        self.response.out.write(self.render_page('reengage/fb_setup.html', {}))
+
+    def post(self):
+        app_id    = self.request.get("app_id")
+        fb_app_id = self.request.get("fb_app_id")
+        fb_secret = self.request.get("fb_secret")
+
+        values    = {
+            "msg"      : "Success!",
+            "app_id"   : app_id,
+            "fb_app_id": fb_app_id,
+            "fb_secret": fb_secret
+        }
+
+        app = ReEngageShopify.get(app_id)
+
+        if not app:
+            values.update({
+                "msg": "App with ID '%s' does not exist" % app_id
+            })
+        else:
+            try:
+                app.fb_app_id = fb_app_id
+                app.fb_secret = fb_secret
+                app.put()
+            except Exception, e:
+                values.update({
+                    "msg": "There was a problem setting the FB properties: %s" % e
+                })
+
+        self.response.out.write(self.render_page('reengage/fb_setup.html', values))

@@ -168,7 +168,7 @@ class ProductShopifyCollection(ProductCollection):
         if not result:
             raise ShopifyAPIError("No product data was returned: %s" % result,
                                   exc_info=True)
-        logging.error("products = %r" % result)
+        logging.info("products = %r" % result)
 
         products_jsons = result.get('products', False)
         if not products_jsons:

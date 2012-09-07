@@ -34,6 +34,9 @@ class ReEngageShopify(ReEngage, AppShopify):
     """use .queue to get the app's main queue, and
            .queues to get a list of queues associated with this app
     """
+    fb_app_id = db.StringProperty()
+    fb_secret = db.StringProperty()
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReEngageShopify, self).__init__(*args, **kwargs)

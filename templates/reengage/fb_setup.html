@@ -1,0 +1,25 @@
+<html>
+<head>
+    <title>
+        Admin Only: Set FB app id, secret
+    </title>
+</head>
+<body>
+    <form method="POST" action="{% url ReEngageSetupFB %}">
+        <b>{{ msg }}</b><br/>
+
+        <label for="app_id">App ID:</label>
+        <input id="app_id" name="app_id" type="text" value="{{app_id}}"/><br/>
+
+        <label for="fb_app_id">FB ID:</label>
+        <input id="fb_app_id" name="fb_app_id" type="text"
+               value="{{fb_app_id}}"/><br/>
+
+        <label for="fb_secret">FB Secret:</label>
+        <input id="fb_secret" name="fb_secret" type="text"
+               value="{{fb_secret}}"/><br/>
+
+        <input type="submit" value="Submit" />
+    </form>
+</body>
+</html>
