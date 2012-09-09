@@ -315,8 +315,8 @@ class Product(Model, db.polymodel.PolyModel):
             uu_format = "%s-%s" % (client.domain, title)
             uuid = Product.build_secondary_key(uu_format)
             product = Product.get(uuid)
-            if product:
-                return product
+        if product:
+            return product
 
         product = Product.create(title=title,
                                  description=description,
