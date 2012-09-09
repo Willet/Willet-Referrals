@@ -39,6 +39,10 @@ handlers:
   script: urls.py
   login: admin
 
+- url: /r/setup_fb/?
+  script: urls.py
+  login: admin
+
 - url: /b/shopify/start_report
   script: urls.py
   login: admin
