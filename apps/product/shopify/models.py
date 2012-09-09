@@ -11,6 +11,7 @@ from google.appengine.datastore import entity_pb
 from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
+
 from util.errors import ShopifyAPIError
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
@@ -58,7 +59,7 @@ class ProductShopifyCollection(ProductCollection):
         return obj
 
     @classmethod
-    def fetch(cls, app=None, app_uuid=None):
+    def fetch(cls, app=None, app_uuid=None, force_update=False):
         """Obtains a list of collections for a client from Shopify.
 
         Also fetches the products associated with this collection.
@@ -111,7 +112,9 @@ class ProductShopifyCollection(ProductCollection):
             collections.append(collection)
 
         for collection in collections:
-            collection.get_or_fetch_products(app=app, app_uuid=app_uuid)
+            collection.get_or_fetch_products(
+                app=app, app_uuid=app_uuid, force_update=force_update
+            )
             collection.put()  # save them all
 
         return collections
@@ -165,7 +168,7 @@ class ProductShopifyCollection(ProductCollection):
         if not result:
             raise ShopifyAPIError("No product data was returned: %s" % result,
                                   exc_info=True)
-        logging.error("products = %r" % result)
+        logging.info("products = %r" % result)
 
         products_jsons = result.get('products', False)
         if not products_jsons:
@@ -189,9 +192,10 @@ class ProductShopifyCollection(ProductCollection):
 
         return products
 
-    def get_or_fetch_products(self, app=None, app_uuid=None):
+    def get_or_fetch_products(self, app=None, app_uuid=None,
+                              force_update=False):
         """Retrieve Shopify products under this collection."""
-        if not self.products:
+        if not self.products or force_update:
             self.products = self.fetch_products(app=app, app_uuid=app_uuid)
             self.put()  # commitment last
         return self.products
@@ -251,7 +255,7 @@ class ProductShopify(Product):
             # Create the product URL
             # {client.url}/products/{handle}
 
-            url = "%s/products/%s" % (client.domain, data.get("handle"))
+            url = "%s/products/%s" % (client.domain.lower(), data.get("handle"))
             data["url"] = url
 
         # Now, update it with info.

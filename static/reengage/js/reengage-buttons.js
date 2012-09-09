@@ -756,10 +756,10 @@ _willet.networks = (function (willet) {
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
                     fb.setAttribute('data-href', params.canonicalUrl);
-                    var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
-                             +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
+                    //var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
+                    //         +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
-                    button.appendChild(style);
+                    //button.appendChild(style);
 
                     return button;
                 },
@@ -793,9 +793,9 @@ _willet.networks = (function (willet) {
 
                     var u = "http://www.thefancy.com/fancyit?"
                           + "ItemURL=" + encodeURIComponent( params.canonicalUrl )
-                          + "&Title="  + encodeURIComponent( params.title )
+                          + "&Title="  + encodeURIComponent( params.data.product.title )
                           + "&Category=Other";
-                    if ( params.photo ) {
+                    if ( params.photo.length > 0 ) {
                         u += "&ImageURL=" + encodeURIComponent( params.photo );
                     } else { // If no image on page, submit blank image.
                         u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
@@ -851,7 +851,7 @@ _willet.networks = (function (willet) {
 
                     // Google is using the Open Graph spec
                     var t, p,
-                        m = [ { property: 'og:title', content: params.title },
+                        m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
                               { property: 'og:description', content: params.sharingMessage } ];
                     while (m.length) {
@@ -1086,9 +1086,9 @@ _willet = (function (me, config) {
 
         MAX_BUTTONS = 3,
         DEFAULT_BUTTONS = ['Facebook', 'Twitter', 'Pinterest'],
-        DEFAULT_COUNT = 'false',
+        DEFAULT_COUNT = 'true',
         DEFAULT_SPACING = '5',
-        DEFAULT_PADDING = '0', //'5',
+        DEFAULT_PADDING = '5',
         DEFAULT_ALIGNMENT = 'left',
         DEFAULT_CANONICAL_URL = window.location.protocol
                               + '//'
@@ -1156,7 +1156,7 @@ _willet = (function (me, config) {
         updateLoggedInStatus(network, true, true);
 
         var message = JSON.stringify({
-            "name"   : params.title,
+            "name"   : params.data.product.title,
             "network": network,
             "img"    : params.photo
         });
@@ -1343,8 +1343,8 @@ _willet = (function (me, config) {
 
             var params = {
                 "domain":       DOMAIN,
-                "title":        productData.title,
-                "photo":        productData.image,
+                "photo":        productData.product.images[0] ? productData.product.images[0].src : '',
+                "data":         productData,
                 "buttonAlignment":  util.getElemValue(buttonsDiv, 'align', DEFAULT_ALIGNMENT),
                 "buttonCount":  buttonCount,
                 "buttonSpacing": buttonSpacing,
@@ -1408,10 +1408,37 @@ _willet = (function (me, config) {
         });
         debug.set(isDebugging);
 
+//        if (!util.isDictEmpty(loggedInNetworks)) {
+//            me.detectNetworks();
+//        }
 
-        debug.log("Buttons: recieved product.json request");
-        me.createButtons(window.product);
-        me.buttonsLoaded = true;
+        if (window.location.pathname.match(/^(.*)?\/products\//)) {
+            // only attempt to load smart-buttons if we are on a product page
+            try {
+                debug.log("Buttons: initiating product.json request");
+                messaging.ajax({
+                    url: PRODUCT_JSON,
+                    method: "GET",
+                    success: function(request) {
+                        debug.log("Buttons: recieved product.json request");
+                        var data;
+                        try {
+                            data = JSON.parse(request.responseText);
+                        } catch (e) {
+                            debug.log("Buttons: could not parse product info, stopping.");
+                            return;
+                        }
+                        if (data) {
+                            // Proceed!
+                            me.createButtons(data);
+                            me.buttonsLoaded = true;
+                        }
+                    }
+                });
+            } catch(e) {
+                debug.log("Buttons: request for product.json failed");
+            }
+        }
     };
 
     return me;

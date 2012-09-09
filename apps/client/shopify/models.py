@@ -96,6 +96,11 @@ class ClientShopify(Client):
                       params={'client_uuid': uuid,
                               'app_type': app_type})
 
+        # Query the Shopify API to dl all Products
+        taskqueue.add(url=build_url('FetchShopifyCollections'),
+                      params={'store_url': url_,
+                              'force': True})
+
         return store
 
     @staticmethod
@@ -159,10 +164,11 @@ class ClientShopify(Client):
             products = details['products']
         except:
             # details will not have ['products'] if response is incorrect.
-            raise RemoteError (resp.status, resp.reason, products)
+            raise RemoteError(resp.status, resp.reason, products)
 
         for p in products:
-            ProductShopify.create_from_json(self, p)
+            product = ProductShopify.create_from_json(self, p)
+            product.get_facebook_reach()
 
     @property
     def lead_score(self):
