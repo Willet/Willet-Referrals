@@ -16,7 +16,15 @@ p { font-size: 13px; }
 h1 {
     font-size: 30px;
     font-weight: normal;
-    text-shadow: 1px 1px rgba(255,255,255,0.3)
+    text-shadow: 1px 1px rgba(255,255,255,0.3);
+    line-height: 55px;
+}
+
+.logo {
+    height: 55px;
+    float: left;
+    border: 0px;
+    padding-right: 10px;
 }
 
 body { background: #e4e4e4; }
@@ -185,6 +193,11 @@ li a,
     float: left;
     width: 700px;
     padding: 20px 0 20px 0;
+    color: #fff;
+}
+
+#bannerTitle h1 {
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.8);
 }
 
 #bannerRight, .breakNav {
@@ -284,7 +297,7 @@ p#soon {
 
 #boxTopRight {
     float: right;
-    padding: 15px
+    padding: 18px
 }
 
 #detailsBar{
@@ -342,7 +355,59 @@ which has one pixel less height for the white border on top */
 #categoryBox {
     width: 179px;
     background: #fff;
-    border-right: 1px solid #3b3b3b;
+    border-right: 1px solid #878787;
+    overflow: auto;
+}
+
+.slab.selected,
+.slab:hover {
+    background: #e2e2e2; cursor: pointer;
+}
+.slab.selected {
+    font-weight: bold;
+}
+#allCategories {
+    padding: 8px 15px 8px 7px;
+}
+
+.categoryChild .reach_score {
+    float: right;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.categoryChild .title {
+    padding: 8px 15px 8px 20px;
+}
+
+.categoryChild .reach_score {
+    padding: 8px 0px 0px 0px;
+}
+
+
+
+#categoryArrow,
+#categoryArrow.open {
+    margin-top: 1px;
+    margin-right: 3px;
+    float: left;
+    width: 16px;
+    height: 16px;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    background: url('../imgs/arrow-32x32.png');
+    background-repeat: no-repeat;
+    background-position: 0 -16px;
+}
+#categoryArrow:hover {
+    background-position: 0 0;
+}
+#categoryArrow.open {
+    background-position: -16px -16px;
+}
+#categoryArrow.open:hover {
+    background-position: -16px 0;
 }
 
 /* Common padding in mainBox elements */
@@ -509,6 +574,10 @@ which has one pixel less height for the white border on top */
 #newPostDialog,
 #editTitleDialog,
 #changeScheduleDialog { display: none; }
+
+#changeScheduleDialog table {
+    margin: 0 auto;
+}
 
 #ajax_loader {
     position: fixed;

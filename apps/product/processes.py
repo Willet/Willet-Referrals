@@ -65,3 +65,26 @@ class CreateProduct(URIHandler):
         else:
             logging.warn("Auto-create product failed: some required fields are missing")
             self.error(302)  # should be 400, but let browsers handle it
+
+
+class FetchProductReach(URIHandler):
+    """Taskqueue entry to get "reach scores" of either a product (product_uuid)
+    or all products for a client (client_uuid).
+
+    """
+    def get(self):
+        products = []
+        client = Client.get(self.request.get("client_uuid"))
+        if client:
+            products = client.products
+        else:
+            product = Product.get(self.request.get("product_uuid"))
+            if product:
+                products = [product]
+
+        if products:
+            self.response.headers['Content-Type'] = 'text/plain'
+            for product in products:
+                score = product.get_facebook_reach(force=True)
+                self.response.out.write('%s -> %s points\n' % (product.uuid,
+                                                               score))

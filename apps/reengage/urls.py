@@ -11,7 +11,7 @@ urlpatterns = [
     (r'/r/shopify/welcome/?', ReEngageShopifyWelcome),  # TODO: move to shopify subfolder
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
-    (r'/r/url/(.+)', ReEngageMagic),
+    (r'/r/setup_fb/?', ReEngageSetupFB),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),
@@ -22,12 +22,15 @@ urlpatterns = [
 
     # Re-engage Pseudo-resources
     (r'/r/shopify/queues$', ReEngageQueueHandler),
-    (r'/r/shopify/queues\.json', ReEngageQueueJSONHandler),
+    (r'/r/shopify/queue\.json', ReEngageQueueJSONHandler),
+    (r'/r/shopify/queues\.json', ReEngageQueuesJSONHandler),
     (r'/r/shopify/product?', ReEngageProductSourceHandler),
     (r'/r/shopify/product\.json', ReEngageProductSourceJSONHandler),
     (r'/r/shopify/post/(\w+)', ReEngagePostHandler),
     (r'/r/shopify/post/(\w+)\.json', ReEngagePostJSONHandler),
 
     # Re-engage processes (beta)
-    (r'/r/shopify/cron/?', ReEngageCron),
+    (r'/r/shopify/cron/start/?', ReEngageCron),
+    (r'/r/shopify/cron/post/?', ReEngageCronPostMessage),
+    (r'/r/shopify/cron/snippets/?', ReEngageUpdateSnippets),
 ]

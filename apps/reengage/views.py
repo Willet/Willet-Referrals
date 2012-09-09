@@ -1,8 +1,5 @@
-import re
-import urllib
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
-from apps.product.models import Product
 from util.consts import SHOPIFY_APPS
 from util.gaesessions import get_current_session, Session
 from util.urihandler import URIHandler
@@ -342,78 +339,39 @@ class ReEngageCPLServeScript(URIHandler):
                                                  template_values))
 
 
-class ReEngageMagic(URIHandler):
-    """Handles iframe requests (or otherwise) for ReEngage buttons
+class ReEngageSetupFB(URIHandler):
+    """Display the instructions page."""
+    def get(self):
+        self.response.out.write(self.render_page('reengage/fb_setup.html', {}))
 
-    Facebook restricts apps to one domain. To get around this restriction, we
-    do use only one domain: ours. This means that we have to pretend that other
-    domains belong to us...
+    def post(self):
+        app_id    = self.request.get("app_id")
+        fb_app_id = self.request.get("fb_app_id")
+        fb_secret = self.request.get("fb_secret")
 
-    Required Params
-    image      : Image that represents the product
-    site       : Name of the site hosting the product
-    title      : Title of the product
-    description: Description of the product
+        values    = {
+            "msg"      : "Success!",
+            "app_id"   : app_id,
+            "fb_app_id": fb_app_id,
+            "fb_secret": fb_secret
+        }
 
-    Optional Params
-    app_id     : The Facebook app_id to use with the like button: Defaults to '340019906075293'
-    type       : An OpenGraph type. Defaults to 'product'
-    """
-    def get(self, uri):
-        if not uri:
-            # TODO: Error
-            pass
+        app = ReEngageShopify.get(app_id)
 
-        url = urllib.unquote(uri)
+        if not app:
+            values.update({
+                "msg": "App with ID '%s' does not exist" % app_id
+            })
+        else:
+            try:
+                app.fb_app_id = fb_app_id
+                app.fb_secret = fb_secret
+                app.put()
 
-        is_facebook  = "facebookexternalhit" in self.get_browser() or self.request.get("facebook")
-        show_buttons = self.request.get("buttons") == "1"
-
-        if show_buttons:
-            # Do buttons stuff
-            required_params = ["image", "site", "title", "description"]
-
-            if not all(x in self.request.GET for x in required_params):
-                logging.error("Missing one of the following GET params: %s" % required_params)
-                self.error(400)
-                return
-
-            self.request.GET["url"] = "http://%s/r/url/%s" % (
-                APP_DOMAIN, url
-            )
-
-            self.response.out.write(self.render_page('reengage/buttons.html', {
-                "request": self.request.GET
-            }))
-
-            if not Product.get_by_url(url):
-                params = dict((k, self.request.GET[k]) for k in required_params)
-                params.update({
-                    "images": [params.get("image")]
+                app.update_fb_app_id_snippet()
+            except Exception, e:
+                values.update({
+                    "msg": "There was a problem setting the FB properties: %s" % e
                 })
 
-                Product.create(**params)
-
-        elif is_facebook:
-            product = Product.get_by_url(url)
-            if not product:
-                logging.error("No such product exists: %s" % url)
-                self.error(400)
-                return
-
-            image = "http://%s/static/imgs/noimage-willet.png" % (APP_DOMAIN)
-            if len(product.images) > 0:
-                image = product.images[0]
-
-            self.response.out.write(self.render_page('reengage/buttons.html', {
-                "request": {
-                    "url"        : "http://%s/r/url/%s" % (APP_DOMAIN, url),
-                    "image"      : image,
-                    "site"       : "", # TODO: Site name
-                    "title"      : product.title,
-                    "description": product.description
-                }
-            }))
-        else:
-            # Do redirect stuff
-            self.redirect(url)
+        self.response.out.write(self.render_page('reengage/fb_setup.html', values))

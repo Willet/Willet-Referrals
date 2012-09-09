@@ -12,38 +12,14 @@ from google.appengine.ext import db
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
+from apps.product.models import Product, ProductCollection
 # from apps.reengage.shopify.models import ReEngageShopify
+from apps.product.models import Product
 from apps.user.models import User
 
 from util.consts import REROUTE_EMAIL, SHOPIFY_APPS, APP_DOMAIN, URL
 from util.helpers import to_dict, generate_uuid, url
 from util.model import Model
-
-class TwitterAssociation(Model):
-    #app_uuid = db.StringProperty(indexed=True)
-    url      = db.StringProperty(indexed=True)
-    handles  = db.StringListProperty()
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
-        super(TwitterAssociation, self).__init__(*args, **kwargs)
-
-    def _validate_self(self):
-        pass
-
-    @classmethod
-    def get_or_create(cls, url):
-        result = cls.all().filter('url =', url).get()
-
-        if result:
-            return result, False
-
-        result = cls(url=url, handles=[])
-        result.put()
-
-        return result, True
-
 
 class ReEngage(App):
     def __init__(self, *args, **kwargs):
@@ -55,6 +31,12 @@ class ReEngage(App):
 
 
 class ReEngageShopify(ReEngage, AppShopify):
+    """use .queue to get the app's main queue, and
+           .queues to get a list of queues associated with this app
+    """
+    fb_app_id = db.StringProperty()
+    fb_secret = db.StringProperty()
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReEngageShopify, self).__init__(*args, **kwargs)
@@ -66,19 +48,115 @@ class ReEngageShopify(ReEngage, AppShopify):
         """ Install ReEngage scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
-        # Install yourself in the Shopify store
-        self.queue_webhooks(product_hooks_too=True)
+        # Create cohort for asset
+        cohort_id = ReEngageCohortID.get_latest()
+
+        # TODO: We should use 'product_hooks_too', and then our hooks should
+        # only create a queue if one doesn't exist.
+        self.queue_webhooks(webhooks=[{
+            "webhook": {
+                    "address": "%s/r/shopify/webhook/product/create" % (URL),
+                    "format": "json", "topic": "products/create"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/product/update" % (URL),
+                    "format": "json", "topic": "products/update"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/product/delete" % (URL),
+                    "format": "json", "topic": "products/delete"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/create" % (URL),
+                    "format": "json", "topic": "collections/create"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/update" % (URL),
+                    "format": "json", "topic": "collections/update"
+                }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/collections/delete" % (URL),
+                    "format": "json", "topic": "collections/delete"
+                }
+            }
+        ])
+
+        self.queue_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/r/shopify/load/reengage-buttons.js" % URL,
+                "event": "onload"
+            }
+        }])
         self.queue_assets(assets=[{
             'asset': {
-                'key': 'snippets/reengage-buttons.liquid',
+                'key': 'snippets/leadspeaker-fb-id.liquid',
                 'value': """
-                    {%% capture u %%}{{ canonical_url | downcase }}{%% endcapture %%}
-                    {%% capture s %%}{{ shop.name | escape }}{%% endcapture %%}
-                    {%% capture t %%}{%% if template == 'index' %%}{{ shop.name }}{%% elsif template == '404' %%}Page Not Found{%% else %%}{{ page_title }}{%% endif %%}{%% endcapture %%}
-                    {%% capture d %%}{%% assign maxmeta = 155 %%}{%% if template contains 'product' %%}{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%%26' }}{%% elsif template contains 'page' %%}{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape | replace: '&', '%%26' }}{%% elsif template == 'index' and shop.description != '' %%}{{ shop.description | replace: '&', '%%26' }}{%% endif %%}{%% endcapture %%}
-                    {%% capture i %%}{%% if template contains 'product' %%}{{ product.featured_image | product_img_url: 'original' }}{%% elsif settings.logo_image == "logo.png" %%}{{ 'logo.png' | asset_url }}{%% endif %%}{%% endcapture %%}
-                    <iframe id="_willet_buttons_iframe" src="//%s/r/url/{{u}}?buttons=1&title={{t}}&site={{s}}&image={{i}}&description={{d}}" style="height: 20px;"></iframe>
-                """ % APP_DOMAIN
+                    <meta property="fb:app_id" content="%s">
+                """ % (self.fb_app_id)
+            }
+        }, {
+            'asset': {
+                'key': 'snippets/leadspeaker-canonical-url.liquid',
+                'value': """
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                """ % (cohort_id.uuid, cohort_id.uuid)
+            }
+        }, {
+            'asset': {
+                'key': 'snippets/leadspeaker-header.liquid',
+                'value': """
+
+                      {% if template contains 'product' %}
+                          {% include 'leadspeaker-canonical-url' %}
+                      {% else %}
+                          <link rel="canonical" href="{{ canonical_url | downcase }}" />
+                          <meta property="og:url" content="{{ canonical_url | downcase }}" />
+                      {% endif %}
+                      {% include 'leadspeaker-fb-id' %}
+                      <meta property="og:type" content="product">
+                      <meta property="og:site_name" content="{{ shop.name | escape }}" />
+
+                      {% if template == 'index' %}
+                       <title>{{ shop.name }}</title>
+                       <meta property="og:title" content="{{ shop.name }}" />
+                      {% elsif template == '404' %}
+                        <title>Page Not Found | {{ shop.name | escape }}</title>
+                        <meta property="og:title" content="Page not found" />
+                      {% else %}
+                       <title>{{ page_title }} | {{ shop.name | escape }}</title>
+                       <meta property="og:title" content="{{ page_title }}" />
+                      {% endif %}
+
+                      {% assign maxmeta = 155 %}
+                      {% if template contains 'product' %}
+                      <meta name="description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ product.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      {% elsif template contains 'page' %}
+                      <meta name="description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ page.content | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      {% elsif template == 'index' and shop.description != '' %}
+                      <meta name="description" content="{{ shop.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      <meta property="og:description" content="{{ shop.description | strip_html | strip_newlines | truncate: maxmeta | escape }}" />
+                      {% endif %}
+
+
+                      {% comment %}
+                        Open Graph tags for Facebook Like buttons
+                      {% endcomment %}
+                      {% if template contains 'product' %}
+                        <meta property="og:image" content="{{ product.featured_image | product_img_url: 'original' }}" />
+                      {% else %}
+                        {% if settings.logo_image == "logo.png" %}
+                          <meta property="og:image" content="{{ 'logo.png' | asset_url }}" />
+                        {% endif %}
+                      {% endif %}
+                    """
             }
         }])
         self.install_queued()
@@ -110,7 +188,7 @@ class ReEngageShopify(ReEngage, AppShopify):
                                 store_url=self.store_url)
         else:
             # Fire off "personal" email from Fraser
-            Email.welcomeClient("ShopConnection Engage", email, name, store,
+            Email.welcomeClient("SecondFunnel LeadSpeaker", email, name, store,
                                 use_full_name=use_full_name,
                                 additional_data={"url": full_url})
 
@@ -133,6 +211,32 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         return
 
+    def update_canonical_url_snippet(self, cohort_id):
+        self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/leadspeaker-canonical-url.liquid',
+                'value': """
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                """ % (cohort_id, cohort_id)
+            }
+        }])
+
+        self.install_queued()
+
+    def update_fb_app_id_snippet(self):
+        self.queue_assets(assets=[{
+            'asset': {
+                'key': 'snippets/leadspeaker-fb-id.liquid',
+                'value': """
+                    <meta property="fb:app_id" content="%s">
+                """ % (self.fb_app_id)
+            }
+        }])
+
+        self.install_queued()
+
+
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
@@ -140,9 +244,9 @@ class ReEngageShopify(ReEngage, AppShopify):
         app = cls(key_name=uuid,
                   uuid=uuid,
                   client=client,
-                  store_name=client.name, # Store name
+                  store_name=client.name,  # Store name
                   store_url=client.url,  # Store url
-                  store_id=client.id,   # Store id
+                  store_id=client.id,  # Store id
                   store_token=app_token)
         app.put()
 
@@ -187,12 +291,29 @@ class ReEngageShopify(ReEngage, AppShopify):
                                   exc_info=True)
         return app, created
 
+    def _get_own_queue(self):
+        """get the app's main queue."""
+        return ReEngageQueue.get_by_app_and_name(
+            self, "%s-%s-%s" % ('ReEngageQueue', self.__class__.__name__,
+                                self.uuid))
+    # turn into attribute
+    queue = property(_get_own_queue)
+
 
 class ReEngageQueue(Model):
     """Represents a queue within ReEngage"""
     app_    = db.ReferenceProperty(App, collection_name='queues')
-    queued   = db.ListProperty(unicode, indexed=False)
-    expired  = db.ListProperty(unicode, indexed=False)
+    cohorts = db.ListProperty(unicode, indexed=False)
+    name    = db.StringProperty(indexed=True)
+
+    # queued[ posts]
+    queued = db.ListProperty(unicode, indexed=False)
+    # expired[ posts]
+    expired = db.ListProperty(unicode, indexed=False)
+
+    # use get_products() to get a total list of products.
+    collection_uuids = db.ListProperty(unicode, indexed=True)
+    product_uuids = db.ListProperty(unicode, indexed=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -201,12 +322,18 @@ class ReEngageQueue(Model):
 
     def prepend(self, obj):
         """Puts a post at the front of the list"""
+        if not self.queued:
+            self.queued = []
         self.queued.insert(0, unicode(obj.uuid))
+        logging.debug('self.queued = %r' % self.queued)
         self.put()
 
     def append(self, obj):
         """Puts a post at the end of the list"""
+        if not self.queued:
+            self.queued = []
         self.queued.append(unicode(obj.uuid))
+        logging.debug('self.queued = %r' % self.queued)
         self.put()
 
     def remove_all(self):
@@ -265,18 +392,76 @@ class ReEngageQueue(Model):
         }
 
     def get_products(self):
-        """Get products associated with this queue
+        """Get products associated with this queue."""
+        total_product_uuids = self.product_uuids
+        collections = [ProductCollection.get(x) for x in self.collection_uuids]
 
-        Note: since queues are only associated with an app, at the moment,
-        we can only get all products associated with a particular client."""
-        logging.info("Client: %s" % self.app_.client)
+        # add all product uuids to the totals list.
+        for collection in collections:
+            col_prod_uuids = [x.uuid for x in collection.products]
+            total_product_uuids.extend(col_prod_uuids)
 
-        products = self.app_.client.products
+        # unique-ify it, then return objects
+        total_product_uuids = list(frozenset(total_product_uuids))
+        return [Product.get(x) for x in total_product_uuids]
 
-        if products:
-            return products
-        else:
-            return []
+    def add_products(self, value):
+        """given value (either a Product or ProductCollection object),
+        add it to either product_uuids or collection_uuids, respectively.
+        """
+        if isinstance(value, Product):
+            self.product_uuids.append(value.uuid)
+            self.product_uuids = list(frozenset(self.product_uuids))
+
+        elif isinstance(value, ProductCollection):
+            self.collection_uuids.extend([x.uuid for x in value.products])
+            self.collection_uuids = list(frozenset(self.collection_uuids))
+
+        self.put_later()
+
+    def clear_products(self):
+        """empties product_uuids and collection_uuids."""
+        self.product_uuids = []
+        self.collection_uuids = []
+        self.put_later()
+
+
+    @classmethod
+    def get_by_app_and_name(cls, app, name):
+        """Find a queue based on app and name. To save space,
+        this lookup is not indexed.
+
+        default: None
+        """
+        queues = app.queues
+        for queue in queues:
+            if queue.name == name:
+                return queue
+
+    @classmethod
+    def get_by_client_and_name(cls, client, name):
+        """same as get_by_app_and_name, except with even more reads."""
+        logging.debug('called get_by_client_and_name')
+        try:
+            for app in client.apps:
+                queue = cls.get_by_app_and_name(app, name)
+                if queue:
+                    return queue
+        except Exception, err:
+            logging.error('%s' % err, exc_info=True)
+        return None
+
+    def get_cohorts(self, include_inactive=False):
+        # Returns a list of associated cohorts
+        cohorts = ReEngageCohort.all().filter("queue =", self)
+
+        if not include_inactive:
+            cohorts.filter("active =", True)
+
+        # What do we expect is the longest a campaign will run?
+        result = cohorts.fetch(limit=100)
+
+        return result
 
     @classmethod
     def get_by_url(cls, url):
@@ -296,10 +481,25 @@ class ReEngageQueue(Model):
             return (queue, False)
 
         uuid = generate_uuid(16)
-        queue = cls(uuid=uuid, app_=app)
+        name = "%s-%s-%s" % (cls.__name__, app.__class__.__name__, app.uuid)
+
+        queue = cls(
+            uuid = uuid,
+            app_ = app,
+            name = name,
+        )
         queue.put()
 
         return (queue, True)
+
+    @classmethod
+    def create(cls, **kwargs):
+        """Simple wrapper around init."""
+        logging.debug('called %r.create' % cls.__name__)
+        kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
+        queue = cls(**kwargs)
+        queue.put()
+        return queue
 
     def _validate_self(self):
         return True
@@ -405,3 +605,57 @@ class ReEngageAccount(User):
             return (user, True)
         else:
             return (None, False)
+
+
+class ReEngageCohortID(Model):
+    """Represents the identifier string assigned to a weekly cohort.
+    """
+    created = db.DateTimeProperty(auto_now=True)
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageCohortID, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
+
+    @classmethod
+    def get_latest(cls):
+        latest = cls.all().order("-created").get()
+
+        if not latest:
+            latest = cls.create()
+
+        return latest
+
+    @classmethod
+    def create(cls):
+        uuid = generate_uuid(16)
+        obj = cls(uuid=uuid, key_name=uuid)
+        obj.put()
+        return obj
+
+
+class ReEngageCohort(Model):
+    """Represents a queue/cohort association within ReEngage"""
+    queue         = db.ReferenceProperty(Model, collection_name='cohort')
+    cohort_id     = db.ReferenceProperty(Model, collection_name='cohorts')
+    message_index = db.IntegerProperty(default=0)
+    active        = db.BooleanProperty(default=True, indexed=True)
+    completed     = db.DateTimeProperty()
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(ReEngageCohort, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
+
+    @classmethod
+    def create(cls, queue, cohort_id=None):
+        uuid = generate_uuid(16)
+        obj = cls(uuid=uuid, key_name=uuid, queue=queue, cohort_id=cohort_id)
+        obj.put()
+        return obj
