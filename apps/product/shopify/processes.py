@@ -4,7 +4,9 @@ import logging
 
 from django.utils import simplejson as json
 
-from apps.app.shopify.models import App  # reengage
+from apps.app.shopify.models import App, AppShopify
+
+AppShopify
 from apps.client.shopify.models import ClientShopify
 from apps.product.shopify.models import ProductShopify, ProductShopifyCollection
 
@@ -153,3 +155,56 @@ class FetchShopifyCollections(URIHandler):
             logging.warn('Found no app by the url %s' % store_url)
 
         return
+
+
+class PutShopifyCollections(URIHandler):
+    """Create collections via a taskqueue
+
+    Fetching can be expensive. So, we divy up some of the work by putting it
+    on taskqueues
+    """
+
+    def get(self):
+        self.post()
+
+    def post(self):
+        """Get or fetch the products, and update the collection:
+
+        Required parameters:
+            app_uuid (the app uuid)
+            col_uuid (the collection uuid)
+
+        Optional parameters:
+            force (if "True" is supplied, we force an update if products)
+        """
+        app_uuid = self.request.get("app_uuid")
+        col_uuid = self.request.get("col_uuid")
+        force    = (self.request.get("force") == "True")
+
+        logging.info("App uuid: %s" % app_uuid)
+        logging.info("Col uuid: %s" % col_uuid)
+        logging.info("Force: %s"    % force)
+
+        app        = App.get(app_uuid)
+        collection = ProductShopifyCollection.get(col_uuid)
+
+        if not app_uuid:
+            logging.error("No app_uuid provided")
+            return
+
+        if not col_uuid:
+            logging.error("No col_uuid provided")
+            return
+
+        if not app:
+            logging.error("No app found for app_uuid '%s'" % app_uuid)
+            return
+
+        if not collection:
+            logging.error("No collection found for col_uuid '%s'" % col_uuid)
+            return
+
+        collection.get_or_fetch_products(
+            app=app, app_uuid=app_uuid, force_update=force
+        )
+        collection.put()
