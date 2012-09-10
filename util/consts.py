@@ -162,6 +162,7 @@ INSTALLED_APPS = [
     'product.shopify',
     'reengage',
     'reengage.shopify',
+    'scss',
     'sibt',
     'sibt.shopify',
     'sibt.shuuemura',

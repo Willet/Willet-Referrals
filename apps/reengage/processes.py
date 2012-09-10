@@ -69,6 +69,16 @@ class ReEngageCronPostMessage(URIHandler):
         marketing_plan = ReEngageQueue.get(plan_uuid)
         cohort         = ReEngageCohort.get(cohort_uuid)
 
+        try:
+            client_id     = marketing_plan.app_.fb_app_id
+            client_secret = marketing_plan.app_.fb_secret
+        except Exception:
+            client_id     = None
+            client_secret = None
+
+        if client_id == None or client_secret == None:
+            logging.warning("No FB API key found, using default...")
+
         post_uuid      = marketing_plan.queued[index]
         plan_length    = len(marketing_plan.queued)
 
@@ -77,7 +87,13 @@ class ReEngageCronPostMessage(URIHandler):
             post = ReEngagePost.get(post_uuid)
             try:
                 cls = POST_CLASSES.get(post.network, SocialNetwork)
-                cls.post(post, product=product, cohort=cohort.cohort_id)
+                cls.post(
+                    post,
+                    product=product,
+                    cohort=cohort.cohort_id,
+                    client_id=client_id,
+                    client_secret=client_secret
+                )
             except NotImplementedError:
                 logging.error("No 'post' method for class %s" % cls)
             except Exception, e:
@@ -105,4 +121,4 @@ class ReEngageUpdateSnippets(URIHandler):
         apps = ReEngageShopify.all().fetch(1000)
 
         for app in apps:
-            app.update_canonical_url(latest_cohort_id.uuid)
+            app.update_canonical_url_snippet(latest_cohort_id.uuid)

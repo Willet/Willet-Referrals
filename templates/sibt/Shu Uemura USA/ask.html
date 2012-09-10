@@ -183,7 +183,9 @@
                 'products': '{{ product_uuid }}'
             },
             success: function () {
-                return callback(params);
+                if (callback) {
+                    return callback(params);
+                }
             }
         });
     };

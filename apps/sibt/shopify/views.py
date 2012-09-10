@@ -303,7 +303,7 @@ class SIBTShopifyProductDetection(URIHandler):
                 'user': user,
                 'sibt_button_id': '_willet_shouldIBuyThisButton',
             }
-            path = os.path.join('sibt/shopify', 'sibt_product_detection.js')
+            path = os.path.join('sibt', 'sibt_product_detection.js')
             self.response.headers.add_header('P3P', P3P_HEADER)
             self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
             self.response.out.write(self.render_page(path, template_values))
