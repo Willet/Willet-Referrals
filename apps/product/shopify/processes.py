@@ -5,6 +5,7 @@ import logging
 from django.utils import simplejson as json
 
 from apps.app.shopify.models import App, AppShopify
+from util.errors import ShopifyAPIError
 
 AppShopify
 from apps.client.shopify.models import ClientShopify
@@ -100,6 +101,37 @@ class FetchShopifyProducts(URIHandler):
     def post(self):
         """Given client or client_uuid both as uuid"""
         logging.info("RUNNING product.shopify.processes::FetchShopifyProducts")
+
+        # Try app first; client is almost always wrong
+        app = App.get(self.request.get('app_uuid'))
+        if app:
+            result = app._call_Shopify_API(verb="GET", call="products.json")
+
+            if not result:
+                raise ShopifyAPIError("No product data was returned: %s" % result,
+                                      exc_info=True)
+            logging.info("products = %r" % result)
+
+            products_jsons = result.get('products', False)
+            if not products_jsons:
+                raise ShopifyAPIError("Product data is malformed: %s" % result,
+                                      exc_info=True)
+
+            # fetch all products regardless.
+            # http://kiehn-mertz3193.myshopify.com/admin/products/{ id }.json
+            for product_json in products_jsons:
+                pid = product_json['id']
+                product = ProductShopify.get_by_shopify_id(pid)
+                if not product:  # create if not exists
+                    result = app._call_Shopify_API(verb="GET",
+                                                   call="products/%s.json" % pid)
+                    product = ProductShopify.create_from_json(client=app.client,
+                                                              data=result['product'])
+
+                product.put()
+
+            self.response.out.write("OK")
+            return
 
         client = ClientShopify.get(self.request.get('client'))
         if not client:

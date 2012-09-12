@@ -108,15 +108,7 @@ class ProductCollection(Model, db.polymodel.PolyModel):
         and saving of products into collection objects directly.
 
         """
-        #products = [Product.get(x) for x in self.product_uuids]
-        products = []
-        if self.product_uuids:
-            query = Product.all()
-            for uuid in self.product_uuids:
-                query.filter('uuid = ', uuid)
-            products = list(query.run())
-
-        return products
+        return [Product.get(x) for x in self.product_uuids]
 
     def _set_products(self, value):
         """pass in a list of Product objects (subclasses allowed)."""
