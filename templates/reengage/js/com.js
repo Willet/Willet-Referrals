@@ -248,19 +248,7 @@ var fillNavTree = function () {
             {
                 'uuid': '{{ collection.uuid }}',
                 'collection_name': '{{ collection.collection_name }}',
-                'queue_uuid': '{{ collection.queue.uuid }}', // corresponding
-                'products': [{% for product in collection.products %}
-                    {
-                        'uuid': '{{ product.uuid }}',
-                        'shopify_id': '{{ product.shopify_id|default:"0" }}',
-                        'title': '{{ product.title|striptags|escape|default:"(no name)" }}',
-                        'description': '{{ product.description|striptags|escape|default:"(no description)" }}',
-                        'image': '{{ product.images.0|default:"/static/imgs/noimage-willet.png" }}',
-                        'reach_score': '{{ product.reach_score }}',
-                        'queue_uuid': '{{ product.queue.uuid }}' // corresponding
-                    }
-                    {% if not forloop.last %},{% endif %}
-                {% endfor %}]
+                'queue_uuid': '{{ collection.queue.uuid }}' // corresponding
             }
             {% if not forloop.last %},{% endif %}
         {% endfor %}];
@@ -287,6 +275,9 @@ var fillNavTree = function () {
 
         // Fills in the product names
         for (var i = 0; i < categories.length; i++) {
+            if (!categories[i].products) {
+                break;
+            }
             products = categories[i].products.sort(sort_products);
             for (var j = 0; j < products.length; j++) {
                 $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
@@ -303,4 +294,31 @@ var fillNavTree = function () {
     // {% else %}
         console.log('wtf?');
     // {% endif %}
+};
+
+var fillNavProducts = function (category_elem, collection_uuid) {
+    // Populates a Category section with product names
+
+    ajaxRequest(
+        '{% url CollectionJSONDynamicLoader %}',
+        {'collection_uuid': collection_uuid},
+        function (data) {
+            var collection = data.collections[0],
+                product_uuids = collection.product_uuids,
+                product_names = collection.product_names; // die here if data is returned correctly
+
+            for (var j = 0; j < product_names.length; j++) {
+                category_elem.append($("<div />", {
+                    "class": "categoryChild slab hidden",
+                    "html": "<div class='reach_score'>" + product_uuids[j] + "</div>" +
+                            "<div class='title'>" + product_names[j] + "</div>",
+                    'data': {
+                        'uuid': product_uuids[j],
+                        'queue_uuid': product_uuids[j]
+                    }
+                }));
+            }
+        },
+        function () {}
+    );
 };

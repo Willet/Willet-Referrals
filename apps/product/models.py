@@ -51,6 +51,7 @@ class ProductCollection(Model, db.polymodel.PolyModel):
             'shopify_id': unicode(getattr(self, 'shopify_id', '')),
             'shopify_handle': getattr(self, 'shopify_handle', ''),
             'products': [x.uuid for x in getattr(self, 'products', [])],  # could be nothing!
+            'product_names': [x.title for x in getattr(self, 'products', [])],  # could be nothing!
         })
 
     def _validate_self(self):

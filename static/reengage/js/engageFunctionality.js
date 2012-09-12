@@ -640,6 +640,12 @@ $(document).ready(function () {
             window.activeQueueUUID = queue_uuid;
             updateQueueUI($(".post.selected").data("uuid"));
         }
+
+        // if product names need to be fetched, use the collection_uuid
+        var collection_uuid = $(this).data('collection_uuid');
+        if (collection_uuid) {
+            fillNavProducts(this, collection_uuid);
+        }
     });
     /*------ End functions for FB posting schedule dialog ------*/
 });
