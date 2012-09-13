@@ -110,7 +110,11 @@ class Facebook(SocialNetwork):
         # Assume this is a canonical URL
         url     = product.resource_url
         if cohort:
-            url = "%s/%s" % (url, cohort.uuid)
+            url = "%s/leadspeaker_cohort_id=%s" % (url, cohort.uuid)
+
+        # allow lead speaker tracking
+        url = "%s/#%s" % (url, "leadspeaker_on")
+
         logging.info("Page url: %s" % url)
 
         page_id = cls._get_page_id(url)
