@@ -91,7 +91,13 @@ class ReEngageShopify(ReEngage, AppShopify):
                 "src": "%s/r/shopify/load/reengage-buttons.js" % URL,
                 "event": "onload"
             }
+        }, {
+            "script_tag": {
+                "src": "%s/r/shopify/load/reengage-tracking.js" % URL,
+                "event": "onload"
+            }
         }])
+        
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/leadspeaker-fb-id.liquid',
