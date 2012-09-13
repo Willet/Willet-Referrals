@@ -5,7 +5,7 @@ import logging
 
 def track_event(category, action, label=None, value=None):
     # ga.js equivalent. more or less.
-    tracker = Tracker(GOOGLE_ANALYTICS_API_KEY, APP_DOMAIN)
+	tracker = Tracker(GOOGLE_ANALYTICS_API_KEY, APP_DOMAIN)
 
     # dummy visitor and session for now.
 	# not doing user analytics, just aggregate events
@@ -16,4 +16,4 @@ def track_event(category, action, label=None, value=None):
 
 	# send GA event to google & log
 	tracker.track_event(ev, session, visitor)
-    logging.info("Logged event: category=%s, action=%s, label=%s, value=%s" % (category, action, label, value))
+	logging.info("Logged event: category=%s, action=%s, label=%s, value=%s" % (category, action, label, value))
