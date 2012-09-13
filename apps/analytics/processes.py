@@ -1,3 +1,4 @@
+from util.urihandler import URIHandler
 from apps.reengage.models import ReEngageCohort
 from apps.analytics.utils import track_event
 from util.consts import *
