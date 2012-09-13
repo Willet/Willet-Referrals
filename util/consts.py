@@ -146,6 +146,7 @@ INSTALLED_APPS = [
     'admin',
     'app',
     'app.shopify',
+    'analytics',
     'buttons',
     'buttons.shopify',
     'charge',
