@@ -49,6 +49,7 @@ MIXPANEL_TOKEN = '5e7c1fdd252ecdccfecf1682df9f76a2'
 
 # Google Social Graph API Stuff
 GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
+GOOGLE_ANALYTICS_API_KEY = 'UA-34721035-1'
 
 # LilCookies (secure cookies) Stuff
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
