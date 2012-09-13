@@ -4,6 +4,11 @@ from apps.product.shopify.processes import \
     create_collection, update_collection, delete_collection
 from util.urihandler import URIHandler
 
+from apps.analytics.utils import track_event
+
+from util.consts import *
+
+
 #TODO: We should just get_or_create the product instead of duplicating
 # existing webhooks
 
@@ -48,3 +53,11 @@ class DeleteReEngageCollectionsShopify(URIHandler):
     """Delete a Shopify collection"""
     def post(self):
         delete_collection(self.request)
+
+class CreateReEngageOrderShopify(URIHandler):
+    """Order created. Log the event"""
+    def get(self):
+        return self.post()
+
+    def post(self):
+        return
