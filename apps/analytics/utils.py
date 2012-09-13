@@ -3,7 +3,7 @@ from pyga.entities import Event
 
 import logging
 
-def trackEvent(category, action, label=None, value=None):
+def track_event(category, action, label=None, value=None):
     # ga.js equivalent. more or less.
     tracker = Tracker(GOOGLE_ANALYTICS_API_KEY, APP_DOMAIN)
 

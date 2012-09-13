@@ -1,5 +1,5 @@
 from apps.reengage.models import ReEngageCohort
-from apps.analytics.utils import trackEvent
+from apps.analytics.utils import track_event
 from util.consts import *
 
 import logging
@@ -18,4 +18,4 @@ class TrackEvent(URIHandler):
         cohort = ReEngageCohort.get(cohort_uuid)
         label = cohort.queue.app_.client.url
 
-        trackEvent(category, action, label, value)
+        track_event(category, action, label, value)
