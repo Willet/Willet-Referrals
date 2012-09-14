@@ -8,7 +8,7 @@ import logging
 class TrackEvent(URIHandler):
     """Log incoming event"""
     def get(self):
-        return self.post(self)
+        return self.post()
 
     def post(self):
         category = self.request.get('category')
