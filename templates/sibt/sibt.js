@@ -31,8 +31,8 @@
     {% include "js/willet.loader.js" %}
     {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
-    {% include "js/willet.colorbox.js" %}
     {% include "js/willet.sibt.js" %}
+    {% include "js/willet.colorbox.js" %}
 
     // Load CSS onto the page.
     var colorbox_css = '{% spaceless %}{% include "../plugin/css/colorbox.css" %}{% endspaceless %}';
