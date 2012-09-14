@@ -260,6 +260,7 @@ var fillNavTree = function () {
                 "html": "<div class='first slab category" +
                         "' data-queue_uuid='" + categories[i].queue_uuid +
                         "' data-uuid='" + categories[i].uuid +
+                        "' data-collection_uuid='" + categories[i].uuid +
                         "'>" +
                         "<span id='categoryArrow'></span>" +
                         categories[i].collection_name + "</div>"
@@ -274,6 +275,7 @@ var fillNavTree = function () {
         };
 
         // Fills in the product names
+        /*
         for (var i = 0; i < categories.length; i++) {
             if (!categories[i].products) {
                 break;
@@ -291,6 +293,7 @@ var fillNavTree = function () {
                 }));
             }
         }
+        */
     // {% else %}
         console.log('wtf?');
     // {% endif %}
@@ -304,17 +307,18 @@ var fillNavProducts = function (category_elem, collection_uuid) {
         {'collection_uuid': collection_uuid},
         function (data) {
             var collection = data.collections[0],
-                product_uuids = collection.product_uuids,
-                product_names = collection.product_names; // die here if data is returned correctly
+                products = collection.products; // die here if data is returned correctly
 
-            for (var j = 0; j < product_names.length; j++) {
-                category_elem.append($("<div />", {
-                    "class": "categoryChild slab hidden",
-                    "html": "<div class='reach_score'>" + product_uuids[j] + "</div>" +
-                            "<div class='title'>" + product_names[j] + "</div>",
+            console.log(products);
+
+            for (var j = 0; j < products.length; j++) {
+                $(category_elem).insertAfter($("<div />", {
+                    "class": "categoryChild slab",
+                    "html": "<div class='reach_score'>" + (products[j].reach_score || 0) + "</div>" +
+                            "<div class='title'>" + products[j].title + "</div>",
                     'data': {
-                        'uuid': product_uuids[j],
-                        'queue_uuid': product_uuids[j]
+                        'uuid': products[j].uuid/*,
+                        'queue_uuid': products[j].queue_uuid*/
                     }
                 }));
             }
