@@ -1,5 +1,6 @@
 (function(window) {
 	var trackEvent = function (category, action, value) {
+        console.log("trackEvent: ", category, action, value);
 	    var iframe = document.createElement( 'iframe' );
 	    
 	    // category and action are required.
@@ -21,9 +22,11 @@
     };
 
     var fromLeadSpeaker = function() {
-    	if (window.location.hash.indexOf("leadspeaker_on") != -1) {
+    	if (window.location.pathname.indexOf("leadspeaker_cohort_id") != -1) {
+            console.log("from leadspeaker");
 			return true;
 		}
+        console.log("not from leadspeaker");
 		return false;
     }
 
@@ -32,16 +35,18 @@
     		"https://www.facebook.com/": "facebook",
     		"http://www.facebook.com/": "facebook"}
 
+        console.log("from network: ", referrers[document.referrer]);
     	return referrers[document.referrer];
     }
 
     var getCohortId = function() {
-    	if (window.location.pathname.indexOf("leadspeaker_cohort_id") == -1) {
+    	if (!fromLeadSpeaker()) {
+            console.log("no cohort id");
     		return false;
     	}
     	cohort_id = window.location.href.split("leadspeaker_cohort_id=")[1];
-    	cohort_id.replace("/#leadspeaker_on", "");
-    	return cohort_id;
+    	console.log("cohort id", cohort_id);
+        return cohort_id;
     }
 
     var category = "";
@@ -60,4 +65,4 @@
     }
 
     trackEvent(category, action, cohort_id);
-}(window));
+})(window);
