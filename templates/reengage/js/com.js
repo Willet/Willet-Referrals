@@ -266,34 +266,6 @@ var fillNavTree = function () {
                         categories[i].collection_name + "</div>"
             }));
         }
-
-
-        var products;
-        var sort_products = function(a, b) {
-            //assume that a and b have reach scores...
-            return b.reach_score - a.reach_score;
-        };
-
-        // Fills in the product names
-        /*
-        for (var i = 0; i < categories.length; i++) {
-            if (!categories[i].products) {
-                break;
-            }
-            products = categories[i].products.sort(sort_products);
-            for (var j = 0; j < products.length; j++) {
-                $("#categoryBox .categoryContainer").eq(i).append($("<div />", {
-                    "class": "categoryChild slab hidden",
-                    "html": "<div class='reach_score'>" + products[j].reach_score + "</div>" +
-                            "<div class='title'>" + products[j].title + "</div>",
-                    'data': {
-                        'uuid': products[j].uuid,
-                        'queue_uuid': products[j].queue_uuid
-                    }
-                }));
-            }
-        }
-        */
     // {% else %}
         console.log('wtf?');
     // {% endif %}
@@ -307,20 +279,25 @@ var fillNavProducts = function (category_elem, collection_uuid) {
         {'collection_uuid': collection_uuid},
         function (data) {
             var collection = data.collections[0],
-                products = collection.products; // die here if data is returned correctly
+                products = collection.products,
+                sort_products = function(a, b) {
+                    //assume that a and b have reach scores...
+                    return b.reach_score - a.reach_score;
+                };
 
-            console.log(products);
+            products = products.sort(sort_products);
 
             for (var j = 0; j < products.length; j++) {
-                $(category_elem).insertAfter($("<div />", {
+                var product_elem = $("<div />", {
                     "class": "categoryChild slab",
                     "html": "<div class='reach_score'>" + (products[j].reach_score || 0) + "</div>" +
                             "<div class='title'>" + products[j].title + "</div>",
                     'data': {
-                        'uuid': products[j].uuid/*,
-                        'queue_uuid': products[j].queue_uuid*/
+                        'uuid': products[j].uuid,
+                        'queue_uuid': products[j].queue_uuid
                     }
-                }));
+                });
+                $(category_elem).after(product_elem);
             }
         },
         function () {}

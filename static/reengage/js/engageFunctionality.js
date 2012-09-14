@@ -633,7 +633,7 @@ $(document).ready(function () {
     $(".dropDownTime").change(changeScheduledTimeInDialog);
 
     // click category/product to show its queue
-    $('#allCategories, .category, .categoryChild').click(function () {
+    $(document).on('click', '#allCategories, .category, .categoryChild', function () {
         // update window.activeQueueUUID and refresh the UI.
         var queue_uuid = $(this).data('queue_uuid');
         if (queue_uuid) {
@@ -642,9 +642,11 @@ $(document).ready(function () {
         }
 
         // if product names need to be fetched, use the collection_uuid
-        var collection_uuid = $(this).data('collection_uuid');
-        if (collection_uuid) {
+        var collection_uuid = $(this).data('collection_uuid'),
+            products_loaded = $(this).data('products_loaded');
+        if (collection_uuid && !products_loaded) {
             fillNavProducts(this, collection_uuid);
+            $(this).data('products_loaded', true);
         }
     });
     /*------ End functions for FB posting schedule dialog ------*/

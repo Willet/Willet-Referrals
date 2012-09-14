@@ -248,6 +248,7 @@ class Product(Model, db.polymodel.PolyModel):
             'title': getattr(self, 'title', ''),
             'type': getattr(self, 'type', ''),
             'reach_score': str(getattr(self, 'reach_score', '0')),
+            'queue_uuid': getattr(getattr(self, 'queue', None), 'uuid', ''),
         })
 
     def _validate_self(self):
