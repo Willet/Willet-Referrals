@@ -31,8 +31,8 @@
     {% include "js/willet.loader.js" %}
     {% include "js/willet.storage.js" %}
     {% include "js/willet.analytics.js" %}
-    {% include "js/willet.colorbox.js" %}
     {% include "js/willet.sibt.js" %}
+    {% include "js/willet.colorbox.js" %}
 
     // Load CSS onto the page.
     var colorbox_css = '{% spaceless %}{% include "../plugin/css/colorbox.css" %}{% endspaceless %}';
@@ -122,10 +122,20 @@
     // Go time! Load script dependencies
     try {
         // set up a list of scripts to load asynchronously.
-        var scripts_to_load = [
-            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js', // Google analytics
-            '//{{ DOMAIN }}/static/js/localstorage/storage.min.js'
-        ];
+        var scripts_to_load = [];
+
+        // load localStorage variable into window if browser doesn't natively have one
+        if (!w.localStorage) {
+            scripts_to_load.push('//{{ DOMAIN }}/static/js/localstorage/storage.min.js');
+        }
+
+        // load analytics code if page doesn't already have it
+        if (!w._gat) {
+            scripts_to_load.push(
+                ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + 
+                '.google-analytics.com/ga.js'
+            );
+        }
 
         // turns out we need at least 1.4 for the $(<tag>,{props}) notation
         if (!w.jQuery || w.jQuery.fn.jquery < "1.4.4") {
