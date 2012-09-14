@@ -227,8 +227,8 @@ class ReEngageShopify(ReEngage, AppShopify):
             'asset': {
                 'key': 'snippets/leadspeaker-canonical-url.liquid',
                 'value': """
-                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
-                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
                 """ % (cohort_id, cohort_id)
             }
         }])
