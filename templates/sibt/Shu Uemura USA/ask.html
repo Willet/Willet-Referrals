@@ -209,7 +209,7 @@
             _willet.mediator.fire('postOnWall', {
                 'name': 'Do you like this?',
                 'link': '{{ share_url }}',
-                'caption': "{{ product_title }}" || 'Do you like this?',
+                'caption': "{{ product_title|escape }}" || 'Do you like this?',
                 'description': "{{ product_desc_json|escape|truncatewords:15 }}" ||
                                "{{AB_share_text|escape}}",
                 'picture': '{{ products.0.image }}' ||
@@ -242,9 +242,9 @@
         var fbInstanceCallback = function () {
             button.html(oldButtonText);
             _willet.mediator.fire('sendToFriends', {
-                'name': "Do you like this? {{ product_title }}" || 'Do you like this?',
+                'name': "Do you like this? {{ product_title|escape }}",
                 'link': '{{ share_url }}',
-                'caption': "{{ product_title }}" || 'Do you like this?',
+                'caption': "{{ product_title|escape }}" || 'Do you like this?',
                 'description': "{{ product_desc_json|escape|truncatewords:15 }}" ||
                                "{{AB_share_text|escape}}",
                 'picture': '{{ products.0.image }}' ||
