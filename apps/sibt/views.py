@@ -1241,7 +1241,7 @@ class SIBTServeScript(URIHandler):
 
         path = os.path.join('templates/sibt', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+        self.response.headers['Content-Type'] = 'text/javascript'
         self.response.out.write(template.render(path, template_values))
         return
 

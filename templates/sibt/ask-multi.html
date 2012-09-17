@@ -127,7 +127,7 @@
                 asker: JSON.stringify(asker_info),
                 products: getSelectedObjects(),  // str
                 msg: msg,
-                default_msg: "{{AB_share_text|escape}}",
+                default_msg: "{{ product_desc_json|escape }}" || "{{AB_share_text|escape}}",
                 instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
                 willt_code: "{{willt_code}}"
             };

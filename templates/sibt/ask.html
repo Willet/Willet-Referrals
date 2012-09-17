@@ -63,7 +63,7 @@
         // Could use template here
         {
             title: "Should I buy this?",
-            text: "{{ AB_share_text|escape }}"
+            text: "{{ product_desc|escape }}" || "{{AB_share_text|escape}}",
         },
         {
             title: "Does anyone own this?",
@@ -108,7 +108,7 @@
                 friends: JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                 asker: JSON.stringify(asker_info),
                 msg: msg,
-                default_msg: "{{AB_share_text|escape}}",
+                default_msg: "{{ product_desc|escape }}" || "{{AB_share_text|escape}}",
                 instance_uuid: "{{ instance_uuid }}",  // if not empty, no new instance will be created
                 willt_code: "{{willt_code}}"
             };

@@ -45,12 +45,14 @@ class ProductCollection(Model, db.polymodel.PolyModel):
 
     def to_json(self):
         """JSON representation of the product object."""
+        products = getattr(self, 'products', [])
+
         return json.dumps({
             'uuid': getattr(self, 'uuid', ''),
             'name': getattr(self, 'collection_name', ''),
             'shopify_id': unicode(getattr(self, 'shopify_id', '')),
             'shopify_handle': getattr(self, 'shopify_handle', ''),
-            'products': [x.uuid for x in getattr(self, 'products', [])],  # could be nothing!
+            'products': [json.loads(x.to_json()) for x in products],
         })
 
     def _validate_self(self):
@@ -228,7 +230,8 @@ class Product(Model, db.polymodel.PolyModel):
                 "resource_url": "",
                 "type": "Shirts",
                 "price": "19.0",
-                "description": "<p>So this is a product.<\/p><p>The..."
+                "description": "<p>So this is a product.<\/p><p>The...",
+                "reach_score": "0"
             }]
         }
         """
@@ -244,6 +247,8 @@ class Product(Model, db.polymodel.PolyModel):
             'tags': getattr(self, 'tags', []),
             'title': getattr(self, 'title', ''),
             'type': getattr(self, 'type', ''),
+            'reach_score': str(getattr(self, 'reach_score', '0')),
+            'queue_uuid': getattr(getattr(self, 'queue', None), 'uuid', ''),
         })
 
     def _validate_self(self):
