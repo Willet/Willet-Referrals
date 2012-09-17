@@ -93,12 +93,12 @@ class ReEngageShopify(ReEngage, AppShopify):
 
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/r/shopify/load/reengage-buttons.js" % URL,
+                "src": "%s/r/shopify/load/reengage-buttons.js" % PROTOCOL_RELATIVE_URL,
                 "event": "onload"
             }
         }, {
             "script_tag": {
-                "src": "%s/an/tracking.js?ts=leadspeaker&tt=shopify" % URL,
+                "src": "%s/an/tracking.js?ts=leadspeaker&tt=shopify" % PROTOCOL_RELATIVE_URL,
                 "event": "onload"
             }
         }])
