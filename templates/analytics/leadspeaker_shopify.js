@@ -16,7 +16,7 @@
                      "&category=" + category +
                      "&action=" + action +
                      "&value=" + value +
-                     "&url=" + window.location.href;
+                     "&url=" + window.location.hostname;
 
         {% if client %}
             iframe.src += "&client=" + "{{ client }}";

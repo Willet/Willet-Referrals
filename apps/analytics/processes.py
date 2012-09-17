@@ -16,7 +16,4 @@ class TrackEvent(URIHandler):
         cohort_uuid = self.request.get('value')
         url = self.request.get('url')
 
-        cohort = ReEngageCohort.get(cohort_uuid)
-        label = cohort.queue.app_.client.url
-
-        track_event(category, action, label, value)
+        track_event(category, action, url, cohort_uuid)

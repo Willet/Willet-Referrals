@@ -1,3 +1,5 @@
+from util.consts import *
+
 from pyga.requests import Tracker, Session, Visitor
 from pyga.entities import Event
 
@@ -15,5 +17,5 @@ def track_event(category, action, label=None, value=None):
 	event = Event(category=category, action=action, label=label, value=value)
 
 	# send GA event to google & log
-	tracker.track_event(ev, session, visitor)
+	tracker.track_event(event, session, visitor)
 	logging.info("Logged event: category=%s, action=%s, label=%s, value=%s" % (category, action, label, value))
