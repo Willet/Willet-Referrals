@@ -98,7 +98,7 @@ class ReEngageShopify(ReEngage, AppShopify):
             }
         }, {
             "script_tag": {
-                "src": "%s/r/shopify/load/reengage-tracking.js" % URL,
+                "src": "%s/an/tracking.js?ts=leadspeaker&tt=shopify" % URL,
                 "event": "onload"
             }
         }])

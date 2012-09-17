@@ -4,7 +4,6 @@
 	    var iframe = document.createElement( 'iframe' );
 	    
 	    // category and action are required.
-	    // label (client id) will be figured out on the server side
 	    // value is cohort id if available
 	    if (!category || !action) {
 	    	return;
@@ -13,11 +12,20 @@
 	    value = value || "";
 
 	    iframe.style.display = 'none';
-        iframe.src = "https://willet-grigory.appspot.com/an/trackEvent?" +
+        iframe.src = "{{ SECURE_URL }}/an/trackEvent?" +
                      "&category=" + category +
                      "&action=" + action +
                      "&value=" + value +
                      "&url=" + window.location.href;
+
+        {% if client %}
+            iframe.src += "&client=" + "{{ client }}";
+        {% endif %}
+
+        {% if user %}
+            iframe.src += "&user=" + "{{ user }}";
+        {% endif %}
+
         document.body.appendChild( iframe );
     };
 
