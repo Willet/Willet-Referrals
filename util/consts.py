@@ -23,7 +23,7 @@ APP_LIVE = 'social-referral'
 USING_DEV_SERVER = bool(get_application_id() != APP_LIVE) # False on live
 DOMAIN = os.environ.get('HTTP_HOST') if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
-PROTOCOL_RELATIVE_URL = urlunsplit(("", DOMAIN, '', '', '')) # for loading assets onto http(s)
+PROTOCOL_RELATIVE_URL = urlunsplit(('', DOMAIN, '', '', '')) # for loading assets onto http(s)
 SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
 KEYS = os.environ.get('HTTP_HOST')
 
