@@ -37,6 +37,7 @@
 
     .config-option {
         display: block;
+        min-height: 40px;
     }
     .config-header {
         text-align: center;
@@ -580,6 +581,10 @@
             }
         });
 
+        $("#personalization").lightSwitch({
+            "dir": "/static/imgs/jquery-lightswitch/"
+        });
+
         // Set the default selected element
         // We do this in JS because it is cleaner than in the template
         $("#max-buttons").val({{max_buttons}});
@@ -785,6 +790,20 @@
                                value="False"
                                {% if not button_count %}checked{% endif %}/>
                         <label for="no-button-count">Hide</label>
+                    </div>
+                    <div class="config-option" style="height: 40px">
+                        <span class="left-column">
+                            <label for="personalization">
+                                Personalize:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Detect which social networks each visitor uses, and show them those buttons.
+                                        Your store gets sharing across more social networks, without the clutter of many buttons."
+                                 class="help">
+                        </span>
+                        <input id="personalization" name="personalization_enabled"
+                               type="checkbox" value="true" {% ifequal personalization_enabled 'true' %}checked="checked"{% endifequal %}
+                               value="Enable button personalization" class="textbox"/>
                     </div>
                     <div class="config-option">
                         <span class="left-column">

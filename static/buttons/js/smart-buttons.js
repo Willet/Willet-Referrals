@@ -1064,7 +1064,7 @@ _willet = (function (me, config) {
         util = me.util;
 
     // Constants
-    var MY_APP_URL = "http://willet-nterwoord.appspot.com",
+    var MY_APP_URL = "http://fraser-willet2.appspot.com",
         WILLET_APP_URL = "http://social-referral.appspot.com",
         APP_URL = WILLET_APP_URL,
         PRODUCT_JSON = window.location.protocol
@@ -1222,27 +1222,32 @@ _willet = (function (me, config) {
             networks = [],
             requiredButtons = [];
 
-        // Queue detected networks first, if the cookie exists
-        if (loggedInNetworks) {
-            networks = util.dictToArray(loggedInNetworks);
-            networks = networks.sort(networkPrioritizedSort);
+        // Personalize buttons if not disabled
+        // Conditional defaults to trued
+        if (config && (typeof config.personalization_enabled !== "undefined") ? config.personalization_enabled === 'true' : true ) {
 
-            // Queue detected buttons
-            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var network = networks[i];
-                if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
-                    && network.value.status === true) {         //check that the network is enabled
-                    requiredButtons.push(network.key);
+            // Queue detected networks first, if the cookie exists
+            if (loggedInNetworks) {
+                networks = util.dictToArray(loggedInNetworks);
+                networks = networks.sort(networkPrioritizedSort);
+
+                // Queue detected buttons
+                for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                    var network = networks[i];
+                    if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
+                        && network.value.status === true) {         //check that the network is enabled
+                        requiredButtons.push(network.key);
+                    }
                 }
             }
-        }
 
-        // Queue user's buttons if there is space, and they have not already been added
-        var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
-        for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
-            var button = usersButtons[i];
-            if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
-                requiredButtons.push(button);
+            // Queue user's buttons if there is space, and they have not already been added
+            var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+            for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var button = usersButtons[i];
+                if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
+                    requiredButtons.push(button);
+                }
             }
         }
 

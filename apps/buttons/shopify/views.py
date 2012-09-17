@@ -504,27 +504,28 @@ class ButtonsShopifyConfig(URIHandler):
 
         # Use .get in case properties don't exist yet
         template_values = {
-            'action'                : config_url,
-            'max_buttons'           : preferences.get("max_buttons", 3),
-            'button_range'          : self.button_range,
-            'button_count'          : preferences.get("button_count", False),
-            'button_spacing'        : preferences.get("button_spacing", 5),
-            'button_padding'        : preferences.get("button_padding", 5),
-            'sharing_message'       : preferences.get("sharing_message", ""),
-            'message'               : self.request.get("message", "Welcome Back!"),
-            'button_order'          : button_order,
-            'unused_buttons'        : unused_buttons,
-            'shop_url'              : self.request.get("shop"),
-            'upgrade_url'           : upgrade_url,
-            'learn_more_url'        : learn_more_url,
-            'instructions_url'      : instructions_url,
-            'config_enabled'        : app.billing_enabled,
-            'item_shares'           : item_shares,
-            'network_shares'        : network_shares,
-            'confirmation_enabled'  : social_accounts.get('enabled',"false"),
-            'facebook_username'     : social_accounts.get('facebook_username',''),
-            'twitter_username'      : social_accounts.get('twitter_username',''),
-            'pinterest_username'    : social_accounts.get('pinterest_username','')
+            'action'                 : config_url,
+            'max_buttons'            : preferences.get("max_buttons", 3),
+            'button_range'           : self.button_range,
+            'button_count'           : preferences.get("button_count", False),
+            'button_spacing'         : preferences.get("button_spacing", 5),
+            'button_padding'         : preferences.get("button_padding", 5),
+            'sharing_message'        : preferences.get("sharing_message", ""),
+            'personalization_enabled': preferences.get('personalization_enabled', 'true'),
+            'message'                : self.request.get("message", "Welcome Back!"),
+            'button_order'           : button_order,
+            'unused_buttons'         : unused_buttons,
+            'shop_url'               : self.request.get("shop"),
+            'upgrade_url'            : upgrade_url,
+            'learn_more_url'         : learn_more_url,
+            'instructions_url'       : instructions_url,
+            'config_enabled'         : app.billing_enabled,
+            'item_shares'            : item_shares,
+            'network_shares'         : network_shares,
+            'confirmation_enabled'   : social_accounts.get('enabled',"false"),
+            'facebook_username'      : social_accounts.get('facebook_username',''),
+            'twitter_username'       : social_accounts.get('twitter_username',''),
+            'pinterest_username'     : social_accounts.get('pinterest_username','')
         }
 
         # prepopulate values
@@ -564,7 +565,9 @@ class ButtonsShopifyConfig(URIHandler):
         prefs["button_spacing"]  = tryParse(int, req.get("button_spacing"))
         prefs["button_padding"]  = tryParse(int, req.get("button_padding"))
         prefs["sharing_message"] = tryParse(strip_tags,
-                                            req.get("sharing_message"), "")
+                                            req.get("sharing_message"),
+                                            "")
+        prefs["personalization_enabled"] = req.get("personalization_enabled", 'false')
         max_buttons              = tryParse(int, req.get("max_buttons"), 3)
 
         if max_buttons in self.button_range:
