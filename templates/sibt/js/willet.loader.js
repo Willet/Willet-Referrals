@@ -71,6 +71,12 @@ _willet.loader = (function (me) {
             while (i--) {
                 load(param.scripts[i], i);
             }
+        } else {
+            if (param && param.callback) {
+                // if the list of scripts to load is empty, we're done!
+                // call callback (if available) immediately.
+                param.callback();
+            }
         }
     };
 
