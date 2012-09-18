@@ -1220,9 +1220,10 @@ _willet = (function (me, config) {
             requiredButtons = [];
 
         // Personalize buttons if not disabled
-        // Conditional defaults to trued
-        if (config && (typeof config.personalization_enabled !== "undefined") ? config.personalization_enabled === 'true' : true ) {
-
+        // Conditional defaults to true
+        if ((typeof config === "undefined")
+            || (typeof config.personalization_enabled === "undefined")
+            || (config.personalization_enabled === 'true')) {
             // Queue detected networks first, if the cookie exists
             if (loggedInNetworks) {
                 networks = util.dictToArray(loggedInNetworks);
