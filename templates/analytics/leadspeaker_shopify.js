@@ -17,14 +17,15 @@ var WILLET_TRACKING = (function($, window, document) {
                      "&category=" + category +
                      "&action=" + action +
                      "&value=" + value +
-                     "&url=" + window.location.hostname;
+                     "&hostname=" + window.location.hostname +
+                     "&pathname=" + window.location.pathname;
 
         {% if client %}
-            iframe.src += "&client=" + "{{ client }}";
+            iframe.src += "&client=" + "{{ client.uuid }}";
         {% endif %}
 
         {% if user %}
-            iframe.src += "&user=" + "{{ user }}";
+            iframe.src += "&user=" + "{{ user.uuid }}";
         {% endif %}
 
         document.body.appendChild( iframe );
