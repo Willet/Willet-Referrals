@@ -14,12 +14,10 @@
             try {
                 // try to "prefetch" the image
                 (new Image).src = '//{{ DOMAIN }}/static/sibt/imgs/sibt-shu-askfriends-blue.png';
-                console.log('preloading shu script');
 
                 var shuTargetClass = '_vendor_sibt',
                     shuTarget = d.getElementsByClassName(shuTargetClass)[0];
                 (function (style) {
-                    console.log('preloading icon');
                     style.display = 'block';
                     style.width = '92px';
                     style.height = '24px';
