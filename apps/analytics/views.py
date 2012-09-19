@@ -36,9 +36,13 @@ class TrackingJSLoader(URIHandler):
         # Grab all template values
         template_values = {
                 'SECURE_URL' : SECURE_URL,
-                'user'       : user,
-                'client'     : client
         }
+
+        if user:
+            template_values.update({'user': user})
+
+        if client:
+            template_values.update({'client': client})
 
         # Finally, render the JS!
         path = os.path.join('templates/analytics', '%s_%s.js' % (tracking_system, tracking_type))
