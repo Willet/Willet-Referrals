@@ -31,6 +31,13 @@ var WILLET_TRACKING = (function($, window, document) {
         document.body.appendChild( iframe );
     };
 
+    var onCartPage = function() {
+        if (window.location.pathname == "/cart") {
+            return true;
+        }
+        return false;
+    }
+
     var fromLeadSpeaker = function() {
     	if (window.location.pathname.indexOf("leadspeaker_cohort_id") != -1) {
 			return true;
@@ -54,7 +61,7 @@ var WILLET_TRACKING = (function($, window, document) {
         return cohort_id;
     }
 
-    var CartTracking = (function() {
+    var CartButtonTracking = (function() {
         var cohort_id = getCohortId() || "",
             action = "add_to_cart";
 
@@ -62,7 +69,7 @@ var WILLET_TRACKING = (function($, window, document) {
         var init = function() {
             // switch away from using page-supplied jquery....
             $("#add-to-cart").click(function() {
-                WILLET_TRACKING.cart.add();
+                WILLET_TRACKING.cart_button.click();
             })
         }
 
@@ -72,7 +79,7 @@ var WILLET_TRACKING = (function($, window, document) {
 
         return {
             "init": init,
-            "add": trackAdd
+            "click": trackAdd
         }
     }());
 
@@ -89,7 +96,57 @@ var WILLET_TRACKING = (function($, window, document) {
         }
     }());
 
+    var CartPageTracking = (function() {
+        var init = function() {
+            var leadspeaker_category = Cookies.read("leadspeaker_category") || "unknown",
+                leadspeaker_cid = Cookies.read("leadspeaker_cid") || "",
+                action = "open_cart";
+
+            trackEvent(leadspeaker_category, action, leadspeaker_cid);
+        }
+
+        return {
+            "init": init
+        }
+    }());
+
+    var Cookies = (function() {
+        // Generic cookie library
+        // Source: http://www.quirksmode.org/js/cookies.html
+        var create = function (name, value, days) {
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime()+(days*24*60*60*1000));
+                var expires = "; expires="+date.toGMTString();
+            } else var expires = "";
+            document.cookie = name+"="+value+expires+"; path=/";
+        }
+
+        var read = function (name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0;i < ca.length;i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        var erase = function (name) {
+            create(name,"",-1);
+        }
+
+        return {
+            "create": create,
+            "read": read,
+            "erase": erase
+        }
+    }());
+
     var init = function() {
+        var cohort_id = getCohortId() || "";
+
         if (fromLeadSpeaker()) {
             category = "leadspeaker";
         } else {
@@ -100,14 +157,25 @@ var WILLET_TRACKING = (function($, window, document) {
             category += "_facebook";
         }
 
-        // @TODO: invoke these conditionally if on product page or on cart page
-        ProductTracking.init();
-        CartTracking.init();
+        if (onCartPage()) {
+            CartPageTracking.init();
+
+        // on product page
+        } else {
+            // set tracking cookies
+            Cookies.create("leadspeaker_category", category, 7);
+            if (cohort_id) {
+                Cookies.create("leadspeaker_cid", cohort_id, 7);
+            }
+        
+            ProductTracking.init();
+            CartButtonTracking.init();
+        }
     }
 
     return {
         "init": init,
-        "cart": CartTracking
+        "cart_button": CartButtonTracking
     }
 })($, window, document);
 
