@@ -360,12 +360,12 @@ class ReEngageQueue(Model):
 
         self.put()
 
-    def to_obj(self):
+    def to_obj(self, app_uuid=None):
         """Convert a queue into a serializable object.
 
         Mostly used as a preliminary step to convert to JSON
         """
-        self._remove_expired()
+        #self._remove_expired()
 
         posts = []
         for uuid in self.queued:
@@ -374,20 +374,13 @@ class ReEngageQueue(Model):
             except:
                 continue
 
-        expired = []
-        for uuid in self.expired:
-            try:
-                expired.append(to_dict(ReEngagePost.get(uuid)))
-            except:
-                continue
-
         return {
             "key": "queues",
             "value": {
                 "uuid"         : self.uuid,
-                "app"          : self.app_.uuid,
+                "app"          : app_uuid or self.app_.uuid,
                 "activePosts"  : posts,
-                "expiredPosts" : expired
+                "expiredPosts" : []
             }
         }
 
@@ -611,6 +604,7 @@ class ReEngageCohortID(Model):
     """Represents the identifier string assigned to a weekly cohort.
     """
     created = db.DateTimeProperty(auto_now=True)
+    cohort  = db.ReferenceProperty
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

@@ -3,7 +3,7 @@
 import logging
 
 from django.utils import simplejson as json
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, taskqueue
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
@@ -13,7 +13,7 @@ from apps.client.models import Client
 from apps.product.models import Product, ProductCollection
 
 from util.errors import ShopifyAPIError
-from util.helpers import generate_uuid
+from util.helpers import generate_uuid, url
 from util.consts import MEMCACHE_TIMEOUT
 
 
@@ -112,10 +112,11 @@ class ProductShopifyCollection(ProductCollection):
             collections.append(collection)
 
         for collection in collections:
-            collection.get_or_fetch_products(
-                app=app, app_uuid=app_uuid, force_update=force_update
-            )
-            collection.put()  # save them all
+            taskqueue.add(url=url('PutShopifyCollections'), params={
+                "col_uuid": collection.uuid,
+                "app_uuid": app.uuid,
+                "force": str(force_update)
+            })
 
         return collections
 
