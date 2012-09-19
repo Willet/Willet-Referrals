@@ -2,7 +2,7 @@ import logging
 from google.appengine.api import taskqueue
 from apps.client.models import Client
 from apps.product.models import Product
-from apps.product.shopify.models import ProductShopifyCollection
+from apps.product.shopify.models import ProductShopifyCollection, ProductShopify
 from apps.product.shopify.processes import \
     create_product, update_product, delete_product, \
     create_collection, update_collection, delete_collection
@@ -70,7 +70,8 @@ class GetOrCreateShopifyQueues(URIHandler):
         client = Client.get(client_uuid)
 
         if not client:
-            raise ValueError("No client found for client_uuid: %s" % client_uuid)
+            logging.error("No client found for client_uuid: %s" % client_uuid)
+            return
 
         for collection in client.collections:
             taskqueue.add(url=url("GetOrCreateShopifyQueue"), params={
@@ -102,7 +103,7 @@ class GetOrCreateShopifyQueue(URIHandler):
         if type == "Collection":
             object = ProductShopifyCollection.get(uuid)
         elif type == "Product":
-            object = Product.get(uuid)
+            object = ProductShopify.get(uuid)
         else:
             logging.error("Incompatible type: %s" % type)
             return

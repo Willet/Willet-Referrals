@@ -604,6 +604,7 @@ class ReEngageCohortID(Model):
     """Represents the identifier string assigned to a weekly cohort.
     """
     created = db.DateTimeProperty(auto_now=True)
+    cohort  = db.ReferenceProperty
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

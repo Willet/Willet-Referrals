@@ -4,10 +4,9 @@ import logging
 
 from django.utils import simplejson as json
 
-from apps.app.shopify.models import App, AppShopify
+from apps.app.shopify.models import App
 from util.errors import ShopifyAPIError
 
-AppShopify
 from apps.client.shopify.models import ClientShopify
 from apps.product.shopify.models import ProductShopify, ProductShopifyCollection
 
@@ -108,14 +107,12 @@ class FetchShopifyProducts(URIHandler):
             result = app._call_Shopify_API(verb="GET", call="products.json")
 
             if not result:
-                raise ShopifyAPIError("No product data was returned: %s" % result,
-                                      exc_info=True)
+                raise ShopifyAPIError("No product data was returned: %s" % result)
             logging.info("products = %r" % result)
 
             products_jsons = result.get('products', False)
             if not products_jsons:
-                raise ShopifyAPIError("Product data is malformed: %s" % result,
-                                      exc_info=True)
+                raise ShopifyAPIError("Product data is malformed: %s" % result)
 
             # fetch all products regardless.
             # http://kiehn-mertz3193.myshopify.com/admin/products/{ id }.json
@@ -217,20 +214,21 @@ class PutShopifyCollections(URIHandler):
         logging.info("Col uuid: %s" % col_uuid)
         logging.info("Force: %s"    % force)
 
-        app        = App.get(app_uuid)
-        collection = ProductShopifyCollection.get(col_uuid)
-
         if not app_uuid:
             logging.error("No app_uuid provided")
+            return
+
+        app = App.get(app_uuid)
+
+        if not app:
+            logging.error("No app found for app_uuid '%s'" % app_uuid)
             return
 
         if not col_uuid:
             logging.error("No col_uuid provided")
             return
 
-        if not app:
-            logging.error("No app found for app_uuid '%s'" % app_uuid)
-            return
+        collection = ProductShopifyCollection.get(col_uuid)
 
         if not collection:
             logging.error("No collection found for col_uuid '%s'" % col_uuid)
