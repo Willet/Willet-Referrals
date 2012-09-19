@@ -5,7 +5,6 @@ var WILLET_TRACKING = (function($, window, document) {
 	    var iframe = document.createElement( 'iframe' );
 	    
 	    // category and action are required.
-	    // value is cohort id if available
 	    if (!category || !action) {
 	    	return;
 	    }
