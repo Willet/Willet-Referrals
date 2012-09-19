@@ -7,6 +7,33 @@
      * w and d are aliases of window and document.
      */
 
+    {% ifequal client.name "Shu Uemura USA" %}
+        // do this first for shu uemura to "appear fast".
+        // beware! everything is hardcoded.
+        (function () {
+            try {
+                // try to "prefetch" the image
+                (new Image).src = '//{{ DOMAIN }}/static/sibt/imgs/sibt-shu-askfriends-blue.png';
+                console.log('preloading shu script');
+
+                var shuTargetClass = '_vendor_sibt',
+                    shuTarget = d.getElementsByClassName(shuTargetClass)[0];
+                (function (style) {
+                    console.log('preloading icon');
+                    style.display = 'block';
+                    style.width = '92px';
+                    style.height = '24px';
+                    style.clear = 'both';
+                    style.backgroundImage = 'url("//{{ DOMAIN }}/static/sibt/imgs/sibt-shu-askfriends-blue.png")';
+                    style.backgroundPosition = '3% 20%';
+                })(shuTarget.style);
+            } catch (e) {
+                // too bad (including cases where console doesn't exist)
+                console.log(e);
+            }
+        })();
+    {% endifequal %}
+
     var sys = {
         'debug': ('{{debug}}' === 'True'),
         '$_conflict': !(w.$ && w.$.fn && w.$.fn.jquery)
