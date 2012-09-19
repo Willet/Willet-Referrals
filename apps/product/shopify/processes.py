@@ -4,7 +4,9 @@ import logging
 
 from django.utils import simplejson as json
 
-from apps.app.shopify.models import App  # reengage
+from apps.app.shopify.models import App
+from util.errors import ShopifyAPIError
+
 from apps.client.shopify.models import ClientShopify
 from apps.product.shopify.models import ProductShopify, ProductShopifyCollection
 
@@ -99,6 +101,35 @@ class FetchShopifyProducts(URIHandler):
         """Given client or client_uuid both as uuid"""
         logging.info("RUNNING product.shopify.processes::FetchShopifyProducts")
 
+        # Try app first; client is almost always wrong
+        app = App.get(self.request.get('app_uuid'))
+        if app:
+            result = app._call_Shopify_API(verb="GET", call="products.json")
+
+            if not result:
+                raise ShopifyAPIError("No product data was returned: %s" % result)
+            logging.info("products = %r" % result)
+
+            products_jsons = result.get('products', False)
+            if not products_jsons:
+                raise ShopifyAPIError("Product data is malformed: %s" % result)
+
+            # fetch all products regardless.
+            # http://kiehn-mertz3193.myshopify.com/admin/products/{ id }.json
+            for product_json in products_jsons:
+                pid = product_json['id']
+                product = ProductShopify.get_by_shopify_id(pid)
+                if not product:  # create if not exists
+                    result = app._call_Shopify_API(verb="GET",
+                                                   call="products/%s.json" % pid)
+                    product = ProductShopify.create_from_json(client=app.client,
+                                                              data=result['product'])
+
+                product.put()
+
+            self.response.out.write("OK")
+            return
+
         client = ClientShopify.get(self.request.get('client'))
         if not client:
             client = ClientShopify.get(self.request.get('client_uuid'))
@@ -153,3 +184,57 @@ class FetchShopifyCollections(URIHandler):
             logging.warn('Found no app by the url %s' % store_url)
 
         return
+
+
+class PutShopifyCollections(URIHandler):
+    """Create collections via a taskqueue
+
+    Fetching can be expensive. So, we divy up some of the work by putting it
+    on taskqueues
+    """
+
+    def get(self):
+        self.post()
+
+    def post(self):
+        """Get or fetch the products, and update the collection:
+
+        Required parameters:
+            app_uuid (the app uuid)
+            col_uuid (the collection uuid)
+
+        Optional parameters:
+            force (if "True" is supplied, we force an update if products)
+        """
+        app_uuid = self.request.get("app_uuid")
+        col_uuid = self.request.get("col_uuid")
+        force    = (self.request.get("force") == "True")
+
+        logging.info("App uuid: %s" % app_uuid)
+        logging.info("Col uuid: %s" % col_uuid)
+        logging.info("Force: %s"    % force)
+
+        if not app_uuid:
+            logging.error("No app_uuid provided")
+            return
+
+        app = App.get(app_uuid)
+
+        if not app:
+            logging.error("No app found for app_uuid '%s'" % app_uuid)
+            return
+
+        if not col_uuid:
+            logging.error("No col_uuid provided")
+            return
+
+        collection = ProductShopifyCollection.get(col_uuid)
+
+        if not collection:
+            logging.error("No collection found for col_uuid '%s'" % col_uuid)
+            return
+
+        collection.get_or_fetch_products(
+            app=app, app_uuid=app_uuid, force_update=force
+        )
+        collection.put()
