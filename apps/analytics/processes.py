@@ -16,4 +16,10 @@ class TrackEvent(URIHandler):
         cohort_uuid = self.request.get('value')
         url = self.request.get('url')
 
-        track_event(category, action, url, cohort_uuid)
+        # google analytics only allows integer 'values'
+        # as a quick fix, combine url and cohort id into the label
+        # downside is that GA UI will be much less useful,
+        # but we're still tracking all of the data
+        label = "%s|%s" % (url, cohort_uuid)
+
+        track_event(category, action, label)
