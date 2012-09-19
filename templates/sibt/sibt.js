@@ -7,6 +7,31 @@
      * w and d are aliases of window and document.
      */
 
+    {% ifequal client.name "Shu Uemura USA" %}
+        // do this first for shu uemura to "appear fast".
+        // beware! everything is hardcoded.
+        (function () {
+            try {
+                // try to "prefetch" the image
+                (new Image).src = '//{{ DOMAIN }}/static/sibt/imgs/sibt-shu-askfriends-blue.png';
+
+                var shuTargetClass = '_vendor_sibt',
+                    shuTarget = d.getElementsByClassName(shuTargetClass)[0];
+                (function (style) {
+                    style.display = 'block';
+                    style.width = '92px';
+                    style.height = '24px';
+                    style.clear = 'both';
+                    style.backgroundImage = 'url("//{{ DOMAIN }}/static/sibt/imgs/sibt-shu-askfriends-blue.png")';
+                    style.backgroundPosition = '3% 20%';
+                })(shuTarget.style);
+            } catch (e) {
+                // too bad (including cases where console doesn't exist)
+                console.log(e);
+            }
+        })();
+    {% endifequal %}
+
     var sys = {
         'debug': ('{{debug}}' === 'True'),
         '$_conflict': !(w.$ && w.$.fn && w.$.fn.jquery)
@@ -107,13 +132,6 @@
 
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
-
-            // jQuery shaker plugin
-            (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
-
-            // jQuery cookie plugin (included to solve lagging requests)
-            {% include '../plugin/js/jquery.cookie.js' %}
-
             _willet.mediator.fire('hasjQuery', $);
             _willet.mediator.fire('scriptComplete');
         });
