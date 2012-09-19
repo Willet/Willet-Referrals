@@ -1105,18 +1105,6 @@ class SIBTServeScript(URIHandler):
             return
         logging.info('using %r and %r as app and client.' % (app, client))
 
-        # see if we should run this script as a vendor.
-        vendor_name = getattr(client, 'name', '') if client.is_vendor else ''
-
-        # have page_url, store_url, app, client. fetch everything!
-        user = User.get_or_create_by_cookie(self, app)
-        product = Product.get_or_fetch(page_url, client)
-        (instance, event) = get_instance_event(urihandler=self,
-                                               app=app,
-                                               user=user,
-                                               page_url=page_url,
-                                               willet_code=willet_code)
-
         if not hasattr(app, 'extra_url'):
             """Check if target (almost always window.location.href) has the
                same domain as store URL.
@@ -1140,6 +1128,18 @@ class SIBTServeScript(URIHandler):
                     app.put_later()
             except:
                 pass  # can't decode target as URL; oh well!
+
+        # see if we should run this script as a vendor.
+        vendor_name = getattr(client, 'name', '') if client.is_vendor else ''
+
+        # have page_url, store_url, app, client. fetch everything!
+        user = User.get_or_create_by_cookie(self, app)
+        product = Product.get_or_fetch(page_url, client)
+        (instance, event) = get_instance_event(urihandler=self,
+                                               app=app,
+                                               user=user,
+                                               page_url=page_url,
+                                               willet_code=willet_code)
 
         try:
             product_title = json.dumps(product.title)
