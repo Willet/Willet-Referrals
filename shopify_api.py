@@ -3,9 +3,12 @@ import hashlib
 import json
 
 # Shopify API Calls -------------------------------------------------------
-def call_api(verb, call, store_url="http://farrell-hagenes-and-mayer1876.myshopify.com", api_key="567c61ffee5fc7eec076097918d3d6ca", api_secret="ceabbcb6011cd59e72ab7389d306b817", store_token="b82eb22f39122957ff2fdd11ba8f6a4e", payload=None,
-                      suppress_errors=False, prefix='admin/'):
-    """ Calls Shopify API
+def call_api(verb, call, store_url="http://farrell-hagenes-and-mayer1876.myshopify.com", 
+            api_key="567c61ffee5fc7eec076097918d3d6ca",
+            api_secret="ceabbcb6011cd59e72ab7389d306b817",
+            store_token="b82eb22f39122957ff2fdd11ba8f6a4e",
+            payload=None, suppress_errors=False, prefix='admin/'):
+    """ Calls Shopify API 
 
     Inputs:
         verb - <String> one of GET, POST, PUT, DELETE
