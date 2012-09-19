@@ -86,7 +86,7 @@ class ReEngageShopify(ReEngage, AppShopify):
             }, {
                 "webhook": {
                     "address": "%s/r/shopify/webhook/order/create" % (URL),
-                    "format": "json", "topic": "order/create"
+                    "format": "json", "topic": "orders/create"
                 }
             }
         ])
