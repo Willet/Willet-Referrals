@@ -18,12 +18,15 @@ class TrackingJSLoader(URIHandler):
         user = User.get_by_cookie(self)
 
         # Grab shop URL from params
-        shop_url = self.request.get('shop')
-        if shop_url[:7] != 'http://':
-            shop_url = 'http://%s' % shop_url
+        shop_hostname = self.request.get('shop')
+        if shop_hostname[:7] != 'http://':
+            shop_url = 'http://%s' % shop_hostname
 
         tracking_system = self.request.get('ts')
         tracking_type = self.request.get('tt')
+
+        # we set this via shopify store admin for the Thank You page
+        landing_site = self.request.get('landing_site')
 
         # not sure what's being asked of us; return nothing
         if tracking_system not in self.tsx or tracking_type not in self.ttx:
@@ -35,7 +38,8 @@ class TrackingJSLoader(URIHandler):
 
         # Grab all template values
         template_values = {
-                'SECURE_URL' : SECURE_URL,
+            'SECURE_URL' : SECURE_URL,
+            'shop_hostname': shop_hostname
         }
 
         if user:
@@ -43,6 +47,9 @@ class TrackingJSLoader(URIHandler):
 
         if client:
             template_values.update({'client': client})
+
+        if landing_site:
+            template_values.update({'landing_site': landing_site})
 
         # Finally, render the JS!
         path = os.path.join('templates/analytics', '%s_%s.js' % (tracking_system, tracking_type))

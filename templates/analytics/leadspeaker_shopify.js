@@ -1,5 +1,5 @@
 var WILLET_TRACKING = (function($, window, document) {
-    var category = "";
+    var category = "", landing_site = "{{ landing_site }}";
 
 	var trackEvent = function (category, action, value) {
 	    var iframe = document.createElement( 'iframe' );
@@ -17,7 +17,7 @@ var WILLET_TRACKING = (function($, window, document) {
                      "&category=" + category +
                      "&action=" + action +
                      "&value=" + value +
-                     "&hostname=" + window.location.hostname +
+                     "&hostname=" + "{{ shop_hostname }}" || window.location.hostname +
                      "&pathname=" + window.location.pathname;
 
         {% if client %}
@@ -33,6 +33,13 @@ var WILLET_TRACKING = (function($, window, document) {
 
     var onCartPage = function() {
         if (window.location.pathname == "/cart") {
+            return true;
+        }
+        return false;
+    }
+
+    var onThankYouPage = function() {
+        if (window.location.hostname == "checkout.shopify.com") {
             return true;
         }
         return false;
@@ -110,6 +117,38 @@ var WILLET_TRACKING = (function($, window, document) {
         }
     }());
 
+    var ThankYouTracking = (function() {
+        var init = function() {
+            var action = "thankyou_page";
+
+            // in the instance of tracking.js invoked through script_tags
+            // and not through additional script added through store admin
+            if (!landing_site) {
+                return;
+            }
+
+            // this assumes that landing_site will end, if it's there, in our cohort_id
+            split_url = landing_site.split("leadspeaker_cohort_id=")
+            
+            // not from us
+            if (split_url.length == 1) {
+                leadspeaker_category = "unkown";
+                leadspeaker_cid = "";
+
+            // from us, but not sure which social network we're coming from
+            } else {
+                leadspeaker_category = "leadspeaker";
+                leadspeaker_cid = split_url[1];
+            }
+
+            trackEvent(leadspeaker_category, action, leadspeaker_cid);
+        }
+
+        return {
+            "init": init
+        }
+    }());
+
     var Cookies = (function() {
         // Generic cookie library
         // Source: http://www.quirksmode.org/js/cookies.html
@@ -160,6 +199,9 @@ var WILLET_TRACKING = (function($, window, document) {
         if (onCartPage()) {
             CartPageTracking.init();
 
+        } else if (onThankYouPage()) {
+            ThankYouTracking.init();
+
         // on product page
         } else {
             // set tracking cookies
@@ -167,7 +209,7 @@ var WILLET_TRACKING = (function($, window, document) {
             if (cohort_id) {
                 Cookies.create("leadspeaker_cid", cohort_id, 7);
             }
-        
+
             ProductTracking.init();
             CartButtonTracking.init();
         }
