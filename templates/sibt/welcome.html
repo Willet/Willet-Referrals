@@ -1,21 +1,8 @@
 {% extends "../shopify/base.html" %}
 
-{% block head %}
-    <script>
-        $(document).ready(function() {
-            $('#go_to_shopify').click(function() {
-                window.location = "{{app.store_url}}/admin";
-            });
-            SnapABug.setUserEmail('{{ client_email }}');
-            SnapABug.startChat('Hi, can we help you with the installation?');
-        });
-    </script>
-{% endblock head %}
+{% block head %}{% endblock head %}
 
 {% block right_head %}
-    {% if analytics %}
-        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
-    {% endif %}
     <p><a href="{% url SIBTShopifyEditStyle app.uuid %}">Edit App Style</a></p>
 {% endblock right_head %}
 
@@ -24,11 +11,11 @@
         <div class="lower-100 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate 'Should I Buy This'</div>
         <div class="lower-100 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
 
-        <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
+        <h1 class="span-24 last center">Should I Buy This: Integration Guide</h1>
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
             <div class="center span-24 last append-bottom">
                 <p>
-                    {{shop_owner}}, thanks for installing "Should I Buy This"!
+                    Thanks for installing "Should I Buy This", {{ shop_owner }}!
                     <br />
                     Now, let's determine where to place the button on your product pages.
                 </p>
@@ -70,11 +57,7 @@
                 <p>
                     <strong>4. Once </strong>you've picked a spot, add this code:
 
-                    {% ifequal app.version '1' %}
-                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
-                    {% else %}
-                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
-                    {% endifequal %}
+                    <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
                 </p>
             </div>
 
@@ -124,65 +107,6 @@
                 </p>
 
             </div>
-
-            {% if new_order_code %}
-                <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
-                    <p>
-                        10. Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
-                    </p>
-                </div>
-
-                <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
-                    <p>
-                        11. Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
-                        <textarea style='font-size:13px;max-height: 450px; height:450px;max-width: 600px;width: 600px;' type='text' readonly='readonly'>
-&lt;!-- Begin Willet integration code --&gt;
-&lt;script type="text/javascript"&gt;
-  (function()&#123;
-    var jsUrl = '{{ SECURE_URL }}/o/shopify/create.js?client_uuid={{ client_uuid }}';
-    var i = 0;
-    var items = '';
-    &#123;&#37 for line in line_items &#37&#125;
-      items += 'item' + i + '=' + encodeURIComponent('&#123;&#123; line.product.id &#125;&#125;') + '&';
-      i++;
-    &#123;&#37 endfor &#37&#125;
-
-    var jsSrc = jsUrl +
-                '&order_id='+ encodeURIComponent('&#123;&#123; order_id &#125;&#125;') +
-                '&order_num='+ encodeURIComponent('&#123;&#123; order_number &#125;&#125;') +
-                '&subtotal='+ encodeURIComponent('&#123;&#123; subtotal_price | money_without_currency &#125;&#125;') +
-                '&ref_site='+ encodeURIComponent('&#123;&#123; referring_site &#125;&#125;') +
-                '&email='+ encodeURIComponent('&#123;&#123; customer.email &#125;&#125;') +
-                '&name='+ encodeURIComponent('&#123;&#123; customer.name &#125;&#125;') +
-                '&marketing='+ encodeURIComponent('&#123;&#123; customer.accepts_marketing &#125;&#125;') +
-                '&num_items='+ i +
-                '&'+ items;
-
-    var script  = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src  = jsSrc;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  &#125;)();
-&lt;/script&gt;
-&lt;!-- End Willet integration code --&gt;
-                        </textarea>
-
-                    </p>
-                </div>
-
-               <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
-                    <p>
-                        <strong>12. Click</strong> <em>Apply these settings</em>.
-                    </p>
-                </div>
-
-            {% endif %}
 
             <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
                 <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
