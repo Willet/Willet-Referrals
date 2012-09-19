@@ -37,7 +37,7 @@ _willet.loader = (function (me) {
          *      'callback': func
          * }
          */
-        if (param && param.scripts) {
+        if (param && param.scripts && param.scripts.length) {
             var i, scripts_not_ready;
             i = scripts_not_ready = param.scripts.length;
             param.callback = param.callback || function () {};
