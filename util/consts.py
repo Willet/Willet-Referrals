@@ -23,6 +23,7 @@ APP_LIVE = 'social-referral'
 USING_DEV_SERVER = bool(get_application_id() != APP_LIVE) # False on live
 DOMAIN = os.environ.get('HTTP_HOST') if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
+PROTOCOL_RELATIVE_URL = urlunsplit(('', DOMAIN, '', '', '')) # for loading assets onto http(s)
 SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
 KEYS = os.environ.get('HTTP_HOST')
 
@@ -49,6 +50,7 @@ MIXPANEL_TOKEN = '5e7c1fdd252ecdccfecf1682df9f76a2'
 
 # Google Social Graph API Stuff
 GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
+GOOGLE_ANALYTICS_API_KEY = 'UA-34721035-1'
 
 # LilCookies (secure cookies) Stuff
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
@@ -129,7 +131,8 @@ TEMPLATE_DIRS = (
 ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
                  'fraser.harris@gmail.com', 'fraser@getwillet.com',
                  'b2lai@uwaterloo.ca', 'lpppppl@gmail.com', 'brian@getwillet.com',
-                 'nicholas.terwoord@gmail.com', 'nick@getwillet.com', 'nick@willetinc.com' ]
+                 'nicholas.terwoord@gmail.com', 'nick@getwillet.com', 'nick@willetinc.com',
+                 'gri@willetinc.com', 'grigory.kruglov@gmail.com']
 
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
@@ -145,6 +148,7 @@ INSTALLED_APPS = [
     'admin',
     'app',
     'app.shopify',
+    'analytics',
     'buttons',
     'buttons.shopify',
     'charge',

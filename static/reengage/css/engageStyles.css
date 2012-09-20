@@ -642,7 +642,6 @@ which has one pixel less height for the white border on top */
 .message {
     padding: 15px;
     margin-bottom: 20px;
-    text-align: center;
     font-size: 1.4em;
 }
 
