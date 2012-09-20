@@ -5,6 +5,7 @@ from pyga.requests import Tracker, Session, Visitor
 
 import logging
 
+
 def track_event(category, action, label=None, value=None):
     """Save the event to our event backend.
 
@@ -21,5 +22,5 @@ def track_event(category, action, label=None, value=None):
 
     # send GA event to google & log
     tracker.track_event(event, session, visitor)
-    logging.info("Logged event: category=%s, action=%s, label=%s, value=%s" %
-                (category, action, label, value))
+    logging.info("Logged event: category=%s, action=%s, label=%s, value=%s",
+                 category, action, label, value)

@@ -1,11 +1,9 @@
 from apps.app.models import App
 from apps.analytics.utils import track_event
 from apps.product.models import Product
-from apps.reengage.models import ReEngageCohort
 
 from util.urihandler import URIHandler
 
-import logging
 
 class TrackEvent(URIHandler):
     """Logs incoming event into Google analytics.
@@ -41,10 +39,11 @@ class TrackEvent(URIHandler):
 
         # try to find product
         try:
-            product_url = "%s%s" % (store_url, pathname[:pathname.index("leadspeaker_cohort_id=")])
+            product_url = "%s%s" % (store_url,
+                                    pathname[:pathname.index("leadspeaker_cohort_id=")])
         except ValueError:
             product_url = "%s%s" % (store_url, pathname)
-        
+
         # exclude trailing slash
         product_url = product_url.rstrip("/")
 

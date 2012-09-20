@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-from util.consts import SECURE_URL
+from util.consts import SECURE_URL, P3P_HEADER
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
 from google.appengine.ext.webapp import template
 
 import os
+
 
 class TrackingJSLoader(URIHandler):
     """When requested shares an appropriate tracking js file.
@@ -21,7 +22,6 @@ class TrackingJSLoader(URIHandler):
     def get(self):
         # Grab shop URL from params
         shop_hostname = self.request.get('shop')
-        shop_url = get_shopify_url(shop_hostname)
 
         tracking_system = self.request.get('ts')
         tracking_type = self.request.get('tt')
@@ -35,7 +35,7 @@ class TrackingJSLoader(URIHandler):
 
         # Grab all template values
         template_values = {
-            'SECURE_URL' : SECURE_URL,
+            'SECURE_URL': SECURE_URL,
             'shop_hostname': shop_hostname
         }
 
@@ -43,9 +43,10 @@ class TrackingJSLoader(URIHandler):
             template_values.update({'landing_site': landing_site})
 
         # Finally, render the JS!
-        path = os.path.join('templates/analytics', '%s_%s.js' % (tracking_system, tracking_type))
+        path = os.path.join('templates/analytics', '%s_%s.js' %
+                            (tracking_system, tracking_type))
 
-        self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
+        self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
 
