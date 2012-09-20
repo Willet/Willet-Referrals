@@ -14,4 +14,7 @@ urlpatterns = [
     (r'/r/shopify/webhook/collections/update', UpdateReEngageCollectionsShopify),
     (r'/r/shopify/webhook/collections/delete', DeleteReEngageCollectionsShopify),
     (r'/r/shopify/webhook/orders/create', CreateReEngageOrderShopify),
+
+    (r'/r/shopify/get_or_create_queues', GetOrCreateShopifyQueues),
+    (r'/r/shopify/get_or_create_queue', GetOrCreateShopifyQueue),
 ]

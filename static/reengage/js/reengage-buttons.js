@@ -1221,30 +1221,6 @@ _willet = (function (me, config) {
             networks = [],
             requiredButtons = [];
 
-        // Queue detected networks first, if the cookie exists
-        if (loggedInNetworks) {
-            networks = util.dictToArray(loggedInNetworks);
-            networks = networks.sort(networkPrioritizedSort);
-
-            // Queue detected buttons
-            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var network = networks[i];
-                if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
-                    && network.value.status === true) {         //check that the network is enabled
-                    requiredButtons.push(network.key);
-                }
-            }
-        }
-
-        // Queue user's buttons if there is space, and they have not already been added
-        var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
-        for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
-            var button = usersButtons[i];
-            if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
-                requiredButtons.push(button);
-            }
-        }
-
         // Queue default buttons to the end, if they have not already been added
         for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
             var button = DEFAULT_BUTTONS[i];

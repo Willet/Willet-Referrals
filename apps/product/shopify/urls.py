@@ -13,4 +13,5 @@ urlpatterns = [
 
     (r'/product/shopify/fetch', FetchShopifyProducts),
     (r'/collection/shopify/fetch', FetchShopifyCollections),
+    (r'/collection/shopify/put', PutShopifyCollections),
 ]

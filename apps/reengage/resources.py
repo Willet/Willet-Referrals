@@ -101,11 +101,16 @@ class ReEngageQueuesJSONHandler(URIHandler):
             self.error(404)
             return
 
+        #
+        app_uuid = None
+        if app:
+            app_uuid = app.uuid
+
         # build json response for "a bunch of queues"
         response = {'key': 'queues',
                     'value': []}
         for queue in queues:
-            response['value'].append(queue.to_obj()['value'])
+            response['value'].append(queue.to_obj(app_uuid=app_uuid)['value'])
         self.respondJSON(response.get("value"),
                          response_key=response.get("key"))
 
@@ -319,6 +324,7 @@ class ReEngagePostJSONHandler(URIHandler):
             return
 
         # TODO: What about Keys that reference this params = urlparse.parse_qsl(self.request.body)
+
         post.clear_cache()
         post.delete()
         self.error(204)

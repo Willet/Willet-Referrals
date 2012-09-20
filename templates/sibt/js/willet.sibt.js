@@ -53,9 +53,7 @@ _willet.sibt = (function (me) {
             '#_willet_WOSIB_Button': LARGE_WOSIB // WOSIB mode
         },
         cart_items = cart_items || window._willet_cart_items || [],
-        PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
-        SHAKE_DURATION = 0, // ms
-        SHAKE_WAIT = 1000; // ms
+        PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }};
 
     // declare vars in this scope
     var popup, products;
@@ -167,16 +165,6 @@ _willet.sibt = (function (me) {
             }
         }
 
-        /*
-        return wm.fire('showColorbox', {
-            href: "{{URL}}{% url AskDynamicLoader %}" +
-                // do not merge with metadata(): it escapes commas
-                "?products=" + me.getProductUUIDs().join(',') +
-                "&shopify_ids=" + shopify_ids.join(',') +
-                "&" + me.metadata()
-        });
-        */
-
         return me.showPopupWindow(
             "{{URL}}{% url AskPageDynamicLoader %}" +
             // do not merge with metadata(): it escapes commas
@@ -257,8 +245,6 @@ _willet.sibt = (function (me) {
         wm.fire('log', 'setting a small SIBT button');
         wm.fire('storeAnalytics');
 
-        // shake ONLY the SIBT button when scrolled into view
-        // me.addScrollShaking(jqElem);
         me.saveProduct(jqElem.data());
 
         if (   app.visited_urls_count >= 2
@@ -375,7 +361,6 @@ _willet.sibt = (function (me) {
                     .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                     .appendTo(button)
                     .css('display', 'inline-block')
-                    // .click(me.showResults);
                     .click(me.showVote);
                 }
 
@@ -383,7 +368,6 @@ _willet.sibt = (function (me) {
                 if ($wbtn.length > 0) {
                     $wbtn = $($wbtn[0]);
                 }
-                // me.addScrollShaking($wbtn);
             }
         } else {
             wm.fire('log', "no product / view count too low; hiding button.");
@@ -436,9 +420,7 @@ _willet.sibt = (function (me) {
                 jqElem.css ({
                     'display': 'none'
                 });
-            }/* else {
-                me.addScrollShaking(jqElem);
-            }*/
+            }
 
             // Shu Uemura special data scraping
             var img_src = '';
@@ -617,24 +599,6 @@ _willet.sibt = (function (me) {
         ));
     };
 
-    me.addScrollShaking = me.addScrollShaking || function (elem) {
-        // needs the shaker jQuery plugin.
-        var $elem = $(elem);
-        wm.fire('storeAnalytics', 'SIBTAddScrollShaking');
-        $(window).scroll(function () {
-            if (me.isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
-                setTimeout(function () {
-                    $elem.shaker();
-                    setTimeout(function () {
-                        $elem.shaker.stop();
-                        $elem.data('shaken_yet', true);
-                        wm.fire('storeAnalytics', 'SIBTButtonShake');
-                    }, SHAKE_DURATION);
-                }, SHAKE_WAIT); // wait for ?ms until it shakes
-            }
-        });
-    }
-
     me.updateProductHistory = me.updateProductHistory || function () {
         // save past products' images
         // check if page is visited twice or more in a row
@@ -730,14 +694,7 @@ _willet.sibt = (function (me) {
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
-        // previous behaviour shown here:
-        // me.hideBottomPopup(); // don't want it here now!
-        // if (user.is_asker || instance.show_votes) {
-        //     me.showResults();
-        // } else {
-               me.showAsk(message);
-        // }
-        // me.showVote(message);
+        me.showAsk(message);
     };
 
     me.filterFalsyProps = me.filterFalsyProps || function (obj) {
@@ -761,18 +718,6 @@ _willet.sibt = (function (me) {
             wm.fire('log', "has results?");
             me.showResults();
         }
-    };
-
-    me.getVisitLength = me.getVisitLength || function () {
-        // analytics to record the amount of time this script has been loaded
-        // this must be an iframe to time it + send synchronous requests
-        /* deprecated (for now)
-        $('<iframe />', {
-            css: {'display': 'none'},
-            src: "{{URL}}{% url ShowOnUnloadHook %}?" +
-                 me.metadata({'evnt': 'SIBTVisitLength'})
-        }).appendTo("body");
-        */
     };
 
     me.changeUIStatus = me.changeUIStatus || function (cb) {
@@ -918,7 +863,6 @@ _willet.sibt = (function (me) {
 
         // auto-show results on hash
         wm.on('updateUI', me.updateUI);
-        // wm.on('scriptComplete', me.getVisitLength);
 
         // hooks for other libraries
         wm.on('setSmallSIBTButton', me.setSmallSIBTButton);
