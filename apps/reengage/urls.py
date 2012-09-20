@@ -12,7 +12,7 @@ urlpatterns = [
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
     (r'/r/setup_fb/?', ReEngageSetupFB),
-    (r'/r/shopify/analytics/?', ReEngageAnalytics),
+    (r'/r/shopify/analytics/?', ReEngageAnalyticsPage),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),

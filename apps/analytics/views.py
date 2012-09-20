@@ -1,26 +1,27 @@
 #!/usr/bin/env python
 
-from google.appengine.ext.webapp import template
-
-from apps.client.shopify.models import ClientShopify
-from apps.user.models import User
-
 from util.consts import SECURE_URL
+from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
+
+from google.appengine.ext.webapp import template
 
 import os
 
 class TrackingJSLoader(URIHandler):
+    """When requested shares an appropriate tracking js file.
+
+    @TODO: Ideally need to phase this out and serve tracking files as fully static.
+    """
+
+    # currently supported tracking "systems" and "types"
     tsx = ['leadspeaker']
     ttx = ['shopify']
 
     def get(self):
-        user = User.get_by_cookie(self)
-
         # Grab shop URL from params
         shop_hostname = self.request.get('shop')
-        if shop_hostname[:7] != 'http://':
-            shop_url = 'http://%s' % shop_hostname
+        shop_url = get_shopify_url(shop_hostname)
 
         tracking_system = self.request.get('ts')
         tracking_type = self.request.get('tt')
@@ -32,21 +33,11 @@ class TrackingJSLoader(URIHandler):
         if tracking_system not in self.tsx or tracking_type not in self.ttx:
             return
 
-        # Grab appropriate client based on the request
-        if tracking_type == 'shopify':
-            client = ClientShopify.get_by_url(shop_url)
-
         # Grab all template values
         template_values = {
             'SECURE_URL' : SECURE_URL,
             'shop_hostname': shop_hostname
         }
-
-        if user:
-            template_values.update({'user': user})
-
-        if client:
-            template_values.update({'client': client})
 
         if landing_site:
             template_values.update({'landing_site': landing_site})

@@ -84,7 +84,7 @@ class ReEngageHowTo(URIHandler):
         self.response.out.write(self.render_page('reengage/howto.html', {}))
 
 
-class ReEngageAnalytics(URIHandler):
+class ReEngageAnalyticsPage(URIHandler):
     """Display the analytics page"""
     @session_active
     def get(self):

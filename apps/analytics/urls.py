@@ -7,5 +7,5 @@ urlpatterns = [
     (r'/an/trackEvent', TrackEvent),
 
     # ideally we want this to be purely static
-    (r'/an/tracking.js', TrackingJSLoader)
+    (r'/an/tracking.js', TrackingJSLoader),
 ]
