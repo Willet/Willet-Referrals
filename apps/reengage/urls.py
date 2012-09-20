@@ -31,6 +31,7 @@ urlpatterns = [
 
     # Re-engage processes (beta)
     (r'/r/shopify/cron/start/?', ReEngageCron),
+    (r'/r/shopify/cron/plan/?', ReEngageStartMarketingPlan),
     (r'/r/shopify/cron/post/?', ReEngageCronPostMessage),
     (r'/r/shopify/cron/snippets/?', ReEngageUpdateSnippets),
 ]
