@@ -26,11 +26,12 @@ class CollectionJSONDynamicLoader(URIHandler):
         - client_uuid
         - client_uuid & collection_name
         """
-        collections = [ProductCollection.get(collection_uuid)]
+        collections = filter(None, [ProductCollection.get(collection_uuid)])
         if len(collections):
             return self.jsonify(collections)
 
-        collections = [ProductShopifyCollection.get_by_shopify_id(collection_uuid)]
+        collections = filter(None, [ProductShopifyCollection.get_by_shopify_id(
+            collection_uuid)])
         if len(collections):
             return self.jsonify(collections)
 
