@@ -117,6 +117,10 @@ class Facebook(SocialNetwork):
         page_id = cls._get_page_id(url)
         logging.info("Page Id: %s" % page_id)
 
+        if page_id == url:
+            logging.error("Invalid Page Id: %s" % page_id)
+            return False
+
         client_id     = kwargs.get("client_id")
         client_secret = kwargs.get("client_secret")
 
