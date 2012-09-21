@@ -183,9 +183,10 @@ class MemcacheReferenceProperty(db.Property):
                     self.memcache_key = memcache.get(unicode(value))
 
             elif isinstance(value, db.Model):
-                self.memcache_key = value.get_key()
+                obj_key = value.get_key()
+                self.memcache_key = obj_key
                 logging.debug('MemcacheReferenceProperty: '
-                              'value is a Model class object.')
+                              'value is a db.Model object (%s).' % obj_key)
             else:
                 raise TypeError('Value supplied is neither <google.appengine.datastore.Key> '
                                 'nor <google.appengine.ext.db.Model> (supplied %s)' % type(value))
