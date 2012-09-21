@@ -40,6 +40,7 @@ class MemcacheReferenceProperty(db.Property):
         """
         super(MemcacheReferenceProperty, self).__init__(verbose_name, **attrs)
 
+
         self.collection_name = collection_name
         self.memcache_key = memcache_key
 
@@ -123,12 +124,13 @@ class MemcacheReferenceProperty(db.Property):
         if reference_id is not None:
 
             resolved = getattr(model_instance, self.__resolved_attr_name())
+
             if resolved is not None:
                 return resolved
 
             else:
-                # Check for instance in memcache first
-                instance = memcache.get(self.memcache_key or '')
+                instance = memcache.get(str(reference_id) or '')
+                instance = memcache.get(instance or '')
 
                 if instance:
                     # Convert to model from protobuf
