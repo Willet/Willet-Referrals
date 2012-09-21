@@ -1,0 +1,73 @@
+{% extends "base_legacy.html" %}
+
+{% block document_ready %}
+    $("#IEWarning").hide();
+{% endblock %}
+
+{% block extra_js_includes %}
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+
+    <style>
+        .analyticsCategoryData {
+            width: 800px;
+            margin-left: 200px;
+        }
+    </style>
+{% endblock %}
+
+{% block content_title %}
+    Analytics
+{% endblock %}
+
+{% block content_top_actions %}
+    <div class="button" id="newPost">
+        Refresh
+    </div>
+{% endblock %}
+
+{% block content_nav %}
+    <ul class="breakNav">
+        <li class="selected"><b>Analytics</b></li>
+        <li><a href="{% url ReEngageQueueHandler %}">Facebook</a></li>
+        <li class="comingSoon"><a href="#">Twitter</a></li>
+        <li class="comingSoon"><a href="#">Pinterest</a></li>
+        <li class="comingSoon"><a href="#">Email</a></li>
+    </ul>
+{% endblock %}
+
+{% block content_inner_title %}Data Analytics{% endblock %}
+
+{% block box_top_info %}
+    <i>
+        Next schedule refresh: 20:00 EST
+        (<a id="changeSchedule"
+        class="comingSoon" href="#">manual refresh</a>)
+    </i>
+{% endblock %}
+
+{% block content_inner %}
+    <div id="categoryBox">
+        <div id='allContainer'>
+            <div id='allCategories' class='first slab selected'>
+                <span id='categoryArrow' class='open'></span>
+                All Categories
+            </div>
+            <div class="category">Test</div>
+        </div>
+    </div>
+
+    <div class="analyticsCategoryData">
+        <h3>Metric 1:</h3>
+        <img src="http://placehold.it/550x250">
+        <h3>Metric 2:</h3>
+        <img src="http://placehold.it/550x250">
+    </div>
+{% endblock %}
+
+
+{% block content_dialogues %}
+{% endblock %}

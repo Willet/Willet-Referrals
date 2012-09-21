@@ -12,6 +12,7 @@ urlpatterns = [
     (r'/r/shopify/instructions/?', ReEngageInstructions),
     (r'/r/shopify/how_to/?', ReEngageHowTo),
     (r'/r/setup_fb/?', ReEngageSetupFB),
+    (r'/r/shopify/analytics/?', ReEngageAnalyticsPage),
 
     # Re-engage account handlers
     (r'/r/shopify/login/?', ReEngageLogin),
@@ -31,6 +32,7 @@ urlpatterns = [
 
     # Re-engage processes (beta)
     (r'/r/shopify/cron/start/?', ReEngageCron),
+    (r'/r/shopify/cron/plan/?', ReEngageStartMarketingPlan),
     (r'/r/shopify/cron/post/?', ReEngageCronPostMessage),
     (r'/r/shopify/cron/snippets/?', ReEngageUpdateSnippets),
 ]

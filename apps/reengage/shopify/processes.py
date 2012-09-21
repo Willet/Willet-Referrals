@@ -9,6 +9,7 @@ from apps.product.shopify.processes import \
 from util.helpers import url
 from util.urihandler import URIHandler
 
+
 #TODO: We should just get_or_create the product instead of duplicating
 # existing webhooks
 
@@ -116,3 +117,12 @@ class GetOrCreateShopifyQueue(URIHandler):
         queue = object.queue
 
         self.response.out.write("OK")
+
+
+class CreateReEngageOrderShopify(URIHandler):
+    """Order created. Log the event"""
+    def get(self):
+        return self.post()
+
+    def post(self):
+        return

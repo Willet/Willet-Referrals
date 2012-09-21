@@ -83,15 +83,26 @@ class ReEngageShopify(ReEngage, AppShopify):
                     "address": "%s/r/shopify/webhook/collections/delete" % (URL),
                     "format": "json", "topic": "collections/delete"
                 }
+            }, {
+                "webhook": {
+                    "address": "%s/r/shopify/webhook/order/create" % (URL),
+                    "format": "json", "topic": "orders/create"
+                }
             }
         ])
 
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/r/shopify/load/reengage-buttons.js" % URL,
+                "src": "%s/r/shopify/load/reengage-buttons.js" % PROTOCOL_RELATIVE_URL,
+                "event": "onload"
+            }
+        }, {
+            "script_tag": {
+                "src": "%s/an/tracking.js?ts=leadspeaker&tt=shopify" % PROTOCOL_RELATIVE_URL,
                 "event": "onload"
             }
         }])
+        
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/leadspeaker-fb-id.liquid',
@@ -103,8 +114,8 @@ class ReEngageShopify(ReEngage, AppShopify):
             'asset': {
                 'key': 'snippets/leadspeaker-canonical-url.liquid',
                 'value': """
-                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
-                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
                 """ % (cohort_id.uuid, cohort_id.uuid)
             }
         }, {
@@ -216,8 +227,8 @@ class ReEngageShopify(ReEngage, AppShopify):
             'asset': {
                 'key': 'snippets/leadspeaker-canonical-url.liquid',
                 'value': """
-                    <link rel="canonical" href="{{ canonical_url | downcase }}/%s" />
-                    <meta property="og:url" content="{{ canonical_url | downcase }}/%s" />
+                    <link rel="canonical" href="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
+                    <meta property="og:url" content="{{ canonical_url | downcase }}/leadspeaker_cohort_id=%s" />
                 """ % (cohort_id, cohort_id)
             }
         }])
