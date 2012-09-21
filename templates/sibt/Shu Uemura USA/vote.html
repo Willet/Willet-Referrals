@@ -1,5 +1,13 @@
 {% extends "vote-base.html" %}
 
+{% block head %}
+        <meta property="og:type"                       content="product"> 
+        <meta property="og:title"                      content="Help a friend with social shopping | Shu Uemura"> 
+        <meta property="og:description"                content="Your friend needs advice on the {{ product.title|striptags|lower }}, click to give your feedback. Helping a friend can be rewarding."> 
+        <meta property="og:image"                      content="{{ product_img }}">
+        <meta property="og:url"                        content="{{ product_url }}">
+{% endblock head %}
+
 {% block left_screens %}
     <div id="fb-root"></div>
     <div id="FOO" class="fb-comments" data-href="{{fb_comments_url}}"
@@ -16,6 +24,9 @@
         </a>
         <div id="right-div" class="description">
             {{ product.description }}
+        </div>
+        <div style="clear:both; text-align: center;">
+            <a href="{{ product_url }}">view product</a>
         </div>
     </div>
 {% endblock right_screens %}
