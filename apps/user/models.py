@@ -79,7 +79,9 @@ class EmailModel(Model):
                                         user.uuid),
                                        subject='Duplicate user detected')
                     logging.warn('merging two duplicate users.')
-                    existing_emailmodel.user.merge_data(user)  # merge
+                    user.merge_data(existing_emailmodel.user)  # merge to new
+                    existing_emailmodel.user = user
+                    existing_emailmodel.put()
             except AttributeError, err:
                 logging.error('wtf? user has no uuid.', exc_info=True)
         else:  # ... or create
@@ -467,9 +469,14 @@ class User(db.Expando, polymodel.PolyModel):
         if attr_name == 'email':
             try:
                 return self.emails[0].address
-            except Exception, e:
-                #logging.debug('user has no email address')
-                return ''
+            except:
+                # somehow it didn't work. try again.
+                try:
+                    return EmailModel.get_by_user(self).address or ''
+                except:
+                    pass
+            logging.debug('user %s has no email address' % self.uuid)
+            return ''
 
         if attr_name == 'pic':
             if hasattr(self, 'facebook_profile_pic'):
