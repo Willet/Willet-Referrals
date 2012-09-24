@@ -47,13 +47,7 @@ var willetTracking = (function ($, window, document) {
         },
 
         referrerName = function () {
-            var referrers = {
-                "facebook.com": "facebook",
-                "t.co": "twitter",
-                "pinterest.com": "pinterest",
-                "reddit.com": "reddit",
-                "tumblr.com": "tumblr"
-            }, host;
+            var host;
 
             if (document.referrer === "") {
                 return "noref";
@@ -63,11 +57,7 @@ var willetTracking = (function ($, window, document) {
             // want top level domain name (i.e. tumblr.com, not site.tumblr.com)
             host = referrers[host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".")];
 
-            if (referrers[host] === undefined) {
-                return host;
-            }
-
-            return referrers[host];
+            return host;
         },
 
         getCohortId = function () {
