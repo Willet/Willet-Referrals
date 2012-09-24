@@ -48,11 +48,18 @@ var willetTracking = (function ($, window, document) {
 
         fromWhichNetwork = function () {
             var referrers = {
-                "https://www.facebook.com/": "facebook",
-                "http://www.facebook.com/": "facebook"
-            };
+                "facebook.com": "facebook",
+                "t.co": "twitter",
+                "pinterest.com": "pinterest",
+                "reddit.com": "reddit",
+                "tumblr.com": "tumblr"
+            }, host;
 
-            return referrers[document.referrer];
+            host = parseUri(document.referrer).host;
+            // want top level domain name (i.e. tumblr.com, not site.tumblr.com)
+            host = host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".");
+
+            return referrers[host];
         },
 
         getCohortId = function () {
@@ -192,8 +199,8 @@ var willetTracking = (function ($, window, document) {
                 category = "unknown";
             }
 
-            if (fromWhichNetwork() === "facebook") {
-                category += "_facebook";
+            if (fromWhichNetwork() !== undefined) {
+                category += fromWhichNetwork();
             }
 
             if (onCartPage()) {
@@ -212,6 +219,39 @@ var willetTracking = (function ($, window, document) {
 
                 ProductTracking.init();
                 CartButtonTracking.init();
+            }
+        },
+
+        // parseUri 1.2.2
+        // (c) Steven Levithan <stevenlevithan.com>
+        // MIT License
+
+        parseUri = function (str) {
+            var o   = parseUri.options,
+                m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+                uri = {},
+                i   = 14;
+
+            while (i--) uri[o.key[i]] = m[i] || "";
+
+            uri[o.q.name] = {};
+            uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+                if ($1) uri[o.q.name][$1] = $2;
+            });
+
+            return uri;
+        };
+
+        parseUri.options = {
+            strictMode: false,
+            key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+            q:   {
+                name:   "queryKey",
+                parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+            },
+            parser: {
+                strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
             }
         };
 
