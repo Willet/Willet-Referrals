@@ -46,7 +46,7 @@ var willetTracking = (function ($, window, document) {
             return false;
         },
 
-        fromWhichNetwork = function () {
+        referrerName = function () {
             var referrers = {
                 "facebook.com": "facebook",
                 "t.co": "twitter",
@@ -54,6 +54,10 @@ var willetTracking = (function ($, window, document) {
                 "reddit.com": "reddit",
                 "tumblr.com": "tumblr"
             }, host;
+
+            if (document.referrer === "") {
+                return "noref";
+            }
 
             host = parseUri(document.referrer).host;
             // want top level domain name (i.e. tumblr.com, not site.tumblr.com)
@@ -203,9 +207,7 @@ var willetTracking = (function ($, window, document) {
                 category = "unknown";
             }
 
-            if (fromWhichNetwork() !== undefined) {
-                category += fromWhichNetwork();
-            }
+            category += "_" + referrerName();
 
             if (onCartPage()) {
                 CartPageTracking.init();
