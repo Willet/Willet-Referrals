@@ -55,7 +55,11 @@ var willetTracking = (function ($, window, document) {
 
             host = parseUri(document.referrer).host;
             // want top level domain name (i.e. tumblr.com, not site.tumblr.com)
-            host = referrers[host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".")];
+            host = host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".");
+
+            if (host === "") {
+                return "noref";
+            }
 
             return host;
         },
