@@ -8,7 +8,14 @@
             <td valign="top">
                 <div style="font-size:110%">
                     <p> Hi {{name}}, </p>
-                    <p> Your friend voted "{{vote_type}}" for the following product:
+                    <p>
+                        One of your friends voted
+                        {% ifequal vote_type 'yes' %}
+                        "I like this"
+                        {% else %}
+                        "I dislike this"
+                        {% endifequal %}
+                        for the following product:
                     </p>
 
                     <img alt="Awesome product from {{client_domain}}!" src="{{product_img}}" style="max-height: 25%; max-width: 25%; text-align: center; padding: 2px; border: 1px solid #FFF;" />
@@ -25,7 +32,8 @@
                                            border-bottom:1px solid #eecc22">
                                     <a href="{{ vote_url }}"
                                        style="color:#336699;"
-                                       target="_blank">See the vote now</a>
+                                       target="_blank">Click and see the
+                                        vote now</a>
                                 </td>
                             </tr>
                         </tbody>
