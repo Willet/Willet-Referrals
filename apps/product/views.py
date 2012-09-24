@@ -42,7 +42,7 @@ class CollectionJSONDynamicLoader(URIHandler):
                     if collection.collection_name == collection_name:
                         return self.jsonify([collection])
             else:  # no specific name
-                return self.jsonify(client.collections)
+                return self.jsonify(filter(None, client.collections))
 
         return self.jsonify([])  # nothing
 
@@ -62,7 +62,7 @@ class CollectionJSONDynamicLoader(URIHandler):
         """
 
         # Decode an encoded json object, because I'm an idiot
-        cols_json = [json.loads(col.to_json()) for col in collections]
+        cols_json = [json.loads(col.to_json()) for col in collections if col]
         json_base = {'collections': cols_json}
 
         self.response.out.write(json.dumps(json_base))
