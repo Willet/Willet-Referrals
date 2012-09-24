@@ -57,11 +57,13 @@ var willetTracking = (function ($, window, document) {
 
             host = parseUri(document.referrer).host;
             // want top level domain name (i.e. tumblr.com, not site.tumblr.com)
-            try {
-                return referrers[host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".")];
-            } catch (e) {
-                return undefined;
+            host = referrers[host.split(".").slice(host.split(".").length - 2, host.split(".").length).join(".")];
+
+            if (referrers[host] === undefined) {
+                return host;
             }
+
+            return referrers[host];
         },
 
         getCohortId = function () {
