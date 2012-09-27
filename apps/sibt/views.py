@@ -196,7 +196,7 @@ class AskDynamicLoader(URIHandler):
             instance = self.create_instance(app=app, page_url=page_url,
                                             product_uuids=[x.uuid for x in products],
                                             sharing_message="",
-                                            user=user)
+                                            user=user, vendor=vendor)
 
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
@@ -266,7 +266,7 @@ class AskDynamicLoader(URIHandler):
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
-                        sharing_message="", user=None):
+                        sharing_message="", user=None, vendor=None):
         """Helper to create an instance without question."""
         if not user:
             User.get_or_create_by_cookie(self, app)
@@ -284,8 +284,15 @@ class AskDynamicLoader(URIHandler):
                 product_uuids = [product.uuid]  # [None]
             except AttributeError:
                 product_uuids = []
+
+        # This absolutely should not be done this way.
+        # It is stupid, lazy, and wrong.
+        end = None
+        if vendor == "Shu Uemura USA":
+            end = datetime.datetime.now() + datetime.timedelta(hours=24)
+
         instance = app.create_instance(user=user,
-                                       end=None,
+                                       end=end,
                                        link=link,
                                        dialog="",
                                        img="",
@@ -413,7 +420,7 @@ class AskPageDynamicLoader(URIHandler):
         instance = self.create_instance(app=app, page_url=page_url,
                                         product_uuids=[x.uuid for x in products],
                                         sharing_message="",
-                                        user=user)
+                                        user=user, vendor=vendor)
 
         # Make a new Link.
         # we will be replacing this target url with the vote page url once
@@ -465,7 +472,7 @@ class AskPageDynamicLoader(URIHandler):
         return
 
     def create_instance(self, app, page_url, product_uuids=None,
-                        sharing_message="", user=None):
+                        sharing_message="", user=None, vendor=None):
         """Helper to create an instance without question."""
         if not user:
             User.get_or_create_by_cookie(self, app)
@@ -483,8 +490,16 @@ class AskPageDynamicLoader(URIHandler):
                 product_uuids = [product.uuid]  # [None]
             except AttributeError:
                 product_uuids = []
+
+
+        # This absolutely should not be done this way.
+        # It is stupid, lazy, and wrong.
+        end = None
+        if vendor == "Shu Uemura USA":
+            end = datetime.datetime.now() + datetime.timedelta(hours=24)
+
         instance = app.create_instance(user=user,
-                                       end=None,
+                                       end=end,
                                        link=link,
                                        dialog="",
                                        img="",
