@@ -117,7 +117,7 @@ var willetTracking = (function ($, window, document) {
                 var action = "thankyou_page",
                     // this assumes that landing_site will end, if it's there, in our cohort_id
                     split_url = landing_site.split("leadspeaker_cohort_id="),
-                    leadspeaker_category = "unkown",
+                    leadspeaker_category = "unknown",
                     leadspeaker_cid = "";
 
                 // in the instance of tracking.js invoked through script_tags
