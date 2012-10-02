@@ -898,20 +898,26 @@ class ShowFBThanks(URIHandler):
         instance = SIBTInstance.get_by_user(user)
         product = None
 
-        if not instance:
-            logging.warn('Instance is already gone')
-            return  # there's nothing we can do now
-
         if post_id != "":
             user_cancelled = False
 
-        template_values = {
-            'email': user.get_attr('email'),
-            'user': user,
-            'user_uuid': user.uuid,
-            'user_cancelled': user_cancelled,
-            'incentive_enabled': app.incentive_enabled if app else False
-        }
+        if not instance:
+            logging.warn('Instance is already gone')
+            template_values = {
+                'email': "",
+                'user': user,
+                'user_uuid': "",
+                'user_cancelled': True,
+                'incentive_enabled': False
+            }
+        else:
+            template_values = {
+                'email': user.get_attr('email'),
+                'user': user,
+                'user_uuid': user.uuid,
+                'user_cancelled': user_cancelled,
+                'incentive_enabled': app.incentive_enabled if app else False
+            }
 
         path = os.path.join('sibt', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
