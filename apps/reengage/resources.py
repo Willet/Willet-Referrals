@@ -81,13 +81,20 @@ class ReEngageQueuesJSONHandler(URIHandler):
         queues = []
 
         client = Client.get(self.request.get('client_uuid'))
-        if client:
+        app = ReEngageShopify.get(self.request.get('app_uuid'))
+        if client and client.apps and not app:
+            '''
+            the safe, but slow way we previously used; should explain logic
             client_queues = [p.queue for p in client.products]
             logging.debug('adding products\' queues: %r' % client_queues)
             queues.extend(client_queues)
-
-        app = ReEngageShopify.get(self.request.get('app_uuid'))
-        if app:
+            '''
+            for app in client.apps:
+                # WARNING: is it likely that an app owns more than 5000 queues?
+                app_queues = ReEngageQueue.all().filter('app =', app)\
+                                          .fetch(limit=5000)
+                queues.extend(app_queues or [])
+        elif not client and app:
             logging.debug('adding app\'s queues: %r' % app.queues)
             queues.extend(app.queues)
 
