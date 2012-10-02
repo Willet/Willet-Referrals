@@ -27,7 +27,7 @@
                 })(shuTarget.style);
             } catch (e) {
                 // too bad (including cases where console doesn't exist)
-                console.log(e);
+                //console.log(e);
             }
         })();
     {% endifequal %}

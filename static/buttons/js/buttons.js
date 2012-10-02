@@ -236,6 +236,40 @@ _willet.util = {
             }
         }
         return template;
+    },
+    "parseQS": function(src) {
+        var qs = src.indexOf('?') ? src.substr(src.indexOf('?')+1) : null,
+            params = {};
+
+        if (qs) {
+            // A little hack - convert the query string into JSON format and parse it
+            // '&' -> ',' and '=' -> ':'
+            try {
+                params = JSON.parse('{"' + decodeURIComponent(qs.replace(/(&amp;|&)/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+            } catch(e) {
+                _willet.debug.error("Couldn't parse query string");
+            }
+        }
+
+        return params;
+    },
+    "getConfigFromQS": function() {
+        // Find ourself
+        var i,
+            regex = /\.appspot\.com\/.*\/(smart-)?buttons\.js/,
+            scripts = document.getElementsByTagName("script"),
+            src;
+
+        for (i = 0; i < scripts.length; i++) {
+            if (regex.test(scripts[i].src)) {
+                src = scripts[i].src;
+                break;
+            }
+        }
+
+
+        // get the config
+        return _willet.util.parseQS(src);
     }
 };
 
@@ -601,18 +635,14 @@ _willet.messaging = (function (willet) {
             var id = "willet.xd:" + domain + path;
             var iFrame = document.getElementById(id);
 
-            if (iFrame) {
-                iFrame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;";
-            } else {
+            if (!iFrame) {
                 iFrame = document.createElement("iframe")
                 iFrame.style.cssText = "position:absolute;width:1px;height:1px;left:-9999px;";
-
                 document.body.appendChild(iFrame);
 
                 iFrame.src = "//" + domain + path;
                 iFrame.id  = id;
             }
-
 
             if (listener) {
                 if (window.addEventListener) {
@@ -726,10 +756,7 @@ _willet.networks = (function (willet) {
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
                     fb.setAttribute('data-href', params.canonicalUrl);
-                    var style = util.createStyle("#_willet_buttons_app .fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
-                             +"#_willet_buttons_app span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
-                    button.appendChild(style);
 
                     return button;
                 },
@@ -1054,7 +1081,7 @@ _willet = (function (me, config) {
         ELEMENT_NODE = 1,
         NOT_FOUND = -1,
 
-        MAX_BUTTONS = 3,
+        MAX_BUTTONS = (config && config.max_buttons) || 3,
         DEFAULT_BUTTONS = (config && config.button_order) ||
                           ['Pinterest', 'Tumblr', 'Fancy'],
         DEFAULT_COUNT = 'false',

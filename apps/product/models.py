@@ -45,14 +45,14 @@ class ProductCollection(Model, db.polymodel.PolyModel):
 
     def to_json(self):
         """JSON representation of the product object."""
-        products = getattr(self, 'products', [])
+        products = filter(None, getattr(self, 'products', []))
 
         return json.dumps({
             'uuid': getattr(self, 'uuid', ''),
             'name': getattr(self, 'collection_name', ''),
             'shopify_id': unicode(getattr(self, 'shopify_id', '')),
             'shopify_handle': getattr(self, 'shopify_handle', ''),
-            'products': [json.loads(x.to_json()) for x in products],
+            'products': [json.loads(x.to_json()) for x in products if x],
         })
 
     def _validate_self(self):
