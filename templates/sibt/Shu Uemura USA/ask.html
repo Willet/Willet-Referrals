@@ -208,7 +208,7 @@
             _willet.mediator.fire('postOnWall', {
                 'name': 'Should I buy this?',
                 'link': '{{ share_url }}',
-                'caption': "{{ product_title|escape }}" || 'Do you like this?',
+                'caption': "{{ product_title|escape }} | Shu Uemura Art of Beauty",
                 'description': "Helping a friend can be rewarding. Click and give me your advice.",
                 'picture': '{{ products.0.image }}' ||
                             '//{{ DOMAIN }}/static/imgs/noimage.png',
@@ -242,7 +242,7 @@
             _willet.mediator.fire('sendToFriends', {
                 'name': "Should I buy this? {{ product_title|escape }}",
                 'link': '{{ share_url }}',
-                'caption': "{{ product_title|escape }}" || 'Do you like this?',
+                'caption': "{{ product_title|escape }} | Shu Uemura Art of Beauty",
                 'description': "Helping a friend can be rewarding. Click and give me your advice.",
                 'picture': '{{ products.0.image }}' ||
                             '//{{ DOMAIN }}/static/imgs/noimage.png',
