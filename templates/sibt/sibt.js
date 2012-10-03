@@ -39,6 +39,10 @@
 
     w._willet = w._willet || {};
     var _willet = w._willet;
+    {% ifequal client.name "Shu Uemura USA" %}
+    _willet.analytics = _willet.analytics || {};
+    _willet.analytics.host = "shuuemura-usa.com";
+    {% endifequal %}
 
     if (_willet.sibt) {
         // if SIBT has already been loaded on this page, do not load again.

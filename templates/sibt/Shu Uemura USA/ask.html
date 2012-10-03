@@ -1,6 +1,13 @@
 {% extends "../../plugin/ask.html" %}
 
+{% block title %}Should I Buy This? | Shu Uemura{% endblock title %}
+
 {% block required_js_tags %}
+    var _willet = {
+        "analytics": {
+            "host": "shuuemura-usa.com"
+        }
+    };
     {% include "../../sibt/js/willet.mediator.js" %}
     {% include "../../sibt/js/willet.debug.js" %}
     {% include "../../sibt/js/willet.loader.js" %}
@@ -264,3 +271,7 @@
 
     showScreen('splash');
 {% endblock js_init %}
+
+{% block analytics %}
+_gaq.push(['_setDomainName', "shuuemura-usa.com"]);
+{% endblock analytics %}
