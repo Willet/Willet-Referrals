@@ -16,10 +16,12 @@ _willet.analytics = (function (me) {
     me.ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
 
     me.init = me.init || function () {
+        var domain = me.host || window.location.host;
+
         wm.fire('loadJS', [('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js']);
         me.gaq = window._gaq || document._gaq || [];
         me.gaq.push(['_setAccount', me.ANALYTICS_ID]);
-        me.gaq.push(['_setDomainName', window.location.host]);
+        me.gaq.push(['_setDomainName', domain]);
         me.gaq.push(['_setAllowLinker', true]);
     };
 
