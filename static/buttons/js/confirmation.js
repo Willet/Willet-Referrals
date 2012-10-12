@@ -176,9 +176,9 @@ _willet.util = {
         //    rendered template <string>
 
         var ifStatementRe = /\{% if [\w\-]+ %\}/g,
-            ifPrefixLen = '{% if '.length,
+            ifLen = '{% if '.length,
             endifLen = '{% endif %}'.length,
-            startIndex, endIndex, contionalIndex, varName;
+            startIndex, endIndex, contionalIndex, varName, re;
 
         // First handle conditionals of the form {% if var_name %} ... {% endif %}
         // Note: strings are passed by value, so we can modify template without affecting
@@ -186,7 +186,7 @@ _willet.util = {
         conditionalIndex = template.search(ifStatementRe);
         while (conditionalIndex >= 0) {
             // get variable name from conditional
-            varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
+            varName = template.substring(conditionalIndex+ifLen, template.indexOf(' ', conditionalIndex+ifLen));
 
             if (values[varName]) {
                 // if variable name exists, strip conditional statements & leave code
@@ -206,7 +206,8 @@ _willet.util = {
         // Second handle variables of the form {{ var_name }}
         for (var i in values) {
             if (values.hasOwnProperty(i)) {
-                template = template.replace('{{ '+ i +' }}', values[i]);
+                re = new RegExp('{{ '+i+' }}', "g");
+                template = template.replace(re, values[i]);
             }
         }
         return template;
@@ -442,7 +443,14 @@ _willet = (function (me) {
         + "<div id='_willet_confirmation_app'>"
         + "  <p>Follow us to get the latest updates:</p>"
         + "  <ul>"
-        + "    {% if facebookUsername %}<li><div class='fb-like' href='//facebook.com/{{ facebookUsername }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
+        + "    {% if facebookUsername %}<li>"
+        + "      <div class='facebook-button'>"
+        + "        <a target='_blank' href='//facebook.com/{{ facebookUsername }}/'>"
+        + "          <span>Like {{ facebookUsername }} </span>"
+        + "          <i></i>"
+        + "        </a>"
+        + "      </div>"
+        + "    </li>{% endif %}"
         + "    {% if pinterestUsername %}<li>"
         + "      <div class='pinterest-button'>"
         + "        <a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
@@ -567,6 +575,86 @@ _willet = (function (me) {
         + "}"
         + ".pinterest-button span {"
         + "        padding: 0 22px 0 5px;"
+        + "        white-space: nowrap;"
+        + "}"
+        + ".facebook-button,"
+        + ".facebook-button a,"
+        + ".facebook-button span {"
+        + "        display: -moz-inline-stack;"
+        + "        display: inline-block;"
+        + "        vertical-align: top;"
+        + "        zoom: 1;"
+        + "        margin: 0;"
+        + "}"
+        + ".facebook-button {"
+        + "        text-align: left;"
+        + "        white-space: nowrap;"
+        + "        max-width: 100%;"
+        + "        font-family: 'Helvetica Neue', Arial, sans-serif;"
+        + "        font-size: 11px;"
+        + "        font-style: normal;"
+        + "        font-variant: normal;"
+        + "        font-weight: 500;"
+        + "        line-height: 18px;"
+        + "        color: #333 !important;"
+        + "        background: transparent;"
+        + "}"
+        + ".facebook-button a {"
+        + "        position: relative;"
+        + "        background-color: #f8f8f8;"
+        + "        background-image: -webkit-gradient(linear,left top,left bottom,from(#fff),to(#dedede));"
+        + "        background-image: -moz-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: -o-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: -ms-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: linear-gradient(top,#fff,#dedede);"
+        + "        border: rgb(175,169,169) solid 1px;"
+        + "        -moz-border-radius: 3px;"
+        + "        -webkit-border-radius: 3px;"
+        + "        border-radius: 3px;"
+        + "        color: #3B5998 !important;"
+        + "        font-weight: bold;"
+        + "        text-shadow: 0 1px 0 rgba(255,255,255,.5);"
+        + "        -webkit-user-select: none;"
+        + "        -moz-user-select: none;"
+        + "        -o-user-select: none;"
+        + "        user-select: none;"
+        + "        cursor: pointer;"
+        + "        height: 18px;"
+        + "        max-width: 98%;"
+        + "        overflow: hidden;"
+        + "}"
+        + ".facebook-button a:focus,"
+        + ".facebook-button a:hover,"
+        + ".facebook-button a:active {"
+        + "        border-color: #bbb;"
+        + "        background-color: #f8f8f8;"
+        + "        background-image: -webkit-gradient(linear,left top,left bottom,from(#f8f8f8),to(#d9d9d9));"
+        + "        background-image: -moz-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: -o-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: -ms-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        -webkit-box-shadow: none;"
+        + "        -moz-box-shadow: none;"
+        + "        box-shadow: none;"
+        + "}"
+        + ".facebook-button a:active {"
+        + "        background-color: #efefef;"
+        + "        -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "        -moz-box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "        box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "}"
+        + ".facebook-button i {"
+        + "        position: absolute;"
+        + "        top: 50%;"
+        + "        left: 4px;"
+        + "        margin-top: -6px;"
+        + "        width: 14px;"
+        + "        height: 14px;"
+        + "        background: transparent url(//social-referral.appspot.com/static/buttons/imgs/facebook-f-12x12.png) 0 0 no-repeat;"
+        + "        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAD8GlDQ1BJQ0MgUHJvZmlsZQAAKJGNVd1v21QUP4lvXKQWP6Cxjg4Vi69VU1u5GxqtxgZJk6XpQhq5zdgqpMl1bhpT1za2021Vn/YCbwz4A4CyBx6QeEIaDMT2su0BtElTQRXVJKQ9dNpAaJP2gqpwrq9Tu13GuJGvfznndz7v0TVAx1ea45hJGWDe8l01n5GPn5iWO1YhCc9BJ/RAp6Z7TrpcLgIuxoVH1sNfIcHeNwfa6/9zdVappwMknkJsVz19HvFpgJSpO64PIN5G+fAp30Hc8TziHS4miFhheJbjLMMzHB8POFPqKGKWi6TXtSriJcT9MzH5bAzzHIK1I08t6hq6zHpRdu2aYdJYuk9Q/881bzZa8Xrx6fLmJo/iu4/VXnfH1BB/rmu5ScQvI77m+BkmfxXxvcZcJY14L0DymZp7pML5yTcW61PvIN6JuGr4halQvmjNlCa4bXJ5zj6qhpxrujeKPYMXEd+q00KR5yNAlWZzrF+Ie+uNsdC/MO4tTOZafhbroyXuR3Df08bLiHsQf+ja6gTPWVimZl7l/oUrjl8OcxDWLbNU5D6JRL2gxkDu16fGuC054OMhclsyXTOOFEL+kmMGs4i5kfNuQ62EnBuam8tzP+Q+tSqhz9SuqpZlvR1EfBiOJTSgYMMM7jpYsAEyqJCHDL4dcFFTAwNMlFDUUpQYiadhDmXteeWAw3HEmA2s15k1RmnP4RHuhBybdBOF7MfnICmSQ2SYjIBM3iRvkcMki9IRcnDTthyLz2Ld2fTzPjTQK+Mdg8y5nkZfFO+se9LQr3/09xZr+5GcaSufeAfAww60mAPx+q8u/bAr8rFCLrx7s+vqEkw8qb+p26n11Aruq6m1iJH6PbWGv1VIY25mkNE8PkaQhxfLIF7DZXx80HD/A3l2jLclYs061xNpWCfoB6WHJTjbH0mV35Q/lRXlC+W8cndbl9t2SfhU+Fb4UfhO+F74GWThknBZ+Em4InwjXIyd1ePnY/Psg3pb1TJNu15TMKWMtFt6ScpKL0ivSMXIn9QtDUlj0h7U7N48t3i8eC0GnMC91dX2sTivgloDTgUVeEGHLTizbf5Da9JLhkhh29QOs1luMcScmBXTIIt7xRFxSBxnuJWfuAd1I7jntkyd/pgKaIwVr3MgmDo2q8x6IdB5QH162mcX7ajtnHGN2bov71OU1+U0fqqoXLD0wX5ZM005UHmySz3qLtDqILDvIL+iH6jB9y2x83ok898GOPQX3lk3Itl0A+BrD6D7tUjWh3fis58BXDigN9yF8M5PJH4B8Gr79/F/XRm8m241mw/wvur4BGDj42bzn+Vmc+NL9L8GcMn8F1kAcXjEKMJAAAAACXBIWXMAAAsTAAALEwEAmpwYAAABVUlEQVQokXXRzStEYRTH8e95nue6xIwZMxJiYmMxzcJCKXZKUbKQjZKV/AnK0sZGZmvlD1AsyG6y87aZhVJSpKwoxWjczNw7x8LGy3VWZ3E+p9/pSGFi8wwYJaZUlUakKGCtICLn7r9hgI50GwP9GYwVbm4feX0NRl38ZkgkfFYWx1iYLQCwvLrPycUtsQBVUu2tzE/nOS0/cFS65u7+GWskHhhrcM7geYarmyf2Dss0+Q6JA9YaNtZmGBrMADA3lWd8JMd6scTl1QMmLs5b9YPqex2AWj2k8vZBGDUQQAoTm/rbiECuL8vBzhI7u2WK28cYa1DVr0iqP00jUsIo+uobShiGOHGICK6lpYlUqhX5DlTp7moHIJlspqc3g3OWl5cqzvc9OjOJ32eQTrVRDyOafY/ObBJnDUFQQ4Ynt86cZ/982zlDtiNBNahRqQSIQFiPzj8BZKZ0p10/YZQAAAAASUVORK5CYII=);"
+        + "}"
+        + ".facebook-button span {"
+        + "        padding: 0 4px 0 20px;"
         + "        white-space: nowrap;"
         + "}";
 
