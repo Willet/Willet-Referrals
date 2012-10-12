@@ -443,7 +443,6 @@ _willet = (function (me) {
         + "<div id='_willet_confirmation_app'>"
         + "  <p>Follow us to get the latest updates:</p>"
         + "  <ul>"
-        //+ "    {% if facebookUsername %}<li><div class='fb-like' href='//facebook.com/{{ facebookUsername }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
         + "    {% if facebookUsername %}<li>"
         + "      <div class='facebook-button'>"
         + "        <a target='_blank' href='//facebook.com/{{ facebookUsername }}/'>"
