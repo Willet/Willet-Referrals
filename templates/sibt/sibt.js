@@ -42,6 +42,7 @@
     {% ifequal client.name "Shu Uemura USA" %}
     _willet.analytics = _willet.analytics || {};
     _willet.analytics.host = "shuuemura-usa.com";
+    _willet.analytics.ANALYTICS_ID = "UA-23764505-14";
     {% endifequal %}
 
     if (_willet.sibt) {

@@ -13,16 +13,18 @@ _willet.analytics = (function (me) {
     me.gaq = null;
     me.gat = null;
     me.pageTracker = null;
-    me.ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
+    me.ANALYTICS_ID = me.ANALYTICS_ID || 'UA-23764505-9'; // DerpShop: UA-31001469-1
 
     me.init = me.init || function () {
         var domain = me.host || window.location.host;
 
         wm.fire('loadJS', [('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js']);
         me.gaq = window._gaq || document._gaq || [];
-        me.gaq.push(['_setAccount', me.ANALYTICS_ID]);
-        me.gaq.push(['_setDomainName', domain]);
-        me.gaq.push(['_setAllowLinker', true]);
+        me.gaq.push(function() {
+            var ourTracker = _gat._createTracker(me.ANALYTICS_ID, 'willet');
+            ourTracker._setDomainName(domain);
+            ourTracker._setAllowLinker(true);
+        });
     };
 
     // send some google analytics thing to the server.
@@ -35,34 +37,33 @@ _willet.analytics = (function (me) {
 
         // extra google analytics component
         {% if debug %}
-            wm.fire('log', "This was not sent to Google Analytics because " +
-                           "you are debugging: " + message);
-        {% else %}
-            // in-house memcache logging
-            (new Image).src = "{{ URL }}{% url TrackTallyAction %}?evnt=" +
-                              encodeURIComponent(message);
-            try {
-                // async
-                me.gaq.push([
-                    '_trackEvent',
+        // TODO: Distinguish between debug / non-debug
+        {% endif %}
+
+        // in-house memcache logging
+        (new Image).src = "{{ URL }}{% url TrackTallyAction %}?evnt=" +
+                          encodeURIComponent(message);
+        try {
+            // async
+//            me.gaq.push([
+//                '_trackEvent',
+//                'TrackSIBTAction',
+//                encodeURIComponent(message),
+//                encodeURIComponent(extras)
+//            ]);
+            me.gat = me.gat || window._gat || document._gat || [];
+            me.pageTracker = me.pageTracker || me.gat._getTrackerByName('willet');
+            if (me.pageTracker) {
+                me.pageTracker._trackEvent(
                     'TrackSIBTAction',
                     encodeURIComponent(message),
                     encodeURIComponent(extras)
-                ]);
-                me.gat = me.gat || window._gat || document._gat || [];
-                me.pageTracker = me.pageTracker || me.gat._getTracker(me.ANALYTICS_ID);
-                if (me.pageTracker) {
-                    me.pageTracker._trackEvent(
-                        'TrackSIBTAction',
-                        encodeURIComponent(message),
-                        encodeURIComponent(extras)
-                    );
-                }
-                wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
-            } catch (e) { // log() is {} on live.
-                wm.fire('log', "We have DROPPED the enemy intelligence: " + e);
+                );
             }
-        {% endif %}
+            wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
+        } catch (e) { // log() is {} on live.
+            wm.fire('log', "We have DROPPED the enemy intelligence: " + e);
+        }
     };
 
     // set up a hook to let storeAnalytics be fired

@@ -392,7 +392,7 @@ _willet.sibt = (function (me) {
             })
             .click(function (message) {
                 // shows the ask your friends iframe
-                wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
+                wm.fire('storeAnalytics', 'SIBTShowingAsk');
                 var shopify_ids = [];
                 if (cart_items) {
                     // WOSIB exists on page; send extra data
