@@ -49,7 +49,7 @@ _willet.sibtShareMethods = (function (me) {
         } catch (e) {
             wm.fire('log', 'FB not loaded (adblock? remember to run init() first.)');
         }
-        wm.fire('storeAnalytics', 'SIBTPostOnWall');
+        wm.fire('storeAnalytics', 'Share Started', 'Facebook');
     };
 
     me.sendToFriends = me.sendToFriends || function (params) {
@@ -68,7 +68,7 @@ _willet.sibtShareMethods = (function (me) {
         } catch (e) {
             wm.fire('log', 'FB not loaded (adblock? remember to run init() first.)');
         }
-        wm.fire('storeAnalytics', 'SIBTEmailFriends');
+        wm.fire('storeAnalytics', 'Share Started', 'Email');
     };
 
     // set up your module hooks
