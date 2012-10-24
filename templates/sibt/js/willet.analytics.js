@@ -14,6 +14,7 @@ _willet.analytics = (function (me) {
     me.gat = null;
     me.pageTracker = null;
     me.ANALYTICS_ID = me.ANALYTICS_ID || 'UA-23764505-9'; // DerpShop: UA-31001469-1
+    me.initialized = false;
 
     me.init = me.init || function () {
         var domain = me.host || window.location.host;
@@ -25,6 +26,7 @@ _willet.analytics = (function (me) {
             ourTracker._setDomainName(domain);
             ourTracker._setAllowLinker(true);
         });
+        me.initialized = true;
     };
 
     // send some google analytics thing to the server.
@@ -45,21 +47,21 @@ _willet.analytics = (function (me) {
                           encodeURIComponent(message);
         try {
             // async
-//            me.gaq.push([
-//                '_trackEvent',
-//                'TrackSIBTAction',
-//                encodeURIComponent(message),
-//                encodeURIComponent(extras)
-//            ]);
-            me.gat = me.gat || window._gat || document._gat || [];
-            me.pageTracker = me.pageTracker || me.gat._getTrackerByName('willet');
-            if (me.pageTracker) {
-                me.pageTracker._trackEvent(
-                    'TrackSIBTAction',
-                    encodeURIComponent(message),
-                    encodeURIComponent(extras)
-                );
-            }
+            me.gaq.push([
+                'willet._trackEvent',
+                'TrackSIBTAction',
+                encodeURIComponent(message),
+                encodeURIComponent(extras)
+            ]);
+//            me.gat = me.gat || window._gat || document._gat || [];
+//            me.pageTracker = me.pageTracker || me.gat._getTrackerByName('willet');
+//            if (me.pageTracker) {
+//                me.pageTracker._trackEvent(
+//                    'TrackSIBTAction',
+//                    encodeURIComponent(message),
+//                    encodeURIComponent(extras)
+//                );
+//            }
             wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
         } catch (e) { // log() is {} on live.
             wm.fire('log', "We have DROPPED the enemy intelligence: " + e);
@@ -71,6 +73,8 @@ _willet.analytics = (function (me) {
         wm.on('storeAnalytics', me.store, me.defaultEvent);
     }
 
-    me.init();
+    if (!me.initialized) {
+        me.init();
+    }
     return me;
 } (_willet.analytics || {}));
