@@ -49,7 +49,7 @@ _willet.analytics = (function (me) {
             // async
             me.gaq.push([
                 'willet._trackEvent',
-                'TrackSIBTAction',
+                'SIBT',
                 encodeURIComponent(message),
                 encodeURIComponent(extras)
             ]);
