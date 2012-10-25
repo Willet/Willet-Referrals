@@ -14,19 +14,19 @@ _willet.analytics = (function (me) {
     me.gat = null;
     me.pageTracker = null;
     me.ANALYTICS_ID = me.ANALYTICS_ID || 'UA-23764505-9'; // DerpShop: UA-31001469-1
-    me.initialized = false;
 
     me.init = me.init || function () {
         var domain = me.host || window.location.host;
 
-        wm.fire('loadJS', [('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js']);
+        wm.fire('loadJS', {
+            'scripts': [('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'],
+        });
         me.gaq = window._gaq || document._gaq || [];
         me.gaq.push(function() {
             var ourTracker = _gat._createTracker(me.ANALYTICS_ID, 'willet');
             ourTracker._setDomainName(domain);
             ourTracker._setAllowLinker(true);
         });
-        me.initialized = true;
     };
 
     // send some google analytics thing to the server.
@@ -73,8 +73,6 @@ _willet.analytics = (function (me) {
         wm.on('storeAnalytics', me.store, me.defaultEvent);
     }
 
-    if (!me.initialized) {
-        me.init();
-    }
+    me.init();
     return me;
 } (_willet.analytics || {}));
