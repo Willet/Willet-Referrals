@@ -10,7 +10,6 @@ _willet.analytics = (function (me) {
 
     // default actions
     me.defaultEvent = me.defaultEvent || '{{ evnt }}';
-    me.gaq = null;
     me.gat = null;
     me.pageTracker = null;
     me.ANALYTICS_ID = me.ANALYTICS_ID || 'UA-23764505-9'; // DerpShop: UA-31001469-1
@@ -21,8 +20,8 @@ _willet.analytics = (function (me) {
         wm.fire('loadJS', {
             'scripts': [('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js'],
         });
-        me.gaq = window._gaq || document._gaq || [];
-        me.gaq.push(function() {
+        window._gaq = window._gaq || [];
+        window._gaq.push(function() {
             var ourTracker = _gat._createTracker(me.ANALYTICS_ID, 'willet');
             ourTracker._setDomainName(domain);
             ourTracker._setAllowLinker(true);
@@ -47,7 +46,7 @@ _willet.analytics = (function (me) {
                           encodeURIComponent(message);
         try {
             // async
-            me.gaq.push([
+            window._gaq.push([
                 'willet._trackEvent',
                 'SIBT',
                 encodeURIComponent(message),
