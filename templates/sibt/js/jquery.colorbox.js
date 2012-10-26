@@ -11,7 +11,7 @@
     };
 
     publicMethod.overlayClose = function( ) {
-        publicMethod.storeAnalytics( "SIBTOverlayCancelled" );
+        publicMethod.storeAnalytics( "Overlay Cancelled" );
         publicMethod.close();
     };
 
@@ -21,5 +21,5 @@
         }
     };
 
-    publicMethod.closeState = "SIBTAskIframeCancelled";
+    publicMethod.closeState = "Overlay Closed";
 {% endblock %}
