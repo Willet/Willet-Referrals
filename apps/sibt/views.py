@@ -207,13 +207,6 @@ class AskDynamicLoader(URIHandler):
         else:
             link = Link.create(page_url, app, origin_domain, user)
 
-        if vendor == "Shu Uemura USA":
-            fb_redirect = "%s%s" % (URL, url('ShowFBThanks', qs={
-                'vendor': vendor
-            }))
-        else:
-            fb_redirect = "%s%s" % (URL, url('ShowFBThanks'))
-
         template_values = {
             'page_url': page_url,
 
@@ -236,7 +229,7 @@ class AskDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
-            'fb_redirect': fb_redirect,
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
 
             'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
@@ -438,8 +431,6 @@ class AskPageDynamicLoader(URIHandler):
         else:
             link = Link.create(page_url, app, origin_domain, user)
 
-        fb_redirect = "%s%s" % (URL, url('ShowFBThanks'))
-
         template_values = {
             'URL': URL,
             'DOMAIN': DOMAIN,
@@ -459,7 +450,7 @@ class AskPageDynamicLoader(URIHandler):
             'instance_uuid': instance_uuid,
             'evnt': self.request.get('evnt'),
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
-            'fb_redirect': fb_redirect,
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
 
             'link': link,
             'willt_code': link.willt_url_code, # used to create full instances
@@ -905,7 +896,6 @@ class ShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') or self.request.get('success') # from FB
         user = User.get_or_create_by_cookie(self)
         instance = SIBTInstance.get_by_user(user)
-        vendor = self.request.get('vendor')
         product = None
 
         if post_id != "":
@@ -929,10 +919,7 @@ class ShowFBThanks(URIHandler):
                 'incentive_enabled': app.incentive_enabled if app else False
             }
 
-        if vendor:
-            path = os.path.join('sibt', vendor, 'fb_thanks.html')
-        else:
-            path = os.path.join('sibt', 'fb_thanks.html')
+        path = os.path.join('sibt', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(self.render_page(path, template_values))
         return

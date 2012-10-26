@@ -37,7 +37,6 @@
             $('.choice .button').css('cursor', 'auto');
         {% else %}
             var vote = function (which) {
-                _gaq.push(['_trackEvent', 'SIBT', 'Voted', which]);
                 $.ajax({
                     url: "{% url DoVote %}",
                     type: 'post',

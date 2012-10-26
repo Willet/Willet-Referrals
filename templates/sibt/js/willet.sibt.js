@@ -156,7 +156,7 @@ _willet.sibt = (function (me) {
 
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
-        wm.fire('storeAnalytics', message || 'Button Pressed');
+        wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
         var shopify_ids = [];
         if (cart_items) {
             // WOSIB exists on page; send extra data
@@ -377,7 +377,7 @@ _willet.sibt = (function (me) {
     // Vendor-specific procedures
     me.setSmallSIBTVendorButton = me.setSmallSIBTVendorButton || function (jqElem) {
         wm.fire('log', 'setting a small vendor-specific SIBT button');
-        wm.fire('storeAnalytics', 'Vendor Button Loaded');
+        wm.fire('storeAnalytics');
 
         // process vendor info on server side
         {% ifequal client.name "Shu Uemura USA" %}
@@ -392,7 +392,7 @@ _willet.sibt = (function (me) {
             })
             .click(function (message) {
                 // shows the ask your friends iframe
-                wm.fire('storeAnalytics', 'Button Pressed');
+                wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
                 var shopify_ids = [];
                 if (cart_items) {
                     // WOSIB exists on page; send extra data

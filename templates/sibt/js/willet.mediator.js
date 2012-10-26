@@ -102,22 +102,8 @@ _willet.mediator = (function (me) {
     // subscribing to an event - fire a function when it happens. (FIFO)
     // params is optional.
     me.on = me.on || function (event, func, params) {
-        var i;
-        var old_hook, old_func, old_params
         var hooks = me.hooks;
         hooks[event] = hooks[event] || [];
-
-        // Check for duplicates before adding hook
-        for (var i=0; i < hooks[event].length; i++) {
-            old_hook   = hooks[event][i];
-            old_func   = old_hook[0];
-            old_params = old_hook[1];
-
-            if ((func === old_func) && (params === old_params)) {
-                return me;
-            }
-        }
-
         hooks[event].push([func, params]);
         return me;
     };
