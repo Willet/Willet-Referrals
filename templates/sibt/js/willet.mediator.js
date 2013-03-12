@@ -2,6 +2,7 @@ var _willet = _willet || {};  // ensure namespace is there
 
 // bulletin board for module hooks.
 // idea from http://goo.gl/mLVK2; contains no code from it.
+// https://github.com/Willet/Willet-Referrals/blob/master/templates/sibt/js/willet.mediator.js
 _willet.mediator = (function (me) {
     // example on: _willet.mediator.on('eventName', function (params) {
     //     alert(params);
