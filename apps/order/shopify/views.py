@@ -22,6 +22,9 @@ class OrderJSLoader(URIHandler):
        for sharing information about a purchase just made by one of our clients
     """
     def get(self):
+        self.error(410)
+        return
+
         user = User.get_by_cookie(self)
 
         # Grab shop URL from params
