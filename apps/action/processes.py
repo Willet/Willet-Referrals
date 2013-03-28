@@ -22,9 +22,6 @@ class TrackTallyAction(URIHandler):
 
     def post(self):
         """Required parameter: evnt (backwards-compatible)"""
-        self.error(410)
-        return
-
         evnt = self.request.get('evnt', '')
         if evnt:
             user = User.get_or_create_by_cookie(self)

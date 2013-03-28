@@ -165,6 +165,22 @@ class URIHandler(webapp.RequestHandler):
 # end class
 
 
+class DeprecationHandler(URIHandler):
+    """Replacement handler for app endpoints that are pining for the fjords.
+    """
+    def get(self, *args, **kwargs):
+        self.error(410)
+
+    def post(self, *args, **kwargs):
+        self.error(410)
+
+    def put(self, *args, **kwargs):
+        self.error(410)
+
+    def delete(self, *args, **kwargs):
+        self.error(410)
+
+
 def obtain(*args):
     """Given a list of requested parameters, supply the parent function with
     there values unpacked as a keyword argument.

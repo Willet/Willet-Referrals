@@ -284,9 +284,6 @@ class SIBTShopifyProductDetection(URIHandler):
     def get(self):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
-        self.error(410)
-        return
-
         store_url = self.request.get('store_url')
 
         if store_url: # only render if there is a point of doing so

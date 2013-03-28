@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-from apps.sibt.shopify.views import *
+from util.urihandler import DeprecationHandler
 
 urlpatterns = [
-    (r'/s/shopify',                 SIBTShopifyWelcome),
-    (r'/s/shopify/beta',            ShowBetaPage),
-    (r'/s/shopify/code',            ShowCodePage),
-    (r'/s/shopify/edit',            ShowEditPage),
-    (r'/s/shopify/(.*)/edit',       SIBTShopifyEditStyle),
-    (r'/s/shopify/finished',        ShowFinishedPage),
-    (r'/s/shopify/sibt.js',         SIBTShopifyProductDetection),
-    (r'/s/shopify/sibt-ab.js',      SIBTShopifyServeAB),
-    (r'/s/shopify/error.html',      SIBTShopifyInstallError)
+    (r'/s/shopify',                 DeprecationHandler),
+    (r'/s/shopify/beta',            DeprecationHandler),
+    (r'/s/shopify/code',            DeprecationHandler),
+    (r'/s/shopify/edit',            DeprecationHandler),
+    (r'/s/shopify/(.*)/edit',       DeprecationHandler),
+    (r'/s/shopify/finished',        DeprecationHandler),
+    (r'/s/shopify/sibt.js',         DeprecationHandler),
+    (r'/s/shopify/sibt-ab.js',      DeprecationHandler),
+    (r'/s/shopify/error.html',      DeprecationHandler)
 ]

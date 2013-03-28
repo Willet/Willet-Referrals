@@ -1053,9 +1053,6 @@ class SIBTServeScript(URIHandler):
                          client_uuid (the client UUID)
         Optional params: willt_code (helps find instance)
         """
-        self.error(410)
-        return
-
         # declare vars.
         app = None
         app_css = ''
@@ -1274,9 +1271,6 @@ class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
         """Does everything SIBTServeScript does."""
-        self.error(410)
-        return
-
         self.redirect("//%s%s?%s" % (DOMAIN,
                                      url('SIBTServeScript'),
                                      self.request.query_string),
