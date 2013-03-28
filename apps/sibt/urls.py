@@ -1,28 +1,27 @@
 #!/usr/bin/env python
 
-from apps.sibt.views import *
-from apps.sibt.processes import *
+from util.urihandler import DeprecationHandler
 
 urlpatterns = [
     # Views
-    (r'/s/js/jquery.colorbox.js',   ColorboxJSServer),
-    (r'/s/ask.html',                AskDynamicLoader),
-    (r'/s/ask-page.html',           AskPageDynamicLoader),
-    (r'/s/vote.html',               VoteDynamicLoader),
-    (r'/s/results.html',            ShowResults),
-    (r'/s/fb_thanks.html',          ShowFBThanks),
-    (r'/s/track/unload',            ShowOnUnloadHook),
-    (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),  # merged
-    (r'/s/sibt.js',                 SIBTServeScript),
-    (r'/s/beta',                    ShowBetaPage),
-    (r'/s/beta/signup',             SIBTSignUp),
-    (r'/s/instances/status',        SIBTInstanceStatusChecker),
+    (r'/s/js/jquery.colorbox.js',   DeprecationHandler),
+    (r'/s/ask.html',                DeprecationHandler),
+    (r'/s/ask-page.html',           DeprecationHandler),
+    (r'/s/vote.html',               DeprecationHandler),
+    (r'/s/results.html',            DeprecationHandler),
+    (r'/s/fb_thanks.html',          DeprecationHandler),
+    (r'/s/track/unload',            DeprecationHandler),
+    (r'/s/shopify/real-sibt.js',    DeprecationHandler),
+    (r'/s/sibt.js',                 DeprecationHandler),
+    (r'/s/beta',                    DeprecationHandler),
+    (r'/s/beta/signup',             DeprecationHandler),
+    (r'/s/instances/status',        DeprecationHandler),
 
     # Processes
-    (r'/s/doVote',                  DoVote),
-    (r'/s/getExpired',              GetExpiredSIBTInstances),
-    (r'/s/instance/start',          StartSIBTInstance),
-    (r'/s/instance/products',       SaveProductsToInstance),
-    (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
-    (r'/s/sendFriendAsks',          SendFriendAsks),
+    (r'/s/doVote',                  DeprecationHandler),
+    (r'/s/getExpired',              DeprecationHandler),
+    (r'/s/instance/start',          DeprecationHandler),
+    (r'/s/instance/products',       DeprecationHandler),
+    (r'/s/removeExpired',           DeprecationHandler),
+    (r'/s/sendFriendAsks',          DeprecationHandler),
 ]

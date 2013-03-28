@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from apps.action.processes import TallyActions, TrackTallyAction
+from util.urihandler import DeprecationHandler
 
 urlpatterns = [
-    (r'/a/tally', TallyActions),
-    (r'/a/tally/track', TrackTallyAction),
+    (r'/a/tally', DeprecationHandler),
+    (r'/a/tally/track', DeprecationHandler),
 ]
