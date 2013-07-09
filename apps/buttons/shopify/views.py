@@ -62,7 +62,8 @@ def get_details(uri_handler=None, provided_client=None):
     details["shop_url"] = request.get("shop") or request.get("shop_url")
     details["shop_url"] = get_shopify_url(details["shop_url"])  # fix domain
 
-    client = provided_client or ClientShopify.get_by_url(details["shop_url"])
+    if details["shop_url"]:  # otherwise: ValueError when get_url_variants gets called
+        client = provided_client or ClientShopify.get_by_url(details["shop_url"])
 
     if client:
         try:

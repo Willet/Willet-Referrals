@@ -24,7 +24,7 @@ from util.consts import SHOPIFY_APPS
 from util.errors import RemoteError
 from util.helpers import generate_uuid
 from util.helpers import url as build_url
-from util.shopify_helpers import get_shopify_url
+from util.shopify_helpers import get_shopify_url, get_url_variants
 
 
 class ClientShopify(Client):
@@ -105,9 +105,9 @@ class ClientShopify(Client):
 
     @staticmethod
     def get_by_url(store_url):
-        store_url = get_shopify_url(store_url)
+        store_urls = get_url_variants(get_shopify_url(store_url))
         #logging.warning ("looking for client with url: %s" % store_url)
-        store = ClientShopify.all().filter('url =', store_url).get()
+        store = ClientShopify.all().filter('url IN', store_urls).get()
         return store
 
     @staticmethod
