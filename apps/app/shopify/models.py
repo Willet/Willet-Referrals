@@ -90,6 +90,8 @@ class AppShopify(Model):
             raise ValueError(err_msg % (self.__class__.__module__,
                                         self.__class__.__name__,
                                         self.store_url))
+        # don't count on it - _validate_self does nothing to existing models
+        self.store_url = get_shopify_url(self.store_url)
         return True
 
     def get_settings(self):
@@ -134,10 +136,10 @@ class AppShopify(Model):
     @classmethod
     def get_by_url(cls, store_url):
         """Fetch a Shopify app via the store's url."""
-        store_url = get_shopify_url(store_url)
+        store_urls = get_url_variants(get_shopify_url(store_url))
 
         logging.info("Shopify: Looking for %s" % store_url)
-        return cls.all().filter('store_url =', store_url).get()
+        return cls.all().filter('store_url in', store_urls).get()
 
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
@@ -162,7 +164,7 @@ class AppShopify(Model):
                     'PUT', 'put', 'DELETE', 'delete']:
             raise ValueError('verb must be one of GET, POST, PUT, DELETE')
 
-        url      = '%s/%s%s' % (self.store_url, prefix, call)
+        url      = '%s/%s%s' % (get_shopify_url(self.store_url), prefix, call)
         username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -549,7 +551,7 @@ class AppShopify(Model):
             'content-type':'application/json',
             "Authorization": "Basic %s" % base64.b64encode(("%s:%s") % (username,password))
         }
-        theme_url = '%s/admin/themes.json' % self.store_url
+        theme_url = '%s/admin/themes.json' % get_shopify_url(self.store_url)
         main_id = None
 
         # Find out which theme is in use
@@ -576,7 +578,8 @@ class AppShopify(Model):
                                subject='Application API request failed')
             raise ShopifyAPIError(result.status_code, result.content, "Error getting theme, can not queue assets to install.")
 
-        self._assets_url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
+        self._assets_url = '%s/admin/themes/%d/assets.json' % (
+            get_shopify_url(self.store_url), main_id)
         self._queued_assets = assets
 
     def install_queued(self):
@@ -594,7 +597,7 @@ class AppShopify(Model):
                 error_msg = 'Webhook install failed, %s: %s\n%s\n%s\n%s' % (
                         resp.status_code,
                         webhook['webhook']['topic'],
-                        self.store_url,
+                        get_shopify_url(self.store_url),
                         resp.headers,
                         resp.content
                     )
@@ -613,7 +616,7 @@ class AppShopify(Model):
                 error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
                     resp.status_code,
                     script_tag['script_tag']['src'],
-                    self.store_url,
+                    get_shopify_url(self.store_url),
                     resp.headers,
                     resp.content
                 )
