@@ -343,7 +343,8 @@ class ClientSideMessage(URIHandler):
             msg = "\n".join(msg_list)
             msg = msg % (name, cs_message, script, referer, user_agent, remote_ip )
 
-            Email.emailDevTeam(msg, subject=subject, monospaced=True)
+            # error-level emails: enable it if you wish
+            # Email.emailDevTeam(msg, subject=subject, monospaced=True)
 
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
