@@ -9,17 +9,26 @@ def get_shopify_url(shopify_url):
     Works for generic URLs as well.
     PyLint: Your code has been rated at -41.00/10
     """
-
     if not shopify_url:
         return ''
-
-    if shopify_url[:5] != 'https':
-        shopify_url = 'https://%s' % shopify_url  # assume HTTPS
 
     if shopify_url.endswith('/'):
         shopify_url = shopify_url[:-1]
 
-    return shopify_url
+    # unpack everything, because ParseResult isn't mutable
+    (scheme, netloc, path, params, query, fragments) = tuple(
+        urlparse.urlparse(shopify_url))
+
+    if not scheme or not scheme == 'https':
+        scheme = 'https'
+
+    corrected_url = urlparse.urlunparse(
+        (scheme, netloc, path, params, query, fragments))
+
+    if 'https:///' in corrected_url:  # urlunparse 2.5 bug
+        corrected_url = corrected_url.replace('https:///', 'https://')
+
+    return corrected_url
 
 def get_domain(url):
     """Extract the domain from a URL. Will not come with trailing slash.
